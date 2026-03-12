@@ -1,0 +1,49 @@
+RELATORIO DE SEGURANCA - 02/27/2026 21:55:31
+Projeto: C:\Users\miria\cartorio-rag-v2
+
+=== 1 - SECRETS E DADOS SENSIVEIS ===
+[OK]    .env nao esta commitado.
+[OK]    .gitignore protege .env
+[OK]    Nenhum padrao de secret encontrado.
+
+=== 2 - GIT ===
+[FAIL]  Possiveis secrets no historico do Git!
+[WARN]  .gitignore nao cobre: .next
+
+=== 3 - NPM AUDIT ===
+[OK]    Sem criticas/altas.
+
+=== 4 - CODIGO INSEGURO ===
+[OK]    Sem eval().
+[OK]    Sem innerHTML direto.
+[OK]    Sem URLs HTTP inseguras.
+[OK]    Sem logs sensiveis.
+
+=== 5 - FIREBASE ===
+[FAIL]  CRITICO: Firestore ABERTO para TODOS!
+[WARN]  storage.rules nao encontrado.
+
+=== 6 - VERCEL ===
+[WARN]  vercel.json nao encontrado.
+[WARN]  Crie um .env.example sem valores reais.
+
+=== 7 - AUTENTICACAO ===
+[OK]    JWT sem configs inseguras.
+[WARN]  CORS wildcard (*) detectado - restrinja em producao.
+[OK]    Rate limiting detectado.
+
+=== 8 - ARQUIVOS SENSIVEIS ===
+[OK]    Sem arquivos de credencial expostos.
+[WARN]  Adicione "private":true ao package.json.
+
+=== 9 - DEPENDENCIAS DESATUALIZADAS ===
+[WARN]  1 pacotes desatualizados.
+
+=== 10 - BOAS PRATICAS ===
+[OK]    Lockfile presente.
+[WARN]  Ative strict:true no tsconfig.json.
+[OK]    README.md presente.
+
+=================
+OK=13 | WARN=8 | FAIL=2
+02/27/2026 21:56:02

@@ -1,0 +1,7 @@
+{
+  "name": "Cartório RAG Pro",
+  "description": "Um sistema avançado de gestão documental e assistência por IA para cartórios, focado em conformidade legal, checklists automáticos e consulta inteligente em base de conhecimento.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

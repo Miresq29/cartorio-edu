@@ -1,0 +1,92 @@
+// services/authService.ts - VERSÃO SEGURA
+
+import { 
+  getAuth, 
+  signInWithEmailAndPassword, 
+  signOut, 
+  onAuthStateChanged 
+} from "firebase/auth";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
+
+const auth = getAuth();
+const db = getFirestore();
+
+export const AuthService = {
+  login: async (email: string, password: string) => {
+    try {
+      // 1. Autenticar com Firebase
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const firebaseUser = userCredential.user;
+      
+      // 2. Obter token JWT assinado
+      const token = await firebaseUser.getIdToken();
+      
+      // 3. Buscar perfil do usuário no Firestore
+      const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
+      
+      if (!userDoc.exists()) {
+        throw new Error("Perfil de usuário não encontrado");
+      }
+      
+      const userData = userDoc.data();
+      
+      // 4. Validar status ativo
+      if (!userData.active) {
+        await signOut(auth);
+        throw new Error("Conta desativada. Contate o administrador.");
+      }
+      
+      // 5. Retornar usuário e token
+      return {
+        user: {
+          id: firebaseUser.uid,
+          email: firebaseUser.email!,
+          ...userData
+        } as User,
+        token
+      };
+      
+    } catch (error: any) {
+      // Mapear erros do Firebase para mensagens amigáveis
+      const errorMessages: Record<string, string> = {
+        'auth/user-not-found': 'Usuário não encontrado',
+        'auth/wrong-password': 'Senha incorreta',
+        'auth/too-many-requests': 'Muitas tentativas. Tente novamente em 5 minutos.',
+        'auth/user-disabled': 'Conta desativada pelo administrador',
+        'auth/invalid-email': 'E-mail inválido',
+        'auth/network-request-failed': 'Erro de conexão. Verifique sua internet.'
+      };
+      
+      throw new Error(errorMessages[error.code] || 'Erro ao fazer login');
+    }
+  },
+  
+  logout: async () => {
+    await signOut(auth);
+  },
+  
+  onAuthUpdate: (callback: (user: User | null, token: string | null) => void) => {
+    return onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        try {
+          const token = await firebaseUser.getIdToken();
+          const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
+          
+          if (userDoc.exists()) {
+            callback({
+              id: firebaseUser.uid,
+              email: firebaseUser.email!,
+              ...userDoc.data()
+            } as User, token);
+          } else {
+            callback(null, null);
+          }
+        } catch {
+          callback(null, null);
+        }
+      } else {
+        callback(null, null);
+      }
+    });
+  }
+};

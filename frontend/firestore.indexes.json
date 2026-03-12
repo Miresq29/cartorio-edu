@@ -1,0 +1,69 @@
+﻿PS C:\Users\miria\cartorio-rag-v2> Get-Content "firestore.rules"
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // UsuÃ¡rio sÃ³ acessa seus prÃ³prios dados
+    match /users/{userId} {
+      allow read, update: if isOwner(userId);
+      allow create: if isAuthenticated();
+      allow delete: if isAdmin();
+    }
+
+    // loginAttempts gerenciado APENAS pelo backend (Admin SDK)
+    // Nunca expor ao cliente
+    match /loginAttempts/{attemptId} {
+      allow read, write: if false;
+    }
+
+    // Logs imutÃ¡veis â€” Ã³timo como estÃ¡
+    match /auditLogs/{logId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if false;
+    }
+
+    // Base de conhecimento â€” leitura livre, escrita restrita
+    match /knowledgeBase/{docId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated();
+      allow delete: if isAdmin();
+    }
+
+    // Checklists â€” controle por dono ou admin
+    match /checklists/{checklistId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() &&
+        (resource.data.createdBy == request.auth.uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // Documentos â€” mesma lÃ³gica dos checklists
+    match /documents/{docId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() &&
+        (resource.data.createdBy == request.auth.uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // Deny-all fallback â€” mantenha sempre
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

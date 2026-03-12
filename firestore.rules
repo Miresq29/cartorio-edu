@@ -1,0 +1,68 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Usuário só acessa seus próprios dados
+    match /users/{userId} {
+      allow read, update: if isOwner(userId);
+      allow create: if isAuthenticated();
+      allow delete: if isAdmin();
+    }
+
+    // loginAttempts gerenciado APENAS pelo backend (Admin SDK)
+    // Nunca expor ao cliente
+    match /loginAttempts/{attemptId} {
+      allow read, write: if false;
+    }
+
+    // Logs imutáveis — ótimo como está
+    match /auditLogs/{logId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if false;
+    }
+
+    // Base de conhecimento — leitura livre, escrita restrita
+    match /knowledgeBase/{docId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated();
+      allow delete: if isAdmin();
+    }
+
+    // Checklists — controle por dono ou admin
+    match /checklists/{checklistId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() &&
+        (resource.data.createdBy == request.auth.uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // Documentos — mesma lógica dos checklists
+    match /documents/{docId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() &&
+        (resource.data.createdBy == request.auth.uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // Deny-all fallback — mantenha sempre
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
