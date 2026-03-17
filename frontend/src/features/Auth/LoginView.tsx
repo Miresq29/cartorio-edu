@@ -45,14 +45,18 @@ const LoginView: React.FC = () => {
     setResetLoading(true);
     try {
       await sendPasswordResetEmail(auth, email.trim());
-      showToast(`E-mail de redefinição enviado para ${email}. Verifique sua caixa de entrada.`, "success");
+      showToast(`Se este e-mail estiver cadastrado, voce receberá o link de redefinição em breve.`, "success");
     } catch (error: any) {
+      console.warn("Reset password error:", error.code, error.message);
       const msgs: Record<string, string> = {
-        "auth/user-not-found": "E-mail nao encontrado no sistema.",
-        "auth/invalid-email": "E-mail invalido.",
-        "auth/too-many-requests": "Muitas tentativas. Aguarde alguns minutos.",
+        "auth/user-not-found":        "E-mail nao encontrado no sistema.",
+        "auth/invalid-email":         "Formato de e-mail invalido.",
+        "auth/too-many-requests":     "Muitas tentativas. Aguarde alguns minutos.",
+        "auth/network-request-failed":"Sem conexao com o servidor.",
+        "auth/missing-email":         "Digite seu e-mail no campo acima.",
+        "auth/invalid-api-key":       "Configuracao do sistema invalida. Contate o suporte.",
       };
-      showToast(msgs[error.code] || "Erro ao enviar e-mail de redefinicao.", "error");
+      showToast(msgs[error.code] || `Se este e-mail estiver cadastrado, voce receberá o link em breve.`, "success");
     } finally {
       setResetLoading(false);
     }
