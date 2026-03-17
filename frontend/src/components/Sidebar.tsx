@@ -53,8 +53,9 @@ const Sidebar: React.FC = () => {
       items: [
         { tab: 'reports',  icon: 'fa-chart-column',      label: 'Relatorios',     desc: 'Uso por colaborador, docs e treinamentos'                               },
         { tab: 'audit',    icon: 'fa-clock-rotate-left', label: 'Auditoria',      desc: 'Historico de acoes, acessos e alteracoes'                               },
-        { tab: 'training', icon: 'fa-graduation-cap',    label: 'Treinamento AI', desc: 'Capacitacao com IA, quizzes e certificados', color: 'text-emerald-500'  },
-        { tab: 'trails',   icon: 'fa-road',              label: 'Trilhas',        desc: 'Trilhas de treinamento por perfil',         color: 'text-teal-400'     },
+        { tab: 'training',  icon: 'fa-graduation-cap',    label: 'Treinamento AI', desc: 'Capacitacao com IA, quizzes e certificados', color: 'text-emerald-500' },
+        { tab: 'trails',    icon: 'fa-road',             label: 'Trilhas',        desc: 'Trilhas de treinamento por perfil',         color: 'text-teal-400'    },
+        { tab: 'campanhas', icon: 'fa-bullhorn',         label: 'Campanhas',      desc: 'Gerar posts e conteudo para redes sociais', color: 'text-pink-400'    },
         { tab: 'users',    icon: 'fa-users-gear',        label: 'Usuarios',       desc: 'Gerenciar colaboradores e permissoes', roles: ['SUPERADMIN', 'gestor', 'admin'] },
         { tab: 'security', icon: 'fa-lock',              label: 'Seguranca',      desc: 'Senhas, bloqueios e politicas de acesso', roles: ['SUPERADMIN', 'gestor'] },
       ]

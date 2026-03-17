@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../services/firebase';
 import {
-  collection, onSnapshot, query, orderBy,
+  collection, onSnapshot, query, orderBy, where,
   addDoc, deleteDoc, doc, serverTimestamp
 } from 'firebase/firestore';
+import { useApp } from '../../context/AppContext';
 
 interface Question {
   id: string;
@@ -40,10 +41,35 @@ interface Props {
   checklists: any[];
 }
 
+const DIAS_BLOQUEIO = 3;
+
+const calcLiberadoEm = (results: QuizResult[], quizId: string, colaborador: string): Date | null => {
+  const falhas = results
+    .filter(r => r.quizId === quizId && r.colaborador === colaborador && !r.aprovado)
+    .map(r => ({ ...r, ts: r.createdAt?.toDate?.() as Date | null }))
+    .filter(r => r.ts)
+    .sort((a, b) => b.ts!.getTime() - a.ts!.getTime());
+
+  if (falhas.length === 0) return null;
+  const liberadoEm = new Date(falhas[0].ts!.getTime() + DIAS_BLOQUEIO * 24 * 60 * 60 * 1000);
+  return liberadoEm > new Date() ? liberadoEm : null;
+};
+
+const formatCountdown = (liberadoEm: Date): string => {
+  const diff = liberadoEm.getTime() - Date.now();
+  if (diff <= 0) return 'Liberado';
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  if (days > 0) return `${days}d ${hours}h`;
+  return `${hours}h ${mins}min`;
+};
+
 const TrainingQuiz: React.FC<Props> = ({ checklists }) => {
+  const { state } = useApp();
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [results, setResults] = useState<QuizResult[]>([]);
-  const [mode, setMode] = useState<'list' | 'create' | 'take' | 'result'>('list');
+  const [mode, setMode] = useState<'list' | 'create' | 'take' | 'result' | 'blocked'>('list');
   const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
   const [currentQ, setCurrentQ] = useState(0);
   const [respostas, setRespostas] = useState<number[]>([]);
@@ -52,6 +78,7 @@ const TrainingQuiz: React.FC<Props> = ({ checklists }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generateError, setGenerateError] = useState('');
   const [identStarted, setIdentStarted] = useState(false);
+  const [bloqueadoAte, setBloqueadoAte] = useState<Date | null>(null);
 
   // Form manual
   const [form, setForm] = useState({ treinamento: '', titulo: '' });
@@ -173,8 +200,21 @@ Regras:
 
   // ---- RESPONDER QUIZ ----
   const startQuiz = (quiz: Quiz) => {
+    const nomeAtual = state.user?.name || '';
+    // Verifica bloqueio de 3 dias para o usuário logado
+    if (nomeAtual) {
+      const liberado = calcLiberadoEm(results, quiz.id, nomeAtual);
+      if (liberado) {
+        setSelectedQuiz(quiz);
+        setBloqueadoAte(liberado);
+        setMode('blocked');
+        return;
+      }
+    }
     setSelectedQuiz(quiz); setCurrentQ(0); setRespostas([]);
-    setRespondente({ nome: '', cargo: '' }); setIdentStarted(false); setMode('take');
+    setRespondente({ nome: nomeAtual, cargo: state.user?.role || '' });
+    setIdentStarted(false);
+    setMode('take');
   };
 
   const handleAnswer = (opcaoIdx: number) => {
@@ -286,6 +326,43 @@ Regras:
     );
   }
 
+  // ---- TELA BLOQUEADA (aguardar 3 dias) ----
+  if (mode === 'blocked' && selectedQuiz && bloqueadoAte) {
+    return (
+      <div className="space-y-6 max-w-lg mx-auto">
+        <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-8 text-center space-y-4">
+          <i className="fa-solid fa-lock text-5xl text-red-400 block"></i>
+          <div>
+            <h3 className="text-red-400 font-black uppercase italic text-lg">Avaliação Bloqueada</h3>
+            <p className="text-sm text-slate-400 mt-2">
+              Você não atingiu a nota mínima de <span className="font-black text-white">70%</span> na tentativa anterior.
+            </p>
+            <p className="text-xs text-slate-500 mt-1">{selectedQuiz.titulo}</p>
+          </div>
+          <div className="bg-[#05080f] border border-red-500/20 rounded-xl p-5 space-y-1">
+            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Nova tentativa disponível em</p>
+            <p className="text-4xl font-black text-red-400">{formatCountdown(bloqueadoAte)}</p>
+            <p className="text-[9px] text-slate-600">
+              Liberado em {bloqueadoAte.toLocaleDateString('pt-BR')} às {bloqueadoAte.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+            </p>
+          </div>
+          <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 text-left">
+            <p className="text-[9px] font-black text-amber-400 uppercase tracking-widest mb-1">
+              <i className="fa-solid fa-lightbulb mr-1"></i>Dica de Estudo
+            </p>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Use o tempo de espera para revisar o conteúdo do treinamento <span className="font-bold text-white">{selectedQuiz.treinamento}</span> na base legal e nos checklists.
+            </p>
+          </div>
+          <button type="button" onClick={() => { setMode('list'); setBloqueadoAte(null); }}
+            className="w-full bg-slate-800 hover:bg-slate-700 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+            <i className="fa-solid fa-arrow-left mr-2"></i>Voltar para Avaliações
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // ---- TELA DE RESPONDER ----
   if (mode === 'take' && selectedQuiz) {
     if (!identStarted) {
@@ -320,7 +397,19 @@ Regras:
             <button onClick={() => setMode('list')} className="px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 border border-slate-800 hover:border-slate-600 transition-all">
               Cancelar
             </button>
-            <button onClick={() => setIdentStarted(true)} disabled={!respondente.nome}
+            <button onClick={() => {
+                // Verifica bloqueio ao iniciar (para nomes digitados manualmente)
+                if (selectedQuiz && respondente.nome) {
+                  const liberado = calcLiberadoEm(results, selectedQuiz.id, respondente.nome);
+                  if (liberado) {
+                    setBloqueadoAte(liberado);
+                    setMode('blocked');
+                    return;
+                  }
+                }
+                setIdentStarted(true);
+              }}
+              disabled={!respondente.nome}
               className="flex-1 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50">
               <i className="fa-solid fa-play mr-2"></i>Iniciar Avaliação
             </button>
@@ -519,8 +608,10 @@ Regras:
           {quizzes.map(quiz => {
             const qtdResultados = results.filter(r => r.quizId === quiz.id).length;
             const aprovados = results.filter(r => r.quizId === quiz.id && r.aprovado).length;
+            const nomeUsuario = state.user?.name || '';
+            const bloqueado = nomeUsuario ? calcLiberadoEm(results, quiz.id, nomeUsuario) : null;
             return (
-              <div key={quiz.id} className="bg-[#05080f] border border-slate-800 hover:border-slate-700 rounded-2xl p-5 transition-all group">
+              <div key={quiz.id} className={`bg-[#05080f] border rounded-2xl p-5 transition-all group ${bloqueado ? 'border-red-500/30' : 'border-slate-800 hover:border-slate-700'}`}>
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -531,6 +622,11 @@ Regras:
                       {quiz.geradoPorIA && (
                         <span className="text-[9px] font-black uppercase tracking-widest text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-md">
                           <i className="fa-solid fa-wand-magic-sparkles mr-1"></i>IA
+                        </span>
+                      )}
+                      {bloqueado && (
+                        <span className="text-[9px] font-black uppercase tracking-widest text-red-400 bg-red-500/10 border border-red-500/20 px-2 py-0.5 rounded-md">
+                          <i className="fa-solid fa-lock mr-1"></i>Bloqueado · {formatCountdown(bloqueado)}
                         </span>
                       )}
                     </div>
@@ -544,11 +640,12 @@ Regras:
                     </div>
                   </div>
                   <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                    <button onClick={() => startQuiz(quiz)}
-                      className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all">
-                      <i className="fa-solid fa-play mr-1"></i>Responder
+                    <button type="button" onClick={() => startQuiz(quiz)}
+                      className={`text-white px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${bloqueado ? 'bg-red-600 hover:bg-red-500' : 'bg-blue-600 hover:bg-blue-500'}`}>
+                      <i className={`fa-solid ${bloqueado ? 'fa-lock' : 'fa-play'} mr-1`}></i>
+                      {bloqueado ? 'Ver bloqueio' : 'Responder'}
                     </button>
-                    <button onClick={() => deleteQuiz(quiz.id)} className="text-slate-600 hover:text-red-400 transition-colors p-2">
+                    <button type="button" title="Excluir questionário" onClick={() => deleteQuiz(quiz.id)} className="text-slate-600 hover:text-red-400 transition-colors p-2">
                       <i className="fa-solid fa-trash text-xs"></i>
                     </button>
                   </div>

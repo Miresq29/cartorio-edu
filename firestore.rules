@@ -22,16 +22,17 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // loginAttempts gerenciado APENAS pelo backend (Admin SDK)
-    // Nunca expor ao cliente
+    // loginAttempts — leitura/escrita pública necessária para proteção
+    // anti-brute-force no cliente (antes da autenticação)
     match /loginAttempts/{attemptId} {
-      allow read, write: if false;
+      allow read, write: if true;
     }
 
-    // Logs imutáveis — ótimo como está
+    // auditLogs imutáveis — create público para registrar tentativas de login
+    // (eventos de LOGIN_FAILED ocorrem antes da autenticação)
     match /auditLogs/{logId} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated();
+      allow create: if true;
       allow update, delete: if false;
     }
 

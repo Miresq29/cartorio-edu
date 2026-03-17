@@ -79,7 +79,7 @@ const LoginView: React.FC = () => {
             <h1 className="text-3xl font-black text-white italic uppercase tracking-tighter">
               MJ <span className="text-blue-500">Consultoria</span>
             </h1>
-            <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.3em] mt-2">Segurança Notarial Avançada</p>
+            <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.3em] mt-2">Plataforma de Treinamento Corporativo</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4">

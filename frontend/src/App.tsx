@@ -25,6 +25,7 @@ const PrivacyView        = lazy(() => import('./features/Privacy/PrivacyView'));
 const PolicyView         = lazy(() => import('./features/Policy/PolicyView'));
 const TutorialView       = lazy(() => import('./features/Tutorial/TutorialView'));
 const TrailsView         = lazy(() => import('./features/Trails/TrailsView'));
+const CampanhasView      = lazy(() => import('./features/Campanhas/CampanhasView'));
 
 // 🛡️ Admin Views
 const TenantsView          = lazy(() => import('./features/Admin/TenantsView'));
@@ -70,6 +71,7 @@ const MainLayout: React.FC = () => {
       case 'privacy':    return <PrivacyView />;
       case 'policy':     return <PolicyView />;
       case 'tutorial':   return <TutorialView />;
+      case 'campanhas':  return <CampanhasView />;
       default:
         return state.user?.role === 'SUPERADMIN' ? <DashboardMasterView /> : <DashboardView />;
     }

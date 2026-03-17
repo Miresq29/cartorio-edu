@@ -98,3 +98,5 @@ build
 dist
 
 backend/cartorio-homolog-service-account.json
+.vercel
+.env*.local

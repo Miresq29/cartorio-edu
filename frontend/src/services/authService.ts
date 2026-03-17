@@ -8,8 +8,8 @@ import {
   updatePassword as firebaseUpdatePassword
 } from "firebase/auth";
 import {
-  doc, getDoc, updateDoc, arrayUnion, setDoc,
-  collection, addDoc, serverTimestamp, increment
+  doc, getDoc, updateDoc, setDoc,
+  collection, addDoc, serverTimestamp
 } from "firebase/firestore";
 import { User } from "../types";
 
@@ -80,15 +80,15 @@ export const AuthService = {
         userCredential = await signInWithEmailAndPassword(auth, email, password);
       } catch (authError: any) {
         await registerFailedAttempt(email);
-        await logAudit("LOGIN_FAILED", "unknown", email, `Tentativa falha: ${authError.code}`, "WARNING");
+        logAudit("LOGIN_FAILED", "unknown", email, `Tentativa falha: ${authError.code}`, "WARNING").catch(() => {});
         const errorMessages: Record<string, string> = {
-          "auth/user-not-found": "E-mail nao cadastrado.",
-          "auth/wrong-password": "Senha incorreta.",
-          "auth/invalid-credential": "Credenciais invalidas.",
-          "auth/too-many-requests": "Acesso bloqueado temporariamente pelo Firebase.",
-          "auth/network-request-failed": "Sem conexao com o servidor."
+          "auth/user-not-found": "E-mail nao cadastrado no sistema.",
+          "auth/wrong-password": "Senha incorreta. Verifique e tente novamente.",
+          "auth/invalid-credential": "E-mail ou senha invalidos.",
+          "auth/too-many-requests": "Acesso bloqueado temporariamente pelo Firebase. Aguarde alguns minutos.",
+          "auth/network-request-failed": "Sem conexao com o servidor. Verifique sua internet."
         };
-        throw new Error(errorMessages[authError.code] || "Falha na autenticacao.");
+        throw new Error(errorMessages[authError.code] || "E-mail ou senha invalidos.");
       }
       const firebaseUser = userCredential.user;
       const token = await firebaseUser.getIdToken();

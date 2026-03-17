@@ -116,7 +116,8 @@ export type AppTab =
   | 'terms'
   | 'manual'
   | 'suporte'
-  | 'support';
+  | 'support'
+  | 'campanhas';
 
 export interface AppState {
   user: User | null;
