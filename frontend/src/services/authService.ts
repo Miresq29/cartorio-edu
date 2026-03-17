@@ -24,7 +24,7 @@ const hashPassword = async (password: string): Promise<string> => {
 const logAudit = async (action: string, userId: string, email: string, details: string, severity: "INFO" | "WARNING" | "CRITICAL" = "INFO") => {
   try {
     await addDoc(collection(db, "auditLogs"), { action, userId, email, details, severity, timestamp: serverTimestamp(), userAgent: navigator.userAgent });
-  } catch (e) { console.error("Falha ao gravar auditoria:", e); }
+  } catch { /* silencioso — auditoria é best-effort */ }
 };
 
 const BRUTE_FORCE_MAX_ATTEMPTS = 5;
