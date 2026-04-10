@@ -85,14 +85,14 @@ const Sidebar: React.FC = () => {
         title={expanded ? 'Recolher menu' : 'Expandir menu'}
       >
         <div className="w-10 h-10 flex-shrink-0 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-600/20 group-hover:bg-blue-500 transition-all">
-          <i className={`fa-solid transition-all duration-300 ${expanded ? 'fa-chevron-left text-sm' : 'fa-shield-cat text-lg'}`}></i>
+          <i className={`fa-solid transition-all duration-300 ${expanded ? 'fa-chevron-left text-sm' : 'fa-graduation-cap text-lg'}`}></i>
         </div>
         {expanded && (
           <div className="overflow-hidden">
             <h1 className="text-white font-bold text-xl leading-tight whitespace-nowrap">
-              Cartorio<span className="text-blue-500">RAG</span>
+              MJ <span className="text-blue-500">Consultoria</span>
             </h1>
-            <span className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded font-black tracking-widest uppercase">PRO v3</span>
+            <span className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded font-black tracking-widest uppercase">Treinamento</span>
           </div>
         )}
       </div>
