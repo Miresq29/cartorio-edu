@@ -27,8 +27,8 @@ const logAudit = async (action: string, userId: string, email: string, details: 
   } catch { /* silencioso — auditoria é best-effort */ }
 };
 
-const BRUTE_FORCE_MAX_ATTEMPTS = 5;
-const BRUTE_FORCE_LOCKOUT_MS = 5 * 60 * 1000;
+const BRUTE_FORCE_MAX_ATTEMPTS = 20;
+const BRUTE_FORCE_LOCKOUT_MS = 1 * 60 * 1000;
 
 const checkBruteForce = async (email: string): Promise<void> => {
   try {
