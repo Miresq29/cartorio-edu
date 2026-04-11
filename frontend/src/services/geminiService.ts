@@ -227,11 +227,11 @@ Retorne APENAS um objeto JSON válido, sem markdown, no formato:
 
   try {
     const text = await callGemini(prompt);
-    // Extrai o JSON do objeto
-    const firstBrace = text.indexOf('{');
-    const lastBrace = text.lastIndexOf('}');
-    if (firstBrace !== -1 && lastBrace !== -1) {
-      return JSON.parse(text.substring(firstBrace, lastBrace + 1));
+    const cleaned = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    const firstBrace = cleaned.indexOf('{');
+    const lastBrace = cleaned.lastIndexOf('}');
+    if (firstBrace !== -1 && lastBrace > firstBrace) {
+      return JSON.parse(cleaned.substring(firstBrace, lastBrace + 1));
     }
     return {};
   } catch (e) {
@@ -242,22 +242,25 @@ Retorne APENAS um objeto JSON válido, sem markdown, no formato:
 
 /**
  * Extrai JSON de qualquer formato (com ou sem blocos markdown)
- * Inspirado no padrão extractJSON dos modelos SGC
+ * Tenta array [] primeiro (mais comum), depois objeto {}
  */
 const extractJsonObject = (text: string): any => {
   const cleaned = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-  // Tenta objeto {}
-  const firstBrace = cleaned.indexOf('{');
-  const lastBrace = cleaned.lastIndexOf('}');
-  if (firstBrace !== -1 && lastBrace > firstBrace) {
-    try { return JSON.parse(cleaned.substring(firstBrace, lastBrace + 1)); } catch {}
-  }
-  // Tenta array []
+
+  // 1. Tenta array [] — prioridade porque generateExam retorna array
   const firstBracket = cleaned.indexOf('[');
   const lastBracket = cleaned.lastIndexOf(']');
   if (firstBracket !== -1 && lastBracket > firstBracket) {
     try { return JSON.parse(cleaned.substring(firstBracket, lastBracket + 1)); } catch {}
   }
+
+  // 2. Tenta objeto {}
+  const firstBrace = cleaned.indexOf('{');
+  const lastBrace = cleaned.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    try { return JSON.parse(cleaned.substring(firstBrace, lastBrace + 1)); } catch {}
+  }
+
   throw new Error('JSON inválido na resposta da IA');
 };
 
