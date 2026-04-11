@@ -10,19 +10,27 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
-    function isActive() {
-      return isAuthenticated() && getUserData().get('active', false) == true;
+    function userExists() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid));
     }
 
-    function isGestor() {
-      return isActive() && getUserData().get('role', '') in ['SUPERADMIN', 'gestor', 'admin'];
+    function isActive() {
+      return isAuthenticated() && userExists() && getUserData().get('active', false) == true;
     }
 
     function isSuperAdmin() {
       return isActive() && getUserData().get('role', '') == 'SUPERADMIN';
     }
 
-    // Acesso público necessário (pré-autenticação)
+    function isGestor() {
+      return isActive() && getUserData().get('role', '') in ['SUPERADMIN', 'gestor', 'admin'];
+    }
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isSuperAdmin();
+    }
+
     match /loginAttempts/{docId} {
       allow read, write: if true;
     }
@@ -30,16 +38,8 @@ service cloud.firestore {
     match /auditLogs/{docId} {
       allow read: if isGestor();
       allow create: if true;
-      allow update, delete: if false;
     }
 
-    // Usuários
-    match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow write: if isSuperAdmin();
-    }
-
-    // Treinamentos
     match /treinamentos/{docId} {
       allow read: if isActive();
       allow create, update, delete: if isGestor();
@@ -56,13 +56,6 @@ service cloud.firestore {
       allow delete: if isGestor();
     }
 
-    match /treinamentosParticipantes/{docId} {
-      allow read: if isActive();
-      allow create, update: if isActive();
-      allow delete: if isGestor();
-    }
-
-    // Trilhas
     match /trilhas/{docId} {
       allow read: if isActive();
       allow create, update, delete: if isGestor();
@@ -74,7 +67,12 @@ service cloud.firestore {
       allow delete: if isGestor();
     }
 
-    // Base de conhecimento e checklists
+    match /treinamentosParticipantes/{docId} {
+      allow read: if isActive();
+      allow create, update: if isActive();
+      allow delete: if isGestor();
+    }
+
     match /knowledgeBase/{docId} {
       allow read: if isActive();
       allow create, update: if isGestor();
@@ -87,7 +85,11 @@ service cloud.firestore {
       allow delete: if isGestor();
     }
 
-    // Vídeos de treinamento
+    match /cartorios/{docId} {
+      allow read: if isActive();
+      allow write: if isSuperAdmin();
+    }
+
     match /videos/{docId} {
       allow read: if isActive();
       allow create, update, delete: if isGestor();
@@ -99,7 +101,6 @@ service cloud.firestore {
       allow delete: if isGestor();
     }
 
-    // Comunicados
     match /comunicados/{docId} {
       allow read: if isActive();
       allow create, update, delete: if isGestor();
@@ -111,24 +112,16 @@ service cloud.firestore {
       allow delete: if isGestor();
     }
 
-    // Banners e materiais
     match /materiaisbanner/{docId} {
       allow read: if isActive();
       allow create, update: if isGestor();
       allow delete: if isGestor();
     }
 
-    // Exames
     match /examesResultados/{docId} {
       allow read: if isActive();
       allow create: if isActive();
       allow update, delete: if isGestor();
-    }
-
-    // Cartorios / tenants
-    match /cartorios/{docId} {
-      allow read: if isActive();
-      allow write: if isSuperAdmin();
     }
 
     // Deny-all fallback
