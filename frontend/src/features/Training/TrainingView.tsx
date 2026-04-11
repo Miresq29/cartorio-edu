@@ -105,7 +105,7 @@ const TrainingView: React.FC = () => {
     try {
       const r = await GeminiService.chat(`${buildContext()}\n\nPergunta: ${msg}`, '', state.token || '');
       setMessages(p => [...p, { role: 'ai', text: typeof r === 'string' ? r : (r as any).text || 'Sem resposta.' }]);
-    } catch { showToast('Erro ao consultar IA.', 'error'); } finally { setIsLoading(false); }
+    } catch (e: any) { showToast(e?.message || 'Erro ao consultar IA.', 'error'); } finally { setIsLoading(false); }
   };
 
   const generateOptions = async () => {
@@ -121,7 +121,7 @@ const TrainingView: React.FC = () => {
       } else {
         showToast('Não foi possível gerar opções. Tente novamente.', 'error');
       }
-    } catch { showToast('Erro ao gerar opções de treinamento.', 'error'); } finally { setIsLoading(false); }
+    } catch (e: any) { showToast(e?.message || 'Erro ao gerar opções de treinamento.', 'error'); } finally { setIsLoading(false); }
   };
 
   const selectOption = async (option: TrainingOption) => {
@@ -162,7 +162,7 @@ ${opt.justificativa}
         summaryType
       );
       setSummary(result);
-    } catch { showToast('Erro ao gerar resumo.', 'error'); } finally { setSummaryLoading(false); }
+    } catch (e: any) { showToast(e?.message || 'Erro ao gerar resumo.', 'error'); } finally { setSummaryLoading(false); }
   };
 
   const renderIATab = () => (

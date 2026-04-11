@@ -90,8 +90,8 @@ const CampanhasView: React.FC = () => {
       } else {
         showToast('Não foi possível gerar os posts. Tente novamente.', 'error');
       }
-    } catch {
-      showToast('Erro ao gerar posts.', 'error');
+    } catch (e: any) {
+      showToast(e?.message || 'Erro ao gerar posts.', 'error');
     } finally {
       setIsLoading(false);
     }

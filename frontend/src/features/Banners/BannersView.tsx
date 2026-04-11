@@ -100,8 +100,8 @@ CTA: [chamada para ação aqui]`;
       const texto = typeof resultado === 'string' ? resultado : (resultado as any).text || '';
       setTextoBannerGerado(texto);
       setPreviewBanner(true);
-    } catch {
-      showToast('Erro ao gerar texto do banner.', 'error');
+    } catch (e: any) {
+      showToast(e?.message || 'Erro ao gerar texto do banner.', 'error');
     } finally {
       setGerando(false);
     }

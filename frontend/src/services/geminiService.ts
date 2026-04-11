@@ -75,14 +75,9 @@ const callGemini = async (prompt: string): Promise<string> => {
  * Chat principal — usado por todos os módulos
  */
 export const chat = async (message: string, context: string, _token?: string) => {
-  try {
-    const prompt = context ? `Contexto: ${context}\n\n${message}` : message;
-    const text = await callGemini(prompt);
-    return { text };
-  } catch (error: any) {
-    console.error('Erro Gemini chat:', error);
-    throw new Error('Falha ao conectar com o motor de IA.');
-  }
+  const prompt = context ? `Contexto: ${context}\n\n${message}` : message;
+  const text = await callGemini(prompt);
+  return { text };
 };
 
 /**
