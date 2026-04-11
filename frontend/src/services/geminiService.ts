@@ -58,7 +58,12 @@ const callGemini = async (prompt: string): Promise<string> => {
     const err = await response.json().catch(() => ({}));
     const msg = err?.error?.message || response.statusText;
     const status = response.status;
-    // 429 = cota esgotada, 400 = modelo/chave inválida, 403 = sem permissão
+    if (status === 400 && msg?.includes('blocked')) {
+      throw new Error('Chave de API bloqueada para o Gemini. Configure VITE_GEMINI_API_KEY no Vercel com uma chave do Google AI Studio (ai.google.dev).');
+    }
+    if (status === 429) {
+      throw new Error('Cota da API Gemini esgotada. Aguarde algumas horas ou verifique seu plano em ai.google.dev.');
+    }
     throw new Error(`[Gemini ${status}] ${msg}`);
   }
 
