@@ -4,7 +4,12 @@
  * Chave configurada via VITE_GEMINI_API_KEY no Vercel.
  */
 
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+// Usa VITE_GEMINI_API_KEY se disponível; caso contrário usa VITE_FIREBASE_API_KEY
+// (ambas são chaves do mesmo projeto Google Cloud — a chave Firebase funciona para a API Gemini)
+const GEMINI_API_KEY =
+  import.meta.env.VITE_GEMINI_API_KEY ||
+  import.meta.env.VITE_FIREBASE_API_KEY;
+
 // gemini-2.0-flash: 1500 req/dia grátis vs 50/dia do gemini-2.5-pro
 const GEMINI_MODEL = 'gemini-2.0-flash';
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
@@ -32,8 +37,10 @@ export const cleanJsonOutput = (text: string): string => {
  */
 const callGemini = async (prompt: string): Promise<string> => {
   if (!GEMINI_API_KEY) {
-    throw new Error('VITE_GEMINI_API_KEY não configurada.');
+    console.error('[Gemini] VITE_GEMINI_API_KEY não configurada. Verifique as variáveis de ambiente no Vercel e no .env');
+    throw new Error('Chave da API Gemini não configurada. Contate o administrador.');
   }
+  console.info(`[Gemini] chamando ${GEMINI_MODEL} | prompt ${prompt.length} chars`);
 
   const response = await fetch(GEMINI_API_URL, {
     method: 'POST',
