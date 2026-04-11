@@ -90,34 +90,37 @@ export interface ChatMessage {
 }
 
 export type AppTab =
+  // Sistema Master (SUPERADMIN)
   | 'dashboard'
-  | 'consulta'
+  | 'admin'
+  | 'audit'
+  // Gestão
+  | 'unit'
+  | 'users'
+  | 'reports'
+  | 'security'
+  // Conteúdo
+  | 'trails'
+  | 'videos'
+  | 'knowledge'
+  | 'comunicados'
+  // Capacitação
+  | 'training'
+  | 'meu-progresso'
+  // Marketing
+  | 'campanhas'
+  | 'banners'
+  // Plataforma
+  | 'support'
+  | 'tutorial'
+  | 'terms'
+  | 'privacy'
+  | 'policy'
+  // Legados (mantidos para não quebrar)
   | 'chat'
-  | 'revisar'
   | 'compliance'
   | 'checklists'
-  | 'ia-analitica'
-  | 'base'
-  | 'knowledge'
-  | 'seguranca'
-  | 'security'
-  | 'usuarios'
-  | 'users'
-  | 'admin-cartorios'
-  | 'admin'
-  | 'atividades-master'
-  | 'treinamento'
-  | 'training'
-  | 'auditoria'
-  | 'audit'
-  | 'relatorios'
-  | 'reports'
-  | 'termos'
-  | 'terms'
-  | 'manual'
-  | 'suporte'
-  | 'support'
-  | 'campanhas';
+  | 'analytics';
 
 export interface AppState {
   user: User | null;

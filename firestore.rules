@@ -6,62 +6,125 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function isOwner(userId) {
-      return request.auth.uid == userId;
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
-    function isAdmin() {
-      return isAuthenticated() &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    function isActive() {
+      return isAuthenticated() && getUserData().get('active', false) == true;
     }
 
-    // Usuário só acessa seus próprios dados
-    match /users/{userId} {
-      allow read, update: if isOwner(userId);
-      allow create: if isAuthenticated();
-      allow delete: if isAdmin();
+    function isGestor() {
+      return isActive() && getUserData().get('role', '') in ['SUPERADMIN', 'gestor', 'admin'];
     }
 
-    // loginAttempts — leitura/escrita pública necessária para proteção
-    // anti-brute-force no cliente (antes da autenticação)
-    match /loginAttempts/{attemptId} {
+    function isSuperAdmin() {
+      return isActive() && getUserData().get('role', '') == 'SUPERADMIN';
+    }
+
+    // Acesso público necessário (pré-autenticação)
+    match /loginAttempts/{docId} {
       allow read, write: if true;
     }
 
-    // auditLogs imutáveis — create público para registrar tentativas de login
-    // (eventos de LOGIN_FAILED ocorrem antes da autenticação)
-    match /auditLogs/{logId} {
-      allow read: if isAuthenticated();
+    match /auditLogs/{docId} {
+      allow read: if isGestor();
       allow create: if true;
       allow update, delete: if false;
     }
 
-    // Base de conhecimento — leitura livre, escrita restrita
+    // Usuários
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isSuperAdmin();
+    }
+
+    // Treinamentos
+    match /treinamentos/{docId} {
+      allow read: if isActive();
+      allow create, update, delete: if isGestor();
+    }
+
+    match /treinamentosQuizzes/{docId} {
+      allow read: if isActive();
+      allow create, update, delete: if isGestor();
+    }
+
+    match /treinamentosQuizResults/{docId} {
+      allow read: if isActive();
+      allow create, update: if isActive();
+      allow delete: if isGestor();
+    }
+
+    match /treinamentosParticipantes/{docId} {
+      allow read: if isActive();
+      allow create, update: if isActive();
+      allow delete: if isGestor();
+    }
+
+    // Trilhas
+    match /trilhas/{docId} {
+      allow read: if isActive();
+      allow create, update, delete: if isGestor();
+    }
+
+    match /trilhasProgresso/{docId} {
+      allow read: if isActive();
+      allow create, update: if isActive();
+      allow delete: if isGestor();
+    }
+
+    // Base de conhecimento e checklists
     match /knowledgeBase/{docId} {
-      allow read: if isAuthenticated();
-      allow create, update: if isAuthenticated();
-      allow delete: if isAdmin();
+      allow read: if isActive();
+      allow create, update: if isGestor();
+      allow delete: if isGestor();
     }
 
-    // Checklists — controle por dono ou admin
-    match /checklists/{checklistId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated() &&
-        (resource.data.createdBy == request.auth.uid || isAdmin());
-      allow delete: if isAdmin();
+    match /checklists/{docId} {
+      allow read: if isActive();
+      allow create, update: if isGestor();
+      allow delete: if isGestor();
     }
 
-    // Documentos — mesma lógica dos checklists
-    match /documents/{docId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated() &&
-        (resource.data.createdBy == request.auth.uid || isAdmin());
-      allow delete: if isAdmin();
+    // Vídeos de treinamento
+    match /videos/{docId} {
+      allow read: if isActive();
+      allow create, update, delete: if isGestor();
     }
 
-    // Deny-all fallback — mantenha sempre
+    match /videosProgresso/{docId} {
+      allow read: if isActive();
+      allow create, update: if isActive();
+      allow delete: if isGestor();
+    }
+
+    // Comunicados
+    match /comunicados/{docId} {
+      allow read: if isActive();
+      allow create, update, delete: if isGestor();
+    }
+
+    match /comunicadosLeituras/{docId} {
+      allow read: if isActive();
+      allow create, update: if isActive();
+      allow delete: if isGestor();
+    }
+
+    // Banners e materiais
+    match /materiaisbanner/{docId} {
+      allow read: if isActive();
+      allow create, update: if isGestor();
+      allow delete: if isGestor();
+    }
+
+    // Cartorios / tenants
+    match /cartorios/{docId} {
+      allow read: if isActive();
+      allow write: if isSuperAdmin();
+    }
+
+    // Deny-all fallback
     match /{document=**} {
       allow read, write: if false;
     }

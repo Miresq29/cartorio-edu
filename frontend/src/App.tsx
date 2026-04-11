@@ -26,6 +26,10 @@ const PolicyView         = lazy(() => import('./features/Policy/PolicyView'));
 const TutorialView       = lazy(() => import('./features/Tutorial/TutorialView'));
 const TrailsView         = lazy(() => import('./features/Trails/TrailsView'));
 const CampanhasView      = lazy(() => import('./features/Campanhas/CampanhasView'));
+const VideosView         = lazy(() => import('./features/Videos/VideosView'));
+const ComunicadosView    = lazy(() => import('./features/Comunicados/ComunicadosView'));
+const BannersView        = lazy(() => import('./features/Banners/BannersView'));
+const MeuProgressoView   = lazy(() => import('./features/Progresso/MeuProgressoView'));
 
 // 🛡️ Admin Views
 const TenantsView          = lazy(() => import('./features/Admin/TenantsView'));
@@ -71,7 +75,11 @@ const MainLayout: React.FC = () => {
       case 'privacy':    return <PrivacyView />;
       case 'policy':     return <PolicyView />;
       case 'tutorial':   return <TutorialView />;
-      case 'campanhas':  return <CampanhasView />;
+      case 'campanhas':     return <CampanhasView />;
+      case 'videos':        return <VideosView />;
+      case 'comunicados':   return <ComunicadosView />;
+      case 'banners':       return <BannersView />;
+      case 'meu-progresso': return <MeuProgressoView />;
       default:
         return state.user?.role === 'SUPERADMIN' ? <DashboardMasterView /> : <DashboardView />;
     }
