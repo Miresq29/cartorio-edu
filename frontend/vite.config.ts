@@ -27,17 +27,7 @@ export default defineConfig(({ mode }) => {
     build: {
       outDir: 'dist',
       minify: 'esbuild',
-      chunkSizeWarningLimit: 1000,
-      rollupOptions: {
-        output: {
-          manualChunks: {
-            'vendor-react': ['react', 'react-dom'],
-            'vendor-firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore'],
-            'vendor-ui': ['framer-motion', 'recharts', 'lucide-react'],
-            'vendor-fontawesome': ['@fortawesome/fontawesome-free'],
-          }
-        }
-      }
+      chunkSizeWarningLimit: 1500,
     }
   };
 });
