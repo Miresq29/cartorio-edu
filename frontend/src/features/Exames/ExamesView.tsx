@@ -4,7 +4,7 @@ import { useToast } from '../../context/ToastContext';
 import { db } from '../../services/firebase';
 import {
   collection, onSnapshot, query, where, addDoc, serverTimestamp,
-  orderBy, getDocs, Timestamp,
+  Timestamp,
 } from 'firebase/firestore';
 import { GeminiService, QuestaoExame } from '../../services/geminiService';
 
@@ -103,11 +103,17 @@ const ExamesView: React.FC = () => {
     const q = query(
       collection(db, 'examesResultados'),
       where('userId', '==', user.id),
-      orderBy('createdAt', 'desc'),
     );
-    return onSnapshot(q, snap =>
-      setResultados(snap.docs.map(d => ({ id: d.id, ...d.data() } as ExameResultado)))
-    );
+    return onSnapshot(q, snap => {
+      const docs = snap.docs.map(d => ({ id: d.id, ...d.data() } as ExameResultado));
+      // ordena client-side para evitar índice composto no Firestore
+      docs.sort((a, b) => {
+        const tA = a.createdAt?.toMillis?.() ?? 0;
+        const tB = b.createdAt?.toMillis?.() ?? 0;
+        return tB - tA;
+      });
+      setResultados(docs);
+    });
   }, [user?.id]);
 
   /* ── verifica bloqueio para uma fonte ───────────────────── */
