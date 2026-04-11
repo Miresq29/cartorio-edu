@@ -150,8 +150,8 @@ const ExamesView: React.FC = () => {
       setQuestoes(qs);
       setRespostas({});
       setFase('fazendo');
-    } catch {
-      showToast('Erro ao gerar exame com IA. Tente novamente.', 'error');
+    } catch (e: any) {
+      showToast(e?.message || 'Erro ao gerar exame com IA. Tente novamente.', 'error');
       setFase('escolher');
     }
   };

@@ -5,7 +5,9 @@
  */
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${GEMINI_API_KEY}`;
+// gemini-2.0-flash: 1500 req/dia grátis vs 50/dia do gemini-2.5-pro
+const GEMINI_MODEL = 'gemini-2.0-flash';
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
 /**
  * Remove blocos de código Markdown e extrai JSON limpo
@@ -46,8 +48,11 @@ const callGemini = async (prompt: string): Promise<string> => {
   });
 
   if (!response.ok) {
-    const err = await response.json();
-    throw new Error(err?.error?.message || `Erro Gemini: ${response.statusText}`);
+    const err = await response.json().catch(() => ({}));
+    const msg = err?.error?.message || response.statusText;
+    const status = response.status;
+    // 429 = cota esgotada, 400 = modelo/chave inválida, 403 = sem permissão
+    throw new Error(`[Gemini ${status}] ${msg}`);
   }
 
   const data = await response.json();
@@ -319,11 +324,11 @@ Retorne APENAS um array JSON válido, sem markdown, sem texto adicional:
   try {
     const text = await callGemini(prompt);
     const questoes = extractJsonObject(text);
-    if (!Array.isArray(questoes) || questoes.length === 0) throw new Error('Formato inválido');
+    if (!Array.isArray(questoes) || questoes.length === 0) throw new Error('Formato inválido na resposta da IA.');
     return questoes;
-  } catch (e) {
+  } catch (e: any) {
     console.error('Erro ao gerar exame:', e);
-    throw new Error('Não foi possível gerar o exame. Tente novamente.');
+    throw new Error(e?.message || 'Não foi possível gerar o exame. Tente novamente.');
   }
 };
 
