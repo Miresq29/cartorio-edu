@@ -118,6 +118,13 @@ service cloud.firestore {
       allow delete: if isGestor();
     }
 
+    // Exames
+    match /examesResultados/{docId} {
+      allow read: if isActive();
+      allow create: if isActive();
+      allow update, delete: if isGestor();
+    }
+
     // Cartorios / tenants
     match /cartorios/{docId} {
       allow read: if isActive();

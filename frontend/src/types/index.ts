@@ -91,39 +91,24 @@ export interface ChatMessage {
 }
 
 export type AppTab =
-  | 'dashboard'
-  | 'unit'
-  | 'chat'
-  | 'revisar'
-  | 'compliance'
-  | 'checklists'
-  | 'ia-analitica'
-  | 'base'
-  | 'knowledge'
-  | 'seguranca'
-  | 'security'
-  | 'usuarios'
-  | 'users'
-  | 'admin-cartorios'
-  | 'admin'
-  | 'atividades-master'
-  | 'treinamento'
-  | 'training'
-  | 'trails'
-  | 'auditoria'
-  | 'audit'
-  | 'relatorios'
-  | 'reports'
-  | 'termos'
-  | 'terms'
-  | 'manual'
-  | 'suporte'
-  | 'support'
-  | 'analytics'
-  | 'tutorial'
-  | 'privacy'
-  | 'policy'
-  | 'colaboradores'; // ← NOVO
+  // Sistema Master
+  | 'dashboard' | 'admin' | 'audit'
+  // Gestão
+  | 'unit' | 'users' | 'reports' | 'security'
+  // Conteúdo
+  | 'trails' | 'videos' | 'knowledge' | 'comunicados'
+  // Capacitação
+  | 'training' | 'meu-progresso' | 'exames'
+  // Marketing
+  | 'campanhas' | 'banners'
+  // Plataforma
+  | 'support' | 'tutorial' | 'terms' | 'privacy' | 'policy'
+  // Legados (manter compatibilidade)
+  | 'chat' | 'compliance' | 'checklists' | 'analytics'
+  | 'revisar' | 'ia-analitica' | 'base' | 'seguranca' | 'security'
+  | 'usuarios' | 'admin-cartorios' | 'atividades-master'
+  | 'treinamento' | 'auditoria' | 'relatorios' | 'termos'
+  | 'manual' | 'suporte' | 'colaboradores';
 
 export interface AppState {
   user: User | null;

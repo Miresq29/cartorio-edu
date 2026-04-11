@@ -11,6 +11,7 @@ const MeuProgressoView: React.FC = () => {
   const [quizResults, setQuizResults] = useState<any[]>([]);
   const [videosAssistidos, setVideosAssistidos] = useState<any[]>([]);
   const [comunicadosLidos, setComunicadosLidos] = useState<any[]>([]);
+  const [examesResultados, setExamesResultados] = useState<any[]>([]);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -22,7 +23,9 @@ const MeuProgressoView: React.FC = () => {
       s => setVideosAssistidos(s.docs.map(d => ({ id: d.id, ...d.data() })).filter(v => v.assistido)));
     const u4 = onSnapshot(query(collection(db, 'comunicadosLeituras'), where('userId', '==', user.id)),
       s => setComunicadosLidos(s.docs.map(d => ({ id: d.id, ...d.data() }))));
-    return () => { u1(); u2(); u3(); u4(); };
+    const u5 = onSnapshot(query(collection(db, 'examesResultados'), where('userId', '==', user.id)),
+      s => setExamesResultados(s.docs.map(d => ({ id: d.id, ...d.data() }))));
+    return () => { u1(); u2(); u3(); u4(); u5(); };
   }, [user?.id, user?.name]);
 
   const stats = useMemo(() => {
@@ -32,8 +35,12 @@ const MeuProgressoView: React.FC = () => {
     const mediaScore = quizResults.length > 0
       ? Math.round(quizResults.reduce((acc, r) => acc + (r.score || 0), 0) / quizResults.length)
       : 0;
-    return { trilhasConcluidas, quizzesFelitos, aprovados, mediaScore };
-  }, [trilhasProgresso, quizResults]);
+    const examesAprovados = examesResultados.filter(r => r.aprovado).length;
+    const mediaExames = examesResultados.length > 0
+      ? Math.round(examesResultados.reduce((acc, r) => acc + (r.score || 0), 0) / examesResultados.length)
+      : 0;
+    return { trilhasConcluidas, quizzesFelitos, aprovados, mediaScore, examesAprovados, mediaExames };
+  }, [trilhasProgresso, quizResults, examesResultados]);
 
   const imprimirCertificado = (item: any, tipo: 'trilha' | 'quiz') => {
     const nome = user?.name || 'Colaborador';
@@ -87,12 +94,14 @@ const MeuProgressoView: React.FC = () => {
       </header>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {[
-          { label: 'Trilhas Concluídas',  value: stats.trilhasConcluidas, icon: 'fa-road',            color: 'teal'    },
-          { label: 'Quizzes Realizados',  value: stats.quizzesFelitos,    icon: 'fa-circle-question',  color: 'blue'    },
-          { label: 'Aprovações',          value: stats.aprovados,         icon: 'fa-trophy',           color: 'amber'   },
-          { label: 'Média Geral',         value: `${stats.mediaScore}%`,  icon: 'fa-chart-line',       color: 'emerald' },
+          { label: 'Trilhas Concluídas',  value: stats.trilhasConcluidas,  icon: 'fa-road',            color: 'teal'    },
+          { label: 'Quizzes Realizados',  value: stats.quizzesFelitos,     icon: 'fa-circle-question',  color: 'blue'    },
+          { label: 'Aprovações Quiz',     value: stats.aprovados,          icon: 'fa-trophy',           color: 'amber'   },
+          { label: 'Média Quiz',          value: `${stats.mediaScore}%`,   icon: 'fa-chart-line',       color: 'emerald' },
+          { label: 'Exames Aprovados',    value: stats.examesAprovados,    icon: 'fa-file-pen',         color: 'purple'  },
+          { label: 'Média Exames',        value: `${stats.mediaExames}%`,  icon: 'fa-star',             color: 'pink'    },
         ].map((k, i) => (
           <div key={i} className="bg-[#0a111f] border border-slate-800 rounded-[20px] p-5 space-y-2">
             <i className={`fa-solid ${k.icon} text-${k.color}-500`}></i>
@@ -200,6 +209,40 @@ const MeuProgressoView: React.FC = () => {
             <p className="text-slate-400 text-sm">Você leu <span className="text-amber-400 font-black">{comunicadosLidos.length}</span> comunicado(s).</p>
           )}
         </div>
+      </div>
+
+      {/* Exames */}
+      <div className="bg-[#0a111f] border border-slate-800 rounded-[24px] p-6 space-y-4">
+        <h3 className="text-white font-black uppercase text-sm flex items-center gap-2">
+          <i className="fa-solid fa-file-pen text-purple-400"></i>Histórico de Exames
+          <span className="ml-auto text-[10px] text-slate-500">{examesResultados.length} realizado(s)</span>
+        </h3>
+        {examesResultados.length === 0 ? (
+          <p className="text-slate-500 text-xs italic">Nenhum exame realizado ainda.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {examesResultados.slice(0, 8).map(r => {
+              const aprovado = r.aprovado;
+              return (
+                <div key={r.id} className="flex items-center gap-3 p-3 bg-slate-900/50 rounded-xl">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${aprovado ? 'bg-emerald-500/20' : 'bg-red-500/20'}`}>
+                    <i className={`fa-solid ${aprovado ? 'fa-trophy' : 'fa-xmark'} ${aprovado ? 'text-emerald-400' : 'text-red-400'} text-sm`}></i>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-white truncate">{r.fonteTitulo || 'Exame'}</p>
+                    <p className="text-[9px] text-slate-500">{r.createdAt?.toDate?.()?.toLocaleDateString('pt-BR') || ''}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className={`text-sm font-black ${aprovado ? 'text-emerald-400' : 'text-red-400'}`}>{r.score || 0}%</p>
+                    <p className={`text-[9px] font-black uppercase ${aprovado ? 'text-emerald-500' : 'text-red-500'}`}>
+                      {aprovado ? 'Aprovado' : 'Reprovado'}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

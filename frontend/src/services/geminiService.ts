@@ -240,6 +240,90 @@ Retorne APENAS um objeto JSON válido, sem markdown, no formato:
   }
 };
 
+/**
+ * Extrai JSON de qualquer formato (com ou sem blocos markdown)
+ * Inspirado no padrão extractJSON dos modelos SGC
+ */
+const extractJsonObject = (text: string): any => {
+  const cleaned = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+  // Tenta objeto {}
+  const firstBrace = cleaned.indexOf('{');
+  const lastBrace = cleaned.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    try { return JSON.parse(cleaned.substring(firstBrace, lastBrace + 1)); } catch {}
+  }
+  // Tenta array []
+  const firstBracket = cleaned.indexOf('[');
+  const lastBracket = cleaned.lastIndexOf(']');
+  if (firstBracket !== -1 && lastBracket > firstBracket) {
+    try { return JSON.parse(cleaned.substring(firstBracket, lastBracket + 1)); } catch {}
+  }
+  throw new Error('JSON inválido na resposta da IA');
+};
+
+export interface QuestaoExame {
+  id: number;
+  enunciado: string;
+  alternativas: { letra: string; texto: string }[];
+  correta: string;
+  bloom: 'compreensao' | 'aplicacao' | 'analise';
+  justificativa: string;
+}
+
+/**
+ * Gera exame com Taxonomia de Bloom (nível médio)
+ * 3 questões de Compreensão + 4 de Aplicação + 3 de Análise = 10 questões
+ */
+export const generateExam = async (
+  titulo: string,
+  conteudo: string,
+  numQuestoes: number = 10
+): Promise<QuestaoExame[]> => {
+  const prompt = `Você é um especialista em avaliação educacional corporativa.
+
+TEMA DO EXAME: "${titulo}"
+CONTEÚDO BASE:
+${conteudo.substring(0, 5000)}
+
+Gere EXATAMENTE ${numQuestoes} questões de múltipla escolha usando a TAXONOMIA DE BLOOM nível médio:
+- ${Math.round(numQuestoes * 0.3)} questões de COMPREENSÃO (bloom: "compreensao") — explique, descreva, identifique
+- ${Math.round(numQuestoes * 0.4)} questões de APLICAÇÃO (bloom: "aplicacao") — demonstre, utilize, execute, aplique
+- ${Math.round(numQuestoes * 0.3)} questões de ANÁLISE (bloom: "analise") — compare, diferencie, examine, avalie
+
+REGRAS OBRIGATÓRIAS:
+1. Cada questão tem exatamente 4 alternativas (A, B, C, D)
+2. Apenas 1 alternativa correta por questão
+3. As alternativas incorretas devem ser plausíveis (não óbvias)
+4. Justifique brevemente por que a resposta está correta
+5. Questões contextualizadas na realidade corporativa/profissional
+6. Linguagem clara e objetiva
+
+Retorne APENAS um array JSON válido, sem markdown, sem texto adicional:
+[{
+  "id": 1,
+  "enunciado": "texto da questão",
+  "alternativas": [
+    {"letra": "A", "texto": "..."},
+    {"letra": "B", "texto": "..."},
+    {"letra": "C", "texto": "..."},
+    {"letra": "D", "texto": "..."}
+  ],
+  "correta": "A",
+  "bloom": "compreensao|aplicacao|analise",
+  "justificativa": "Explicação breve da resposta correta"
+}]`;
+
+  try {
+    const text = await callGemini(prompt);
+    const questoes = extractJsonObject(text);
+    if (!Array.isArray(questoes) || questoes.length === 0) throw new Error('Formato inválido');
+    return questoes;
+  } catch (e) {
+    console.error('Erro ao gerar exame:', e);
+    throw new Error('Não foi possível gerar o exame. Tente novamente.');
+  }
+};
+
 export const GeminiService = {
   chat,
   getGeminiResponse,
@@ -248,4 +332,5 @@ export const GeminiService = {
   generateTrainingOptions,
   generateSummary,
   generateCampaignPosts,
+  generateExam,
 };
