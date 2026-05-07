@@ -55,9 +55,10 @@ const Sidebar: React.FC = () => {
       label: 'CAPACITACAO', icon: 'fa-graduation-cap',
       items: [
         { tab: 'training',      icon: 'fa-graduation-cap',  label: 'Treinamento AI',  desc: 'Roteiros, quizzes e certificados com IA', color: 'text-emerald-500' },
-        { tab: 'exames',        icon: 'fa-file-pen',        label: 'Exames',          desc: 'AvaliaÃ§Ãµes com IA e Taxonomia de Bloom',  color: 'text-blue-400'   },
+        { tab: 'exames',        icon: 'fa-file-pen',        label: 'Exames',          desc: 'AvaliaÃƒÂ§ÃƒÂµes com IA e Taxonomia de Bloom',  color: 'text-blue-400'   },
         { tab: 'metas', icon: 'fa-trophy', label: 'Metas & Premiacao', desc: 'Rankings e desempate Bloom Alto', color: 'text-amber-400' },
         { tab: 'meu-progresso', icon: 'fa-chart-line',      label: 'Meu Progresso',   desc: 'Trilhas, quizzes e certificados pessoais', color: 'text-teal-400'   },
+        { tab: 'certificado', icon: 'fa-certificate', label: 'Certificados', desc: 'Emitir e baixar certificados PDF', color: 'text-amber-400' },
       ]
     },
     {

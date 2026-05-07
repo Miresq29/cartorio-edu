@@ -101,6 +101,7 @@ export type AppTab =
   | 'training' | 'meu-progresso' | 'exames'
   | 'metas'
   | 'repositorio'
+  | 'certificado'
   // Marketing
   | 'campanhas' | 'banners'
   // Plataforma
