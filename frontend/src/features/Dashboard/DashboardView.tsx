@@ -1,235 +1,288 @@
 // frontend/src/features/Dashboard/DashboardView.tsx
-// Dashboard inspirado no protótipo CartórioLearn – estrutura idêntica, dados do Firebase
+// Dashboard com gráficos variados — recharts, tema claro, layout colaboradores
 
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-  collection, query, where, onSnapshot, orderBy
-} from 'firebase/firestore';
+  BarChart, Bar, LineChart, Line, AreaChart, Area,
+  PieChart, Pie, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
+} from 'recharts';
+import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface Modulo {
-  id: string;
-  titulo: string;
-  duracao?: string;
-  ordem: number;
-}
-
-interface Trilha {
-  id: string;
-  titulo: string;
-  descricao: string;
-  icone: string;
-  cor: string;
-  modulos: Modulo[];
-  tenantId: string;
-}
-
-interface TrilhaProgresso {
-  id: string;
-  userId: string;
-  userName: string;
-  trilhaId: string;
-  moduloId: string;
-  concluido: boolean;
-  tenantId: string;
-}
-
 interface QuizResult {
-  id: string;
-  userId?: string;
-  colaborador: string;
-  nota: number;
-  aprovado: boolean;
-  trailTitle?: string;
-  moduleTitle?: string;
-  ia?: boolean;
-  tenantId: string;
-  createdAt: any;
+  id: string; colaborador: string; userId?: string; nota: number; aprovado: boolean;
+  trailTitle?: string; moduleTitle?: string; ia?: boolean; tenantId?: string; createdAt: any;
 }
-
-interface UserData {
-  id: string;
-  name: string;
-  cargo?: string;
-  role: string;
-  tenantId: string;
+interface TrilhaProgresso {
+  id: string; userId: string; userName: string; trilhaId: string;
+  trilhaTitulo?: string; concluido: boolean; tenantId: string;
 }
+interface Trilha { id: string; titulo: string; descricao: string; icone: string; cor: string; modulos: any[]; tenantId: string; }
+interface UserData { id: string; name: string; cargo?: string; role: string; tenantId: string; }
+interface Certificado { id: string; colaboradorNome: string; trilhaTitulo: string; notaFinal: number; emitidoEm: any; tenantId: string; }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(a: number, b: number) {
-  return b === 0 ? 0 : Math.round((a / b) * 100);
+function pct(a: number, b: number) { return b === 0 ? 0 : Math.round((a / b) * 100); }
+function getMonth(ts: any): string {
+  if (!ts) return '';
+  const d = ts?.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
 }
-
 function formatDate(ts: any): string {
   if (!ts) return '–';
   const d = ts?.toDate ? ts.toDate() : new Date(ts);
   return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
 }
 
-const COR_FALLBACK: Record<number, string> = {
-  0: '#4F46E5', 1: '#059669', 2: '#D97706',
-  3: '#DC2626', 4: '#7C3AED', 5: '#0891B2',
-};
+const COLORS = ['#4F46E5','#059669','#D97706','#DC2626','#7C3AED','#0891B2','#EC4899'];
 
-// ─── Stat Card ────────────────────────────────────────────────────────────────
-
-const StatCard: React.FC<{
-  icon: string; label: string; value: string | number; sub?: string; color: string;
-}> = ({ icon, label, value, sub, color }) => (
-  <div className="bg-[#0a111f] border border-slate-800 rounded-[16px] p-5">
-    <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg mb-3`}
-      style={{ background: color + '20' }}>
-      <i className={`fa-solid ${icon}`} style={{ color }}></i>
-    </div>
-    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">{label}</p>
-    <p className="text-3xl font-black text-white leading-none">{value}</p>
-    {sub && <p className="text-[11px] text-slate-500 mt-1">{sub}</p>}
-  </div>
-);
-
-// ─── Progress Bar ─────────────────────────────────────────────────────────────
-
-const ProgressBar: React.FC<{ value: number; color?: string; height?: number }> = ({
-  value, color = '#4F46E5', height = 5
-}) => (
-  <div className="w-full bg-slate-800 rounded-full overflow-hidden" style={{ height }}>
-    <div className="h-full rounded-full transition-all duration-700"
-      style={{ width: `${value}%`, background: color }} />
-  </div>
-);
-
-// ─── Chip ─────────────────────────────────────────────────────────────────────
-
-const Chip: React.FC<{ label: string; type: 'green' | 'blue' | 'gray' | 'gold' | 'red' }> = ({ label, type }) => {
-  const styles = {
-    green: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-    blue:  'bg-blue-500/10 text-blue-400 border-blue-500/20',
-    gray:  'bg-slate-800 text-slate-400 border-slate-700',
-    gold:  'bg-amber-500/10 text-amber-400 border-amber-500/20',
-    red:   'bg-red-500/10 text-red-400 border-red-500/20',
-  };
+const Tip: React.FC<any> = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null;
   return (
-    <span className={`inline-flex items-center text-[10px] font-black px-2.5 py-1 rounded-full border ${styles[type]}`}>
-      {label}
-    </span>
+    <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-lg text-xs">
+      {label && <p className="font-black text-slate-700 mb-1">{label}</p>}
+      {payload.map((p: any, i: number) => (
+        <p key={i} style={{ color: p.color }} className="font-bold">{p.name}: {p.value}{typeof p.value === 'number' && p.name?.includes('%') ? '%' : ''}</p>
+      ))}
+    </div>
   );
 };
 
-// ─── COLLABORATOR DASHBOARD ───────────────────────────────────────────────────
+const StatCard: React.FC<{ label: string; value: string | number; sub?: string; icon: string; color: string; trend?: number }> = ({ label, value, sub, icon, color, trend }) => (
+  <div className="bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
+    <div className="flex items-start justify-between mb-3">
+      <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: color + '15' }}>
+        <i className={'fa-solid ' + icon} style={{ color }}></i>
+      </div>
+      {trend !== undefined && (
+        <span className={'text-[10px] font-black px-2 py-1 rounded-lg ' + (trend >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500')}>
+          {trend >= 0 ? '↑' : '↓'} {Math.abs(trend)}%
+        </span>
+      )}
+    </div>
+    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{label}</p>
+    <p className="text-3xl font-black text-slate-800">{value}</p>
+    {sub && <p className="text-[11px] text-slate-400 mt-1">{sub}</p>}
+  </div>
+);
+
+// ── COLABORADOR DASHBOARD ────────────────────────────────────────────────────
 
 const ColabDashboard: React.FC<{
-  trilhas: Trilha[];
-  progresso: TrilhaProgresso[];
-  quizResults: QuizResult[];
-  userName: string;
-  userId: string;
-}> = ({ trilhas, progresso, quizResults, userName, userId }) => {
+  trilhas: Trilha[]; progresso: TrilhaProgresso[]; quizResults: QuizResult[];
+  certificados: Certificado[]; userName: string; userId: string;
+}> = ({ trilhas, progresso, quizResults, certificados, userName, userId }) => {
+  const myProg  = progresso.filter(p => p.userId === userId || p.userName === userName);
+  const myRes   = quizResults.filter(r => r.userId === userId || r.colaborador === userName);
+  const myCerts = certificados.filter(c => c.colaboradorNome === userName);
 
-  // Calcular stats
-  const myProgress = progresso.filter(p => p.userId === userId || p.userName === userName);
-  const myResults  = quizResults.filter(r => r.userId === userId || r.colaborador === userName);
+  const totalMods   = trilhas.reduce((a, t) => a + (t.modulos?.length ?? 0), 0);
+  const doneMods    = myProg.filter(p => p.concluido).length;
+  const aprovacoes  = myRes.filter(r => r.aprovado).length;
+  const mediaGeral  = myRes.length ? Math.round(myRes.reduce((a, r) => a + r.nota, 0) / myRes.length) : 0;
+  const globalPct   = pct(doneMods, totalMods);
 
-  const totalMods = trilhas.reduce((a, t) => a + (t.modulos?.length ?? 0), 0);
-  const doneMods  = myProgress.filter(p => p.concluido).length;
-  const aprovacoes = myResults.filter(r => r.aprovado).length;
-  const mediaGeral = myResults.length
-    ? Math.round(myResults.reduce((a, r) => a + r.nota, 0) / myResults.length)
-    : 0;
-  const globalPct  = pct(doneMods, totalMods);
+  // Dados para gráfico de linha — notas ao longo do tempo
+  const evolucao = useMemo(() => {
+    const map: Record<string, { mes: string; media: number; total: number }> = {};
+    myRes.forEach(r => {
+      const m = getMonth(r.createdAt);
+      if (!m) return;
+      if (!map[m]) map[m] = { mes: m, media: 0, total: 0 };
+      map[m].media += r.nota;
+      map[m].total++;
+    });
+    return Object.values(map).slice(-6).map(x => ({ mes: x.mes, 'Média (%)': Math.round(x.media / x.total) }));
+  }, [myRes]);
+
+  // Dados para gráfico de barras — performance por trilha
+  const porTrilha = useMemo(() => {
+    return trilhas.slice(0, 6).map(t => {
+      const mods  = t.modulos?.length ?? 0;
+      const done  = myProg.filter(p => p.trilhaId === t.id && p.concluido).length;
+      const res   = myRes.filter(r => r.trailTitle === t.titulo);
+      const media = res.length ? Math.round(res.reduce((a, r) => a + r.nota, 0) / res.length) : 0;
+      return {
+        name: t.titulo.length > 16 ? t.titulo.slice(0, 14) + '…' : t.titulo,
+        'Conclusão (%)': pct(done, mods),
+        'Média notas': media,
+      };
+    });
+  }, [trilhas, myProg, myRes]);
+
+  // Donut — status das trilhas
+  const statusTrilhas = useMemo(() => {
+    const concluidas  = trilhas.filter(t => { const mods = t.modulos?.length ?? 0; const done = myProg.filter(p => p.trilhaId === t.id && p.concluido).length; return mods > 0 && done >= mods; }).length;
+    const emAndamento = trilhas.filter(t => { const done = myProg.filter(p => p.trilhaId === t.id && p.concluido).length; return done > 0 && done < (t.modulos?.length ?? 0); }).length;
+    const naoCom      = trilhas.length - concluidas - emAndamento;
+    return [
+      { name: 'Concluídas',    value: concluidas,  color: '#059669' },
+      { name: 'Em andamento',  value: emAndamento, color: '#4F46E5' },
+      { name: 'Não iniciadas', value: naoCom,      color: '#e2e8f0' },
+    ].filter(x => x.value > 0);
+  }, [trilhas, myProg]);
+
+  // Radar — habilidades por categoria de trilha
+  const radarData = useMemo(() => {
+    const cats = ['Onboarding', 'Normativo', 'Técnico', 'Operacional', 'Comportamental'];
+    return cats.map(cat => {
+      const res = myRes.filter(r => r.trailTitle?.toLowerCase().includes(cat.toLowerCase()));
+      return { subject: cat, score: res.length ? Math.round(res.reduce((a, r) => a + r.nota, 0) / res.length) : 0 };
+    });
+  }, [myRes]);
 
   return (
     <div className="space-y-6">
-
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon="fa-book-open"     label="Módulos Concluídos" value={`${doneMods}/${totalMods}`} sub={`${globalPct}% do programa`} color="#4F46E5" />
-        <StatCard icon="fa-circle-check"  label="Aprovações"          value={aprovacoes}                sub={`de ${myResults.length} testes`}              color="#059669" />
-        <StatCard icon="fa-medal"         label="Trilhas Concluídas"  value={trilhas.filter(t => {
-          const mods = t.modulos?.length ?? 0;
-          const done = myProgress.filter(p => (p.userId === userId || p.userName === userName) && p.trilhaId === t.id && p.concluido).length;
-          return mods > 0 && done >= mods;
-        }).length + '/' + trilhas.length}                                                               sub="Selos desbloqueados"                          color="#D97706" />
-        <StatCard icon="fa-chart-bar"     label="Média Geral"         value={`${mediaGeral}%`}          sub="Nos testes realizados"                        color="#6B7280" />
+        <StatCard label="Módulos Concluídos" value={`${doneMods}/${totalMods}`} sub={`${globalPct}% do programa`} icon="fa-book-open"    color="#4F46E5" />
+        <StatCard label="Aprovações"          value={aprovacoes}                sub={`de ${myRes.length} testes`}   icon="fa-circle-check" color="#059669" />
+        <StatCard label="Média Geral"         value={`${mediaGeral}%`}          sub="nos testes realizados"         icon="fa-chart-bar"    color="#D97706" />
+        <StatCard label="Certificados"        value={myCerts.length}            sub="emitidos"                      icon="fa-certificate"  color="#7C3AED" />
       </div>
 
       {/* Progresso geral */}
-      <div className="bg-[#0a111f] border border-slate-800 rounded-[16px] p-5">
+      <div className="bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
         <div className="flex items-center justify-between mb-3">
-          <span className="text-sm font-black text-white">Progresso Geral do Programa</span>
-          <span className="text-sm font-black text-indigo-400">{globalPct}%</span>
+          <span className="text-sm font-black text-slate-800">Progresso Geral do Programa</span>
+          <span className="text-sm font-black text-indigo-600">{globalPct}%</span>
         </div>
-        <ProgressBar value={globalPct} color="#4F46E5" height={6} />
-        <p className="text-[11px] text-slate-500 mt-2">
-          Aprovação mínima em cada teste: <strong className="text-slate-300">75%</strong> · Taxonomia de Bloom – Médio (Aplicar e Analisar)
-        </p>
+        <div className="w-full bg-slate-100 rounded-full h-2.5">
+          <div className="h-2.5 rounded-full bg-indigo-600 transition-all duration-700" style={{ width: `${globalPct}%` }}></div>
+        </div>
+        <p className="text-[11px] text-slate-400 mt-2">Aprovação mínima: <strong className="text-slate-600">75%</strong> · Taxonomia de Bloom Médio</p>
+      </div>
+
+      {/* Linha 1: Evolução + Donut */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
+          <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Evolução das Notas</p>
+          {evolucao.length === 0 ? (
+            <div className="h-48 flex items-center justify-center text-slate-400 text-sm">Nenhum teste realizado ainda</div>
+          ) : (
+            <ResponsiveContainer width="100%" height={200}>
+              <AreaChart data={evolucao} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorNota" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.15} />
+                    <stop offset="95%" stopColor="#4F46E5" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="mes" tick={{ fontSize: 10, fill: '#94a3b8' }} />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: '#94a3b8' }} />
+                <Tooltip content={<Tip />} />
+                <Area type="monotone" dataKey="Média (%)" stroke="#4F46E5" strokeWidth={2} fill="url(#colorNota)" dot={{ r: 4, fill: '#4F46E5' }} />
+              </AreaChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+        <div className="bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
+          <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Status das Trilhas</p>
+          <ResponsiveContainer width="100%" height={160}>
+            <PieChart>
+              <Pie data={statusTrilhas} cx="50%" cy="50%" innerRadius={45} outerRadius={70} dataKey="value" paddingAngle={3}>
+                {statusTrilhas.map((e, i) => <Cell key={i} fill={e.color} />)}
+              </Pie>
+              <Tooltip content={<Tip />} />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="space-y-1.5 mt-2">
+            {statusTrilhas.map((s, i) => (
+              <div key={i} className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ background: s.color }}></div>
+                  <span className="text-[11px] text-slate-500">{s.name}</span>
+                </div>
+                <span className="text-[11px] font-black text-slate-700">{s.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Linha 2: Barras por trilha + Radar */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
+          <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Conclusão e Notas por Trilha</p>
+          {porTrilha.length === 0 ? (
+            <div className="h-48 flex items-center justify-center text-slate-400 text-sm">Sem dados ainda</div>
+          ) : (
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={porTrilha} margin={{ top: 5, right: 10, left: -20, bottom: 30 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#94a3b8' }} angle={-20} textAnchor="end" />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: '#94a3b8' }} />
+                <Tooltip content={<Tip />} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Bar dataKey="Conclusão (%)" fill="#4F46E5" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Média notas"   fill="#059669" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+        <div className="bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
+          <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Perfil de Habilidades</p>
+          <ResponsiveContainer width="100%" height={220}>
+            <RadarChart data={radarData}>
+              <PolarGrid stroke="#e2e8f0" />
+              <PolarAngleAxis dataKey="subject" tick={{ fontSize: 9, fill: '#94a3b8' }} />
+              <Radar name="Média" dataKey="score" stroke="#4F46E5" fill="#4F46E5" fillOpacity={0.15} strokeWidth={2} />
+              <Tooltip content={<Tip />} />
+            </RadarChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
       {/* Trilhas */}
       <div>
-        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Trilhas de Aprendizado</p>
+        <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">Trilhas de Aprendizado</p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {trilhas.map((t, idx) => {
-            const cor = t.cor || COR_FALLBACK[idx % 6];
+            const cor  = t.cor || COLORS[idx % COLORS.length];
             const mods = t.modulos?.length ?? 0;
-            const done = myProgress.filter(p =>
-              (p.userId === userId || p.userName === userName) && p.trilhaId === t.id && p.concluido
-            ).length;
-            const p = pct(done, mods);
-            const chipType: 'green' | 'blue' | 'gray' = p === 100 ? 'green' : p > 0 ? 'blue' : 'gray';
+            const done = myProg.filter(p => (p.userId === userId || p.userName === userName) && p.trilhaId === t.id && p.concluido).length;
+            const p    = pct(done, mods);
+            const chipColor = p === 100 ? '#059669' : p > 0 ? '#4F46E5' : '#94a3b8';
+            const chipBg    = p === 100 ? '#d1fae5' : p > 0 ? '#eef2ff' : '#f1f5f9';
             const chipLabel = p === 100 ? '✓ Concluída' : p > 0 ? `${p}%` : 'Iniciar';
-
             return (
-              <div key={t.id}
-                className="bg-[#0a111f] border border-slate-800 rounded-[16px] p-5 cursor-pointer hover:border-indigo-500/40 hover:translate-y-[-1px] transition-all group">
+              <div key={t.id} className="bg-white border border-slate-200 hover:border-indigo-300 rounded-[14px] p-5 shadow-sm hover:shadow-md transition-all cursor-pointer">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="w-11 h-11 rounded-[12px] flex items-center justify-center text-xl flex-shrink-0"
-                    style={{ background: cor + '20', color: cor }}>
+                  <div className="w-11 h-11 rounded-[12px] flex items-center justify-center text-xl" style={{ background: cor + '20', color: cor }}>
                     {t.icone || '📚'}
                   </div>
-                  <Chip label={chipLabel} type={chipType} />
+                  <span className="text-[10px] font-black px-2.5 py-1 rounded-full" style={{ background: chipBg, color: chipColor }}>{chipLabel}</span>
                 </div>
-                <h3 className="text-sm font-black text-white mb-1 leading-snug">{t.titulo}</h3>
-                <p className="text-[11px] text-slate-500 mb-3 line-clamp-2">{t.descricao}</p>
-                <p className="text-[10px] text-slate-600 mb-3">
-                  {done}/{mods} módulos concluídos
-                </p>
-                <ProgressBar value={p} color={p === 100 ? '#059669' : cor} height={4} />
+                <h3 className="text-sm font-black text-slate-800 mb-1 leading-snug">{t.titulo}</h3>
+                <p className="text-[11px] text-slate-400 mb-3 line-clamp-2">{t.descricao}</p>
+                <p className="text-[10px] text-slate-400 mb-2">{done}/{mods} módulos</p>
+                <div className="w-full bg-slate-100 rounded-full h-1.5">
+                  <div className="h-1.5 rounded-full transition-all duration-700" style={{ width: `${p}%`, background: p === 100 ? '#059669' : cor }}></div>
+                </div>
               </div>
             );
           })}
-          {trilhas.length === 0 && (
-            <div className="col-span-3 bg-[#0a111f] border border-slate-800 rounded-[16px] p-12 text-center">
-              <i className="fa-solid fa-road text-4xl text-slate-700 mb-3 block"></i>
-              <p className="text-slate-600 text-xs">Nenhuma trilha disponível ainda</p>
-            </div>
-          )}
         </div>
       </div>
 
       {/* Atividade recente */}
-      {myResults.length > 0 && (
+      {myRes.length > 0 && (
         <div>
-          <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Atividade Recente</p>
+          <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">Atividade Recente</p>
           <div className="space-y-2">
-            {myResults.slice(0, 5).map((r, i) => (
-              <div key={i} className="bg-[#0a111f] border border-slate-800 rounded-[14px] p-4 flex items-center gap-3">
-                <i className={`fa-solid ${r.aprovado ? 'fa-circle-check text-emerald-400' : 'fa-circle-xmark text-red-400'} text-lg flex-shrink-0`}></i>
+            {myRes.slice(0, 5).map((r, i) => (
+              <div key={i} className="bg-white border border-slate-200 rounded-[12px] p-4 flex items-center gap-3 shadow-sm">
+                <i className={'fa-solid text-lg flex-shrink-0 ' + (r.aprovado ? 'fa-circle-check text-emerald-500' : 'fa-circle-xmark text-red-400')}></i>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-white truncate">
-                    {r.trailTitle}{r.moduleTitle ? ` · ${r.moduleTitle}` : ''}
-                  </p>
+                  <p className="text-xs font-bold text-slate-800 truncate">{r.trailTitle}{r.moduleTitle ? ' · ' + r.moduleTitle : ''}</p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <p className="text-[10px] text-slate-500">{formatDate(r.createdAt)}</p>
-                    {r.ia && <Chip label="✨ IA" type="blue" />}
+                    <p className="text-[10px] text-slate-400">{formatDate(r.createdAt)}</p>
+                    {r.ia && <span className="text-[9px] font-black bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded-lg">✨ IA</span>}
                   </div>
                 </div>
-                <span className={`text-sm font-black ${r.aprovado ? 'text-emerald-400' : 'text-red-400'}`}>
-                  {r.nota}%
-                </span>
+                <span className={'text-sm font-black ' + (r.aprovado ? 'text-emerald-600' : 'text-red-500')}>{r.nota}%</span>
               </div>
             ))}
           </div>
@@ -239,282 +292,182 @@ const ColabDashboard: React.FC<{
   );
 };
 
-// ─── ADMIN DASHBOARD ──────────────────────────────────────────────────────────
+// ── ADMIN DASHBOARD ──────────────────────────────────────────────────────────
 
 const AdminDashboard: React.FC<{
-  trilhas: Trilha[];
-  progresso: TrilhaProgresso[];
-  quizResults: QuizResult[];
-  usuarios: UserData[];
-  tenantId: string;
-  isSuperAdmin: boolean;
-}> = ({ trilhas, progresso, quizResults, usuarios, tenantId, isSuperAdmin }) => {
-  const [aba, setAba] = useState<'visao_geral' | 'colaboradores' | 'trilhas' | 'evidencias'>('visao_geral');
+  trilhas: Trilha[]; progresso: TrilhaProgresso[]; quizResults: QuizResult[];
+  usuarios: UserData[]; certificados: Certificado[]; tenantId: string;
+}> = ({ trilhas, progresso, quizResults, usuarios, certificados }) => {
+  const colab = usuarios.filter(u => !['SUPERADMIN', 'gestor'].includes(u.role));
+  const totalMods  = trilhas.reduce((a, t) => a + (t.modulos?.length ?? 0), 0);
+  const allTests   = quizResults.length;
+  const allPass    = quizResults.filter(r => r.aprovado).length;
+  const taxaAprov  = pct(allPass, allTests);
+  const totalDone  = progresso.filter(p => p.concluido).length;
+  const mediaGeral = allTests ? Math.round(quizResults.reduce((a, r) => a + r.nota, 0) / allTests) : 0;
 
-  const colab = usuarios.filter(u => u.role === 'colaborador' || u.role === 'user');
-  const totalMods = trilhas.reduce((a, t) => a + (t.modulos?.length ?? 0), 0);
-
-  const allTests = quizResults.length;
-  const allPass  = quizResults.filter(r => r.aprovado).length;
-  const totalDone = progresso.filter(p => p.concluido).length;
-  const taxaConc  = pct(totalDone, Math.max(colab.length * totalMods, 1));
-  const taxaAprov = pct(allPass, Math.max(allTests, 1));
-
-  const getUserStats = (u: UserData) => {
-    const prog = progresso.filter(p => p.userId === u.id || p.userName === u.name);
-    const results = quizResults.filter(r => r.userId === u.id || r.colaborador === u.name);
-    const done = prog.filter(p => p.concluido).length;
-    const pass = results.filter(r => r.aprovado).length;
-    const media = results.length ? Math.round(results.reduce((a, r) => a + r.nota, 0) / results.length) : 0;
-    const last = results[0];
-    return { done, pass, media, tests: results.length, last };
-  };
-
-  const exportCSV = () => {
-    const rows = ['Colaborador,Cargo,Trilha,Módulo,Data,Nota,Status,Tipo'];
+  // Linha: testes por mês
+  const testesPorMes = useMemo(() => {
+    const map: Record<string, { mes: string; Testes: number; Aprovados: number }> = {};
     quizResults.forEach(r => {
-      const u = usuarios.find(x => x.id === r.userId || x.name === r.colaborador);
-      rows.push([
-        u?.name || r.colaborador, u?.cargo || '', r.trailTitle || '', r.moduleTitle || '',
-        formatDate(r.createdAt), r.nota + '%', r.aprovado ? 'Aprovado' : 'Reprovado', r.ia ? 'IA' : 'Padrão'
-      ].join(','));
+      const m = getMonth(r.createdAt);
+      if (!m) return;
+      if (!map[m]) map[m] = { mes: m, Testes: 0, Aprovados: 0 };
+      map[m].Testes++;
+      if (r.aprovado) map[m].Aprovados++;
     });
-    const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `evidencias_${new Date().toISOString().slice(0, 10)}.csv`; a.click();
-    URL.revokeObjectURL(url);
-  };
+    return Object.values(map).slice(-6);
+  }, [quizResults]);
 
-  const ABAS = [
-    { id: 'visao_geral',    label: 'Visão Geral'    },
-    { id: 'colaboradores',  label: 'Colaboradores'  },
-    { id: 'trilhas',        label: 'Trilhas'        },
-    { id: 'evidencias',     label: 'Evidências'     },
-  ] as const;
+  // Barras: top trilhas por taxa de aprovação
+  const trilhasPerf = useMemo(() => {
+    return trilhas.slice(0, 8).map(t => {
+      const res = quizResults.filter(r => r.trailTitle === t.titulo);
+      const taxa = res.length ? pct(res.filter(r => r.aprovado).length, res.length) : 0;
+      return { name: t.titulo.slice(0, 14) + (t.titulo.length > 14 ? '…' : ''), 'Taxa (%)': taxa, Testes: res.length };
+    }).filter(t => t.Testes > 0).sort((a, b) => b['Taxa (%)'] - a['Taxa (%)']);
+  }, [trilhas, quizResults]);
+
+  // Donut: distribuição de perfis
+  const perfisData = useMemo(() => {
+    const map: Record<string, number> = {};
+    usuarios.forEach(u => { map[u.role] = (map[u.role] || 0) + 1; });
+    return Object.entries(map).map(([name, value], i) => ({ name, value, color: COLORS[i] }));
+  }, [usuarios]);
+
+  // Barras horizontais: top colaboradores
+  const topColab = useMemo(() => {
+    return colab.map(u => {
+      const res = quizResults.filter(r => r.userId === u.id || r.colaborador === u.name);
+      return { name: u.name.split(' ')[0], media: res.length ? Math.round(res.reduce((a, r) => a + r.nota, 0) / res.length) : 0, testes: res.length };
+    }).filter(u => u.testes > 0).sort((a, b) => b.media - a.media).slice(0, 8);
+  }, [colab, quizResults]);
+
+  // Distribuição de notas
+  const distNotas = useMemo(() => [
+    { faixa: '0–49',   value: quizResults.filter(r => r.nota < 50).length,                      color: '#DC2626' },
+    { faixa: '50–69',  value: quizResults.filter(r => r.nota >= 50 && r.nota < 70).length,       color: '#D97706' },
+    { faixa: '70–84',  value: quizResults.filter(r => r.nota >= 70 && r.nota < 85).length,       color: '#059669' },
+    { faixa: '85–100', value: quizResults.filter(r => r.nota >= 85).length,                      color: '#4F46E5' },
+  ], [quizResults]);
 
   return (
     <div className="space-y-6">
-
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon="fa-users"         label="Colaboradores"    value={colab.length}      color="#4F46E5" />
-        <StatCard icon="fa-chart-line"    label="Taxa de Conclusão" value={`${taxaConc}%`}   sub="Módulos/total"              color="#059669" />
-        <StatCard icon="fa-circle-check"  label="Taxa de Aprovação" value={`${taxaAprov}%`}  sub={`${allPass}/${allTests} testes`} color="#D97706" />
-        <StatCard icon="fa-road"          label="Trilhas"           value={trilhas.length}   sub="Disponíveis"               color="#6B7280" />
+        <StatCard label="Colaboradores"   value={colab.length}       sub="cadastrados"                        icon="fa-users"         color="#4F46E5" />
+        <StatCard label="Taxa Aprovação"  value={`${taxaAprov}%`}    sub={`${allPass}/${allTests} testes`}    icon="fa-circle-check"  color="#059669" />
+        <StatCard label="Média Geral"     value={`${mediaGeral}%`}   sub="em todos os testes"                 icon="fa-chart-bar"     color="#D97706" />
+        <StatCard label="Certificados"    value={certificados.length} sub="emitidos no total"                 icon="fa-certificate"   color="#7C3AED" />
       </div>
 
-      {/* Abas */}
-      <div className="flex gap-1.5 bg-slate-900 p-1 rounded-[14px]">
-        {ABAS.map(a => (
-          <button key={a.id} onClick={() => setAba(a.id)}
-            className={`flex-1 py-2.5 text-[11px] font-black uppercase tracking-wider rounded-[10px] transition-all ${
-              aba === a.id ? 'bg-[#0a111f] text-white shadow' : 'text-slate-500 hover:text-slate-300'
-            }`}>{a.label}</button>
-        ))}
-      </div>
-
-      {/* Visão Geral */}
-      {aba === 'visao_geral' && (
-        <div className="bg-[#0a111f] border border-slate-800 rounded-[16px] overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="bg-slate-900">
-                  <th className="text-left p-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Colaborador</th>
-                  <th className="text-left p-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Módulos</th>
-                  <th className="text-left p-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Progresso</th>
-                  <th className="text-left p-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Testes</th>
-                  <th className="text-left p-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Último</th>
-                  <th className="text-left p-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Data</th>
-                </tr>
-              </thead>
-              <tbody>
-                {colab.length === 0 ? (
-                  <tr><td colSpan={6} className="text-center p-8 text-slate-600">Nenhum colaborador registrado ainda.</td></tr>
-                ) : colab.map(u => {
-                  const s = getUserStats(u);
-                  const p = pct(s.done, totalMods);
-                  return (
-                    <tr key={u.id} className="border-t border-slate-800 hover:bg-slate-900/50 transition-all">
-                      <td className="p-4">
-                        <p className="font-bold text-white">{u.name}</p>
-                        <p className="text-[10px] text-slate-500">{u.cargo || u.role}</p>
-                      </td>
-                      <td className="p-4 text-slate-300">{s.done}/{totalMods}</td>
-                      <td className="p-4">
-                        <div className="flex items-center gap-2">
-                          <div className="w-20"><ProgressBar value={p} color="#4F46E5" height={4} /></div>
-                          <span className="text-[11px] font-bold text-slate-300">{p}%</span>
-                        </div>
-                      </td>
-                      <td className="p-4 text-slate-300">{s.tests}</td>
-                      <td className="p-4">
-                        {s.last
-                          ? <Chip label={`${s.last.nota}% – ${s.last.aprovado ? 'Aprovado' : 'Reprovado'}`} type={s.last.aprovado ? 'green' : 'red'} />
-                          : <Chip label="Sem testes" type="gray" />}
-                      </td>
-                      <td className="p-4 text-[10px] text-slate-500">{s.last ? formatDate(s.last.createdAt) : '–'}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* Colaboradores */}
-      {aba === 'colaboradores' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {colab.length === 0 && (
-            <p className="text-slate-600 text-sm col-span-3 text-center py-8">Nenhum colaborador encontrado.</p>
+      {/* Linha 1: Testes por mês + Distribuição notas */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
+          <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Atividade Mensal da Equipe</p>
+          {testesPorMes.length === 0 ? (
+            <div className="h-48 flex items-center justify-center text-slate-400 text-sm">Sem dados ainda</div>
+          ) : (
+            <ResponsiveContainer width="100%" height={200}>
+              <LineChart data={testesPorMes} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="mes" tick={{ fontSize: 10, fill: '#94a3b8' }} />
+                <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} />
+                <Tooltip content={<Tip />} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Line type="monotone" dataKey="Testes"    stroke="#4F46E5" strokeWidth={2} dot={{ r: 3 }} />
+                <Line type="monotone" dataKey="Aprovados" stroke="#059669" strokeWidth={2} dot={{ r: 3 }} />
+              </LineChart>
+            </ResponsiveContainer>
           )}
-          {colab.map(u => {
-            const s = getUserStats(u);
-            const p = pct(s.done, totalMods);
-            const taxaA = s.tests ? pct(s.pass, s.tests) : 0;
-            return (
-              <div key={u.id} className="bg-[#0a111f] border border-slate-800 rounded-[16px] p-5">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <p className="text-sm font-black text-white">{u.name}</p>
-                    <p className="text-[10px] text-slate-500">{u.cargo || u.role}</p>
-                  </div>
-                  <Chip label={p === 100 ? 'Concluído' : p > 0 ? `${p}%` : 'Não iniciado'} type={p === 100 ? 'green' : p > 0 ? 'blue' : 'gray'} />
-                </div>
-                <div className="grid grid-cols-3 gap-2 mb-4">
-                  {[
-                    { label: 'Módulos',   value: `${s.done}/${totalMods}` },
-                    { label: 'Testes',    value: s.tests },
-                    { label: 'Aprovação', value: s.tests ? `${taxaA}%` : '–', color: taxaA >= 75 ? 'text-emerald-400' : taxaA > 0 ? 'text-amber-400' : 'text-slate-500' },
-                  ].map((item, i) => (
-                    <div key={i} className="bg-slate-900 rounded-xl p-2.5 text-center">
-                      <p className="text-[9px] text-slate-500 uppercase tracking-widest">{item.label}</p>
-                      <p className={`text-base font-black mt-0.5 ${(item as any).color || 'text-white'}`}>{item.value}</p>
-                    </div>
-                  ))}
-                </div>
-                <ProgressBar value={p} color="#4F46E5" height={4} />
+        </div>
+        <div className="bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
+          <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Distribuição de Notas</p>
+          <ResponsiveContainer width="100%" height={160}>
+            <PieChart>
+              <Pie data={distNotas} cx="50%" cy="50%" innerRadius={40} outerRadius={65} dataKey="value" nameKey="faixa" paddingAngle={3}>
+                {distNotas.map((e, i) => <Cell key={i} fill={e.color} />)}
+              </Pie>
+              <Tooltip content={<Tip />} />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="grid grid-cols-2 gap-1 mt-2">
+            {distNotas.map((d, i) => (
+              <div key={i} className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-sm" style={{ background: d.color }}></div>
+                <span className="text-[10px] text-slate-500">{d.faixa}%: <strong className="text-slate-700">{d.value}</strong></span>
               </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Trilhas */}
-      {aba === 'trilhas' && (
-        <div className="space-y-4">
-          <div className="bg-[#0a111f] border border-slate-800 rounded-[16px] overflow-hidden">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="bg-slate-900">
-                  <th className="text-left p-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Trilha</th>
-                  <th className="text-left p-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Módulos</th>
-                  <th className="text-left p-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Tipo</th>
-                  <th className="text-left p-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Concluintes</th>
-                </tr>
-              </thead>
-              <tbody>
-                {trilhas.map((t, idx) => {
-                  const cor = t.cor || COR_FALLBACK[idx % 6];
-                  const concluintes = colab.filter(u => {
-                    const done = progresso.filter(p =>
-                      (p.userId === u.id || p.userName === u.name) && p.trilhaId === t.id && p.concluido
-                    ).length;
-                    return (t.modulos?.length ?? 0) > 0 && done >= (t.modulos?.length ?? 0);
-                  }).length;
-                  return (
-                    <tr key={t.id} className="border-t border-slate-800 hover:bg-slate-900/50 transition-all">
-                      <td className="p-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
-                            style={{ background: cor + '20', color: cor }}>
-                            {t.icone || '📚'}
-                          </div>
-                          <div>
-                            <p className="font-bold text-white">{t.titulo}</p>
-                            <p className="text-[10px] text-slate-500 line-clamp-1">{t.descricao}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="p-4 text-slate-300">{t.modulos?.length ?? 0}</td>
-                      <td className="p-4"><Chip label="Padrão" type="blue" /></td>
-                      <td className="p-4">
-                        <Chip label={`${concluintes} colaborador${concluintes !== 1 ? 'es' : ''}`} type="green" />
-                      </td>
-                    </tr>
-                  );
-                })}
-                {trilhas.length === 0 && (
-                  <tr><td colSpan={4} className="text-center p-8 text-slate-600">Nenhuma trilha criada.</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-          <div className="bg-indigo-500/5 border border-indigo-500/20 rounded-[14px] p-4 text-xs text-indigo-400">
-            <i className="fa-solid fa-lightbulb mr-2"></i>
-            <strong>Trilhas personalizadas</strong> são criadas no módulo de Trilhas de Aprendizado. Este painel exibe todas as trilhas ativas do cartório.
+            ))}
           </div>
         </div>
-      )}
+      </div>
 
-      {/* Evidências */}
-      {aba === 'evidencias' && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-black text-white">Relatório de Evidências de Treinamento</p>
-              <p className="text-[11px] text-slate-500 mt-0.5">{quizResults.length} registros</p>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={exportCSV}
-                className="px-4 py-2 bg-slate-900 border border-slate-800 hover:border-slate-600 text-slate-300 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
-                <i className="fa-solid fa-download mr-1.5"></i>Exportar CSV
-              </button>
-              <button onClick={() => window.print()}
-                className="px-4 py-2 bg-slate-900 border border-slate-800 hover:border-slate-600 text-slate-300 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
-                <i className="fa-solid fa-print mr-1.5"></i>Imprimir
-              </button>
-            </div>
+      {/* Linha 2: Performance por trilha + Top colaboradores */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
+          <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Taxa de Aprovação por Trilha</p>
+          {trilhasPerf.length === 0 ? (
+            <div className="h-48 flex items-center justify-center text-slate-400 text-sm">Sem dados ainda</div>
+          ) : (
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={trilhasPerf} margin={{ top: 5, right: 10, left: -20, bottom: 35 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#94a3b8' }} angle={-20} textAnchor="end" />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: '#94a3b8' }} />
+                <Tooltip content={<Tip />} />
+                <Bar dataKey="Taxa (%)" radius={[4,4,0,0]}>
+                  {trilhasPerf.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+        <div className="bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
+          <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Perfis de Acesso</p>
+          <ResponsiveContainer width="100%" height={160}>
+            <PieChart>
+              <Pie data={perfisData} cx="50%" cy="50%" outerRadius={65} dataKey="value" label={({ name, value }) => `${name}: ${value}`} labelLine={false}>
+                {perfisData.map((e, i) => <Cell key={i} fill={e.color} />)}
+              </Pie>
+              <Tooltip content={<Tip />} />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="space-y-1 mt-2">
+            {perfisData.map((p, i) => (
+              <div key={i} className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-sm" style={{ background: p.color }}></div>
+                  <span className="text-[11px] text-slate-500">{p.name}</span>
+                </div>
+                <span className="text-[11px] font-black text-slate-700">{p.value}</span>
+              </div>
+            ))}
           </div>
-          <div className="bg-[#0a111f] border border-slate-800 rounded-[16px] overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="bg-slate-900">
-                    {['Colaborador', 'Trilha', 'Módulo', 'Data', 'Nota', 'Status', 'Tipo'].map(h => (
-                      <th key={h} className="text-left p-4 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {quizResults.length === 0 ? (
-                    <tr><td colSpan={7} className="text-center p-8 text-slate-600">Nenhum registro de treinamento ainda.</td></tr>
-                  ) : quizResults.map((r, i) => (
-                    <tr key={i} className="border-t border-slate-800 hover:bg-slate-900/50 transition-all">
-                      <td className="p-4">
-                        <p className="font-bold text-white">{r.colaborador}</p>
-                      </td>
-                      <td className="p-4 text-slate-400 text-[11px]">{r.trailTitle || '–'}</td>
-                      <td className="p-4 text-slate-400 text-[11px]">{r.moduleTitle || '–'}</td>
-                      <td className="p-4 text-[10px] text-slate-500 whitespace-nowrap">{formatDate(r.createdAt)}</td>
-                      <td className="p-4 font-black text-sm" style={{ color: r.aprovado ? '#34d399' : '#f87171' }}>{r.nota}%</td>
-                      <td className="p-4"><Chip label={r.aprovado ? 'Aprovado' : 'Reprovado'} type={r.aprovado ? 'green' : 'red'} /></td>
-                      <td className="p-4">{r.ia ? <Chip label="✨ IA" type="blue" /> : <span className="text-[10px] text-slate-500">Padrão</span>}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+        </div>
+      </div>
+
+      {/* Top colaboradores */}
+      {topColab.length > 0 && (
+        <div className="bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
+          <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Ranking de Desempenho — Top Colaboradores</p>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={topColab} layout="vertical" margin={{ top: 0, right: 20, left: 10, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
+              <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 10, fill: '#94a3b8' }} />
+              <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#475569' }} width={70} />
+              <Tooltip content={<Tip />} />
+              <Bar dataKey="media" name="Média (%)" radius={[0, 4, 4, 0]}>
+                {topColab.map((e, i) => <Cell key={i} fill={e.media >= 75 ? '#059669' : e.media >= 50 ? '#D97706' : '#DC2626'} />)}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       )}
     </div>
   );
 };
 
-// ─── Main View ────────────────────────────────────────────────────────────────
+// ── MAIN ─────────────────────────────────────────────────────────────────────
 
 const DashboardView: React.FC = () => {
   const { state } = useApp();
@@ -522,84 +475,58 @@ const DashboardView: React.FC = () => {
   const tenantId = user.tenantId;
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(user.role);
 
-  const [trilhas, setTrilhas] = useState<Trilha[]>([]);
-  const [progresso, setProgresso] = useState<TrilhaProgresso[]>([]);
-  const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
-  const [usuarios, setUsuarios] = useState<UserData[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [trilhas, setTrilhas]           = useState<Trilha[]>([]);
+  const [progresso, setProgresso]       = useState<TrilhaProgresso[]>([]);
+  const [quizResults, setQuizResults]   = useState<QuizResult[]>([]);
+  const [usuarios, setUsuarios]         = useState<UserData[]>([]);
+  const [certificados, setCertificados] = useState<Certificado[]>([]);
+  const [loading, setLoading]           = useState(true);
 
   useEffect(() => {
     const unsubs: (() => void)[] = [];
-
-    const q1 = query(collection(db, 'trilhas'), where('tenantId', '==', tenantId), orderBy('createdAt'));
-    unsubs.push(onSnapshot(q1, s => setTrilhas(s.docs.map(d => ({ id: d.id, ...d.data() } as Trilha)))));
-
-    const q2 = query(collection(db, 'trilhasProgresso'), where('tenantId', '==', tenantId));
-    unsubs.push(onSnapshot(q2, s => setProgresso(s.docs.map(d => ({ id: d.id, ...d.data() } as TrilhaProgresso)))));
-
-    const q3 = query(collection(db, 'treinamentosQuizResults'), orderBy('createdAt', 'desc'));
-    unsubs.push(onSnapshot(q3, s => {
-      setQuizResults(s.docs.map(d => ({ id: d.id, ...d.data() } as QuizResult)));
-      setLoading(false);
-    }));
-
-    if (isGestor) {
-      const q4 = query(collection(db, 'users'), where('tenantId', '==', tenantId));
-      unsubs.push(onSnapshot(q4, s => setUsuarios(s.docs.map(d => ({ id: d.id, ...d.data() } as UserData)))));
-    }
-
+    unsubs.push(onSnapshot(query(collection(db,'trilhas'), where('tenantId','==',tenantId)), s => setTrilhas(s.docs.map(d => ({id:d.id,...d.data()} as Trilha)))));
+    unsubs.push(onSnapshot(query(collection(db,'trilhasProgresso'), where('tenantId','==',tenantId)), s => setProgresso(s.docs.map(d => ({id:d.id,...d.data()} as TrilhaProgresso)))));
+    unsubs.push(onSnapshot(query(collection(db,'treinamentosQuizResults'), orderBy('createdAt','desc')), s => { setQuizResults(s.docs.map(d => ({id:d.id,...d.data()} as QuizResult))); setLoading(false); }));
+    unsubs.push(onSnapshot(query(collection(db,'users')), s => setUsuarios(s.docs.map(d => ({id:d.id,...d.data()} as UserData)))));
+    unsubs.push(onSnapshot(query(collection(db,'certificados'), where('tenantId','==',tenantId)), s => setCertificados(s.docs.map(d => ({id:d.id,...d.data()} as Certificado)))));
     return () => unsubs.forEach(u => u());
-  }, [tenantId, isGestor]);
+  }, [tenantId]);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-[#05080f]">
+      <div className="flex items-center justify-center h-screen bg-slate-50">
         <div className="text-center space-y-3">
           <div className="w-10 h-10 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin mx-auto"></div>
-          <p className="text-slate-500 text-sm">Carregando...</p>
+          <p className="text-slate-400 text-sm">Carregando dashboard...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 md:p-8 space-y-6 bg-[#05080f] min-h-screen">
-
-      {/* Header */}
-      <header className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-black text-white">
-            {isGestor ? 'Painel Geral' : `Olá, ${user.name.split(' ')[0]} 👋`}
-          </h2>
-          <p className="text-slate-500 text-xs mt-0.5">
-            {isGestor ? 'Acompanhe o desempenho da sua equipe' : 'Plataforma de Conformidade Notarial'}
-          </p>
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-7xl mx-auto p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-black text-slate-800">
+              {isGestor ? 'Painel Geral' : `Olá, ${user.name.split(' ')[0]} 👋`}
+            </h2>
+            <p className="text-sm text-slate-400 mt-0.5">
+              {isGestor ? 'Acompanhe o desempenho da sua equipe' : 'Plataforma de Conformidade Notarial'}
+            </p>
+          </div>
+          <div className="hidden md:flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-xl">
+            <i className="fa-solid fa-brain text-indigo-500 text-xs"></i>
+            <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Bloom Médio · 75% aprovação</span>
+          </div>
         </div>
-        <div className="hidden md:flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 px-3 py-2 rounded-xl">
-          <i className="fa-solid fa-brain text-indigo-400 text-xs"></i>
-          <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Bloom Médio · 75% aprovação</span>
-        </div>
-      </header>
 
-      {/* Dashboard */}
-      {isGestor ? (
-        <AdminDashboard
-          trilhas={trilhas}
-          progresso={progresso}
-          quizResults={quizResults}
-          usuarios={usuarios}
-          tenantId={tenantId}
-          isSuperAdmin={user.role === 'SUPERADMIN'}
-        />
-      ) : (
-        <ColabDashboard
-          trilhas={trilhas}
-          progresso={progresso}
-          quizResults={quizResults}
-          userName={user.name}
-          userId={user.id}
-        />
-      )}
+        {isGestor ? (
+          <AdminDashboard trilhas={trilhas} progresso={progresso} quizResults={quizResults} usuarios={usuarios} certificados={certificados} tenantId={tenantId} />
+        ) : (
+          <ColabDashboard trilhas={trilhas} progresso={progresso} quizResults={quizResults} certificados={certificados} userName={user.name} userId={user.id} />
+        )}
+      </div>
     </div>
   );
 };
