@@ -1,8 +1,7 @@
 // frontend/src/features/Users/UsersView.tsx
 // Gestão de Colaboradores + Matriz de Permissões por Perfil
 
-import React, { useState, useEffect, useRef } from 'react';
-import * as XLSX from 'xlsx';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { db } from '../../services/firebase';
@@ -105,11 +104,6 @@ const UsersView: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [editUser, setEditUser] = useState<UserData | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [showImport, setShowImport] = useState(false);
-  const [importRows, setImportRows] = useState<any[]>([]);
-  const [importing, setImporting] = useState(false);
-  const [importDone, setImportDone] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
     name: '', email: '', role: 'colaborador' as Role, cargo: '', tenantId,
@@ -126,39 +120,6 @@ const UsersView: React.FC = () => {
   }, []);
 
   const setF = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
-
-  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]; if (!file) return;
-    const buffer = await file.arrayBuffer();
-    const wb = XLSX.read(buffer, { type: 'array' });
-    const ws = wb.Sheets[wb.SheetNames[0]];
-    const raw: any[] = XLSX.utils.sheet_to_json(ws, { defval: '' });
-    setImportRows(raw.map(r => {
-      const name = String(r['nome']||r['name']||r['Nome']||'').trim();
-      const email = String(r['email']||r['Email']||'').trim().toLowerCase();
-      const cargo = String(r['cargo']||r['Cargo']||'').trim();
-      const rr = String(r['perfil']||r['role']||'colaborador').trim().toLowerCase();
-      const role = (['gestor','admin','colaborador'].includes(rr)?rr:'colaborador') as Role;
-      const valido = !!name && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-      return { name, email, cargo, role, valido };
-    }));
-    setImportDone(false);
-  };
-
-  const handleImportSave = async () => {
-    setImporting(true);
-    for (const r of importRows.filter((x:any)=>x.valido)) {
-      await addDoc(collection(db,'users'),{name:r.name,email:r.email,cargo:r.cargo,role:r.role,tenantId,ativo:true,createdAt:serverTimestamp()});
-    }
-    setImporting(false); setImportDone(true);
-    showToast(importRows.filter((x:any)=>x.valido).length+' colaboradores importados!','success');
-  };
-
-  const downloadTemplate = () => {
-    const ws = XLSX.utils.aoa_to_sheet([['nome','email','cargo','perfil'],['Ana Costa','ana@cartorio.com','Escrevente','colaborador']]);
-    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Colaboradores');
-    XLSX.writeFile(wb,'modelo_colaboradores.xlsx');
-  };
 
   const abrirForm = (u?: UserData) => {
     if (u) {
@@ -211,8 +172,6 @@ const UsersView: React.FC = () => {
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-7xl mx-auto p-6 space-y-6">
 
-        {showImport && (<div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-6"><div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col"><div className="flex items-center justify-between p-5 border-b border-slate-200"><div><h3 className="text-sm font-black text-slate-800">Importar Colaboradores via Excel</h3><p className="text-[10px] text-slate-400 mt-0.5">Colunas: nome, email, cargo, perfil</p></div><button onClick={()=>{setShowImport(false);setImportRows([]);setImportDone(false);}} className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500"><i className="fa-solid fa-xmark text-xs"></i></button></div><div className="p-5 space-y-4 flex-1 overflow-y-auto">{!importDone?(<><div onClick={()=>fileRef.current?.click()} className="border-2 border-dashed border-indigo-300 hover:border-indigo-500 bg-indigo-50 rounded-2xl p-8 text-center cursor-pointer"><i className="fa-solid fa-file-excel text-3xl text-indigo-400 mb-2 block"></i><p className="text-sm font-bold text-indigo-700">Clique para selecionar o arquivo Excel</p><p className="text-[10px] text-indigo-400 mt-1">.xlsx ou .xls</p><input ref={fileRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={handleImportFile} /></div><button onClick={downloadTemplate} className="flex items-center gap-2 text-[10px] font-black text-emerald-600 uppercase tracking-widest"><i className="fa-solid fa-download"></i>Baixar modelo Excel</button>{importRows.length>0&&(<div className="space-y-2"><div className="flex gap-2"><span className="text-[10px] font-black text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-lg">{importRows.filter((r:any)=>r.valido).length} válidos</span>{importRows.filter((r:any)=>!r.valido).length>0&&<span className="text-[10px] font-black text-red-500 bg-red-50 border border-red-200 px-2 py-1 rounded-lg">{importRows.filter((r:any)=>!r.valido).length} com erro</span>}</div><div className="border border-slate-200 rounded-xl overflow-auto max-h-48"><table className="w-full text-xs"><thead><tr className="bg-slate-50">{['','Nome','E-mail','Cargo','Perfil'].map(h=><th key={h} className="text-left p-2 text-[9px] font-black text-slate-500 uppercase">{h}</th>)}</tr></thead><tbody>{importRows.slice(0,15).map((r:any,i:number)=>(<tr key={i} className={order-b border-slate-100 }><td className="p-2"><i className={a-solid  text-xs}></i></td><td className="p-2 font-bold text-slate-700">{r.name}</td><td className="p-2 text-slate-500">{r.email}</td><td className="p-2 text-slate-400">{r.cargo||'–'}</td><td className="p-2"><span className="text-[9px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">{r.role}</span></td></tr>))}</tbody></table></div></div>)}</>):(<div className="flex flex-col items-center py-12 space-y-3"><div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center"><i className="fa-solid fa-circle-check text-emerald-500 text-3xl"></i></div><p className="text-lg font-black text-slate-800">Importação concluída!</p><p className="text-sm text-slate-500">{importRows.filter((r:any)=>r.valido).length} colaboradores adicionados.</p></div>)}</div>{!importDone&&importRows.filter((r:any)=>r.valido).length>0&&(<div className="p-4 border-t border-slate-200 flex gap-3"><button onClick={()=>{setShowImport(false);setImportRows([]);}} className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-xs font-bold">Cancelar</button><button onClick={handleImportSave} disabled={importing} className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2">{importing?<><i className="fa-solid fa-spinner animate-spin"></i>Importando...</>:<><i className="fa-solid fa-file-import"></i>Importar {importRows.filter((r:any)=>r.valido).length} colaboradores</>}</button></div>)}{importDone&&<div className="p-4 border-t border-slate-200"><button onClick={()=>{setShowImport(false);setImportRows([]);setImportDone(false);}} className="w-full bg-indigo-600 text-white py-2.5 rounded-xl text-xs font-bold">Fechar</button></div>}</div></div>)}
-
         {/* Modal de delete */}
         {deleteId && (
           <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
@@ -242,7 +201,7 @@ const UsersView: React.FC = () => {
           {isGestor && (
             <button onClick={() => abrirForm()}
               className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm">
-              <i className="fa-solid fa-plus text-xs"></i>Novo Colaborador</button><button onClick={() => setShowImport(true)} className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm"><i className="fa-solid fa-file-excel text-xs"></i>Importar Excel
+              <i className="fa-solid fa-plus text-xs"></i>Novo Colaborador
             </button>
           )}
         </div>
