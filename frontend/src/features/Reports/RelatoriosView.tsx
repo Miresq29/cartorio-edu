@@ -2,14 +2,22 @@
 // Relatórios completos — KPIs, gráficos recharts, evidências exportáveis
 
 import React, { useState, useEffect, useMemo } from 'react';
+import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx';
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend
 } from 'recharts';
+import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx';
 import {
   collection, query, orderBy, onSnapshot, where
 } from 'firebase/firestore';
+import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx';
 import { db } from '../../services/firebase';
+import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx';
 import { useApp } from '../../context/AppContext';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -244,7 +252,7 @@ const RelatoriosView: React.FC = () => {
       .sort((a, b) => b.taxa - a.taxa);
   }, [colab, filteredResults, progresso, certificados, buscaColab]);
 
-  // Exportar CSV
+  // Exportar Excel
   const exportCSV = () => {
     const rows = ['Colaborador,Trilha,Módulo,Data,Nota,Status,Tipo'];
     filteredResults.forEach(r => {
@@ -292,7 +300,7 @@ const RelatoriosView: React.FC = () => {
             </select>
             <button onClick={exportCSV}
               className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm">
-              <i className="fa-solid fa-download text-xs"></i>Exportar CSV
+              <i className="fa-solid fa-file-excel text-xs"></i>Exportar Excel
             </button>
           </div>
         </div>
@@ -536,7 +544,7 @@ const RelatoriosView: React.FC = () => {
                   </p>
                   <button onClick={exportCSV}
                     className="flex items-center gap-2 bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-indigo-600 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-sm">
-                    <i className="fa-solid fa-download"></i>CSV
+                    <i className="fa-solid fa-file-excel"></i>CSV
                   </button>
                 </div>
                 <div className="overflow-x-auto border border-slate-200 rounded-[14px]">

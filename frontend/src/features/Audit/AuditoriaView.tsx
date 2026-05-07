@@ -2,11 +2,14 @@
 // Auditoria completa — logs reais, filtros funcionais, exportação CSV
 
 import React, { useState, useEffect, useCallback } from 'react';
+import * as XLSX from 'xlsx';
 import {
   collection, query, orderBy, onSnapshot,
   addDoc, serverTimestamp, limit, where
 } from 'firebase/firestore';
+import * as XLSX from 'xlsx';
 import { db } from '../../services/firebase';
+import * as XLSX from 'xlsx';
 import { useApp } from '../../context/AppContext';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -180,7 +183,7 @@ const AuditoriaView: React.FC = () => {
           </div>
           <button onClick={exportCSV}
             className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm">
-            <i className="fa-solid fa-download text-xs"></i>Exportar CSV
+            <i className="fa-solid fa-download text-xs"></i>Exportar Excel
           </button>
         </div>
 
