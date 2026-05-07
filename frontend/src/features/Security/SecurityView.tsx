@@ -42,7 +42,7 @@ const SecurityView: React.FC = () => {
   };
 
   return (
-    <div className="p-12 min-h-full bg-[#05080f] text-slate-200 animate-in fade-in duration-500">
+    <div className="p-8 min-h-full bg-slate-50 text-slate-800">
       <div className="max-w-7xl mx-auto space-y-12">
         
         {/* Como usar */}
@@ -70,7 +70,7 @@ const SecurityView: React.FC = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Card Backup */}
-          <div className="lg:col-span-2 bg-[#0a0f1d] border border-slate-800 rounded-[40px] p-12 flex flex-col space-y-12 transition-all hover:border-slate-700 shadow-2xl relative overflow-hidden">
+          <div className="lg:col-span-2 bg-white border border-slate-200 rounded-[40px] p-12 flex flex-col space-y-12 transition-all hover:border-slate-700 shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 right-0 p-12 opacity-5">
                <i className="fa-solid fa-database text-[10rem]"></i>
             </div>
@@ -129,7 +129,7 @@ const SecurityView: React.FC = () => {
         </div>
 
         {/* Políticas de Acesso */}
-        <div className="bg-[#0a0f1d] border border-slate-800 rounded-[40px] p-12 space-y-12 shadow-2xl">
+        <div className="bg-white border border-slate-200 rounded-[24px] p-8 space-y-8 shadow-sm">
            <div className="flex items-center gap-5">
              <i className="fa-solid fa-list-check text-blue-500 text-3xl"></i>
              <h3 className="text-lg font-black uppercase tracking-[0.3em] text-slate-400">Políticas Ativas de Segurança</h3>
