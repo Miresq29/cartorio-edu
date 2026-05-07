@@ -1,7 +1,8 @@
 // frontend/src/features/Users/UsersView.tsx
 // Gestão de Colaboradores + Matriz de Permissões por Perfil
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import * as XLSX from 'xlsx';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { db } from '../../services/firebase';
@@ -104,6 +105,11 @@ const UsersView: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [editUser, setEditUser] = useState<UserData | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [showImport, setShowImport] = useState(false);
+  const [importRows, setImportRows] = useState<any[]>([]);
+  const [importing, setImporting] = useState(false);
+  const [importDone, setImportDone] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
     name: '', email: '', role: 'colaborador' as Role, cargo: '', tenantId,
@@ -120,6 +126,39 @@ const UsersView: React.FC = () => {
   }, []);
 
   const setF = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
+
+  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]; if (!file) return;
+    const buffer = await file.arrayBuffer();
+    const wb = XLSX.read(buffer, { type: 'array' });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const raw: any[] = XLSX.utils.sheet_to_json(ws, { defval: '' });
+    setImportRows(raw.map(r => {
+      const name = String(r['nome']||r['name']||r['Nome']||'').trim();
+      const email = String(r['email']||r['Email']||'').trim().toLowerCase();
+      const cargo = String(r['cargo']||r['Cargo']||'').trim();
+      const rr = String(r['perfil']||r['role']||'colaborador').trim().toLowerCase();
+      const role = (['gestor','admin','colaborador'].includes(rr)?rr:'colaborador') as Role;
+      const valido = !!name && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      return { name, email, cargo, role, valido };
+    }));
+    setImportDone(false);
+  };
+
+  const handleImportSave = async () => {
+    setImporting(true);
+    for (const r of importRows.filter((x:any)=>x.valido)) {
+      await addDoc(collection(db,'users'),{name:r.name,email:r.email,cargo:r.cargo,role:r.role,tenantId,ativo:true,createdAt:serverTimestamp()});
+    }
+    setImporting(false); setImportDone(true);
+    showToast(importRows.filter((x:any)=>x.valido).length+' colaboradores importados!','success');
+  };
+
+  const downloadTemplate = () => {
+    const ws = XLSX.utils.aoa_to_sheet([['nome','email','cargo','perfil'],['Ana Costa','ana@cartorio.com','Escrevente','colaborador']]);
+    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Colaboradores');
+    XLSX.writeFile(wb,'modelo_colaboradores.xlsx');
+  };
 
   const abrirForm = (u?: UserData) => {
     if (u) {
@@ -201,7 +240,7 @@ const UsersView: React.FC = () => {
           {isGestor && (
             <button onClick={() => abrirForm()}
               className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm">
-              <i className="fa-solid fa-plus text-xs"></i>Novo Colaborador
+              <i className="fa-solid fa-plus text-xs"></i>Novo Colaborador</button><button onClick={() => setShowImport(true)} className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm"><i className="fa-solid fa-file-excel text-xs"></i>Importar Excel
             </button>
           )}
         </div>
