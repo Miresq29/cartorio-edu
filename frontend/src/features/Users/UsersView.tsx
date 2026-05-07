@@ -1,329 +1,494 @@
+// frontend/src/features/Users/UsersView.tsx
+// Gestão de Colaboradores + Matriz de Permissões por Perfil
+
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
-import { User, UserRole } from '../../types';
 import { db } from '../../services/firebase';
 import {
   collection, onSnapshot, query, orderBy,
   doc, updateDoc, deleteDoc, addDoc, serverTimestamp
 } from 'firebase/firestore';
 
-// helpers LGPD
-function maskCpf(cpf: string): string {
-  const d = cpf.replace(/\D/g, '');
-  if (d.length !== 11) return cpf;
-  return `***.***.${d.slice(6, 9)}-${d.slice(9)}`;
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type Role = 'SUPERADMIN' | 'gestor' | 'admin' | 'colaborador';
+
+interface UserData {
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
+  cargo?: string;
+  tenantId: string;
+  ativo?: boolean;
+  createdAt?: any;
 }
-async function hashCpf(cpf: string): Promise<string> {
-  const clean = cpf.replace(/\D/g, '');
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(clean));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
+
+// ─── Permissões por módulo e perfil ──────────────────────────────────────────
+
+const MODULOS = [
+  { id: 'dashboard',    label: 'Dashboard',          icon: 'fa-border-all'       },
+  { id: 'trilhas',      label: 'Trilhas',            icon: 'fa-road'             },
+  { id: 'repositorio',  label: 'Repositório',        icon: 'fa-photo-film'       },
+  { id: 'treinamento',  label: 'Treinamento AI',     icon: 'fa-graduation-cap'   },
+  { id: 'exames',       label: 'Exames',             icon: 'fa-file-pen'         },
+  { id: 'metas',        label: 'Metas & Premiação',  icon: 'fa-trophy'           },
+  { id: 'certificados', label: 'Certificados',       icon: 'fa-certificate'      },
+  { id: 'progresso',    label: 'Meu Progresso',      icon: 'fa-chart-line'       },
+  { id: 'relatorios',   label: 'Relatórios',         icon: 'fa-chart-column'     },
+  { id: 'auditoria',    label: 'Auditoria',          icon: 'fa-clock-rotate-left'},
+  { id: 'usuarios',     label: 'Colaboradores',      icon: 'fa-users-gear'       },
+  { id: 'seguranca',    label: 'Segurança',          icon: 'fa-lock'             },
+];
+
+type Nivel = 'completo' | 'leitura' | 'proprio' | '-';
+
+const PERMISSOES: Record<string, Record<Role, Nivel>> = {
+  dashboard:    { SUPERADMIN: 'completo', gestor: 'completo', admin: 'completo',  colaborador: 'proprio' },
+  trilhas:      { SUPERADMIN: 'completo', gestor: 'completo', admin: 'completo',  colaborador: 'leitura' },
+  repositorio:  { SUPERADMIN: 'completo', gestor: 'completo', admin: 'completo',  colaborador: 'leitura' },
+  treinamento:  { SUPERADMIN: 'completo', gestor: 'completo', admin: 'completo',  colaborador: 'proprio' },
+  exames:       { SUPERADMIN: 'completo', gestor: 'completo', admin: 'completo',  colaborador: 'proprio' },
+  metas:        { SUPERADMIN: 'completo', gestor: 'completo', admin: 'leitura',   colaborador: 'leitura' },
+  certificados: { SUPERADMIN: 'completo', gestor: 'completo', admin: 'completo',  colaborador: 'proprio' },
+  progresso:    { SUPERADMIN: 'completo', gestor: 'completo', admin: 'leitura',   colaborador: 'proprio' },
+  relatorios:   { SUPERADMIN: 'completo', gestor: 'completo', admin: 'leitura',   colaborador: '-'       },
+  auditoria:    { SUPERADMIN: 'completo', gestor: 'completo', admin: '-',         colaborador: '-'       },
+  usuarios:     { SUPERADMIN: 'completo', gestor: 'completo', admin: 'completo',  colaborador: '-'       },
+  seguranca:    { SUPERADMIN: 'completo', gestor: 'completo', admin: '-',         colaborador: '-'       },
+};
+
+const NIVEL_CONFIG: Record<Nivel, { label: string; color: string; bg: string; icon: string }> = {
+  completo: { label: 'Completo',   color: '#059669', bg: '#d1fae5', icon: 'fa-circle-check'  },
+  leitura:  { label: 'Leitura',    color: '#4F46E5', bg: '#eef2ff', icon: 'fa-eye'            },
+  proprio:  { label: 'Próprio',    color: '#D97706', bg: '#fef3c7', icon: 'fa-user'           },
+  '-':      { label: 'Sem acesso', color: '#94a3b8', bg: '#f1f5f9', icon: 'fa-minus'          },
+};
+
+const ROLES: { id: Role; label: string; color: string; desc: string }[] = [
+  { id: 'SUPERADMIN', label: 'Super Admin',  color: '#059669', desc: 'Acesso total a todos os cartórios' },
+  { id: 'gestor',     label: 'Gestor',       color: '#4F46E5', desc: 'Gestão completa do cartório'       },
+  { id: 'admin',      label: 'Admin',        color: '#D97706', desc: 'Administração de colaboradores'    },
+  { id: 'colaborador',label: 'Colaborador',  color: '#64748b', desc: 'Acesso aos próprios dados'         },
+];
 
 const CARGOS = [
   'Tabelião', 'Oficial de Registro', 'Escrevente Autorizado',
   'Escrevente', 'Auxiliar Administrativo', 'Responsável PLD', 'Outro',
 ];
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function formatDate(ts: any): string {
+  if (!ts) return '–';
+  const d = ts?.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleDateString('pt-BR');
+}
+
+// ─── Main View ────────────────────────────────────────────────────────────────
+
+type Tab = 'colaboradores' | 'permissoes';
+
 const UsersView: React.FC = () => {
   const { state } = useApp();
   const { showToast } = useToast();
+  const user = state.user!;
+  const tenantId = user.tenantId;
+  const isGestor = ['SUPERADMIN', 'gestor'].includes(user.role);
 
-  const [users, setUsers] = useState<any[]>([]);
+  const [tab, setTab] = useState<Tab>('colaboradores');
+  const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [busca, setBusca] = useState('');
+  const [showForm, setShowForm] = useState(false);
+  const [editUser, setEditUser] = useState<UserData | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    role: 'atendente' as UserRole,
-    tenantId: '',
-    cpf: '',
-    cargo: '',
+  const [form, setForm] = useState({
+    name: '', email: '', role: 'colaborador' as Role, cargo: '', tenantId,
   });
-  const [isSaving, setIsSaving] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const q = query(collection(db, 'users'), orderBy('name'));
-    const unsub = onSnapshot(q, snap => {
-      setUsers(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    const u = onSnapshot(q, snap => {
+      setUsers(snap.docs.map(d => ({ id: d.id, ...d.data() } as UserData)));
       setLoading(false);
     });
-    return () => unsub();
+    return () => u();
   }, []);
 
-  const handleAddUser = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name || !formData.email) return;
-    if (formData.cpf && formData.cpf.replace(/\D/g, '').length !== 11) {
-      showToast('CPF inválido — informe os 11 dígitos ou deixe em branco.', 'error');
-      return;
-    }
-    setIsSaving(true);
-    try {
-      let cpfMask = '', cpfHash = '';
-      if (formData.cpf) {
-        cpfMask = maskCpf(formData.cpf);
-        cpfHash = await hashCpf(formData.cpf);
-      }
-      await addDoc(collection(db, 'users'), {
-        name: formData.name,
-        email: formData.email,
-        role: formData.role,
-        tenantId: formData.tenantId,
-        cargo: formData.cargo,
-        cpfMask,
-        cpfHash,
-        active: true,
-        isFirstLogin: true,
-        totalConsultas: 0,
-        topicosConsultados: [],
-        treinamentosConcluidos: [],
-        trilhaAtual: '',
-        scoreConformidade: 0,
-        createdAt: serverTimestamp(),
-        createdBy: state.user?.id
-      });
-      showToast(`Usuário ${formData.name} cadastrado!`, 'success');
-      setFormData({ name: '', email: '', role: 'atendente', tenantId: '', cpf: '', cargo: '' });
-    } catch (err: any) {
-      showToast(err.message || 'Erro ao cadastrar.', 'error');
-    } finally {
-      setIsSaving(false);
-    }
-  };
+  const setF = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
 
-  const handleToggleActive = async (userId: string, currentActive: boolean, userName: string) => {
-    try {
-      await updateDoc(doc(db, 'users', userId), { active: !currentActive });
-      showToast(`${userName} ${!currentActive ? 'ativado' : 'desativado'}.`, 'success');
-    } catch {
-      showToast('Erro ao atualizar status.', 'error');
-    }
-  };
-
-  const handleDelete = async (userId: string, userName: string) => {
-    if (deleteConfirmId === userId) {
-      try {
-        await deleteDoc(doc(db, 'users', userId));
-        showToast(`${userName} excluído.`, 'success');
-      } catch {
-        showToast('Erro ao excluir usuário.', 'error');
-      }
-      setDeleteConfirmId(null);
+  const abrirForm = (u?: UserData) => {
+    if (u) {
+      setEditUser(u);
+      setForm({ name: u.name, email: u.email, role: u.role, cargo: u.cargo || '', tenantId: u.tenantId });
     } else {
-      setDeleteConfirmId(userId);
-      setTimeout(() => setDeleteConfirmId(null), 3000);
+      setEditUser(null);
+      setForm({ name: '', email: '', role: 'colaborador', cargo: '', tenantId });
     }
+    setShowForm(true);
   };
 
-  const roleColors: Record<string, string> = {
-    SUPERADMIN: 'text-amber-400 bg-amber-400/10',
-    admin: 'text-blue-400 bg-blue-400/10',
-    gestor: 'text-purple-400 bg-purple-400/10',
-    auditor: 'text-emerald-400 bg-emerald-400/10',
-    expert: 'text-cyan-400 bg-cyan-400/10',
-    atendente: 'text-slate-400 bg-slate-400/10',
-    viewer: 'text-slate-500 bg-slate-500/10',
+  const handleSave = async () => {
+    if (!form.name || !form.email) { showToast('Preencha nome e e-mail.', 'error'); return; }
+    setSaving(true);
+    try {
+      if (editUser) {
+        await updateDoc(doc(db, 'users', editUser.id), { ...form });
+        showToast('Colaborador atualizado!', 'success');
+      } else {
+        await addDoc(collection(db, 'users'), { ...form, ativo: true, createdAt: serverTimestamp() });
+        showToast('Colaborador adicionado!', 'success');
+      }
+      setShowForm(false);
+    } catch { showToast('Erro ao salvar.', 'error'); }
+    setSaving(false);
   };
+
+  const handleDelete = async (id: string) => {
+    await deleteDoc(doc(db, 'users', id));
+    showToast('Colaborador removido.', 'success');
+    setDeleteId(null);
+  };
+
+  const handleToggleAtivo = async (u: UserData) => {
+    await updateDoc(doc(db, 'users', u.id), { ativo: !u.ativo });
+    showToast(u.ativo ? 'Acesso suspenso.' : 'Acesso reativado.', 'success');
+  };
+
+  const filtrados = users.filter(u => {
+    if (!busca) return true;
+    const b = busca.toLowerCase();
+    return u.name?.toLowerCase().includes(b) || u.email?.toLowerCase().includes(b) || u.cargo?.toLowerCase().includes(b);
+  });
+
+  const roleLabel = (r: Role) => ROLES.find(x => x.id === r)?.label || r;
+  const roleColor = (r: Role) => ROLES.find(x => x.id === r)?.color || '#64748b';
 
   return (
-    <div className="p-10 space-y-8 bg-[#05080f] min-h-screen animate-in fade-in">
-      <header>
-        <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
-          Gestão de <span className="text-blue-500">Acessos</span>
-        </h2>
-        <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">
-          MJ Consultoria // {users.length} operador(es) cadastrado(s)
-        </p>
-      </header>
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-7xl mx-auto p-6 space-y-6">
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        {/* Formulário — idêntico ao original + CPF e Cargo */}
-        <form onSubmit={handleAddUser} className="xl:col-span-1 bg-[#0a111f] border border-slate-800 rounded-[30px] p-8 space-y-4 shadow-2xl">
-          <h3 className="text-white font-bold text-sm uppercase mb-4 italic">Novo Operador</h3>
+        {/* Modal de delete */}
+        {deleteId && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+            <div className="bg-white rounded-2xl p-6 max-w-sm w-full mx-4 shadow-xl">
+              <h3 className="text-lg font-black text-slate-800 mb-2">Remover colaborador?</h3>
+              <p className="text-sm text-slate-500 mb-5">Esta ação não pode ser desfeita.</p>
+              <div className="flex gap-3">
+                <button onClick={() => setDeleteId(null)}
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50 transition-all">
+                  Cancelar
+                </button>
+                <button onClick={() => handleDelete(deleteId)}
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-bold transition-all">
+                  Remover
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
-          <input
-            type="text" placeholder="Nome Completo" required
-            className="w-full bg-[#05080f] border border-slate-800 rounded-2xl p-4 text-white outline-none focus:border-blue-600"
-            value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })}
-          />
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-black text-slate-800">Colaboradores & Permissões</h2>
+            <p className="text-sm text-slate-500 mt-0.5">Gerencie usuários e controle de acesso</p>
+          </div>
+          {isGestor && (
+            <button onClick={() => abrirForm()}
+              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm">
+              <i className="fa-solid fa-plus text-xs"></i>Novo Colaborador
+            </button>
+          )}
+        </div>
 
-          <input
-            type="email" placeholder="E-mail" required
-            className="w-full bg-[#05080f] border border-slate-800 rounded-2xl p-4 text-white outline-none focus:border-blue-600"
-            value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })}
-          />
+        {/* KPIs */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {ROLES.map(r => {
+            const count = users.filter(u => u.role === r.id).length;
+            return (
+              <div key={r.id} className="bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3"
+                  style={{ background: r.color + '15' }}>
+                  <i className="fa-solid fa-user" style={{ color: r.color }}></i>
+                </div>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{r.label}</p>
+                <p className="text-3xl font-black text-slate-800">{count}</p>
+                <p className="text-[10px] text-slate-400 mt-1">{r.desc}</p>
+              </div>
+            );
+          })}
+        </div>
 
-          {/* NOVO: CPF opcional, mascarado LGPD */}
-          <input
-            type="text" placeholder="CPF (só números — opcional)" maxLength={11}
-            className="w-full bg-[#05080f] border border-slate-800 rounded-2xl p-4 text-white outline-none focus:border-blue-600 font-mono tracking-widest"
-            value={formData.cpf}
-            onChange={e => setFormData({ ...formData, cpf: e.target.value.replace(/\D/g, '').slice(0, 11) })}
-          />
+        {/* Abas */}
+        <div className="bg-white border border-slate-200 rounded-[16px] shadow-sm overflow-hidden">
+          <div className="flex border-b border-slate-100">
+            {[
+              { id: 'colaboradores', label: 'Colaboradores',    icon: 'fa-users'         },
+              { id: 'permissoes',    label: 'Matriz de Acesso', icon: 'fa-shield-halved' },
+            ].map(t => (
+              <button key={t.id} onClick={() => setTab(t.id as Tab)}
+                className={`flex items-center gap-2 px-5 py-4 text-xs font-black uppercase tracking-wider transition-all border-b-2 ${
+                  tab === t.id
+                    ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50'
+                    : 'border-transparent text-slate-400 hover:text-slate-600'
+                }`}>
+                <i className={`fa-solid ${t.icon}`}></i>{t.label}
+              </button>
+            ))}
+          </div>
 
-          <input
-            type="text" placeholder="ID do Cartório (ex: cartorio-01)"
-            className="w-full bg-[#05080f] border border-slate-800 rounded-2xl p-4 text-white outline-none focus:border-blue-600"
-            value={formData.tenantId} onChange={e => setFormData({ ...formData, tenantId: e.target.value })}
-          />
+          {/* ── COLABORADORES ─────────────────────────────────────────────── */}
+          {tab === 'colaboradores' && (
+            <div className="p-5 space-y-4">
 
-          {/* NOVO: Cargo */}
-          <select
-            className="w-full bg-[#05080f] border border-slate-800 rounded-2xl p-4 text-slate-300 outline-none"
-            value={formData.cargo} onChange={e => setFormData({ ...formData, cargo: e.target.value })}
-          >
-            <option value="">Cargo (opcional)</option>
-            {CARGOS.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-
-          <select
-            className="w-full bg-[#05080f] border border-slate-800 rounded-2xl p-4 text-slate-300 outline-none"
-            value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value as UserRole })}
-          >
-            <option value="atendente">Atendente</option>
-            <option value="gestor">Gestor</option>
-            <option value="auditor">Auditor</option>
-            <option value="expert">Expert</option>
-            <option value="admin">Admin</option>
-            <option value="SUPERADMIN">SuperAdmin MJ</option>
-          </select>
-
-          <p className="text-[9px] text-slate-600 italic">
-            * CPF mascarado automaticamente (LGPD). O usuário receberá acesso e deverá criar sua senha no primeiro login.
-          </p>
-
-          <button
-            type="submit"
-            disabled={isSaving}
-            className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl uppercase text-[10px] tracking-widest hover:bg-blue-500 transition-all shadow-lg disabled:opacity-50"
-          >
-            {isSaving ? 'Cadastrando...' : 'Gerar Acesso'}
-          </button>
-        </form>
-
-        {/* Tabela — idêntica ao original + coluna CPF/Cargo, Uso e linha expansível */}
-        <div className="xl:col-span-2 bg-[#0a111f] border border-slate-800 rounded-[30px] p-8 overflow-hidden shadow-2xl">
-          {loading ? (
-            <p className="text-slate-600 text-xs text-center py-10 animate-pulse">Carregando usuários...</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="text-slate-500 text-[10px] font-black uppercase tracking-widest border-b border-slate-800">
-                    <th className="pb-6">Operador</th>
-                    <th className="pb-6">CPF / Cargo</th>
-                    <th className="pb-6">Cartório</th>
-                    <th className="pb-6">Perfil</th>
-                    <th className="pb-6">Uso</th>
-                    <th className="pb-6">Status</th>
-                    <th className="pb-6">Ações</th>
-                  </tr>
-                </thead>
-                <tbody className="text-xs">
-                  {users.map((user: any) => (
-                    <React.Fragment key={user.id}>
-                      {/* linha principal — clique expande detalhes */}
-                      <tr
-                        className="border-b border-slate-800/50 hover:bg-white/5 transition-all cursor-pointer"
-                        onClick={() => setExpandedId(expandedId === user.id ? null : user.id)}
-                      >
-                        <td className="py-5">
-                          <p className="text-white font-bold">{user.name}</p>
-                          <p className="text-[10px] text-slate-500 lowercase">{user.email}</p>
-                        </td>
-                        {/* NOVO: CPF mascarado + cargo */}
-                        <td className="py-5">
-                          <p className="font-mono text-[10px] text-slate-400">{user.cpfMask || '—'}</p>
-                          <p className="text-[10px] text-slate-500">{user.cargo || '—'}</p>
-                        </td>
-                        <td className="py-5 text-blue-400 font-mono text-[10px] uppercase">{user.tenantId || '—'}</td>
-                        <td className="py-5">
-                          <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase ${roleColors[user.role] || 'text-slate-400 bg-slate-800'}`}>
-                            {user.role}
+              {/* Formulário inline */}
+              {showForm && (
+                <div className="bg-slate-50 border border-indigo-200 rounded-[14px] p-5 space-y-4">
+                  <h4 className="text-sm font-black text-indigo-700 uppercase tracking-widest">
+                    {editUser ? 'Editar Colaborador' : 'Novo Colaborador'}
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Nome *</label>
+                      <input value={form.name} onChange={e => setF('name', e.target.value)}
+                        placeholder="Nome completo"
+                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-500" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">E-mail *</label>
+                      <input value={form.email} onChange={e => setF('email', e.target.value)}
+                        placeholder="email@cartorio.com.br" type="email"
+                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-500" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Perfil de Acesso</label>
+                      <select value={form.role} onChange={e => setF('role', e.target.value)}
+                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-500">
+                        {ROLES.filter(r => r.id !== 'SUPERADMIN').map(r => (
+                          <option key={r.id} value={r.id}>{r.label} — {r.desc}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Cargo</label>
+                      <select value={form.cargo} onChange={e => setF('cargo', e.target.value)}
+                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-500">
+                        <option value="">Selecione...</option>
+                        {CARGOS.map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  {/* Info de permissões do perfil selecionado */}
+                  <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-3">
+                    <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-2">
+                      Permissões do perfil: {roleLabel(form.role as Role)}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {MODULOS.map(m => {
+                        const nivel = PERMISSOES[m.id]?.[form.role as Role] || '-';
+                        const cfg = NIVEL_CONFIG[nivel];
+                        if (nivel === '-') return null;
+                        return (
+                          <span key={m.id} className="text-[9px] font-black px-2 py-1 rounded-lg"
+                            style={{ background: cfg.bg, color: cfg.color }}>
+                            {m.label}: {cfg.label}
                           </span>
-                        </td>
-                        {/* NOVO: contadores de uso */}
-                        <td className="py-5">
-                          <p className="text-[10px] text-slate-400">
-                            <span className="text-emerald-400 font-bold">{user.totalConsultas ?? 0}</span> consultas
-                          </p>
-                          <p className="text-[10px] text-slate-600">{user.treinamentosConcluidos?.length ?? 0} treinamentos</p>
-                        </td>
-                        <td className="py-5">
-                          <button
-                            onClick={e => { e.stopPropagation(); handleToggleActive(user.id, user.active, user.name); }}
-                            className="flex items-center gap-2 group"
-                          >
-                            <span className={`w-1.5 h-1.5 rounded-full ${user.active ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`}></span>
-                            <span className={`font-bold uppercase text-[9px] group-hover:underline ${user.active ? 'text-slate-300' : 'text-red-400'}`}>
-                              {user.active ? 'Ativo' : 'Inativo'}
-                            </span>
-                          </button>
-                        </td>
-                        <td className="py-5">
-                          <button
-                            onClick={e => { e.stopPropagation(); handleDelete(user.id, user.name); }}
-                            disabled={user.id === state.user?.id}
-                            className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase transition-all disabled:opacity-20 disabled:cursor-not-allowed ${
-                              deleteConfirmId === user.id
-                                ? 'bg-red-500 text-white'
-                                : 'text-red-500/50 hover:text-red-500 hover:bg-red-500/10'
-                            }`}
-                            title={user.id === state.user?.id ? 'Não é possível excluir seu próprio usuário' : ''}
-                          >
-                            <i className={`fa-solid ${deleteConfirmId === user.id ? 'fa-check mr-1' : 'fa-trash-can mr-1'}`}></i>
-                            {deleteConfirmId === user.id ? 'Confirmar' : 'Excluir'}
-                          </button>
-                        </td>
-                      </tr>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <button onClick={() => setShowForm(false)}
+                      className="px-5 py-2 rounded-xl border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50 transition-all">
+                      Cancelar
+                    </button>
+                    <button onClick={handleSave} disabled={saving}
+                      className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-6 py-2 rounded-xl text-xs font-bold transition-all">
+                      {saving ? <><i className="fa-solid fa-spinner animate-spin mr-2"></i>Salvando...</> : 'Salvar'}
+                    </button>
+                  </div>
+                </div>
+              )}
 
-                      {/* NOVO: linha expansível com detalhes de uso */}
-                      {expandedId === user.id && (
-                        <tr className="bg-slate-900/40">
-                          <td colSpan={7} className="px-4 py-4">
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-                              <div className="bg-[#05080f] border border-slate-800 rounded-xl p-3">
-                                <p className="text-[9px] text-slate-500 uppercase tracking-widest mb-1">Consultas RAG</p>
-                                <p className="text-xl font-black text-emerald-400">{user.totalConsultas ?? 0}</p>
-                              </div>
-                              <div className="bg-[#05080f] border border-slate-800 rounded-xl p-3">
-                                <p className="text-[9px] text-slate-500 uppercase tracking-widest mb-1">Treinamentos</p>
-                                <p className="text-xl font-black text-blue-400">{user.treinamentosConcluidos?.length ?? 0}</p>
-                              </div>
-                              <div className="bg-[#05080f] border border-slate-800 rounded-xl p-3">
-                                <p className="text-[9px] text-slate-500 uppercase tracking-widest mb-1">Score Conformidade</p>
-                                <p className="text-xl font-black text-purple-400">{user.scoreConformidade ?? 0}%</p>
-                              </div>
-                              <div className="bg-[#05080f] border border-slate-800 rounded-xl p-3">
-                                <p className="text-[9px] text-slate-500 uppercase tracking-widest mb-1">Trilha Atual</p>
-                                <p className="text-sm font-bold text-slate-300 truncate">{user.trilhaAtual || '—'}</p>
-                              </div>
-                            </div>
-                            {user.topicosConsultados?.length > 0 && (
-                              <div>
-                                <p className="text-[9px] text-slate-500 uppercase tracking-widest mb-2">Tópicos consultados</p>
-                                <div className="flex flex-wrap gap-2">
-                                  {user.topicosConsultados.slice(0, 8).map((t: string, i: number) => (
-                                    <span key={i} className="text-[9px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-1 rounded font-bold uppercase tracking-wide">{t}</span>
-                                  ))}
-                                </div>
+              {/* Busca */}
+              <input value={busca} onChange={e => setBusca(e.target.value)}
+                placeholder="Buscar por nome, e-mail ou cargo..."
+                className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-500 w-72" />
+
+              {/* Tabela */}
+              {loading ? (
+                <div className="flex items-center justify-center py-12 gap-3 text-slate-400">
+                  <div className="w-5 h-5 border-2 border-indigo-300 border-t-indigo-600 rounded-full animate-spin"></div>
+                  <span className="text-sm">Carregando...</span>
+                </div>
+              ) : (
+                <div className="overflow-x-auto border border-slate-200 rounded-[14px]">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-slate-200">
+                        {['Colaborador', 'E-mail', 'Cargo', 'Perfil', 'Status', 'Desde', 'Ações'].map(h => (
+                          <th key={h} className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtrados.length === 0 && (
+                        <tr><td colSpan={7} className="text-center p-8 text-slate-400">Nenhum colaborador encontrado.</td></tr>
+                      )}
+                      {filtrados.map(u => (
+                        <tr key={u.id} className={`border-b border-slate-100 hover:bg-slate-50 transition-all ${u.ativo === false ? 'opacity-50' : ''}`}>
+                          <td className="p-3 font-bold text-slate-800">{u.name}</td>
+                          <td className="p-3 text-slate-500">{u.email || '–'}</td>
+                          <td className="p-3 text-slate-500">{u.cargo || '–'}</td>
+                          <td className="p-3">
+                            <span className="text-[10px] font-black px-2.5 py-1 rounded-lg"
+                              style={{ background: roleColor(u.role) + '15', color: roleColor(u.role) }}>
+                              {roleLabel(u.role)}
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg ${
+                              u.ativo !== false
+                                ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+                                : 'bg-slate-100 text-slate-400 border border-slate-200'
+                            }`}>
+                              {u.ativo !== false ? 'Ativo' : 'Suspenso'}
+                            </span>
+                          </td>
+                          <td className="p-3 text-slate-400">{formatDate(u.createdAt)}</td>
+                          <td className="p-3">
+                            {isGestor && u.id !== user.id && (
+                              <div className="flex items-center gap-1.5">
+                                <button onClick={() => abrirForm(u)}
+                                  className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 flex items-center justify-center transition-all"
+                                  title="Editar">
+                                  <i className="fa-solid fa-pen text-[10px]"></i>
+                                </button>
+                                <button onClick={() => handleToggleAtivo(u)}
+                                  className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${
+                                    u.ativo !== false
+                                      ? 'bg-amber-50 hover:bg-amber-100 text-amber-500'
+                                      : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-600'
+                                  }`}
+                                  title={u.ativo !== false ? 'Suspender acesso' : 'Reativar'}>
+                                  <i className={`fa-solid ${u.ativo !== false ? 'fa-ban' : 'fa-circle-check'} text-[10px]`}></i>
+                                </button>
+                                <button onClick={() => setDeleteId(u.id)}
+                                  className="w-7 h-7 rounded-lg bg-red-50 hover:bg-red-100 text-red-400 flex items-center justify-center transition-all"
+                                  title="Remover">
+                                  <i className="fa-solid fa-trash text-[10px]"></i>
+                                </button>
                               </div>
                             )}
                           </td>
                         </tr>
-                      )}
-                    </React.Fragment>
-                  ))}
-                  {users.length === 0 && (
-                    <tr>
-                      <td colSpan={7} className="py-10 text-center text-slate-600 text-xs">Nenhum usuário cadastrado.</td>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── MATRIZ DE PERMISSÕES ──────────────────────────────────────── */}
+          {tab === 'permissoes' && (
+            <div className="p-5 space-y-5">
+              <p className="text-xs text-slate-500">
+                Matriz de controle de acesso por perfil. As permissões são aplicadas automaticamente ao perfil atribuído ao colaborador.
+              </p>
+
+              {/* Legenda */}
+              <div className="flex flex-wrap gap-3">
+                {Object.entries(NIVEL_CONFIG).map(([k, v]) => (
+                  <span key={k} className="inline-flex items-center gap-1.5 text-[10px] font-black px-3 py-1.5 rounded-lg"
+                    style={{ background: v.bg, color: v.color }}>
+                    <i className={`fa-solid ${v.icon} text-[9px]`}></i>{v.label}
+                  </span>
+                ))}
+              </div>
+
+              {/* Tabela de permissões */}
+              <div className="overflow-x-auto border border-slate-200 rounded-[14px]">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-200">
+                      <th className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest w-48">Módulo</th>
+                      {ROLES.map(r => (
+                        <th key={r.id} className="p-3 text-center">
+                          <div className="text-[10px] font-black uppercase tracking-widest" style={{ color: r.color }}>{r.label}</div>
+                          <div className="text-[9px] text-slate-400 font-normal mt-0.5">{r.desc}</div>
+                        </th>
+                      ))}
                     </tr>
-                  )}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {MODULOS.map((m, idx) => (
+                      <tr key={m.id} className={`border-b border-slate-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}>
+                        <td className="p-3">
+                          <div className="flex items-center gap-2">
+                            <i className={`fa-solid ${m.icon} text-slate-400 text-[11px] w-4 text-center`}></i>
+                            <span className="font-bold text-slate-700">{m.label}</span>
+                          </div>
+                        </td>
+                        {ROLES.map(r => {
+                          const nivel = PERMISSOES[m.id]?.[r.id] || '-';
+                          const cfg = NIVEL_CONFIG[nivel];
+                          return (
+                            <td key={r.id} className="p-3 text-center">
+                              <span className="inline-flex items-center gap-1 text-[10px] font-black px-2.5 py-1.5 rounded-lg"
+                                style={{ background: cfg.bg, color: cfg.color }}>
+                                <i className={`fa-solid ${cfg.icon} text-[9px]`}></i>
+                                {cfg.label}
+                              </span>
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Cards explicativos */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                {ROLES.map(r => (
+                  <div key={r.id} className="bg-white border border-slate-200 rounded-[14px] p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-8 h-8 rounded-xl flex items-center justify-center"
+                        style={{ background: r.color + '15' }}>
+                        <i className="fa-solid fa-user text-sm" style={{ color: r.color }}></i>
+                      </div>
+                      <div>
+                        <p className="text-sm font-black text-slate-800">{r.label}</p>
+                        <p className="text-[10px] text-slate-400">{r.desc}</p>
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      {MODULOS.map(m => {
+                        const nivel = PERMISSOES[m.id]?.[r.id] || '-';
+                        const cfg = NIVEL_CONFIG[nivel];
+                        return (
+                          <div key={m.id} className="flex items-center justify-between">
+                            <span className="text-[11px] text-slate-500 flex items-center gap-1.5">
+                              <i className={`fa-solid ${m.icon} text-[9px] text-slate-400`}></i>
+                              {m.label}
+                            </span>
+                            <span className="text-[9px] font-black px-2 py-0.5 rounded-lg"
+                              style={{ background: cfg.bg, color: cfg.color }}>
+                              {cfg.label}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

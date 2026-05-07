@@ -1,266 +1,345 @@
-import React, { useState, useEffect } from 'react';
-import { db } from '../../services/firebase';
+// frontend/src/features/Audit/AuditoriaView.tsx
+// Auditoria completa — logs reais, filtros funcionais, exportação CSV
+
+import React, { useState, useEffect, useCallback } from 'react';
 import {
-  collection, onSnapshot, query, orderBy, addDoc, serverTimestamp, limit
+  collection, query, orderBy, onSnapshot,
+  addDoc, serverTimestamp, limit, where
 } from 'firebase/firestore';
+import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type LogTipo =
+  | 'login' | 'logout'
+  | 'quiz_realizado' | 'quiz_aprovado' | 'quiz_reprovado'
+  | 'trilha_concluida' | 'certificado_emitido'
+  | 'usuario_criado' | 'usuario_alterado' | 'usuario_removido'
+  | 'permissao_alterada'
+  | 'documento_inserido' | 'documento_excluido'
+  | 'acesso';
 
 interface AuditLog {
   id: string;
-  tipo: 'login' | 'logout' | 'documento_inserido' | 'documento_excluido' | 'usuario_criado' | 'usuario_alterado' | 'permissao_alterada' | 'acesso';
+  tipo: LogTipo;
   descricao: string;
   usuario: string;
   usuarioId?: string;
   tenantId?: string;
+  ip?: string;
   metadata?: Record<string, any>;
   createdAt: any;
 }
 
-type FilterTipo = 'todos' | 'acesso' | 'documentos' | 'usuarios';
-type Tab = 'logs' | 'documentos' | 'usuarios';
+// ─── Config visual por tipo ───────────────────────────────────────────────────
 
-const TIPO_CONFIG: Record<string, { icon: string; color: string; label: string }> = {
-  login:              { icon: 'fa-right-to-bracket', color: 'emerald', label: 'Login'               },
-  logout:             { icon: 'fa-right-from-bracket', color: 'slate',  label: 'Logout'              },
-  documento_inserido: { icon: 'fa-file-circle-plus',  color: 'blue',   label: 'Doc. Inserido'       },
-  documento_excluido: { icon: 'fa-file-circle-xmark', color: 'red',    label: 'Doc. Excluído'       },
-  usuario_criado:     { icon: 'fa-user-plus',          color: 'purple', label: 'Usuário Criado'      },
-  usuario_alterado:   { icon: 'fa-user-pen',           color: 'amber',  label: 'Usuário Alterado'    },
-  permissao_alterada: { icon: 'fa-shield-halved',      color: 'orange', label: 'Permissão Alterada'  },
-  acesso:             { icon: 'fa-eye',                color: 'blue',   label: 'Acesso'              },
+const TIPO_CONFIG: Record<string, { icon: string; color: string; bg: string; label: string; grupo: string }> = {
+  login:              { icon: 'fa-right-to-bracket', color: '#059669', bg: '#d1fae5', label: 'Login',               grupo: 'acesso'     },
+  logout:             { icon: 'fa-right-from-bracket',color: '#64748b', bg: '#f1f5f9', label: 'Logout',              grupo: 'acesso'     },
+  quiz_realizado:     { icon: 'fa-clipboard-check',   color: '#4F46E5', bg: '#eef2ff', label: 'Quiz Realizado',      grupo: 'treinamento'},
+  quiz_aprovado:      { icon: 'fa-circle-check',      color: '#059669', bg: '#d1fae5', label: 'Quiz Aprovado',       grupo: 'treinamento'},
+  quiz_reprovado:     { icon: 'fa-circle-xmark',      color: '#DC2626', bg: '#fee2e2', label: 'Quiz Reprovado',      grupo: 'treinamento'},
+  trilha_concluida:   { icon: 'fa-flag-checkered',    color: '#7C3AED', bg: '#ede9fe', label: 'Trilha Concluída',    grupo: 'treinamento'},
+  certificado_emitido:{ icon: 'fa-certificate',       color: '#D97706', bg: '#fef3c7', label: 'Certificado Emitido', grupo: 'treinamento'},
+  usuario_criado:     { icon: 'fa-user-plus',          color: '#4F46E5', bg: '#eef2ff', label: 'Usuário Criado',     grupo: 'usuarios'   },
+  usuario_alterado:   { icon: 'fa-user-pen',           color: '#D97706', bg: '#fef3c7', label: 'Usuário Alterado',   grupo: 'usuarios'   },
+  usuario_removido:   { icon: 'fa-user-minus',         color: '#DC2626', bg: '#fee2e2', label: 'Usuário Removido',   grupo: 'usuarios'   },
+  permissao_alterada: { icon: 'fa-shield-halved',      color: '#0891B2', bg: '#e0f2fe', label: 'Permissão Alterada', grupo: 'usuarios'   },
+  documento_inserido: { icon: 'fa-file-circle-plus',   color: '#059669', bg: '#d1fae5', label: 'Doc. Inserido',      grupo: 'documentos' },
+  documento_excluido: { icon: 'fa-file-circle-xmark',  color: '#DC2626', bg: '#fee2e2', label: 'Doc. Excluído',      grupo: 'documentos' },
+  acesso:             { icon: 'fa-eye',                color: '#4F46E5', bg: '#eef2ff', label: 'Acesso',             grupo: 'acesso'     },
 };
+
+const GRUPOS = [
+  { id: 'todos',      label: 'Todos'       },
+  { id: 'acesso',     label: 'Acessos'     },
+  { id: 'treinamento',label: 'Treinamento' },
+  { id: 'usuarios',   label: 'Usuários'    },
+  { id: 'documentos', label: 'Documentos'  },
+];
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function formatDate(ts: any): string {
+  if (!ts) return '–';
+  const d = ts?.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' }) +
+    ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
+// Hook público para gravar log — exportar para usar em outros módulos
+export async function registrarLog(
+  tipo: LogTipo,
+  descricao: string,
+  usuario: string,
+  tenantId: string,
+  extra?: Record<string, any>
+) {
+  try {
+    await addDoc(collection(db, 'auditLogs'), {
+      tipo, descricao, usuario, tenantId,
+      metadata: extra || {},
+      createdAt: serverTimestamp(),
+    });
+  } catch (e) {
+    console.error('Erro ao registrar log:', e);
+  }
+}
+
+// ─── Main View ────────────────────────────────────────────────────────────────
 
 const AuditoriaView: React.FC = () => {
   const { state } = useApp();
+  const user = state.user!;
+  const tenantId = user.tenantId;
+
   const [logs, setLogs] = useState<AuditLog[]>([]);
-  const [activeTab, setActiveTab] = useState<Tab>('logs');
-  const [filterTipo, setFilterTipo] = useState<FilterTipo>('todos');
-  const [filterUsuario, setFilterUsuario] = useState('');
-  const [filterData, setFilterData] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [grupo, setGrupo] = useState('todos');
+  const [busca, setBusca] = useState('');
+  const [dataInicio, setDataInicio] = useState('');
+  const [dataFim, setDataFim] = useState('');
+  const [pagina, setPagina] = useState(1);
+  const POR_PAGINA = 50;
 
   useEffect(() => {
-    const q = query(collection(db, 'auditLogs'), orderBy('createdAt', 'desc'), limit(500));
-    const unsub = onSnapshot(q, snap => setLogs(snap.docs.map(d => ({ id: d.id, ...d.data() } as AuditLog))));
+    const q = query(
+      collection(db, 'auditLogs'),
+      orderBy('createdAt', 'desc'),
+      limit(1000)
+    );
+    const unsub = onSnapshot(q, snap => {
+      setLogs(snap.docs.map(d => ({ id: d.id, ...d.data() } as AuditLog)));
+      setLoading(false);
+    });
     return () => unsub();
-  }, []);
-
-  const formatDate = (ts: any) => {
-    if (!ts) return '-';
-    const d = ts.toDate ? ts.toDate() : new Date(ts);
-    return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-  };
+  }, [tenantId]);
 
   // Filtros
-  const filteredLogs = logs.filter(l => {
-    if (filterTipo === 'acesso' && !['login', 'logout', 'acesso'].includes(l.tipo)) return false;
-    if (filterTipo === 'documentos' && !['documento_inserido', 'documento_excluido'].includes(l.tipo)) return false;
-    if (filterTipo === 'usuarios' && !['usuario_criado', 'usuario_alterado', 'permissao_alterada'].includes(l.tipo)) return false;
-    if (filterUsuario && !l.usuario?.toLowerCase().includes(filterUsuario.toLowerCase())) return false;
-    if (filterData) {
-      const logDate = l.createdAt?.toDate ? l.createdAt.toDate().toISOString().split('T')[0] : '';
-      if (!logDate.startsWith(filterData)) return false;
+  const logsFiltrados = logs.filter(log => {
+    if (grupo !== 'todos') {
+      const cfg = TIPO_CONFIG[log.tipo];
+      if (!cfg || cfg.grupo !== grupo) return false;
+    }
+    if (busca) {
+      const b = busca.toLowerCase();
+      if (!log.usuario?.toLowerCase().includes(b) &&
+          !log.descricao?.toLowerCase().includes(b)) return false;
+    }
+    if (dataInicio) {
+      const d = log.createdAt?.toDate ? log.createdAt.toDate() : new Date(log.createdAt || 0);
+      if (d < new Date(dataInicio)) return false;
+    }
+    if (dataFim) {
+      const d = log.createdAt?.toDate ? log.createdAt.toDate() : new Date(log.createdAt || 0);
+      if (d > new Date(dataFim + 'T23:59:59')) return false;
     }
     return true;
   });
 
-  // Stats
-  const hoje = new Date().toISOString().split('T')[0];
-  const logsHoje = logs.filter(l => {
-    const d = l.createdAt?.toDate ? l.createdAt.toDate().toISOString().split('T')[0] : '';
-    return d === hoje;
-  });
-  const docsInseridos = logs.filter(l => l.tipo === 'documento_inserido').length;
-  const docsExcluidos = logs.filter(l => l.tipo === 'documento_excluido').length;
-  const usuariosUnicos = [...new Set(logs.map(l => l.usuario).filter(Boolean))].length;
+  const totalPaginas = Math.ceil(logsFiltrados.length / POR_PAGINA);
+  const logsPagina = logsFiltrados.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA);
 
-  // Exportar CSV
+  // Stats
+  const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+  const logsHoje = logs.filter(l => {
+    const d = l.createdAt?.toDate ? l.createdAt.toDate() : new Date(l.createdAt || 0);
+    return d >= hoje;
+  });
+  const usuarios = [...new Set(logs.map(l => l.usuario).filter(Boolean))];
+
   const exportCSV = () => {
-    const headers = ['Data/Hora', 'Tipo', 'Usuário', 'Descrição', 'Tenant'];
-    const rows = filteredLogs.map(l => [
-      formatDate(l.createdAt),
-      TIPO_CONFIG[l.tipo]?.label || l.tipo,
-      l.usuario || '-',
-      l.descricao || '-',
-      l.tenantId || '-',
-    ]);
-    const csv = [headers, ...rows].map(r => r.map(c => `"${c}"`).join(';')).join('\n');
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const rows = ['Data,Usuário,Tipo,Descrição'];
+    logsFiltrados.forEach(l => {
+      rows.push([
+        formatDate(l.createdAt),
+        l.usuario || '',
+        TIPO_CONFIG[l.tipo]?.label || l.tipo,
+        `"${(l.descricao || '').replace(/"/g, '""')}"`,
+      ].join(','));
+    });
+    const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url;
-    a.download = `auditoria_${hoje}.csv`; a.click();
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `auditoria_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
     URL.revokeObjectURL(url);
   };
 
-  // Exportar PDF
-  const exportPDF = () => {
-    const w = window.open('', '_blank');
-    if (!w) return;
-    const rows = filteredLogs.slice(0, 200).map(l => {
-      const cfg = TIPO_CONFIG[l.tipo] || { color: 'slate', label: l.tipo };
-      return `<tr>
-        <td>${formatDate(l.createdAt)}</td>
-        <td><span style="color:#60a5fa;font-weight:bold">${cfg.label}</span></td>
-        <td>${l.usuario || '-'}</td>
-        <td>${l.descricao || '-'}</td>
-      </tr>`;
-    }).join('');
-    w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Log de Auditoria</title>
-      <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;color:#111;padding:40px;font-size:11px}
-      .header{text-align:center;margin-bottom:24px;border-bottom:3px solid #1e3a8a;padding-bottom:16px}
-      .header h1{font-size:20px;color:#1e3a8a;text-transform:uppercase;letter-spacing:2px}
-      .header p{color:#6b7280;font-size:10px;margin-top:4px;letter-spacing:2px;text-transform:uppercase}
-      table{width:100%;border-collapse:collapse}
-      th{background:#1e3a8a;color:white;padding:8px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px}
-      td{padding:6px 8px;border-bottom:1px solid #e5e7eb;font-size:10px}
-      tr:nth-child(even) td{background:#f9fafb}
-      .footer{margin-top:20px;text-align:center;font-size:9px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:10px}
-      </style></head><body>
-      <div class="header"><h1>MJ Consultoria</h1><p>Log de Auditoria da Plataforma</p></div>
-      <table><thead><tr><th>Data/Hora</th><th>Tipo</th><th>Usuário</th><th>Descrição</th></tr></thead>
-      <tbody>${rows}</tbody></table>
-      <div class="footer">Gerado em ${new Date().toLocaleDateString('pt-BR')} · ${filteredLogs.length} registros</div>
-      <script>window.onload=()=>{window.print();window.onafterprint=()=>window.close()}</script>
-      </body></html>`);
-    w.document.close();
-  };
-
-  const TABS: { id: Tab; icon: string; label: string }[] = [
-    { id: 'logs',       icon: 'fa-list-ul',          label: 'Todos os Logs'   },
-    { id: 'documentos', icon: 'fa-file-lines',        label: 'Documentos'      },
-    { id: 'usuarios',   icon: 'fa-users-gear',        label: 'Usuários/Acesso' },
-  ];
-
-  const renderContent = () => {
-    let displayLogs = filteredLogs;
-    if (activeTab === 'documentos') displayLogs = logs.filter(l => ['documento_inserido', 'documento_excluido'].includes(l.tipo));
-    if (activeTab === 'usuarios')   displayLogs = logs.filter(l => ['login', 'logout', 'usuario_criado', 'usuario_alterado', 'permissao_alterada'].includes(l.tipo));
-
-    if (displayLogs.length === 0) {
-      return (
-        <div className="bg-[#05080f] border border-slate-800 rounded-2xl p-10 text-center">
-          <i className="fa-solid fa-scroll text-4xl text-slate-700 mb-3 block"></i>
-          <p className="text-slate-600 text-xs font-bold uppercase tracking-widest">Nenhum registro encontrado</p>
-          <p className="text-slate-700 text-xs mt-1">Os logs são gerados automaticamente pelas ações na plataforma</p>
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-2">
-        {displayLogs.map(log => {
-          const cfg = TIPO_CONFIG[log.tipo] || { icon: 'fa-circle', color: 'slate', label: log.tipo };
-          return (
-            <div key={log.id} className="bg-[#05080f] border border-slate-800 hover:border-slate-700 rounded-2xl p-4 flex items-start gap-4 transition-all">
-              <div className={`w-9 h-9 rounded-xl bg-${cfg.color}-500/10 border border-${cfg.color}-500/20 flex items-center justify-center flex-shrink-0 mt-0.5`}>
-                <i className={`fa-solid ${cfg.icon} text-${cfg.color}-400 text-sm`}></i>
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className={`text-[9px] font-black uppercase tracking-widest text-${cfg.color}-400 bg-${cfg.color}-500/10 px-2 py-0.5 rounded-md`}>
-                    {cfg.label}
-                  </span>
-                  <span className="text-xs text-white font-bold">{log.usuario || 'Sistema'}</span>
-                  {log.tenantId && <span className="text-[9px] text-slate-600">{log.tenantId}</span>}
-                </div>
-                <p className="text-xs text-slate-400 mt-1">{log.descricao}</p>
-                {log.metadata && Object.keys(log.metadata).length > 0 && (
-                  <div className="flex gap-3 mt-1 flex-wrap">
-                    {Object.entries(log.metadata).slice(0, 3).map(([k, v]) => (
-                      <span key={k} className="text-[9px] text-slate-600">{k}: <span className="text-slate-500">{String(v)}</span></span>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <span className="text-[9px] text-slate-600 flex-shrink-0 mt-1">{formatDate(log.createdAt)}</span>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
   return (
-    <div className="p-8 space-y-6 bg-[#05080f] min-h-screen animate-in fade-in">
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-7xl mx-auto p-6 space-y-6">
 
-      <header>
-        <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
-          Log de <span className="text-blue-500">Auditoria</span>
-        </h2>
-        <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">MJ Consultoria // Rastreabilidade Completa</p>
-      </header>
-
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: 'Eventos Hoje',     value: logsHoje.length,  icon: 'fa-clock',            color: 'blue'    },
-          { label: 'Total de Logs',    value: logs.length,      icon: 'fa-scroll',           color: 'slate'   },
-          { label: 'Docs Movimentados', value: docsInseridos + docsExcluidos, icon: 'fa-file-lines', color: 'amber' },
-          { label: 'Usuários Ativos',  value: usuariosUnicos,   icon: 'fa-users',            color: 'emerald' },
-        ].map((s, i) => (
-          <div key={i} className="bg-[#0a111f] border border-slate-800 rounded-[24px] p-6 space-y-3">
-            <i className={`fa-solid ${s.icon} text-${s.color}-500 text-xl`}></i>
-            <p className="text-3xl font-black text-white">{s.value}</p>
-            <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">{s.label}</p>
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-black text-slate-800">Trilha de Auditoria</h2>
+            <p className="text-sm text-slate-500 mt-0.5">Registro completo de acessos e ações na plataforma</p>
           </div>
-        ))}
-      </div>
+          <button onClick={exportCSV}
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm">
+            <i className="fa-solid fa-download text-xs"></i>Exportar CSV
+          </button>
+        </div>
 
-      <div className="bg-[#0a111f] border border-slate-800 rounded-[32px] overflow-hidden shadow-2xl">
-
-        {/* Tabs */}
-        <div className="flex border-b border-slate-800">
-          {TABS.map(tab => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-6 py-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all border-b-2 ${
-                activeTab === tab.id
-                  ? 'text-blue-400 border-blue-500 bg-blue-500/5'
-                  : 'text-slate-500 border-transparent hover:text-slate-300 hover:bg-slate-800/50'
-              }`}>
-              <i className={`fa-solid ${tab.icon} text-xs`}></i>{tab.label}
-            </button>
+        {/* KPIs */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { label: 'Total de Logs',     value: logs.length,                                                    icon: 'fa-list-check',    color: '#4F46E5' },
+            { label: 'Hoje',              value: logsHoje.length,                                                icon: 'fa-calendar-day',  color: '#059669' },
+            { label: 'Usuários Ativos',   value: usuarios.length,                                                icon: 'fa-users',         color: '#D97706' },
+            { label: 'Filtro Atual',      value: logsFiltrados.length,                                           icon: 'fa-filter',        color: '#7C3AED' },
+          ].map((s, i) => (
+            <div key={i} className="bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3" style={{ background: s.color + '15' }}>
+                <i className={`fa-solid ${s.icon}`} style={{ color: s.color }}></i>
+              </div>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{s.label}</p>
+              <p className="text-3xl font-black text-slate-800">{s.value}</p>
+            </div>
           ))}
         </div>
 
-        <div className="p-6 space-y-4">
+        {/* Card principal */}
+        <div className="bg-white border border-slate-200 rounded-[16px] shadow-sm overflow-hidden">
 
-          {/* Filtros + Exportar */}
-          <div className="flex flex-wrap gap-3 items-center justify-between">
-            <div className="flex flex-wrap gap-2">
-              <input value={filterUsuario} onChange={e => setFilterUsuario(e.target.value)}
-                placeholder="Buscar usuário..."
-                className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-sm text-white outline-none focus:border-blue-500 min-w-[160px]" />
-              {activeTab === 'logs' && (
-                <select value={filterTipo} onChange={e => setFilterTipo(e.target.value as FilterTipo)}
-                  className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-sm text-white outline-none focus:border-blue-500">
-                  <option value="todos">Todos os Tipos</option>
-                  <option value="acesso">Acesso (Login/Logout)</option>
-                  <option value="documentos">Documentos</option>
-                  <option value="usuarios">Usuários/Permissões</option>
-                </select>
-              )}
-              <input type="date" value={filterData} onChange={e => setFilterData(e.target.value)}
-                className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-sm text-white outline-none focus:border-blue-500" />
+          {/* Filtros */}
+          <div className="p-5 border-b border-slate-100 space-y-4">
+            {/* Grupos */}
+            <div className="flex gap-2 flex-wrap">
+              {GRUPOS.map(g => (
+                <button key={g.id} onClick={() => { setGrupo(g.id); setPagina(1); }}
+                  className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                    grupo === g.id
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                  }`}>{g.label}</button>
+              ))}
             </div>
-            <div className="flex gap-2">
-              <button onClick={exportCSV}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest bg-emerald-600 hover:bg-emerald-500 text-white transition-all">
-                <i className="fa-solid fa-file-csv"></i>CSV
-              </button>
-              <button onClick={exportPDF}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest bg-red-600 hover:bg-red-500 text-white transition-all">
-                <i className="fa-solid fa-file-pdf"></i>PDF
-              </button>
+
+            {/* Busca e datas */}
+            <div className="flex flex-wrap gap-3 items-center">
+              <input value={busca} onChange={e => { setBusca(e.target.value); setPagina(1); }}
+                placeholder="Buscar por usuário ou descrição..."
+                className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-500 w-64" />
+              <div className="flex items-center gap-2">
+                <input type="date" value={dataInicio} onChange={e => { setDataInicio(e.target.value); setPagina(1); }}
+                  className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-500" />
+                <span className="text-slate-400 text-sm">até</span>
+                <input type="date" value={dataFim} onChange={e => { setDataFim(e.target.value); setPagina(1); }}
+                  className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-500" />
+              </div>
+              {(busca || dataInicio || dataFim || grupo !== 'todos') && (
+                <button onClick={() => { setBusca(''); setDataInicio(''); setDataFim(''); setGrupo('todos'); setPagina(1); }}
+                  className="text-xs text-slate-400 hover:text-red-500 transition-all">
+                  <i className="fa-solid fa-xmark mr-1"></i>Limpar filtros
+                </button>
+              )}
+              <span className="ml-auto text-xs text-slate-400 font-bold">
+                {logsFiltrados.length} registro{logsFiltrados.length !== 1 ? 's' : ''}
+              </span>
             </div>
           </div>
 
-          <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest">
-            {activeTab === 'logs' ? filteredLogs.length : activeTab === 'documentos'
-              ? logs.filter(l => ['documento_inserido', 'documento_excluido'].includes(l.tipo)).length
-              : logs.filter(l => ['login', 'logout', 'usuario_criado', 'usuario_alterado', 'permissao_alterada'].includes(l.tipo)).length
-            } registros
-          </p>
+          {/* Tabela */}
+          {loading ? (
+            <div className="flex items-center justify-center py-16 gap-3 text-slate-400">
+              <div className="w-5 h-5 border-2 border-indigo-300 border-t-indigo-600 rounded-full animate-spin"></div>
+              <span className="text-sm">Carregando logs...</span>
+            </div>
+          ) : logsPagina.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+              <i className="fa-solid fa-list-check text-4xl mb-3 opacity-30"></i>
+              <p className="text-sm">Nenhum log encontrado com os filtros atuais</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-200">
+                    {['Data/Hora', 'Usuário', 'Tipo', 'Descrição', 'Detalhes'].map(h => (
+                      <th key={h} className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {logsPagina.map(log => {
+                    const cfg = TIPO_CONFIG[log.tipo] || { icon: 'fa-circle', color: '#94a3b8', bg: '#f1f5f9', label: log.tipo, grupo: 'outros' };
+                    return (
+                      <tr key={log.id} className="border-b border-slate-100 hover:bg-slate-50 transition-all">
+                        <td className="p-3 text-slate-400 whitespace-nowrap font-mono text-[10px]">
+                          {formatDate(log.createdAt)}
+                        </td>
+                        <td className="p-3 font-bold text-slate-700 whitespace-nowrap">
+                          {log.usuario || '–'}
+                        </td>
+                        <td className="p-3 whitespace-nowrap">
+                          <span className="inline-flex items-center gap-1.5 text-[10px] font-black px-2.5 py-1 rounded-lg"
+                            style={{ background: cfg.bg, color: cfg.color }}>
+                            <i className={`fa-solid ${cfg.icon} text-[9px]`}></i>
+                            {cfg.label}
+                          </span>
+                        </td>
+                        <td className="p-3 text-slate-600 max-w-xs">
+                          {log.descricao || '–'}
+                        </td>
+                        <td className="p-3 text-slate-400 text-[10px] max-w-[200px]">
+                          {log.metadata && Object.keys(log.metadata).length > 0 ? (
+                            <div className="space-y-0.5">
+                              {Object.entries(log.metadata).slice(0, 3).map(([k, v]) => (
+                                <p key={k}><span className="text-slate-500 font-bold">{k}:</span> {String(v)}</p>
+                              ))}
+                            </div>
+                          ) : '–'}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
 
-          {renderContent()}
+          {/* Paginação */}
+          {totalPaginas > 1 && (
+            <div className="flex items-center justify-between p-4 border-t border-slate-100">
+              <p className="text-xs text-slate-400">
+                Página {pagina} de {totalPaginas} · {logsFiltrados.length} registros
+              </p>
+              <div className="flex gap-2">
+                <button onClick={() => setPagina(p => Math.max(1, p - 1))} disabled={pagina === 1}
+                  className="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 text-xs font-bold disabled:opacity-40 hover:bg-slate-200 transition-all">
+                  ← Anterior
+                </button>
+                {Array.from({ length: Math.min(5, totalPaginas) }, (_, i) => {
+                  const p = Math.max(1, pagina - 2) + i;
+                  if (p > totalPaginas) return null;
+                  return (
+                    <button key={p} onClick={() => setPagina(p)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                        p === pagina ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}>{p}</button>
+                  );
+                })}
+                <button onClick={() => setPagina(p => Math.min(totalPaginas, p + 1))} disabled={pagina === totalPaginas}
+                  className="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 text-xs font-bold disabled:opacity-40 hover:bg-slate-200 transition-all">
+                  Próxima →
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Nota CNJ */}
+        <div className="bg-blue-50 border border-blue-200 rounded-[14px] p-4 flex items-start gap-3">
+          <i className="fa-solid fa-circle-info text-blue-500 text-base mt-0.5 flex-shrink-0"></i>
+          <p className="text-xs text-blue-700 leading-relaxed">
+            <strong>Trilha de Auditoria CNJ</strong> — Os registros desta tela compõem a trilha de auditoria exigida pelo
+            Provimento CNJ nº 213/2026 (art. 14, §2º) e Provimento nº 161/2023. Os logs são gravados automaticamente
+            a cada ação relevante na plataforma e não podem ser alterados pelos usuários.
+          </p>
         </div>
       </div>
     </div>
