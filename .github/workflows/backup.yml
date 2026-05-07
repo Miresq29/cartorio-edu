@@ -1,0 +1,156 @@
+name: Firestore Backup Automático
+
+on:
+  schedule:
+    # 06:00 BRT (09:00 UTC) e 18:00 BRT (21:00 UTC)
+    - cron: '0 9 * * *'
+    - cron: '0 21 * * *'
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Motivo do backup manual'
+        required: false
+        default: 'backup manual'
+
+jobs:
+  backup:
+    name: Exportar Firestore
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repositório
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar dependências do backup
+        run: |
+          mkdir -p .backup-runner
+          cd .backup-runner
+          cat > package.json << 'EOF'
+          {
+            "name": "firestore-backup",
+            "version": "1.0.0",
+            "type": "module",
+            "dependencies": {
+              "firebase-admin": "^12.0.0"
+            }
+          }
+          EOF
+          npm install --silent
+
+      - name: Criar script de backup
+        run: |
+          cat > .backup-runner/backup.mjs << 'EOF'
+          import { initializeApp, cert } from 'firebase-admin/app';
+          import { getFirestore } from 'firebase-admin/firestore';
+          import { writeFileSync, mkdirSync } from 'fs';
+          import { join } from 'path';
+
+          const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+
+          initializeApp({ credential: cert(serviceAccount) });
+          const db = getFirestore();
+
+          const COLECOES = [
+            'users', 'trilhas', 'trilhasProgresso',
+            'treinamentosQuizResults', 'examesResultados',
+            'certificados', 'metas', 'metasDesempate',
+            'repositorio', 'repositorioProgresso',
+            'comunicados', 'auditLogs', 'checklists', 'knowledgeBase',
+            'tenants'
+          ];
+
+          const agora = new Date();
+          const dataStr = agora.toISOString().slice(0, 10);
+          const horaStr = agora.toISOString().slice(11, 13) + 'h';
+          const pasta = `backups/${dataStr}`;
+
+          mkdirSync(pasta, { recursive: true });
+
+          const resumo = { geradoEm: agora.toISOString(), colecoes: {} };
+          let totalDocs = 0;
+
+          for (const colecao of COLECOES) {
+            try {
+              const snap = await db.collection(colecao).get();
+              const docs = snap.docs.map(d => {
+                const data = d.data();
+                // Serializar Timestamps
+                const serialized = {};
+                for (const [k, v] of Object.entries(data)) {
+                  if (v && typeof v.toDate === 'function') {
+                    serialized[k] = v.toDate().toISOString();
+                  } else if (v && typeof v === 'object' && v._seconds !== undefined) {
+                    serialized[k] = new Date(v._seconds * 1000).toISOString();
+                  } else {
+                    serialized[k] = v;
+                  }
+                }
+                return { _id: d.id, ...serialized };
+              });
+
+              writeFileSync(
+                join(pasta, `${colecao}.json`),
+                JSON.stringify(docs, null, 2),
+                'utf-8'
+              );
+
+              resumo.colecoes[colecao] = { registros: docs.length, status: 'ok' };
+              totalDocs += docs.length;
+              console.log(`✓ ${colecao}: ${docs.length} documentos`);
+            } catch (e) {
+              resumo.colecoes[colecao] = { registros: 0, status: 'erro', erro: e.message };
+              console.error(`✗ ${colecao}: ${e.message}`);
+            }
+          }
+
+          resumo.totalDocumentos = totalDocs;
+          writeFileSync(
+            join(pasta, '_resumo.json'),
+            JSON.stringify(resumo, null, 2),
+            'utf-8'
+          );
+
+          console.log(`\n✅ Backup concluído: ${totalDocs} documentos em ${COLECOES.length} coleções`);
+          console.log(`📁 Pasta: ${pasta}`);
+          EOF
+
+      - name: Executar backup do Firestore
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          cd .backup-runner
+          node backup.mjs
+
+      - name: Verificar se arquivos foram gerados
+        run: |
+          echo "Arquivos gerados:"
+          find backups -name "*.json" | sort
+          echo ""
+          echo "Total de arquivos: $(find backups -name '*.json' | wc -l)"
+
+      - name: Commit e push dos backups
+        run: |
+          git config --local user.email "backup-bot@mj-consultoria.com"
+          git config --local user.name "MJ Backup Bot"
+          git add backups/
+          
+          DATA=$(date -u '+%Y-%m-%d %H:%M UTC')
+          TOTAL=$(find backups -name "*.json" | wc -l)
+          
+          git diff --staged --quiet || git commit -m "backup: $DATA — $TOTAL arquivos"
+          git push origin main
+
+      - name: Notificar resultado
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Backup executado com sucesso em $(date -u '+%Y-%m-%d %H:%M UTC')"
+          else
+            echo "❌ Backup falhou em $(date -u '+%Y-%m-%d %H:%M UTC')"
+          fi
