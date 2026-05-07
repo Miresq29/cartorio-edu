@@ -13,7 +13,7 @@ import { useToast } from '../../context/ToastContext';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type MidiaTipo = 'youtube' | 'audio' | 'pdf';
+type MidiaTipo = 'youtube' | 'audio' | 'mp4';
 
 interface Midia {
   id: string;
@@ -46,7 +46,7 @@ const CATEGORIAS = [
 const TIPO_CONFIG: Record<MidiaTipo, { label: string; icon: string; color: string; desc: string }> = {
   youtube: { label: 'Vídeo YouTube', icon: 'fa-brands fa-youtube',   color: 'red',    desc: 'Cole o link do YouTube'                          },
   audio:   { label: 'Áudio Drive',   icon: 'fa-solid fa-headphones', color: 'violet', desc: 'Cole o link de compartilhamento do Google Drive' },
-  pdf:     { label: 'PDF Drive',     icon: 'fa-solid fa-file-pdf',   color: 'rose',   desc: 'Cole o link de compartilhamento do Google Drive' },
+  mp4:     { label: 'Video Drive',   icon: 'fa-solid fa-circle-play', color: 'teal',   desc: 'Cole o link de compartilhamento do Google Drive' },
 };
 
 // Extrai o ID de vídeo do YouTube
@@ -123,7 +123,7 @@ const PlayerModal: React.FC<{
       );
     }
 
-    if (midia.tipo === 'pdf' && midia.driveId) {
+    if (midia.tipo === 'mp4' && midia.driveId) {
       return (
         <div className="space-y-3">
           <div className="rounded-2xl overflow-hidden shadow-2xl bg-slate-900" style={{ height: '70vh' }}>
@@ -246,7 +246,7 @@ const MidiaCard: React.FC<{
             </div>
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all bg-black/30">
               <div className={`w-14 h-14 bg-${tipo.color}-600 rounded-full flex items-center justify-center shadow-xl`}>
-                <i className={`fa-solid ${midia.tipo === 'pdf' ? 'fa-eye' : 'fa-play'} text-white text-xl ${midia.tipo !== 'pdf' ? 'ml-1' : ''}`}></i>
+                <i className={`fa-solid ${midia.tipo === 'mp4' ? 'fa-eye' : 'fa-play'} text-white text-xl ${midia.tipo !== 'mp4' ? 'ml-1' : ''}`}></i>
               </div>
             </div>
           </div>
@@ -287,8 +287,8 @@ const MidiaCard: React.FC<{
         <div className="flex gap-2 pt-1">
           <button onClick={onPlay}
             className={`flex-1 bg-${tipo.color}-600 hover:bg-${tipo.color}-500 text-white py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all`}>
-            <i className={`fa-solid ${midia.tipo === 'pdf' ? 'fa-eye' : 'fa-play'} mr-1`}></i>
-            {midia.tipo === 'pdf' ? 'Visualizar' : 'Abrir'}
+            <i className={`fa-solid ${midia.tipo === 'mp4' ? 'fa-eye' : 'fa-play'} mr-1`}></i>
+            {midia.tipo === 'mp4' ? 'Visualizar' : 'Abrir'}
           </button>
           {isGestor && (
             <button onClick={onDelete}
@@ -537,7 +537,7 @@ const RepositorioView: React.FC = () => {
   // Stats
   const totalVideos = midias.filter(m => m.tipo === 'youtube').length;
   const totalAudios = midias.filter(m => m.tipo === 'audio').length;
-  const totalPDFs   = midias.filter(m => m.tipo === 'pdf').length;
+  const totalPDFs   = midias.filter(m => m.tipo === 'mp4').length;
   const totalVistos = assistidas.size;
 
   return (

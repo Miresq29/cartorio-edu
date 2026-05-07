@@ -47,14 +47,13 @@ const Sidebar: React.FC = () => {
       items: [
         { tab: 'trails',      icon: 'fa-road',           label: 'Trilhas',          desc: 'Trilhas de aprendizagem por perfil',    color: 'text-teal-400'    },
         { tab: 'repositorio', icon: 'fa-photo-film', label: 'Repositorio', desc: 'Videos, audios e PDFs', color: 'text-blue-400' },
-        { tab: 'videos',      icon: 'fa-circle-play',    label: 'Videos',           desc: 'Biblioteca de videos de treinamento',   color: 'text-red-400'     },
       ]
     },
     {
       label: 'CAPACITACAO', icon: 'fa-graduation-cap',
       items: [
         { tab: 'training',      icon: 'fa-graduation-cap',  label: 'Treinamento AI',  desc: 'Roteiros, quizzes e certificados com IA', color: 'text-emerald-500' },
-        { tab: 'exames',        icon: 'fa-file-pen',        label: 'Exames',          desc: 'AvaliaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Âµes com IA e Taxonomia de Bloom',  color: 'text-blue-400'   },
+        { tab: 'exames',        icon: 'fa-file-pen',        label: 'Exames',          desc: 'AvaliaÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âµes com IA e Taxonomia de Bloom',  color: 'text-blue-400'   },
         { tab: 'metas', icon: 'fa-trophy', label: 'Metas & Premiacao', desc: 'Rankings e desempate Bloom Alto', color: 'text-amber-400' },
         { tab: 'meu-progresso', icon: 'fa-chart-line',      label: 'Meu Progresso',   desc: 'Trilhas, quizzes e certificados pessoais', color: 'text-teal-400'   },
         { tab: 'certificado', icon: 'fa-certificate', label: 'Certificados', desc: 'Emitir e baixar certificados PDF', color: 'text-amber-400' },
@@ -63,6 +62,7 @@ const Sidebar: React.FC = () => {
     {
       label: 'PLATAFORMA', icon: 'fa-gear',
       items: [
+        { tab: 'backup', icon: 'fa-database', label: 'Backup', desc: 'Exportar dados do cartorio', color: 'text-indigo-400', roles: ['SUPERADMIN','gestor','admin'] },
         { tab: 'support',  icon: 'fa-headset',       label: 'Suporte',          desc: 'Contatar a MJ Consultoria'          },
         { tab: 'tutorial', icon: 'fa-book-open',     label: 'Tutorial',         desc: 'Guia completo de uso da plataforma' },
         { tab: 'terms',    icon: 'fa-file-contract', label: 'Termos de Uso',    desc: 'Politicas e conformidade'           },

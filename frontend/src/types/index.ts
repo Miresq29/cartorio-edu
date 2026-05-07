@@ -102,6 +102,7 @@ export type AppTab =
   | 'metas'
   | 'repositorio'
   | 'certificado'
+  | 'backup'
   // Marketing
   | 'campanhas' | 'banners'
   // Plataforma
