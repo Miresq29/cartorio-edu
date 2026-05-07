@@ -99,6 +99,8 @@ export type AppTab =
   | 'trails' | 'videos' | 'knowledge' | 'comunicados'
   // Capacitação
   | 'training' | 'meu-progresso' | 'exames'
+  | 'metas'
+  | 'repositorio'
   // Marketing
   | 'campanhas' | 'banners'
   // Plataforma

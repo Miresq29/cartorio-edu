@@ -31,6 +31,8 @@ const ComunicadosView    = lazy(() => import('./features/Comunicados/Comunicados
 const BannersView        = lazy(() => import('./features/Banners/BannersView'));
 const MeuProgressoView   = lazy(() => import('./features/Progresso/MeuProgressoView'));
 const ExamesView         = lazy(() => import('./features/Exames/ExamesView'));
+const MetasView          = lazy(() => import('./features/Metas/MetasView'));
+const RepositorioView    = lazy(() => import('./features/Repositorio/RepositorioView'));
 
 // 🛡️ Admin Views
 const TenantsView          = lazy(() => import('./features/Admin/TenantsView'));
@@ -82,6 +84,8 @@ const MainLayout: React.FC = () => {
       case 'banners':       return <BannersView />;
       case 'meu-progresso': return <MeuProgressoView />;
       case 'exames':        return <ExamesView />;
+      case 'metas':         return <MetasView />;
+      case 'repositorio':   return <RepositorioView />;
       default:
         return state.user?.role === 'SUPERADMIN' ? <DashboardMasterView /> : <DashboardView />;
     }

@@ -46,6 +46,7 @@ const Sidebar: React.FC = () => {
       label: 'CONTEUDO', icon: 'fa-layer-group',
       items: [
         { tab: 'trails',      icon: 'fa-road',           label: 'Trilhas',          desc: 'Trilhas de aprendizagem por perfil',    color: 'text-teal-400'    },
+        { tab: 'repositorio', icon: 'fa-photo-film', label: 'Repositorio', desc: 'Videos, audios e PDFs', color: 'text-blue-400' },
         { tab: 'videos',      icon: 'fa-circle-play',    label: 'Videos',           desc: 'Biblioteca de videos de treinamento',   color: 'text-red-400'     },
         { tab: 'knowledge',   icon: 'fa-book-open',      label: 'Base de Conhecimento', desc: 'Documentos e materiais de referencia', color: 'text-amber-400' },
         { tab: 'comunicados', icon: 'fa-bell',           label: 'Comunicados',      desc: 'Mural de avisos e informacoes',         color: 'text-yellow-400'  },
@@ -56,6 +57,7 @@ const Sidebar: React.FC = () => {
       items: [
         { tab: 'training',      icon: 'fa-graduation-cap',  label: 'Treinamento AI',  desc: 'Roteiros, quizzes e certificados com IA', color: 'text-emerald-500' },
         { tab: 'exames',        icon: 'fa-file-pen',        label: 'Exames',          desc: 'Avaliações com IA e Taxonomia de Bloom',  color: 'text-blue-400'   },
+        { tab: 'metas', icon: 'fa-trophy', label: 'Metas & Premiacao', desc: 'Rankings e desempate Bloom Alto', color: 'text-amber-400' },
         { tab: 'meu-progresso', icon: 'fa-chart-line',      label: 'Meu Progresso',   desc: 'Trilhas, quizzes e certificados pessoais', color: 'text-teal-400'   },
       ]
     },

@@ -100,3 +100,8 @@ dist
 backend/cartorio-homolog-service-account.json
 .vercel
 .env*.local
+
+parte1.txt
+parte2.txt
+parte3.txt
+projeto_completo.txt
