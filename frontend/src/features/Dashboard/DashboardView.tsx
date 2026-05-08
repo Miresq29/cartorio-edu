@@ -412,7 +412,7 @@ const AdminDashboard: React.FC<{
           {testesPorMes.length === 0 ? (
             <div className="h-48 flex items-center justify-center text-slate-500 text-sm">Sem dados ainda</div>
           ) : (
-            <ChartSelector options={['line','bar','area']} value={chartMensal} onChange={setChartMensal} />
+            <><ChartSelector options={['line','bar','area']} value={chartMensal} onChange={setChartMensal} />
             <ResponsiveContainer width="100%" height={190}>
               {chartMensal === 'line' ? (
                 <LineChart data={testesPorMes} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
