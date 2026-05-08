@@ -613,6 +613,7 @@ const TrailsView: React.FC = () => {
   const updateProgresso = async (novoProgresso: TrilhaProgresso) => {
     const { id, ...data } = novoProgresso;
     await updateDoc(doc(db, 'trilhasProgresso', id), { ...data, updatedAt: serverTimestamp() });
+    if (novoProgresso.concluida) { try { await addDoc(collection(db, 'auditLogs'), { tipo: 'trilha_concluida', descricao: 'Trilha concluida: ' + (novoProgresso.trilhaTitulo || ''), usuario: novoProgresso.userName, usuarioId: novoProgresso.userId, tenantId, createdAt: serverTimestamp() }); } catch {} }
     setTrilhaAtiva(prev => prev ? { ...prev, progresso: novoProgresso } : null);
   };
 

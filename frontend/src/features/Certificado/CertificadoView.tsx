@@ -455,6 +455,7 @@ const CertificadoView: React.FC = () => {
         tenantId,
       };
       await addDoc(collection(db, 'certificados'), novo);
+      await addDoc(collection(db, 'auditLogs'), { tipo: 'certificado_emitido', descricao: 'Certificado emitido: ' + (novo.trilhaTitulo || '') + ' | Nota: ' + (novo.notaFinal || '') + '%', usuario: user.name, usuarioId: user.id, tenantId, createdAt: serverTimestamp() });
       showToast('Certificado emitido com sucesso!', 'success');
       setShowModal(false);
     } catch {
