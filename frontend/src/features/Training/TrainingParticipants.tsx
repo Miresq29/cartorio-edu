@@ -107,16 +107,16 @@ const TrainingParticipants: React.FC = () => {
       {/* Header da seção */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-white font-black uppercase italic text-sm tracking-wider">
+          <h3 className="text-[#0A1628] font-black uppercase italic text-sm tracking-wider">
             Histórico de <span className="text-blue-500">Participantes</span>
           </h3>
-          <p className="text-[9px] text-slate-400 uppercase tracking-widest mt-1">
+          <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">
             Registro de colaboradores por treinamento
           </p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2"
+          className="bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2"
         >
           <i className={`fa-solid ${showForm ? 'fa-xmark' : 'fa-plus'}`}></i>
           {showForm ? 'Cancelar' : 'Registrar Participante'}
@@ -131,46 +131,46 @@ const TrainingParticipants: React.FC = () => {
           { label: 'Pendentes', value: pendentes, icon: 'fa-clock', color: 'amber' },
           { label: 'Vencidos', value: vencidos, icon: 'fa-circle-xmark', color: 'red' },
         ].map((stat, i) => (
-          <div key={i} className="bg-[#0D1B3E] border border-[#C9A84C]/30 rounded-2xl p-4 space-y-2">
+          <div key={i} className="bg-[#F8F7F2] border border-slate-200 rounded-2xl p-4 space-y-2">
             <i className={`fa-solid ${stat.icon} text-${stat.color}-500 text-lg`}></i>
-            <p className="text-2xl font-black text-white">{stat.value}</p>
-            <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">{stat.label}</p>
+            <p className="text-2xl font-black text-[#0A1628]">{stat.value}</p>
+            <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">{stat.label}</p>
           </div>
         ))}
       </div>
 
       {/* Formulário de registro */}
       {showForm && (
-        <div className="bg-[#0D1B3E] border border-blue-500/30 rounded-2xl p-6 space-y-4">
+        <div className="bg-[#F8F7F2] border border-blue-500/30 rounded-2xl p-6 space-y-4">
           <h4 className="text-xs font-black text-blue-400 uppercase tracking-widest">Novo Registro</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
             <div className="space-y-1">
-              <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Nome do Colaborador *</label>
+              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Nome do Colaborador *</label>
               <input
                 value={form.nomeColaborador}
                 onChange={e => setForm(f => ({ ...f, nomeColaborador: e.target.value }))}
                 placeholder="Ex: João Silva"
-                className="w-full bg-slate-900 border border-[#C9A84C]/30 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500 transition-colors"
+                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500 transition-colors"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Cargo / Função</label>
+              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Cargo / Função</label>
               <input
                 value={form.cargo}
                 onChange={e => setForm(f => ({ ...f, cargo: e.target.value }))}
                 placeholder="Ex: Escrevente Técnico"
-                className="w-full bg-slate-900 border border-[#C9A84C]/30 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500 transition-colors"
+                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500 transition-colors"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Treinamento *</label>
+              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Treinamento *</label>
               <select
                 value={form.treinamento}
                 onChange={e => setForm(f => ({ ...f, treinamento: e.target.value }))}
-                className="w-full bg-slate-900 border border-[#C9A84C]/30 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500 transition-colors"
+                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500 transition-colors"
               >
                 <option value="">Selecione um treinamento...</option>
                 {checklists.map(c => (
@@ -182,31 +182,31 @@ const TrainingParticipants: React.FC = () => {
 
             {form.treinamento === 'outro' && (
               <div className="space-y-1">
-                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Nome do Treinamento *</label>
+                <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Nome do Treinamento *</label>
                 <input
                   onChange={e => setForm(f => ({ ...f, treinamento: e.target.value }))}
                   placeholder="Digite o nome do treinamento"
-                  className="w-full bg-slate-900 border border-[#C9A84C]/30 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500 transition-colors"
+                  className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500 transition-colors"
                 />
               </div>
             )}
 
             <div className="space-y-1">
-              <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Data de Conclusão *</label>
+              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Data de Conclusão *</label>
               <input
                 type="date"
                 value={form.dataConclusao}
                 onChange={e => setForm(f => ({ ...f, dataConclusao: e.target.value }))}
-                className="w-full bg-slate-900 border border-[#C9A84C]/30 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500 transition-colors"
+                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500 transition-colors"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Status</label>
+              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Status</label>
               <select
                 value={form.status}
                 onChange={e => setForm(f => ({ ...f, status: e.target.value as Participant['status'] }))}
-                className="w-full bg-slate-900 border border-[#C9A84C]/30 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500 transition-colors"
+                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500 transition-colors"
               >
                 <option value="concluído">✅ Concluído</option>
                 <option value="pendente">⏳ Pendente</option>
@@ -215,12 +215,12 @@ const TrainingParticipants: React.FC = () => {
             </div>
 
             <div className="space-y-1 md:col-span-2">
-              <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Observação</label>
+              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Observação</label>
               <input
                 value={form.observacao}
                 onChange={e => setForm(f => ({ ...f, observacao: e.target.value }))}
                 placeholder="Observações adicionais..."
-                className="w-full bg-slate-900 border border-[#C9A84C]/30 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500 transition-colors"
+                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500 transition-colors"
               />
             </div>
           </div>
@@ -228,14 +228,14 @@ const TrainingParticipants: React.FC = () => {
           <div className="flex justify-end gap-3 pt-2">
             <button
               onClick={() => setShowForm(false)}
-              className="px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white border border-[#C9A84C]/30 hover:border-slate-600 transition-all"
+              className="px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-[#0A1628] border border-slate-200 hover:border-slate-600 transition-all"
             >
               Cancelar
             </button>
             <button
               onClick={handleSubmit}
               disabled={isLoading || !form.nomeColaborador || !form.treinamento || !form.dataConclusao}
-              className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50 flex items-center gap-2"
+              className="bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50 flex items-center gap-2"
             >
               {isLoading ? <i className="fa-solid fa-circle-notch animate-spin"></i> : <i className="fa-solid fa-floppy-disk"></i>}
               Salvar Registro
@@ -253,8 +253,8 @@ const TrainingParticipants: React.FC = () => {
               onClick={() => setFilterStatus(s)}
               className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${
                 filterStatus === s
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-slate-900 text-slate-400 hover:text-white border border-[#C9A84C]/30'
+                  ? 'bg-blue-600 text-[#0A1628]'
+                  : 'bg-slate-900 text-slate-500 hover:text-[#0A1628] border border-slate-200'
               }`}
             >
               {s === 'todos' ? 'Todos' : STATUS_CONFIG[s as keyof typeof STATUS_CONFIG]?.label}
@@ -266,7 +266,7 @@ const TrainingParticipants: React.FC = () => {
           <select
             value={filterTreinamento}
             onChange={e => setFilterTreinamento(e.target.value)}
-            className="bg-slate-900 border border-[#C9A84C]/30 rounded-lg px-3 py-1.5 text-[10px] text-slate-500 outline-none focus:border-blue-500"
+            className="bg-slate-900 border border-slate-200 rounded-lg px-3 py-1.5 text-[10px] text-slate-500 outline-none focus:border-blue-500"
           >
             <option value="todos">Todos os Treinamentos</option>
             {treinamentosUnicos.map(t => (
@@ -279,9 +279,9 @@ const TrainingParticipants: React.FC = () => {
       {/* Lista de participantes */}
       <div className="space-y-2">
         {filtered.length === 0 ? (
-          <div className="bg-[#0D1B3E] border border-[#C9A84C]/30 rounded-2xl p-10 text-center">
-            <i className="fa-solid fa-users text-4xl text-slate-200 mb-3 block"></i>
-            <p className="text-slate-300 text-xs font-bold uppercase tracking-widest">
+          <div className="bg-[#F8F7F2] border border-slate-200 rounded-2xl p-10 text-center">
+            <i className="fa-solid fa-users text-4xl text-slate-700 mb-3 block"></i>
+            <p className="text-slate-600 text-xs font-bold uppercase tracking-widest">
               {participants.length === 0
                 ? 'Nenhum participante registrado ainda'
                 : 'Nenhum resultado para os filtros selecionados'}
@@ -293,11 +293,11 @@ const TrainingParticipants: React.FC = () => {
             return (
               <div
                 key={p.id}
-                className="bg-[#0D1B3E] border border-[#C9A84C]/30 hover:border-[#C9A84C]/20 rounded-2xl p-4 flex items-center gap-4 transition-all group"
+                className="bg-[#F8F7F2] border border-slate-200 hover:border-slate-200 rounded-2xl p-4 flex items-center gap-4 transition-all group"
               >
                 {/* Avatar */}
                 <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center flex-shrink-0">
-                  <span className="text-sm font-black text-white">
+                  <span className="text-sm font-black text-[#0A1628]">
                     {p.nomeColaborador.charAt(0).toUpperCase()}
                   </span>
                 </div>
@@ -305,9 +305,9 @@ const TrainingParticipants: React.FC = () => {
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-black text-white">{p.nomeColaborador}</span>
+                    <span className="text-sm font-black text-[#0A1628]">{p.nomeColaborador}</span>
                     {p.cargo && (
-                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 bg-slate-900 px-2 py-0.5 rounded-md">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 bg-slate-900 px-2 py-0.5 rounded-md">
                         {p.cargo}
                       </span>
                     )}
@@ -317,12 +317,12 @@ const TrainingParticipants: React.FC = () => {
                       <i className="fa-solid fa-graduation-cap text-blue-500 mr-1.5"></i>
                       {p.treinamento}
                     </span>
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-slate-500">
                       <i className="fa-solid fa-calendar mr-1.5"></i>
                       {new Date(p.dataConclusao + 'T00:00:00').toLocaleDateString('pt-BR')}
                     </span>
                     {p.observacao && (
-                      <span className="text-xs text-slate-300 italic truncate max-w-[200px]">
+                      <span className="text-xs text-slate-600 italic truncate max-w-[200px]">
                         {p.observacao}
                       </span>
                     )}
@@ -340,7 +340,7 @@ const TrainingParticipants: React.FC = () => {
                 {/* Deletar */}
                 <button
                   onClick={() => handleDelete(p.id)}
-                  className="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-red-400 transition-all p-1"
+                  className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-400 transition-all p-1"
                 >
                   <i className="fa-solid fa-trash text-xs"></i>
                 </button>

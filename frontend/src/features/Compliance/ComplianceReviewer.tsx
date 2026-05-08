@@ -199,12 +199,12 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
 
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 no-print">
         <div className="flex items-center gap-5">
-          <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-900/20">
+          <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-[#0A1628] shadow-lg shadow-blue-900/20">
             <i className="fa-solid fa-shield-check text-3xl"></i>
           </div>
           <div>
             <h2 className="text-3xl font-black text-slate-100 tracking-tight italic uppercase">Conformidade</h2>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Tenant: {state.user?.tenantId}</p>
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Tenant: {state.user?.tenantId}</p>
           </div>
         </div>
         {(results.length > 0 || rawParecer) && (
@@ -216,17 +216,17 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 no-print">
         <div className="lg:col-span-5 space-y-6">
-          <div className="bg-[#0D1B3E] border border-[#C9A84C]/30 rounded-[32px] p-8 space-y-7 shadow-2xl">
+          <div className="bg-[#F8F7F2] border border-slate-200 rounded-[32px] p-8 space-y-7 shadow-2xl">
 
             <div className="space-y-3">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Documento a Auditar</label>
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Documento a Auditar</label>
               <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.webp,.bmp,.gif" />
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className={`w-full py-10 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center gap-3 transition-all ${docData ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-[#C9A84C]/30 hover:border-blue-500/50'}`}
+                className={`w-full py-10 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center gap-3 transition-all ${docData ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-slate-200 hover:border-blue-500/50'}`}
               >
-                <i className={`fa-solid ${docData ? 'fa-file-circle-check text-emerald-500' : 'fa-cloud-arrow-up text-slate-300'} text-4xl`}></i>
-                <p className="text-xs font-bold text-slate-200 truncate max-w-xs px-4">{docData ? docData.fileName : 'Subir Minuta ou Documento'}</p>
+                <i className={`fa-solid ${docData ? 'fa-file-circle-check text-emerald-500' : 'fa-cloud-arrow-up text-slate-600'} text-4xl`}></i>
+                <p className="text-xs font-bold text-slate-700 truncate max-w-xs px-4">{docData ? docData.fileName : 'Subir Minuta ou Documento'}</p>
                 {docData && (
                   <p className="text-[9px] text-emerald-400 font-bold">{docData.text.split(' ').length} palavras extraídas</p>
                 )}
@@ -234,17 +234,17 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
             </div>
 
             <div className="space-y-3">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Analisar com base em</label>
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Analisar com base em</label>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => setAnalysisMode('checklist')}
-                  className={`py-3 rounded-xl text-[10px] font-black uppercase transition-all ${analysisMode === 'checklist' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-500 hover:bg-slate-700'}`}
+                  className={`py-3 rounded-xl text-[10px] font-black uppercase transition-all ${analysisMode === 'checklist' ? 'bg-blue-600 text-[#0A1628]' : 'bg-slate-800 text-slate-500 hover:bg-slate-700'}`}
                 >
                   <i className="fa-solid fa-clipboard-list mr-2"></i>Protocolo
                 </button>
                 <button
                   onClick={() => setAnalysisMode('baselegal')}
-                  className={`py-3 rounded-xl text-[10px] font-black uppercase transition-all ${analysisMode === 'baselegal' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-500 hover:bg-slate-700'}`}
+                  className={`py-3 rounded-xl text-[10px] font-black uppercase transition-all ${analysisMode === 'baselegal' ? 'bg-blue-600 text-[#0A1628]' : 'bg-slate-800 text-slate-500 hover:bg-slate-700'}`}
                 >
                   <i className="fa-solid fa-book-open mr-2"></i>Base Legal
                 </button>
@@ -253,14 +253,14 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
 
             {analysisMode === 'checklist' && (
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Protocolo de Referência</label>
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Protocolo de Referência</label>
                 {checklists.length === 0 ? (
-                  <p className="text-xs text-slate-300 italic p-4 border border-[#C9A84C]/30 rounded-xl">Nenhum protocolo cadastrado. Crie um no módulo Checklists.</p>
+                  <p className="text-xs text-slate-600 italic p-4 border border-slate-200 rounded-xl">Nenhum protocolo cadastrado. Crie um no módulo Checklists.</p>
                 ) : (
                   <select
                     value={selectedChecklistId}
                     onChange={e => setSelectedChecklistId(e.target.value)}
-                    className="w-full bg-[#0D1B3E] border border-[#C9A84C]/30 rounded-xl px-4 py-4 text-xs font-bold text-white focus:border-blue-600 outline-none transition-all"
+                    className="w-full bg-[#F8F7F2] border border-slate-200 rounded-xl px-4 py-4 text-xs font-bold text-[#0A1628] focus:border-blue-600 outline-none transition-all"
                   >
                     <option value="">Selecione um protocolo...</option>
                     {checklists.map(t => (
@@ -273,23 +273,23 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
 
             {analysisMode === 'baselegal' && (
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
                   Documentos da Base Legal ({selectedKbIds.length} selecionado{selectedKbIds.length !== 1 ? 's' : ''})
                 </label>
                 {kbDocs.length === 0 ? (
-                  <p className="text-xs text-slate-300 italic p-4 border border-[#C9A84C]/30 rounded-xl">Nenhum documento indexado. Adicione documentos na Base Legal.</p>
+                  <p className="text-xs text-slate-600 italic p-4 border border-slate-200 rounded-xl">Nenhum documento indexado. Adicione documentos na Base Legal.</p>
                 ) : (
                   <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
                     {kbDocs.map(d => (
                       <button
                         key={d.id}
                         onClick={() => toggleKbDoc(d.id)}
-                        className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all border ${selectedKbIds.includes(d.id) ? 'border-blue-500/40 bg-blue-500/5' : 'border-[#C9A84C]/30 hover:border-[#C9A84C]/20'}`}
+                        className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all border ${selectedKbIds.includes(d.id) ? 'border-blue-500/40 bg-blue-500/5' : 'border-slate-200 hover:border-slate-200'}`}
                       >
                         <div className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border-2 transition-all ${selectedKbIds.includes(d.id) ? 'bg-blue-600 border-blue-600' : 'border-slate-600'}`}>
-                          {selectedKbIds.includes(d.id) && <i className="fa-solid fa-check text-white text-[8px]"></i>}
+                          {selectedKbIds.includes(d.id) && <i className="fa-solid fa-check text-[#0A1628] text-[8px]"></i>}
                         </div>
-                        <span className="text-[10px] text-slate-200 font-bold truncate">{d.fileName}</span>
+                        <span className="text-[10px] text-slate-700 font-bold truncate">{d.fileName}</span>
                       </button>
                     ))}
                   </div>
@@ -300,7 +300,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
             <button
               onClick={handleRunAudit}
               disabled={isAnalyzing}
-              className="w-full bg-blue-600 hover:bg-blue-500 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-900/30 disabled:opacity-50"
+              className="w-full bg-blue-600 hover:bg-blue-500 text-[#0A1628] py-5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-900/30 disabled:opacity-50"
             >
               {isAnalyzing
                 ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Auditoria em curso...</>
@@ -313,18 +313,18 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
           <div className="w-24 h-24 bg-slate-900 rounded-3xl flex items-center justify-center text-blue-500 text-4xl mb-6 shadow-2xl">
             <i className="fa-solid fa-robot"></i>
           </div>
-          <h3 className="text-xl font-black text-white uppercase italic">Análise RAG Estrita</h3>
+          <h3 className="text-xl font-black text-[#0A1628] uppercase italic">Análise RAG Estrita</h3>
           <p className="text-slate-500 text-sm mt-4 max-w-md leading-relaxed">
             O sistema usa apenas os documentos que você indexou na Base Legal e os protocolos cadastrados. Nenhuma lei ou norma externa é consultada.
           </p>
           <div className="mt-6 grid grid-cols-2 gap-4 w-full max-w-sm">
             <div className="bg-slate-900 rounded-2xl p-4 text-center">
               <p className="text-2xl font-black text-blue-500">{checklists.length}</p>
-              <p className="text-[9px] text-slate-400 uppercase font-bold mt-1">Protocolos</p>
+              <p className="text-[9px] text-slate-500 uppercase font-bold mt-1">Protocolos</p>
             </div>
             <div className="bg-slate-900 rounded-2xl p-4 text-center">
               <p className="text-2xl font-black text-blue-500">{kbDocs.length}</p>
-              <p className="text-[9px] text-slate-400 uppercase font-bold mt-1">Docs Indexados</p>
+              <p className="text-[9px] text-slate-500 uppercase font-bold mt-1">Docs Indexados</p>
             </div>
           </div>
         </div>
@@ -333,24 +333,24 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
       {results.length > 0 && (
         <div className="results-report mt-8 space-y-6">
           <div className="grid grid-cols-3 gap-4">
-            <div className="bg-[#1A2A52] border border-[#C9A84C]/30 rounded-2xl p-6 text-center">
-              <p className="text-3xl font-black text-white">{results.length}</p>
-              <p className="text-[9px] text-slate-400 uppercase font-bold mt-1">Total de Requisitos</p>
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 text-center">
+              <p className="text-3xl font-black text-[#0A1628]">{results.length}</p>
+              <p className="text-[9px] text-slate-500 uppercase font-bold mt-1">Total de Requisitos</p>
             </div>
             <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-6 text-center">
               <p className="text-3xl font-black text-emerald-500">{conformeCount}</p>
-              <p className="text-[9px] text-slate-400 uppercase font-bold mt-1">Conformes</p>
+              <p className="text-[9px] text-slate-500 uppercase font-bold mt-1">Conformes</p>
             </div>
             <div className="bg-red-500/5 border border-red-500/20 rounded-2xl p-6 text-center">
               <p className="text-3xl font-black text-red-500">{results.length - conformeCount}</p>
-              <p className="text-[9px] text-slate-400 uppercase font-bold mt-1">Pendentes</p>
+              <p className="text-[9px] text-slate-500 uppercase font-bold mt-1">Pendentes</p>
             </div>
           </div>
 
-          <div className="bg-[#1A2A52] border border-[#C9A84C]/30 rounded-2xl p-6">
+          <div className="bg-white border border-slate-200 rounded-2xl p-6">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Índice de Conformidade</span>
-              <span className="text-sm font-black text-white">{conformePercent}%</span>
+              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Índice de Conformidade</span>
+              <span className="text-sm font-black text-[#0A1628]">{conformePercent}%</span>
             </div>
             <div className="w-full bg-slate-800 rounded-full h-3">
               <div
@@ -359,20 +359,20 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
               />
             </div>
             <div className="flex justify-between mt-2">
-              <span className="text-[9px] text-slate-300">Auditado em: {auditDate}</span>
-              <span className="text-[9px] text-slate-300">{docData?.fileName}</span>
+              <span className="text-[9px] text-slate-600">Auditado em: {auditDate}</span>
+              <span className="text-[9px] text-slate-600">{docData?.fileName}</span>
             </div>
           </div>
 
-          <div className="p-8 bg-slate-900/40 border border-[#C9A84C]/30 rounded-3xl backdrop-blur-md">
-            <h3 className="text-xl font-black text-white italic uppercase mb-6 flex items-center gap-3">
+          <div className="p-8 bg-slate-900/40 border border-slate-200 rounded-3xl backdrop-blur-md">
+            <h3 className="text-xl font-black text-[#0A1628] italic uppercase mb-6 flex items-center gap-3">
               <i className="fa-solid fa-file-invoice text-blue-500"></i> Parecer Técnico Detalhado
             </h3>
             <div className="space-y-4">
               {results.map((res, i) => (
                 <div key={i} className={`p-6 rounded-2xl border ${res.compliant ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-red-500/5 border-red-500/20'} transition-all`}>
                   <div className="flex justify-between items-start mb-3 gap-4">
-                    <h4 className="text-sm font-bold text-white flex-1">{res.requirement}</h4>
+                    <h4 className="text-sm font-bold text-[#0A1628] flex-1">{res.requirement}</h4>
                     <span className={`text-[9px] font-black uppercase px-3 py-1 rounded-lg flex-shrink-0 ${res.compliant ? 'bg-emerald-500/20 text-emerald-500' : 'bg-red-500/20 text-red-500'}`}>
                       {res.compliant ? '✅ CONFORME' : '❌ PENDENTE'}
                     </span>
@@ -381,7 +381,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
                   {!res.compliant && res.suggestion && (
                     <div className="bg-slate-950 p-4 rounded-xl border border-red-500/10">
                       <p className="text-[10px] font-black text-red-400 uppercase mb-2">Sugestão de Retificação:</p>
-                      <p className="text-xs text-slate-200 leading-relaxed">{res.suggestion}</p>
+                      <p className="text-xs text-slate-700 leading-relaxed">{res.suggestion}</p>
                     </div>
                   )}
                 </div>
@@ -390,22 +390,22 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
           </div>
 
           {rawParecer && (
-            <div className="p-8 bg-[#1A2A52] border border-[#C9A84C]/20 rounded-3xl">
+            <div className="p-8 bg-white border border-slate-200 rounded-3xl">
               <h4 className="text-sm font-black text-blue-500 uppercase tracking-widest mb-4">
                 <i className="fa-solid fa-memo-circle-check mr-2"></i>Resumo Executivo
               </h4>
-              <pre className="text-xs text-slate-200 leading-relaxed whitespace-pre-wrap font-sans">{rawParecer}</pre>
+              <pre className="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap font-sans">{rawParecer}</pre>
             </div>
           )}
         </div>
       )}
 
       {!results.length && rawParecer && (
-        <div className="mt-8 p-8 bg-slate-900/40 border border-[#C9A84C]/30 rounded-3xl">
-          <h3 className="text-lg font-black text-white italic uppercase mb-4 flex items-center gap-3">
+        <div className="mt-8 p-8 bg-slate-900/40 border border-slate-200 rounded-3xl">
+          <h3 className="text-lg font-black text-[#0A1628] italic uppercase mb-4 flex items-center gap-3">
             <i className="fa-solid fa-file-invoice text-blue-500"></i> Parecer Técnico
           </h3>
-          <pre className="text-sm text-slate-200 leading-relaxed whitespace-pre-wrap font-sans">{rawParecer}</pre>
+          <pre className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap font-sans">{rawParecer}</pre>
         </div>
       )}
 

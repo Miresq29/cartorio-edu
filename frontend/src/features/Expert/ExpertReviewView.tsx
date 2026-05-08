@@ -57,12 +57,12 @@ const ExpertReviewView: React.FC = () => {
       </div>
 
       <header className="flex items-center gap-8">
-           <div className="w-24 h-24 bg-blue-600 rounded-[32px] flex items-center justify-center text-white shadow-2xl shadow-blue-600/20">
+           <div className="w-24 h-24 bg-blue-600 rounded-[32px] flex items-center justify-center text-[#0A1628] shadow-2xl shadow-blue-600/20">
              <i className="fa-solid fa-brain text-5xl"></i>
            </div>
            <div>
-             <h2 className="text-5xl font-black text-white italic uppercase tracking-tighter">IA <span className="text-blue-500">Analítica</span></h2>
-             <p className="text-slate-400 font-black uppercase tracking-widest text-sm mt-3 flex items-center gap-3">
+             <h2 className="text-5xl font-black text-[#0A1628] italic uppercase tracking-tighter">IA <span className="text-blue-500">Analítica</span></h2>
+             <p className="text-slate-500 font-black uppercase tracking-widest text-sm mt-3 flex items-center gap-3">
                <span className="w-4 h-4 rounded-full bg-blue-500"></span> Motor de Alta Complexidade Jurídica
              </p>
            </div>
@@ -80,14 +80,14 @@ const ExpertReviewView: React.FC = () => {
           <textarea 
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full h-80 bg-slate-950 border border-slate-800 rounded-[32px] p-10 focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 focus:outline-none transition-all text-slate-300 leading-loose font-serif text-xl placeholder:text-slate-200"
+            className="w-full h-80 bg-slate-950 border border-slate-800 rounded-[32px] p-10 focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 focus:outline-none transition-all text-slate-600 leading-loose font-serif text-xl placeholder:text-slate-700"
             placeholder="Ex: Análise de viabilidade jurídica de inventário extrajudicial com herdeiro incapaz assistido por curador especial sob a égide do novo provimento..."
           />
           
           <button 
             onClick={handleDeepAudit}
             disabled={isAnalyzing || !query.trim()}
-            className="w-full bg-blue-600 hover:bg-blue-500 text-white py-8 rounded-[32px] font-black text-base uppercase tracking-[0.2em] shadow-2xl shadow-blue-600/20 transition-all flex items-center justify-center gap-4 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-blue-600 hover:bg-blue-500 text-[#0A1628] py-8 rounded-[32px] font-black text-base uppercase tracking-[0.2em] shadow-2xl shadow-blue-600/20 transition-all flex items-center justify-center gap-4 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isAnalyzing ? (
               <><i className="fa-solid fa-circle-notch animate-spin text-2xl"></i> Processando Parecer Técnico...</>
@@ -101,7 +101,7 @@ const ExpertReviewView: React.FC = () => {
       {report && (
         <div className="bg-[#0a0f1d] rounded-[48px] p-16 border border-slate-800 shadow-4xl animate-in slide-in-from-bottom-12 duration-700 relative overflow-hidden">
           <div className="absolute top-0 right-0 p-16 opacity-5 pointer-events-none">
-             <i className="fa-solid fa-scale-balanced text-[180px] text-white"></i>
+             <i className="fa-solid fa-scale-balanced text-[180px] text-[#0A1628]"></i>
           </div>
           
           <div className="flex items-center justify-between mb-12">
@@ -109,17 +109,17 @@ const ExpertReviewView: React.FC = () => {
               <div className="w-14 h-14 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-500">
                 <i className="fa-solid fa-file-signature text-2xl"></i>
               </div>
-              <h4 className="text-white font-black uppercase tracking-[0.4em] text-sm italic">Relatório IA de Qualificação</h4>
+              <h4 className="text-[#0A1628] font-black uppercase tracking-[0.4em] text-sm italic">Relatório IA de Qualificação</h4>
             </div>
             <button 
               onClick={() => window.print()}
-              className="text-blue-500 text-xs font-black uppercase tracking-widest hover:text-white transition-all flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-slate-900"
+              className="text-blue-500 text-xs font-black uppercase tracking-widest hover:text-[#0A1628] transition-all flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-slate-900"
             >
               <i className="fa-solid fa-print"></i> Exportar Parecer
             </button>
           </div>
           
-          <div className="prose prose-invert max-w-none prose-xl font-serif leading-loose text-slate-300">
+          <div className="prose prose-invert max-w-none prose-xl font-serif leading-loose text-slate-600">
              {report.split('\n').map((line, i) => (
                <p key={i} className="mb-8">{line}</p>
              ))}

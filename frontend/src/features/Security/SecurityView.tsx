@@ -42,7 +42,7 @@ const SecurityView: React.FC = () => {
   };
 
   return (
-    <div className="p-8 min-h-full bg-[#0a0f1d] text-slate-200">
+    <div className="p-8 min-h-full bg-[#0a0f1d] text-slate-700">
       <div className="max-w-7xl mx-auto space-y-12">
         
         {/* Como usar */}
@@ -64,13 +64,13 @@ const SecurityView: React.FC = () => {
           </div>
           <div>
             <h2 className="text-5xl font-black tracking-tight mb-3">Seguranca e Manutencao</h2>
-            <p className="text-slate-400 font-medium text-xl">Controles de integridade, backups e gestao de acesso.</p>
+            <p className="text-slate-500 font-medium text-xl">Controles de integridade, backups e gestao de acesso.</p>
           </div>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Card Backup */}
-          <div className="lg:col-span-2 bg-[#1A2A52] border border-[#C9A84C]/30 rounded-[40px] p-12 flex flex-col space-y-12 transition-all hover:border-slate-700 shadow-2xl relative overflow-hidden">
+          <div className="lg:col-span-2 bg-white border border-slate-200 rounded-[40px] p-12 flex flex-col space-y-12 transition-all hover:border-slate-700 shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 right-0 p-12 opacity-5">
                <i className="fa-solid fa-database text-[10rem]"></i>
             </div>
@@ -87,7 +87,7 @@ const SecurityView: React.FC = () => {
                >
                  <i className="fa-solid fa-download text-blue-500 text-2xl"></i> Exportar Dados Completos
                </button>
-               <button className="bg-slate-900/50 border border-slate-800/50 cursor-not-allowed py-10 rounded-3xl flex items-center justify-center gap-5 font-bold text-base text-slate-300 transition-all uppercase tracking-widest">
+               <button className="bg-slate-900/50 border border-slate-800/50 cursor-not-allowed py-10 rounded-3xl flex items-center justify-center gap-5 font-bold text-base text-slate-600 transition-all uppercase tracking-widest">
                  <i className="fa-solid fa-upload text-2xl"></i> Importar (Acesso Gestor)
                </button>
             </div>
@@ -96,7 +96,7 @@ const SecurityView: React.FC = () => {
         </div>
 
         {/* Políticas de Acesso */}
-        <div className="bg-[#1A2A52] border border-[#C9A84C]/30 rounded-[24px] p-8 space-y-8 shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-[24px] p-8 space-y-8 shadow-sm">
            <div className="flex items-center gap-5">
              <i className="fa-solid fa-list-check text-blue-500 text-3xl"></i>
              <h3 className="text-lg font-black uppercase tracking-[0.3em] text-slate-500">Políticas Ativas de Segurança</h3>
@@ -110,10 +110,10 @@ const SecurityView: React.FC = () => {
               ].map((p, i) => (
                 <div key={i} className="p-8 rounded-3xl bg-slate-950 border border-slate-800 space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-black text-white italic tracking-tighter uppercase">{p.title}</span>
+                    <span className="text-sm font-black text-[#0A1628] italic tracking-tighter uppercase">{p.title}</span>
                     <span className="text-xs font-black text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded uppercase">On</span>
                   </div>
-                  <p className="text-sm text-slate-400 font-medium leading-relaxed">{p.desc}</p>
+                  <p className="text-sm text-slate-500 font-medium leading-relaxed">{p.desc}</p>
                 </div>
               ))}
            </div>

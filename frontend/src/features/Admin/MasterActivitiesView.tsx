@@ -31,44 +31,44 @@ const MasterActivitiesView: React.FC = () => {
   };
 
   return (
-    <div className="p-12 min-h-full bg-[#0D1B3E] animate-in fade-in space-y-12">
+    <div className="p-12 min-h-full bg-[#F8F7F2] animate-in fade-in space-y-12">
       <header>
-        <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter">
+        <h2 className="text-4xl font-black text-[#0A1628] italic uppercase tracking-tighter">
           Atividades <span className="text-emerald-500">Master</span>
         </h2>
-        <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.4em] mt-2">
+        <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.4em] mt-2">
           Definição de Padrões de Conformidade // MJ Consultoria
         </p>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        <form onSubmit={handleCreateTemplate} className="bg-[#1A2A52] border border-[#C9A84C]/30 rounded-[40px] p-12 space-y-6 shadow-2xl">
-          <h3 className="text-white font-bold uppercase text-sm italic">Criar Modelo de Checklist</h3>
+        <form onSubmit={handleCreateTemplate} className="bg-white border border-slate-200 rounded-[40px] p-12 space-y-6 shadow-2xl">
+          <h3 className="text-[#0A1628] font-bold uppercase text-sm italic">Criar Modelo de Checklist</h3>
           <div className="space-y-4">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome do Protocolo Notarial</label>
+            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Nome do Protocolo Notarial</label>
             <input 
               type="text" value={name} onChange={e => setName(e.target.value)}
               placeholder="Ex: Provimento 161/2024"
-              className="w-full bg-[#0D1B3E] border border-[#C9A84C]/30 rounded-3xl p-5 text-white outline-none focus:border-emerald-600 transition-all font-bold" required 
+              className="w-full bg-[#F8F7F2] border border-slate-200 rounded-3xl p-5 text-[#0A1628] outline-none focus:border-emerald-600 transition-all font-bold" required 
             />
           </div>
-          <button type="submit" className="w-full bg-emerald-600 text-white font-black py-6 rounded-3xl uppercase text-[11px] tracking-widest shadow-xl hover:bg-emerald-500 transition-all active:scale-[0.98]">
+          <button type="submit" className="w-full bg-emerald-600 text-[#0A1628] font-black py-6 rounded-3xl uppercase text-[11px] tracking-widest shadow-xl hover:bg-emerald-500 transition-all active:scale-[0.98]">
             Salvar no Catálogo Master
           </button>
         </form>
 
-        <div className="bg-[#1A2A52] border border-[#C9A84C]/30 rounded-[40px] p-10 space-y-6 shadow-lg">
-          <h3 className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.3em] px-2">Catálogo de Padrões</h3>
+        <div className="bg-white border border-slate-200 rounded-[40px] p-10 space-y-6 shadow-lg">
+          <h3 className="text-slate-500 font-bold uppercase text-[10px] tracking-[0.3em] px-2">Catálogo de Padrões</h3>
           <div className="space-y-3 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
             {allTemplates.length === 0 && (
-              <p className="text-slate-200 text-xs font-bold uppercase text-center py-10 italic">Nenhum modelo padrão definido.</p>
+              <p className="text-slate-700 text-xs font-bold uppercase text-center py-10 italic">Nenhum modelo padrão definido.</p>
             )}
             {allTemplates.map((ct: any) => (
-              <div key={ct.id} className="p-5 bg-[#0D1B3E] border border-[#C9A84C]/30 rounded-2xl flex items-center gap-4 group hover:border-emerald-500/30 transition-all">
+              <div key={ct.id} className="p-5 bg-[#F8F7F2] border border-slate-200 rounded-2xl flex items-center gap-4 group hover:border-emerald-500/30 transition-all">
                 <div className="w-10 h-10 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-500">
                    <i className="fa-solid fa-list-check"></i>
                 </div>
-                <span className="text-white font-bold italic uppercase text-sm truncate">{ct.title || ct.name}</span>
+                <span className="text-[#0A1628] font-bold italic uppercase text-sm truncate">{ct.title || ct.name}</span>
               </div>
             ))}
           </div>

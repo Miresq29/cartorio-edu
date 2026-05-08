@@ -271,13 +271,13 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
   ];
 
   return (
-    <div className="p-8 space-y-6 bg-[#0D1B3E] min-h-screen animate-in fade-in">
+    <div className="p-8 space-y-6 bg-[#F8F7F2] min-h-screen animate-in fade-in">
 
       <header>
-        <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
+        <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">
           IA <span className="text-blue-500">Analítica</span>
         </h2>
-        <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em]">MJ Consultoria // Gestão Operacional Inteligente</p>
+        <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">MJ Consultoria // Gestão Operacional Inteligente</p>
       </header>
 
       {/* KPIs em tempo real */}
@@ -288,24 +288,24 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
           { label: 'Exclusões Hoje',    value: m.exclusoesHoje,   icon: 'fa-file-circle-xmark', color: m.exclusoesHoje > 0 ? 'red' : 'emerald'   },
           { label: 'Usuários Ativos',   value: m.usuariosHoje,    icon: 'fa-users',              color: 'purple'                                },
         ].map((s, i) => (
-          <div key={i} className="bg-[#1A2A52] border border-[#C9A84C]/30 rounded-[24px] p-6 space-y-3">
+          <div key={i} className="bg-white border border-slate-200 rounded-[24px] p-6 space-y-3">
             <i className={`fa-solid ${s.icon} text-${s.color}-500 text-xl`}></i>
-            <p className="text-3xl font-black text-white">{s.value}</p>
-            <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">{s.label}</p>
+            <p className="text-3xl font-black text-[#0A1628]">{s.value}</p>
+            <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">{s.label}</p>
           </div>
         ))}
       </div>
 
-      <div className="bg-[#1A2A52] border border-[#C9A84C]/30 rounded-[32px] overflow-hidden shadow-2xl">
+      <div className="bg-white border border-slate-200 rounded-[32px] overflow-hidden shadow-2xl">
 
         {/* Tabs */}
-        <div className="flex border-b border-[#C9A84C]/30">
+        <div className="flex border-b border-slate-200">
           {TABS.map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-6 py-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all border-b-2 ${
                 activeTab === tab.id
                   ? 'text-blue-400 border-blue-500 bg-blue-500/5'
-                  : 'text-slate-400 border-transparent hover:text-slate-200 hover:bg-slate-800/50'
+                  : 'text-slate-500 border-transparent hover:text-slate-700 hover:bg-slate-800/50'
               }`}>
               <i className={`fa-solid ${tab.icon} text-xs`}></i>{tab.label}
             </button>
@@ -319,18 +319,18 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-white font-black uppercase italic text-sm">Monitoramento Operacional</h3>
-                  <p className="text-[9px] text-slate-400 uppercase tracking-widest mt-1">Métricas em tempo real — últimas 24h</p>
+                  <h3 className="text-[#0A1628] font-black uppercase italic text-sm">Monitoramento Operacional</h3>
+                  <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Métricas em tempo real — últimas 24h</p>
                 </div>
                 <button onClick={executarAnalise}
-                  className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
+                  className="bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
                   <i className="fa-solid fa-wand-magic-sparkles"></i>Analisar com IA
                 </button>
               </div>
 
               {/* Alertas automáticos */}
               <div className="space-y-2">
-                <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Alertas Automáticos</h4>
+                <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Alertas Automáticos</h4>
                 {m.docsSemStatus === 0 && m.exclusoesHoje === 0 && m.usuariosFrequentes.length === 0 ? (
                   <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-4 flex items-center gap-3">
                     <i className="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
@@ -374,17 +374,17 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
 
               {/* Atividade por hora - últimas ações */}
               <div className="space-y-2">
-                <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Últimas Ações Registradas</h4>
+                <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Últimas Ações Registradas</h4>
                 <div className="space-y-1.5">
                   {auditLogs.slice(0, 8).map(log => {
                     const tipo = log.tipo || '';
                     const isError = tipo.includes('excluido') || tipo.includes('erro');
                     const d = log.createdAt?.toDate ? log.createdAt.toDate() : new Date(log.createdAt);
                     return (
-                      <div key={log.id} className="flex items-center gap-3 p-3 bg-[#0D1B3E] border border-[#C9A84C]/30 rounded-xl">
+                      <div key={log.id} className="flex items-center gap-3 p-3 bg-[#F8F7F2] border border-slate-200 rounded-xl">
                         <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isError ? 'bg-red-500' : 'bg-emerald-500'}`}></div>
-                        <span className="text-xs text-slate-200 flex-1 truncate">{log.descricao}</span>
-                        <span className="text-[9px] text-slate-300 flex-shrink-0">
+                        <span className="text-xs text-slate-700 flex-1 truncate">{log.descricao}</span>
+                        <span className="text-[9px] text-slate-600 flex-shrink-0">
                           {d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
@@ -392,8 +392,8 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                   })}
                   {auditLogs.length === 0 && (
                     <div className="text-center py-6 opacity-40">
-                      <i className="fa-solid fa-scroll text-3xl text-slate-300 mb-2 block"></i>
-                      <p className="text-slate-300 text-xs">Nenhuma ação registrada ainda</p>
+                      <i className="fa-solid fa-scroll text-3xl text-slate-600 mb-2 block"></i>
+                      <p className="text-slate-600 text-xs">Nenhuma ação registrada ainda</p>
                     </div>
                   )}
                 </div>
@@ -409,8 +409,8 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                   <div className="w-16 h-16 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
                     <i className="fa-solid fa-circle-notch animate-spin text-blue-400 text-2xl"></i>
                   </div>
-                  <p className="text-white font-black text-sm uppercase italic tracking-widest">IA Analisando...</p>
-                  <p className="text-slate-400 text-xs">Cruzando dados de auditoria, documentos e métricas operacionais</p>
+                  <p className="text-[#0A1628] font-black text-sm uppercase italic tracking-widest">IA Analisando...</p>
+                  <p className="text-slate-500 text-xs">Cruzando dados de auditoria, documentos e métricas operacionais</p>
                 </div>
               ) : analise ? (
                 <div className="space-y-6">
@@ -421,7 +421,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                       <i className="fa-solid fa-brain text-blue-400"></i>
                       <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest">Resumo Executivo</span>
                     </div>
-                    <p className="text-slate-200 text-sm leading-relaxed">{analise.resumo}</p>
+                    <p className="text-slate-700 text-sm leading-relaxed">{analise.resumo}</p>
                   </div>
 
                   {/* Métricas da IA */}
@@ -429,10 +429,10 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                     {analise.metricas.map((met, i) => {
                       const color = STATUS_COLOR[met.status];
                       return (
-                        <div key={i} className={`bg-[#0D1B3E] border border-${color}-500/20 rounded-2xl p-4 space-y-2`}>
+                        <div key={i} className={`bg-[#F8F7F2] border border-${color}-500/20 rounded-2xl p-4 space-y-2`}>
                           <p className={`text-2xl font-black text-${color}-400`}>{met.valor}</p>
-                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{met.label}</p>
-                          <p className="text-[9px] text-slate-300">{met.detalhe}</p>
+                          <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{met.label}</p>
+                          <p className="text-[9px] text-slate-600">{met.detalhe}</p>
                         </div>
                       );
                     })}
@@ -441,7 +441,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                   {/* Alertas da IA */}
                   {analise.alertas.length > 0 && (
                     <div className="space-y-2">
-                      <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Alertas Identificados pela IA</h4>
+                      <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Alertas Identificados pela IA</h4>
                       {analise.alertas.map(alerta => {
                         const cfg = ALERT_CONFIG[alerta.tipo];
                         return (
@@ -449,7 +449,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                             <div className="flex items-center gap-2">
                               <i className={`fa-solid ${cfg.icon} text-${cfg.color}-400`}></i>
                               <span className={`text-[9px] font-black text-${cfg.color}-400 uppercase tracking-widest`}>{cfg.label}</span>
-                              <span className="text-sm font-black text-white ml-1">{alerta.titulo}</span>
+                              <span className="text-sm font-black text-[#0A1628] ml-1">{alerta.titulo}</span>
                             </div>
                             <p className="text-xs text-slate-500">{alerta.descricao}</p>
                             {alerta.acao && (
@@ -466,21 +466,21 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
 
                   {/* Recomendações */}
                   <div className="space-y-2">
-                    <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Recomendações de Gestão</h4>
-                    <div className="bg-[#0D1B3E] border border-[#C9A84C]/30 rounded-2xl p-5 space-y-3">
+                    <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Recomendações de Gestão</h4>
+                    <div className="bg-[#F8F7F2] border border-slate-200 rounded-2xl p-5 space-y-3">
                       {analise.recomendacoes.map((rec, i) => (
                         <div key={i} className="flex items-start gap-3">
                           <div className="w-5 h-5 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
                             <span className="text-[9px] font-black text-blue-400">{i + 1}</span>
                           </div>
-                          <p className="text-xs text-slate-200">{rec}</p>
+                          <p className="text-xs text-slate-700">{rec}</p>
                         </div>
                       ))}
                     </div>
                   </div>
 
                   <button onClick={executarAnalise}
-                    className="w-full bg-slate-800 hover:bg-slate-700 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2">
+                    className="w-full bg-slate-800 hover:bg-slate-700 text-[#0A1628] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2">
                     <i className="fa-solid fa-rotate"></i>Refazer Análise
                   </button>
                 </div>
@@ -489,10 +489,10 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                   <div className="w-16 h-16 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
                     <i className="fa-solid fa-wand-magic-sparkles text-blue-400 text-2xl"></i>
                   </div>
-                  <p className="text-white font-black text-sm uppercase italic">Pronto para Analisar</p>
-                  <p className="text-slate-400 text-xs max-w-sm">A IA irá cruzar todos os dados da plataforma e gerar um relatório completo de gestão operacional</p>
+                  <p className="text-[#0A1628] font-black text-sm uppercase italic">Pronto para Analisar</p>
+                  <p className="text-slate-500 text-xs max-w-sm">A IA irá cruzar todos os dados da plataforma e gerar um relatório completo de gestão operacional</p>
                   <button onClick={executarAnalise}
-                    className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                    className="bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
                     <i className="fa-solid fa-wand-magic-sparkles mr-2"></i>Iniciar Análise
                   </button>
                 </div>
@@ -504,27 +504,27 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
           {activeTab === 'chat' && (
             <div className="space-y-4">
               <div>
-                <h3 className="text-white font-black uppercase italic text-sm">Consultor de Gestão IA</h3>
-                <p className="text-[9px] text-slate-400 uppercase tracking-widest mt-1">Pergunte sobre métricas, anomalias ou ações corretivas</p>
+                <h3 className="text-[#0A1628] font-black uppercase italic text-sm">Consultor de Gestão IA</h3>
+                <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Pergunte sobre métricas, anomalias ou ações corretivas</p>
               </div>
 
-              <div className="bg-[#0D1B3E] border border-[#C9A84C]/30 rounded-2xl overflow-hidden">
+              <div className="bg-[#F8F7F2] border border-slate-200 rounded-2xl overflow-hidden">
                 <div className="h-80 overflow-y-auto p-6 space-y-4 custom-scrollbar">
                   {chatMessages.length === 0 && (
                     <div className="h-full flex flex-col items-center justify-center text-center opacity-30 gap-4">
-                      <i className="fa-solid fa-comments text-5xl text-slate-300"></i>
+                      <i className="fa-solid fa-comments text-5xl text-slate-600"></i>
                       <div className="space-y-1">
-                        <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Exemplos de perguntas:</p>
-                        <p className="text-slate-300 text-xs italic">"Quais documentos têm maior risco de não conformidade?"</p>
-                        <p className="text-slate-300 text-xs italic">"Como está o tempo de resposta da equipe esta semana?"</p>
-                        <p className="text-slate-300 text-xs italic">"Quais ações corretivas devo tomar hoje?"</p>
+                        <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Exemplos de perguntas:</p>
+                        <p className="text-slate-600 text-xs italic">"Quais documentos têm maior risco de não conformidade?"</p>
+                        <p className="text-slate-600 text-xs italic">"Como está o tempo de resposta da equipe esta semana?"</p>
+                        <p className="text-slate-600 text-xs italic">"Quais ações corretivas devo tomar hoje?"</p>
                       </div>
                     </div>
                   )}
                   {chatMessages.map((m, i) => (
                     <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                       <div className={`max-w-[80%] px-5 py-4 rounded-2xl text-sm leading-relaxed ${
-                        m.role === 'user' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-white border border-[#C9A84C]/20'
+                        m.role === 'user' ? 'bg-blue-600 text-[#0A1628]' : 'bg-slate-800 text-[#0A1628] border border-slate-200'
                       }`}>
                         <p className="whitespace-pre-wrap">{m.text}</p>
                       </div>
@@ -532,7 +532,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                   ))}
                   {isChatLoading && (
                     <div className="flex justify-start">
-                      <div className="bg-slate-800 border border-[#C9A84C]/20 px-5 py-4 rounded-2xl">
+                      <div className="bg-slate-800 border border-slate-200 px-5 py-4 rounded-2xl">
                         <i className="fa-solid fa-circle-notch animate-spin text-blue-500"></i>
                         <span className="text-xs text-slate-500 ml-2">Analisando dados...</span>
                       </div>
@@ -540,13 +540,13 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                   )}
                   <div ref={chatEndRef} />
                 </div>
-                <div className="p-4 border-t border-[#C9A84C]/30 flex gap-3">
+                <div className="p-4 border-t border-slate-200 flex gap-3">
                   <input value={chatInput} onChange={e => setChatInput(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleChat()}
                     placeholder="Ex: Quais são os principais riscos operacionais hoje?"
-                    className="flex-1 bg-slate-900 border border-[#C9A84C]/30 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500" />
+                    className="flex-1 bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
                   <button onClick={handleChat} disabled={isChatLoading || !chatInput.trim()}
-                    className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-black text-sm transition-all disabled:opacity-50">
+                    className="bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-6 py-3 rounded-xl font-black text-sm transition-all disabled:opacity-50">
                     <i className="fa-solid fa-paper-plane"></i>
                   </button>
                 </div>

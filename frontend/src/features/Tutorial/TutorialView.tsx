@@ -213,14 +213,14 @@ ${allContent}
       {/* Header */}
       <div className="flex items-end justify-between">
         <div>
-          <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
+          <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">
             Tutorial da <span className="text-blue-500">Plataforma</span>
           </h2>
-          <p className="text-slate-400 text-xs font-black uppercase tracking-widest mt-1">CartórioRAG PRO v3.0 — Guia Completo do Usuário</p>
+          <p className="text-slate-500 text-xs font-black uppercase tracking-widest mt-1">CartórioRAG PRO v3.0 — Guia Completo do Usuário</p>
         </div>
         <button
           onClick={exportPDF}
-          className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-lg"
+          className="bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-5 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-lg"
         >
           <i className="fa-solid fa-file-pdf"></i> Baixar PDF
         </button>
@@ -229,7 +229,7 @@ ${allContent}
       {/* Info */}
       <div className="bg-blue-500/5 border border-blue-500/20 rounded-2xl p-5 flex items-start gap-3">
         <i className="fa-solid fa-circle-info text-blue-400 text-lg mt-0.5 flex-shrink-0"></i>
-        <p className="text-sm text-slate-300 leading-relaxed">
+        <p className="text-sm text-slate-600 leading-relaxed">
           Bem-vindo ao CartórioRAG PRO. Selecione um módulo no menu para ver as instruções detalhadas,
           ou clique em <strong className="text-blue-400">Baixar PDF</strong> para salvar o manual completo com capa e índice.
         </p>
@@ -239,7 +239,7 @@ ${allContent}
 
         {/* Menu lateral */}
         <div className="rounded-3xl border border-slate-800 p-4 space-y-1 h-fit" style={{ background: '#0a111f' }}>
-          <p className="text-xs font-black text-slate-300 uppercase tracking-widest px-3 py-2">Módulos</p>
+          <p className="text-xs font-black text-slate-600 uppercase tracking-widest px-3 py-2">Módulos</p>
           {SECTIONS.map(s => {
             const isActive = activeSection === s.id;
             return (
@@ -253,11 +253,11 @@ ${allContent}
                 }`}
               >
                 <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-white/20' : 'bg-slate-800'}`}>
-                  <i className={`fa-solid ${s.icon} text-xs ${isActive ? 'text-white' : 'text-slate-400'}`}></i>
+                  <i className={`fa-solid ${s.icon} text-xs ${isActive ? 'text-[#0A1628]' : 'text-slate-500'}`}></i>
                 </div>
                 <div className="min-w-0">
-                  <p className={`text-xs font-black truncate ${isActive ? 'text-white' : 'text-slate-500'}`}>{s.title}</p>
-                  <p className={`text-xs truncate leading-tight ${isActive ? 'text-blue-200' : 'text-slate-300'}`} style={{ fontSize: '9px' }}>{s.subtitle}</p>
+                  <p className={`text-xs font-black truncate ${isActive ? 'text-[#0A1628]' : 'text-slate-500'}`}>{s.title}</p>
+                  <p className={`text-xs truncate leading-tight ${isActive ? 'text-blue-200' : 'text-slate-600'}`} style={{ fontSize: '9px' }}>{s.subtitle}</p>
                 </div>
               </button>
             );
@@ -270,11 +270,11 @@ ${allContent}
           {/* Header da seção */}
           <div className="bg-blue-600 rounded-2xl p-6 flex items-center gap-4 shadow-lg shadow-blue-900/20">
             <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center flex-shrink-0">
-              <i className={`fa-solid ${current.icon} text-white text-2xl`}></i>
+              <i className={`fa-solid ${current.icon} text-[#0A1628] text-2xl`}></i>
             </div>
             <div>
               <p className="text-blue-200 text-xs font-black uppercase tracking-widest">Módulo {String(currentIdx + 1).padStart(2, '0')} de {SECTIONS.length}</p>
-              <h3 className="text-xl font-black text-white uppercase italic mt-1">{current.title}</h3>
+              <h3 className="text-xl font-black text-[#0A1628] uppercase italic mt-1">{current.title}</h3>
               <p className="text-blue-200 text-sm mt-1">{current.subtitle}</p>
             </div>
           </div>
@@ -288,7 +288,7 @@ ${allContent}
                 style={{ background: '#0a111f' }}
               >
                 <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-lg shadow-blue-900/30">
-                  <span className="text-xs font-black text-white">{i + 1}</span>
+                  <span className="text-xs font-black text-[#0A1628]">{i + 1}</span>
                 </div>
                 <div>
                   <p className="text-sm font-black text-blue-400 mb-2">{step.title}</p>
@@ -303,7 +303,7 @@ ${allContent}
             {currentIdx > 0 ? (
               <button
                 onClick={() => setActiveSection(SECTIONS[currentIdx - 1].id)}
-                className="flex items-center gap-2 px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-black uppercase transition-all"
+                className="flex items-center gap-2 px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-600 rounded-xl text-xs font-black uppercase transition-all"
               >
                 <i className="fa-solid fa-arrow-left"></i> Anterior
               </button>
@@ -312,14 +312,14 @@ ${allContent}
             {currentIdx < SECTIONS.length - 1 ? (
               <button
                 onClick={() => setActiveSection(SECTIONS[currentIdx + 1].id)}
-                className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black uppercase transition-all"
+                className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-[#0A1628] rounded-xl text-xs font-black uppercase transition-all"
               >
                 Próximo <i className="fa-solid fa-arrow-right"></i>
               </button>
             ) : (
               <button
                 onClick={exportPDF}
-                className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black uppercase transition-all"
+                className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-[#0A1628] rounded-xl text-xs font-black uppercase transition-all"
               >
                 <i className="fa-solid fa-file-pdf"></i> Baixar Manual PDF
               </button>
