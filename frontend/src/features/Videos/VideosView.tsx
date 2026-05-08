@@ -112,7 +112,7 @@ const VideosView: React.FC = () => {
   const getCatInfo = (id: string) => CATEGORIAS.find(c => c.id === id) || CATEGORIAS[0];
 
   return (
-    <div className="p-8 space-y-6 bg-[#05080f] min-h-screen animate-in fade-in">
+    <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
       <header className="flex items-start justify-between">
         <div>
           <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
@@ -130,25 +130,25 @@ const VideosView: React.FC = () => {
 
       {/* Formulário */}
       {showForm && isGestor && (
-        <div className="bg-[#0a111f] border border-slate-800 rounded-[24px] p-6 space-y-4">
+        <div className="bg-white border border-slate-200 rounded-[24px] p-6 space-y-4">
           <h3 className="text-white font-black uppercase text-sm">Novo Vídeo de Treinamento</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Título *</label>
               <input value={form.titulo} onChange={e => setForm(p => ({ ...p, titulo: e.target.value }))}
                 placeholder="Ex: Introdução ao Registro de Imóveis"
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-red-500" />
+                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-red-500" />
             </div>
             <div>
               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Link do YouTube *</label>
               <input value={form.youtubeUrl} onChange={e => setForm(p => ({ ...p, youtubeUrl: e.target.value }))}
                 placeholder="https://youtube.com/watch?v=..."
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-red-500" />
+                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-red-500" />
             </div>
             <div>
               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Categoria</label>
               <select value={form.categoria} onChange={e => setForm(p => ({ ...p, categoria: e.target.value }))}
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-red-500">
+                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-red-500">
                 {CATEGORIAS.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
               </select>
             </div>
@@ -156,18 +156,18 @@ const VideosView: React.FC = () => {
               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Trilha Associada (opcional)</label>
               <input value={form.trilhaTitulo} onChange={e => setForm(p => ({ ...p, trilhaTitulo: e.target.value }))}
                 placeholder="Ex: Trilha de Atendimento"
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-red-500" />
+                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-red-500" />
             </div>
             <div>
               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Duração (minutos)</label>
               <input type="number" min={1} max={60} value={form.duracaoMin} onChange={e => setForm(p => ({ ...p, duracaoMin: +e.target.value }))}
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-red-500" />
+                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-red-500" />
             </div>
             <div>
               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Descrição</label>
               <input value={form.descricao} onChange={e => setForm(p => ({ ...p, descricao: e.target.value }))}
                 placeholder="Breve descrição do conteúdo"
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-red-500" />
+                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-red-500" />
             </div>
           </div>
           <div className="flex gap-3">
@@ -175,7 +175,7 @@ const VideosView: React.FC = () => {
               className="bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
               {loading ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Salvando...</> : <><i className="fa-solid fa-check mr-2"></i>Salvar Vídeo</>}
             </button>
-            <button onClick={() => setShowForm(false)} className="bg-slate-800 hover:bg-slate-700 text-slate-300 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+            <button onClick={() => setShowForm(false)} className="bg-slate-800 hover:bg-slate-700 text-slate-700 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
               Cancelar
             </button>
           </div>
@@ -185,7 +185,7 @@ const VideosView: React.FC = () => {
       {/* Filtros */}
       <div className="flex flex-wrap gap-3 items-center">
         <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar vídeo..."
-          className="bg-[#0a111f] border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-red-500 w-64" />
+          className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-red-500 w-64" />
         <button onClick={() => setFiltroCategoria('')}
           className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${!filtroCategoria ? 'bg-red-600 text-white' : 'bg-slate-900 text-slate-400 hover:bg-slate-800'}`}>
           Todos
@@ -212,7 +212,7 @@ const VideosView: React.FC = () => {
             const cat = getCatInfo(v.categoria);
             const visto = assistidos.has(v.id);
             return (
-              <div key={v.id} className={`bg-[#0a111f] border rounded-[24px] overflow-hidden transition-all hover:scale-[1.02] group ${visto ? 'border-emerald-500/30' : 'border-slate-800'}`}>
+              <div key={v.id} className={`bg-white border rounded-[24px] overflow-hidden transition-all hover:scale-[1.02] group ${visto ? 'border-emerald-500/30' : 'border-slate-200'}`}>
                 {/* Thumbnail */}
                 <div className="relative cursor-pointer" onClick={() => abrirPlayer(v)}>
                   <img src={`https://img.youtube.com/vi/${v.youtubeId}/hqdefault.jpg`} alt={v.titulo}

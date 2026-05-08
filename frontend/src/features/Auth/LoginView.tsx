@@ -63,12 +63,12 @@ const LoginView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#05080f] flex items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 relative overflow-hidden">
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-900/10 blur-[120px] rounded-full"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-900/10 blur-[120px] rounded-full"></div>
 
       <div className="w-full max-w-[440px] z-10">
-        <div className="bg-[#0a111f] border border-slate-800 rounded-[40px] p-10 shadow-2xl backdrop-blur-sm">
+        <div className="bg-white border border-slate-200 rounded-[40px] p-10 shadow-2xl backdrop-blur-sm">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-black text-white italic uppercase tracking-tighter">
               MJ <span className="text-blue-500">Consultoria</span>
@@ -82,7 +82,7 @@ const LoginView: React.FC = () => {
               <input
                 type="email"
                 placeholder="E-mail funcional"
-                className="w-full bg-[#05080f] border border-slate-800 rounded-2xl p-4 pl-12 text-white outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all placeholder:text-slate-700"
+                className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 pl-12 text-white outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all placeholder:text-slate-700"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
@@ -95,7 +95,7 @@ const LoginView: React.FC = () => {
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="Senha"
-                className="w-full bg-[#05080f] border border-slate-800 rounded-2xl p-4 pl-12 pr-12 text-white outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all placeholder:text-slate-700"
+                className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 pl-12 pr-12 text-white outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all placeholder:text-slate-700"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}

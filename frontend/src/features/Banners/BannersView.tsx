@@ -170,7 +170,7 @@ CTA: [chamada para ação aqui]`;
 
   /* ══════════════════ RENDER ══════════════════════════ */
   return (
-    <div className="p-8 space-y-6 bg-[#05080f] min-h-screen animate-in fade-in">
+    <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
       <header>
         <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
           Banners e <span className="text-pink-500">Materiais</span>
@@ -184,7 +184,7 @@ CTA: [chamada para ação aqui]`;
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
           {/* ── Link externo ────────────────────────────── */}
-          <div className="bg-[#0a111f] border border-slate-800 rounded-[24px] p-6 space-y-4">
+          <div className="bg-white border border-slate-200 rounded-[24px] p-6 space-y-4">
             <h3 className="text-white font-black uppercase text-sm flex items-center gap-2">
               <i className="fa-solid fa-link text-blue-400"></i>Adicionar Material via Link
             </h3>
@@ -196,14 +196,14 @@ CTA: [chamada para ação aqui]`;
               value={formLink.titulo}
               onChange={e => setFormLink(p => ({ ...p, titulo: e.target.value }))}
               placeholder="Nome do material..."
-              className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500 transition-colors"
+              className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500 transition-colors"
             />
 
             <input
               value={formLink.url}
               onChange={e => setFormLink(p => ({ ...p, url: e.target.value }))}
               placeholder="https://drive.google.com/..."
-              className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500 transition-colors"
+              className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500 transition-colors"
             />
 
             {/* Tipo */}
@@ -230,7 +230,7 @@ CTA: [chamada para ação aqui]`;
           </div>
 
           {/* ── Gerador IA ─────────────────────────────── */}
-          <div className="bg-[#0a111f] border border-pink-500/30 rounded-[24px] p-6 space-y-4">
+          <div className="bg-white border border-pink-500/30 rounded-[24px] p-6 space-y-4">
             <h3 className="text-white font-black uppercase text-sm flex items-center gap-2">
               <i className="fa-solid fa-wand-magic-sparkles text-pink-400"></i>Gerar Banner com IA
             </h3>
@@ -242,7 +242,7 @@ CTA: [chamada para ação aqui]`;
               onChange={e => setPromptBanner(e.target.value)}
               rows={4}
               placeholder="Ex: Banner para treinamento de atendimento ao cliente com foco em excelência..."
-              className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-pink-500 resize-none"
+              className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-pink-500 resize-none"
             />
             <button type="button" onClick={gerarTextoBanner} disabled={gerando || !promptBanner.trim()}
               className="w-full bg-pink-600 hover:bg-pink-500 disabled:opacity-50 text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
@@ -259,18 +259,18 @@ CTA: [chamada para ação aqui]`;
       {previewBanner && textoBannerGerado && (() => {
         const { titulo, subtitulo, cta } = parseBannerText(textoBannerGerado);
         return (
-          <div className="bg-[#0a111f] border border-pink-500/30 rounded-[24px] p-6 space-y-4">
+          <div className="bg-white border border-pink-500/30 rounded-[24px] p-6 space-y-4">
             <div className="flex items-center justify-between flex-wrap gap-3">
               <h3 className="text-white font-black uppercase text-sm">Preview do Banner</h3>
               <button type="button" onClick={() => imprimirBanner(textoBannerGerado)}
-                className="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
+                className="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-700 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
                 <i className="fa-solid fa-print mr-1"></i>Imprimir / PDF
               </button>
             </div>
 
             <div className="bg-gradient-to-br from-blue-900 to-slate-900 rounded-2xl p-10 text-center space-y-4 border border-blue-500/20">
               <h1 className="text-2xl md:text-4xl font-black text-white uppercase tracking-tight">{titulo || 'Título'}</h1>
-              <p className="text-slate-300 text-sm md:text-base leading-relaxed max-w-lg mx-auto">{subtitulo}</p>
+              <p className="text-slate-700 text-sm md:text-base leading-relaxed max-w-lg mx-auto">{subtitulo}</p>
               {cta && (
                 <div className="inline-block bg-blue-600 text-white px-8 py-3 rounded-xl font-black text-sm uppercase tracking-widest">{cta}</div>
               )}
@@ -281,14 +281,14 @@ CTA: [chamada para ação aqui]`;
                 value={tituloBanner}
                 onChange={e => setTituloBanner(e.target.value)}
                 placeholder="Nome para salvar este banner..."
-                className="flex-1 min-w-0 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-pink-500"
+                className="flex-1 min-w-0 bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-pink-500"
               />
               <button type="button" onClick={salvarBannerGerado} disabled={!tituloBanner.trim()}
                 className="bg-pink-600 hover:bg-pink-500 disabled:opacity-50 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
                 <i className="fa-solid fa-floppy-disk mr-2"></i>Salvar
               </button>
               <button type="button" onClick={() => setPreviewBanner(false)}
-                className="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                className="bg-slate-800 hover:bg-slate-700 text-slate-700 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
                 Fechar
               </button>
             </div>
@@ -326,7 +326,7 @@ CTA: [chamada para ação aqui]`;
             const cfg = TIPO_CONFIG[m.tipo] || TIPO_CONFIG.link;
             return (
               <div key={m.id}
-                className="bg-[#0a111f] border border-slate-800 rounded-[20px] p-5 space-y-3 hover:border-slate-700 transition-all">
+                className="bg-white border border-slate-200 rounded-[20px] p-5 space-y-3 hover:border-slate-300 transition-all">
                 <div className="flex items-start gap-3">
                   <div className={`w-10 h-10 rounded-xl bg-${cfg.color}-500/20 flex items-center justify-center flex-shrink-0`}>
                     <i className={`fa-solid ${cfg.icon} text-${cfg.color}-400`}></i>
@@ -348,14 +348,14 @@ CTA: [chamada para ação aqui]`;
                   {/* abrir link externo */}
                   {m.linkUrl && (
                     <a href={m.linkUrl} target="_blank" rel="noreferrer"
-                      className="flex-1 text-center text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
+                      className="flex-1 text-center text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-700 px-3 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
                       <i className="fa-solid fa-arrow-up-right-from-square mr-1"></i>Abrir
                     </a>
                   )}
                   {/* imprimir banner IA */}
                   {m.textoBanner && (
                     <button type="button" onClick={() => imprimirBanner(m.textoBanner)}
-                      className="flex-1 text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
+                      className="flex-1 text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-700 px-3 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
                       <i className="fa-solid fa-print mr-1"></i>Imprimir
                     </button>
                   )}

@@ -83,7 +83,7 @@ const MeuProgressoView: React.FC = () => {
   };
 
   return (
-    <div className="p-8 space-y-6 bg-[#05080f] min-h-screen animate-in fade-in">
+    <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
       <header>
         <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
           Meu <span className="text-teal-500">Progresso</span>
@@ -103,7 +103,7 @@ const MeuProgressoView: React.FC = () => {
           { label: 'Exames Aprovados',    value: stats.examesAprovados,    icon: 'fa-file-pen',         color: 'purple'  },
           { label: 'Média Exames',        value: `${stats.mediaExames}%`,  icon: 'fa-star',             color: 'pink'    },
         ].map((k, i) => (
-          <div key={i} className="bg-[#0a111f] border border-slate-800 rounded-[20px] p-5 space-y-2">
+          <div key={i} className="bg-white border border-slate-200 rounded-[20px] p-5 space-y-2">
             <i className={`fa-solid ${k.icon} text-${k.color}-500`}></i>
             <p className="text-3xl font-black text-white">{k.value}</p>
             <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">{k.label}</p>
@@ -113,7 +113,7 @@ const MeuProgressoView: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Trilhas */}
-        <div className="bg-[#0a111f] border border-slate-800 rounded-[24px] p-6 space-y-4">
+        <div className="bg-white border border-slate-200 rounded-[24px] p-6 space-y-4">
           <h3 className="text-white font-black uppercase text-sm flex items-center gap-2">
             <i className="fa-solid fa-road text-teal-400"></i>Minhas Trilhas
           </h3>
@@ -145,7 +145,7 @@ const MeuProgressoView: React.FC = () => {
         </div>
 
         {/* Quizzes */}
-        <div className="bg-[#0a111f] border border-slate-800 rounded-[24px] p-6 space-y-4">
+        <div className="bg-white border border-slate-200 rounded-[24px] p-6 space-y-4">
           <h3 className="text-white font-black uppercase text-sm flex items-center gap-2">
             <i className="fa-solid fa-circle-question text-blue-400"></i>Histórico de Quizzes
           </h3>
@@ -177,7 +177,7 @@ const MeuProgressoView: React.FC = () => {
         </div>
 
         {/* Vídeos */}
-        <div className="bg-[#0a111f] border border-slate-800 rounded-[24px] p-6 space-y-4">
+        <div className="bg-white border border-slate-200 rounded-[24px] p-6 space-y-4">
           <h3 className="text-white font-black uppercase text-sm flex items-center gap-2">
             <i className="fa-brands fa-youtube text-red-400"></i>Vídeos Assistidos
             <span className="ml-auto text-[10px] text-slate-500">{videosAssistidos.length} vídeo(s)</span>
@@ -198,7 +198,7 @@ const MeuProgressoView: React.FC = () => {
         </div>
 
         {/* Comunicados lidos */}
-        <div className="bg-[#0a111f] border border-slate-800 rounded-[24px] p-6 space-y-4">
+        <div className="bg-white border border-slate-200 rounded-[24px] p-6 space-y-4">
           <h3 className="text-white font-black uppercase text-sm flex items-center gap-2">
             <i className="fa-solid fa-bell text-amber-400"></i>Comunicados Lidos
             <span className="ml-auto text-[10px] text-slate-500">{comunicadosLidos.length} lido(s)</span>
@@ -212,7 +212,7 @@ const MeuProgressoView: React.FC = () => {
       </div>
 
       {/* Exames */}
-      <div className="bg-[#0a111f] border border-slate-800 rounded-[24px] p-6 space-y-4">
+      <div className="bg-white border border-slate-200 rounded-[24px] p-6 space-y-4">
         <h3 className="text-white font-black uppercase text-sm flex items-center gap-2">
           <i className="fa-solid fa-file-pen text-purple-400"></i>Histórico de Exames
           <span className="ml-auto text-[10px] text-slate-500">{examesResultados.length} realizado(s)</span>

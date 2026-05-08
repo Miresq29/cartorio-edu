@@ -148,7 +148,7 @@ const Sidebar: React.FC = () => {
                   <i className={`fa-solid ${section.icon} text-[10px] ${
                     hasActiveItem ? 'text-blue-400' : 'text-slate-600'
                   }`}></i>
-                  <span className={`text-[10px] font-black tracking-[0.15em] uppercase ${
+                  <span className={`text-xs font-black tracking-[0.12em] uppercase ${
                     hasActiveItem && !isOpen ? 'text-blue-400' : 'text-slate-600 group-hover:text-slate-400'
                   }`}>
                     {section.label}
@@ -181,10 +181,10 @@ const Sidebar: React.FC = () => {
                           }`}></i>
                         </div>
                         <div className="text-left min-w-0">
-                          <p className={`text-xs font-black truncate ${isActive ? 'text-white' : 'text-slate-300 group-hover:text-white'}`}>
+                          <p className={`text-sm font-black truncate ${isActive ? 'text-white' : 'text-slate-300 group-hover:text-white'}`}>
                             {item.label}
                           </p>
-                          <p className={`text-[9px] truncate leading-tight ${isActive ? 'text-blue-200' : 'text-slate-600 group-hover:text-slate-400'}`}>
+                          <p className={`text-[11px] truncate leading-tight ${isActive ? 'text-blue-200' : 'text-slate-600 group-hover:text-slate-400'}`}>
                             {item.desc}
                           </p>
                         </div>

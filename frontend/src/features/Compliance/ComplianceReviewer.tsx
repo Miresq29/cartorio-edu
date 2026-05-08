@@ -216,17 +216,17 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 no-print">
         <div className="lg:col-span-5 space-y-6">
-          <div className="bg-[#0a0f1d] border border-slate-800 rounded-[32px] p-8 space-y-7 shadow-2xl">
+          <div className="bg-slate-50 border border-slate-200 rounded-[32px] p-8 space-y-7 shadow-2xl">
 
             <div className="space-y-3">
               <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Documento a Auditar</label>
               <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.webp,.bmp,.gif" />
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className={`w-full py-10 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center gap-3 transition-all ${docData ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-slate-800 hover:border-blue-500/50'}`}
+                className={`w-full py-10 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center gap-3 transition-all ${docData ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-slate-200 hover:border-blue-500/50'}`}
               >
                 <i className={`fa-solid ${docData ? 'fa-file-circle-check text-emerald-500' : 'fa-cloud-arrow-up text-slate-600'} text-4xl`}></i>
-                <p className="text-xs font-bold text-slate-300 truncate max-w-xs px-4">{docData ? docData.fileName : 'Subir Minuta ou Documento'}</p>
+                <p className="text-xs font-bold text-slate-700 truncate max-w-xs px-4">{docData ? docData.fileName : 'Subir Minuta ou Documento'}</p>
                 {docData && (
                   <p className="text-[9px] text-emerald-400 font-bold">{docData.text.split(' ').length} palavras extraídas</p>
                 )}
@@ -255,12 +255,12 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
               <div className="space-y-3">
                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Protocolo de Referência</label>
                 {checklists.length === 0 ? (
-                  <p className="text-xs text-slate-600 italic p-4 border border-slate-800 rounded-xl">Nenhum protocolo cadastrado. Crie um no módulo Checklists.</p>
+                  <p className="text-xs text-slate-600 italic p-4 border border-slate-200 rounded-xl">Nenhum protocolo cadastrado. Crie um no módulo Checklists.</p>
                 ) : (
                   <select
                     value={selectedChecklistId}
                     onChange={e => setSelectedChecklistId(e.target.value)}
-                    className="w-full bg-[#05080f] border border-slate-800 rounded-xl px-4 py-4 text-xs font-bold text-slate-200 focus:border-blue-600 outline-none transition-all"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-4 text-xs font-bold text-slate-800 focus:border-blue-600 outline-none transition-all"
                   >
                     <option value="">Selecione um protocolo...</option>
                     {checklists.map(t => (
@@ -277,19 +277,19 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
                   Documentos da Base Legal ({selectedKbIds.length} selecionado{selectedKbIds.length !== 1 ? 's' : ''})
                 </label>
                 {kbDocs.length === 0 ? (
-                  <p className="text-xs text-slate-600 italic p-4 border border-slate-800 rounded-xl">Nenhum documento indexado. Adicione documentos na Base Legal.</p>
+                  <p className="text-xs text-slate-600 italic p-4 border border-slate-200 rounded-xl">Nenhum documento indexado. Adicione documentos na Base Legal.</p>
                 ) : (
                   <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
                     {kbDocs.map(d => (
                       <button
                         key={d.id}
                         onClick={() => toggleKbDoc(d.id)}
-                        className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all border ${selectedKbIds.includes(d.id) ? 'border-blue-500/40 bg-blue-500/5' : 'border-slate-800 hover:border-slate-700'}`}
+                        className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all border ${selectedKbIds.includes(d.id) ? 'border-blue-500/40 bg-blue-500/5' : 'border-slate-200 hover:border-slate-300'}`}
                       >
                         <div className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border-2 transition-all ${selectedKbIds.includes(d.id) ? 'bg-blue-600 border-blue-600' : 'border-slate-600'}`}>
                           {selectedKbIds.includes(d.id) && <i className="fa-solid fa-check text-white text-[8px]"></i>}
                         </div>
-                        <span className="text-[10px] text-slate-300 font-bold truncate">{d.fileName}</span>
+                        <span className="text-[10px] text-slate-700 font-bold truncate">{d.fileName}</span>
                       </button>
                     ))}
                   </div>
@@ -333,7 +333,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
       {results.length > 0 && (
         <div className="results-report mt-8 space-y-6">
           <div className="grid grid-cols-3 gap-4">
-            <div className="bg-[#0a111f] border border-slate-800 rounded-2xl p-6 text-center">
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 text-center">
               <p className="text-3xl font-black text-white">{results.length}</p>
               <p className="text-[9px] text-slate-500 uppercase font-bold mt-1">Total de Requisitos</p>
             </div>
@@ -347,7 +347,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
             </div>
           </div>
 
-          <div className="bg-[#0a111f] border border-slate-800 rounded-2xl p-6">
+          <div className="bg-white border border-slate-200 rounded-2xl p-6">
             <div className="flex justify-between items-center mb-2">
               <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Índice de Conformidade</span>
               <span className="text-sm font-black text-white">{conformePercent}%</span>
@@ -364,7 +364,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
             </div>
           </div>
 
-          <div className="p-8 bg-slate-900/40 border border-slate-800 rounded-3xl backdrop-blur-md">
+          <div className="p-8 bg-slate-900/40 border border-slate-200 rounded-3xl backdrop-blur-md">
             <h3 className="text-xl font-black text-white italic uppercase mb-6 flex items-center gap-3">
               <i className="fa-solid fa-file-invoice text-blue-500"></i> Parecer Técnico Detalhado
             </h3>
@@ -372,7 +372,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
               {results.map((res, i) => (
                 <div key={i} className={`p-6 rounded-2xl border ${res.compliant ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-red-500/5 border-red-500/20'} transition-all`}>
                   <div className="flex justify-between items-start mb-3 gap-4">
-                    <h4 className="text-sm font-bold text-slate-200 flex-1">{res.requirement}</h4>
+                    <h4 className="text-sm font-bold text-slate-800 flex-1">{res.requirement}</h4>
                     <span className={`text-[9px] font-black uppercase px-3 py-1 rounded-lg flex-shrink-0 ${res.compliant ? 'bg-emerald-500/20 text-emerald-500' : 'bg-red-500/20 text-red-500'}`}>
                       {res.compliant ? '✅ CONFORME' : '❌ PENDENTE'}
                     </span>
@@ -381,7 +381,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
                   {!res.compliant && res.suggestion && (
                     <div className="bg-slate-950 p-4 rounded-xl border border-red-500/10">
                       <p className="text-[10px] font-black text-red-400 uppercase mb-2">Sugestão de Retificação:</p>
-                      <p className="text-xs text-slate-300 leading-relaxed">{res.suggestion}</p>
+                      <p className="text-xs text-slate-700 leading-relaxed">{res.suggestion}</p>
                     </div>
                   )}
                 </div>
@@ -390,22 +390,22 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
           </div>
 
           {rawParecer && (
-            <div className="p-8 bg-[#0a111f] border border-slate-700 rounded-3xl">
+            <div className="p-8 bg-white border border-slate-300 rounded-3xl">
               <h4 className="text-sm font-black text-blue-500 uppercase tracking-widest mb-4">
                 <i className="fa-solid fa-memo-circle-check mr-2"></i>Resumo Executivo
               </h4>
-              <pre className="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap font-sans">{rawParecer}</pre>
+              <pre className="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap font-sans">{rawParecer}</pre>
             </div>
           )}
         </div>
       )}
 
       {!results.length && rawParecer && (
-        <div className="mt-8 p-8 bg-slate-900/40 border border-slate-800 rounded-3xl">
+        <div className="mt-8 p-8 bg-slate-900/40 border border-slate-200 rounded-3xl">
           <h3 className="text-lg font-black text-white italic uppercase mb-4 flex items-center gap-3">
             <i className="fa-solid fa-file-invoice text-blue-500"></i> Parecer Técnico
           </h3>
-          <pre className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap font-sans">{rawParecer}</pre>
+          <pre className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap font-sans">{rawParecer}</pre>
         </div>
       )}
 

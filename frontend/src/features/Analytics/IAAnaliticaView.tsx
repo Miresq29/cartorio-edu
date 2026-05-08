@@ -271,7 +271,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
   ];
 
   return (
-    <div className="p-8 space-y-6 bg-[#05080f] min-h-screen animate-in fade-in">
+    <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
 
       <header>
         <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
@@ -288,7 +288,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
           { label: 'Exclusões Hoje',    value: m.exclusoesHoje,   icon: 'fa-file-circle-xmark', color: m.exclusoesHoje > 0 ? 'red' : 'emerald'   },
           { label: 'Usuários Ativos',   value: m.usuariosHoje,    icon: 'fa-users',              color: 'purple'                                },
         ].map((s, i) => (
-          <div key={i} className="bg-[#0a111f] border border-slate-800 rounded-[24px] p-6 space-y-3">
+          <div key={i} className="bg-white border border-slate-200 rounded-[24px] p-6 space-y-3">
             <i className={`fa-solid ${s.icon} text-${s.color}-500 text-xl`}></i>
             <p className="text-3xl font-black text-white">{s.value}</p>
             <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">{s.label}</p>
@@ -296,16 +296,16 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
         ))}
       </div>
 
-      <div className="bg-[#0a111f] border border-slate-800 rounded-[32px] overflow-hidden shadow-2xl">
+      <div className="bg-white border border-slate-200 rounded-[32px] overflow-hidden shadow-2xl">
 
         {/* Tabs */}
-        <div className="flex border-b border-slate-800">
+        <div className="flex border-b border-slate-200">
           {TABS.map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-6 py-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all border-b-2 ${
                 activeTab === tab.id
                   ? 'text-blue-400 border-blue-500 bg-blue-500/5'
-                  : 'text-slate-500 border-transparent hover:text-slate-300 hover:bg-slate-800/50'
+                  : 'text-slate-500 border-transparent hover:text-slate-700 hover:bg-slate-800/50'
               }`}>
               <i className={`fa-solid ${tab.icon} text-xs`}></i>{tab.label}
             </button>
@@ -381,9 +381,9 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                     const isError = tipo.includes('excluido') || tipo.includes('erro');
                     const d = log.createdAt?.toDate ? log.createdAt.toDate() : new Date(log.createdAt);
                     return (
-                      <div key={log.id} className="flex items-center gap-3 p-3 bg-[#05080f] border border-slate-800 rounded-xl">
+                      <div key={log.id} className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
                         <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isError ? 'bg-red-500' : 'bg-emerald-500'}`}></div>
-                        <span className="text-xs text-slate-300 flex-1 truncate">{log.descricao}</span>
+                        <span className="text-xs text-slate-700 flex-1 truncate">{log.descricao}</span>
                         <span className="text-[9px] text-slate-600 flex-shrink-0">
                           {d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                         </span>
@@ -421,7 +421,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                       <i className="fa-solid fa-brain text-blue-400"></i>
                       <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest">Resumo Executivo</span>
                     </div>
-                    <p className="text-slate-300 text-sm leading-relaxed">{analise.resumo}</p>
+                    <p className="text-slate-700 text-sm leading-relaxed">{analise.resumo}</p>
                   </div>
 
                   {/* Métricas da IA */}
@@ -429,7 +429,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                     {analise.metricas.map((met, i) => {
                       const color = STATUS_COLOR[met.status];
                       return (
-                        <div key={i} className={`bg-[#05080f] border border-${color}-500/20 rounded-2xl p-4 space-y-2`}>
+                        <div key={i} className={`bg-slate-50 border border-${color}-500/20 rounded-2xl p-4 space-y-2`}>
                           <p className={`text-2xl font-black text-${color}-400`}>{met.valor}</p>
                           <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{met.label}</p>
                           <p className="text-[9px] text-slate-600">{met.detalhe}</p>
@@ -467,13 +467,13 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                   {/* Recomendações */}
                   <div className="space-y-2">
                     <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Recomendações de Gestão</h4>
-                    <div className="bg-[#05080f] border border-slate-800 rounded-2xl p-5 space-y-3">
+                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-3">
                       {analise.recomendacoes.map((rec, i) => (
                         <div key={i} className="flex items-start gap-3">
                           <div className="w-5 h-5 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
                             <span className="text-[9px] font-black text-blue-400">{i + 1}</span>
                           </div>
-                          <p className="text-xs text-slate-300">{rec}</p>
+                          <p className="text-xs text-slate-700">{rec}</p>
                         </div>
                       ))}
                     </div>
@@ -508,7 +508,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                 <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Pergunte sobre métricas, anomalias ou ações corretivas</p>
               </div>
 
-              <div className="bg-[#05080f] border border-slate-800 rounded-2xl overflow-hidden">
+              <div className="bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden">
                 <div className="h-80 overflow-y-auto p-6 space-y-4 custom-scrollbar">
                   {chatMessages.length === 0 && (
                     <div className="h-full flex flex-col items-center justify-center text-center opacity-30 gap-4">
@@ -524,7 +524,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                   {chatMessages.map((m, i) => (
                     <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                       <div className={`max-w-[80%] px-5 py-4 rounded-2xl text-sm leading-relaxed ${
-                        m.role === 'user' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-200 border border-slate-700'
+                        m.role === 'user' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-800 border border-slate-300'
                       }`}>
                         <p className="whitespace-pre-wrap">{m.text}</p>
                       </div>
@@ -532,7 +532,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                   ))}
                   {isChatLoading && (
                     <div className="flex justify-start">
-                      <div className="bg-slate-800 border border-slate-700 px-5 py-4 rounded-2xl">
+                      <div className="bg-slate-800 border border-slate-300 px-5 py-4 rounded-2xl">
                         <i className="fa-solid fa-circle-notch animate-spin text-blue-500"></i>
                         <span className="text-xs text-slate-400 ml-2">Analisando dados...</span>
                       </div>
@@ -540,11 +540,11 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                   )}
                   <div ref={chatEndRef} />
                 </div>
-                <div className="p-4 border-t border-slate-800 flex gap-3">
+                <div className="p-4 border-t border-slate-200 flex gap-3">
                   <input value={chatInput} onChange={e => setChatInput(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleChat()}
                     placeholder="Ex: Quais são os principais riscos operacionais hoje?"
-                    className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500" />
+                    className="flex-1 bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500" />
                   <button onClick={handleChat} disabled={isChatLoading || !chatInput.trim()}
                     className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-black text-sm transition-all disabled:opacity-50">
                     <i className="fa-solid fa-paper-plane"></i>

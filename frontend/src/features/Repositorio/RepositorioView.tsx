@@ -159,7 +159,7 @@ const PlayerModal: React.FC<{
             />
           </div>
           {/* Fallback: link direto */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-center space-y-2">
+          <div className="bg-slate-900 border border-slate-200 rounded-2xl p-4 text-center space-y-2">
             <i className="fa-solid fa-headphones text-violet-400 text-3xl block mb-2"></i>
             <p className="text-xs text-slate-400">Se o player não carregar, abra diretamente no Drive:</p>
             <a
@@ -213,8 +213,8 @@ const MidiaCard: React.FC<{
   const tipo = TIPO_CONFIG[midia.tipo];
 
   return (
-    <div className={`bg-[#0a111f] border rounded-[20px] overflow-hidden transition-all hover:scale-[1.01] group ${
-      assistida ? 'border-emerald-500/30' : 'border-slate-800'
+    <div className={`bg-white border rounded-[20px] overflow-hidden transition-all hover:scale-[1.01] group ${
+      assistida ? 'border-emerald-500/30' : 'border-slate-200'
     }`}>
       {/* Thumbnail */}
       <div className="relative cursor-pointer" onClick={onPlay}>
@@ -348,7 +348,7 @@ const FormMidia: React.FC<{
   };
 
   return (
-    <div className="bg-[#05080f] border border-blue-500/30 rounded-2xl p-6 space-y-5">
+    <div className="bg-slate-50 border border-blue-500/30 rounded-2xl p-6 space-y-5">
       <h4 className="text-blue-400 font-black uppercase text-xs tracking-widest">Adicionar Conteúdo ao Repositório</h4>
 
       {/* Tipo */}
@@ -358,7 +358,7 @@ const FormMidia: React.FC<{
           {(Object.entries(TIPO_CONFIG) as [MidiaTipo, typeof TIPO_CONFIG[MidiaTipo]][]).map(([key, cfg]) => (
             <button type="button" key={key} onClick={() => { setTipo(key); setLinkErro(''); set('link', ''); }}
               className={`p-3 rounded-xl border text-center transition-all ${
-                tipo === key ? `border-${cfg.color}-500 bg-${cfg.color}-500/10` : 'border-slate-800 hover:border-slate-600'
+                tipo === key ? `border-${cfg.color}-500 bg-${cfg.color}-500/10` : 'border-slate-200 hover:border-slate-600'
               }`}>
               <i className={`${cfg.icon} text-xl mb-1 block ${tipo === key ? `text-${cfg.color}-400` : 'text-slate-500'}`}></i>
               <p className={`text-[10px] font-black ${tipo === key ? `text-${cfg.color}-300` : 'text-slate-400'}`}>{cfg.label}</p>
@@ -395,7 +395,7 @@ const FormMidia: React.FC<{
             : 'https://drive.google.com/file/d/.../view?usp=sharing'
           }
           className={`w-full bg-slate-900 border rounded-xl px-4 py-3 text-sm text-white outline-none transition-all ${
-            linkErro ? 'border-red-500' : 'border-slate-800 focus:border-blue-500'
+            linkErro ? 'border-red-500' : 'border-slate-200 focus:border-blue-500'
           }`}
         />
         {linkErro && <p className="text-xs text-red-400">{linkErro}</p>}
@@ -407,14 +407,14 @@ const FormMidia: React.FC<{
           <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Título *</label>
           <input value={form.titulo} onChange={e => set('titulo', e.target.value)}
             placeholder="Ex: Introdução ao Provimento 213/2026"
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500" />
+            className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500" />
         </div>
 
         {/* Categoria */}
         <div className="space-y-1">
           <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Categoria</label>
           <select value={form.categoria} onChange={e => set('categoria', e.target.value)}
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500">
+            className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500">
             {CATEGORIAS.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
           </select>
         </div>
@@ -423,7 +423,7 @@ const FormMidia: React.FC<{
         <div className="space-y-1">
           <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Duração (minutos)</label>
           <input type="number" min={1} max={300} value={form.duracaoMin} onChange={e => set('duracaoMin', e.target.value)}
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500" />
+            className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500" />
         </div>
 
         {/* Trilha */}
@@ -431,7 +431,7 @@ const FormMidia: React.FC<{
           <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Trilha Associada (opcional)</label>
           <input value={form.trilhaTitulo} onChange={e => set('trilhaTitulo', e.target.value)}
             placeholder="Ex: Trilha do Atendente"
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500" />
+            className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500" />
         </div>
 
         {/* Descrição */}
@@ -439,13 +439,13 @@ const FormMidia: React.FC<{
           <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Descrição</label>
           <input value={form.descricao} onChange={e => set('descricao', e.target.value)}
             placeholder="Breve descrição do conteúdo"
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500" />
+            className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500" />
         </div>
       </div>
 
       <div className="flex gap-3">
         <button onClick={onCancel}
-          className="px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 border border-slate-800 hover:border-slate-600 transition-all">
+          className="px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 border border-slate-200 hover:border-slate-600 transition-all">
           Cancelar
         </button>
         <button onClick={handleSalvar} disabled={saving || !form.titulo || !form.link}
@@ -541,7 +541,7 @@ const RepositorioView: React.FC = () => {
   const totalVistos = assistidas.size;
 
   return (
-    <div className="p-8 space-y-6 bg-[#05080f] min-h-screen animate-in fade-in">
+    <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
 
       {/* Player Modal */}
       {playerMidia && (
@@ -574,7 +574,7 @@ const RepositorioView: React.FC = () => {
           { label: 'PDFs',           value: totalPDFs,   icon: 'fa-solid fa-file-pdf',   color: 'rose'   },
           { label: 'Vistos por mim', value: totalVistos, icon: 'fa-solid fa-circle-check',color: 'emerald'},
         ].map((s, i) => (
-          <div key={i} className="bg-[#0a111f] border border-slate-800 rounded-[20px] p-5 space-y-2">
+          <div key={i} className="bg-white border border-slate-200 rounded-[20px] p-5 space-y-2">
             <i className={`${s.icon} text-${s.color}-500`}></i>
             <p className="text-2xl font-black text-white">{s.value}</p>
             <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">{s.label}</p>
@@ -591,20 +591,20 @@ const RepositorioView: React.FC = () => {
       <div className="flex flex-wrap gap-3 items-center">
         <input value={busca} onChange={e => setBusca(e.target.value)}
           placeholder="Buscar conteúdo..."
-          className="bg-[#0a111f] border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500 w-56" />
+          className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500 w-56" />
 
         {/* Filtro tipo */}
         <div className="flex gap-2">
           <button onClick={() => setFiltroTipo('')}
             className={`px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
-              !filtroTipo ? 'bg-blue-600 text-white' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border border-slate-800'
+              !filtroTipo ? 'bg-blue-600 text-white' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border border-slate-200'
             }`}>Todos</button>
           {(Object.entries(TIPO_CONFIG) as [MidiaTipo, typeof TIPO_CONFIG[MidiaTipo]][]).map(([key, cfg]) => (
             <button key={key} onClick={() => setFiltroTipo(filtroTipo === key ? '' : key)}
               className={`px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 ${
                 filtroTipo === key
                   ? `bg-${cfg.color}-600 text-white`
-                  : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border border-slate-800'
+                  : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border border-slate-200'
               }`}>
               <i className={`${cfg.icon} text-[10px]`}></i>{cfg.label}
             </button>
@@ -613,7 +613,7 @@ const RepositorioView: React.FC = () => {
 
         {/* Filtro categoria */}
         <select value={filtroCategoria} onChange={e => setFiltroCategoria(e.target.value)}
-          className="bg-[#0a111f] border border-slate-800 rounded-xl px-3 py-2.5 text-[10px] text-slate-300 outline-none focus:border-blue-500">
+          className="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-[10px] text-slate-700 outline-none focus:border-blue-500">
           <option value="">Todas as categorias</option>
           {CATEGORIAS.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
         </select>

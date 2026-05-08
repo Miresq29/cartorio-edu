@@ -180,7 +180,7 @@ ${opt.justificativa}
       </div>
 
       {/* Campo para pedido específico */}
-      <div className="bg-[#05080f] border border-slate-800 rounded-2xl p-4">
+      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
         <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-2">
           Personalizar pedido (opcional)
         </label>
@@ -188,24 +188,24 @@ ${opt.justificativa}
           value={customRequest}
           onChange={e => setCustomRequest(e.target.value)}
           placeholder="Ex: foco em escrituras públicas, para atendentes novos, duração máxima 2 horas..."
-          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500"
+          className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500"
         />
       </div>
 
       {/* Base ativa */}
       {(checklists.length > 0 || knowledgeDocs.length > 0) && (
-        <div className="bg-[#05080f] border border-slate-800 rounded-2xl p-4 space-y-2">
+        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2">
           <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">Base Ativa</h4>
           {checklists.slice(0, 3).map((c, i) => (
             <div key={i} className="flex items-center gap-3 p-2 bg-slate-900/50 rounded-xl">
               <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <span className="text-xs text-slate-300"><span className="font-bold text-white">{c.title}</span> — {c.items?.length || 0} requisitos</span>
+              <span className="text-xs text-slate-700"><span className="font-bold text-white">{c.title}</span> — {c.items?.length || 0} requisitos</span>
             </div>
           ))}
           {knowledgeDocs.slice(0, 3).map((d, i) => (
             <div key={i} className="flex items-center gap-3 p-2 bg-slate-900/50 rounded-xl">
               <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-              <span className="text-xs text-slate-300"><span className="font-bold text-white">{d.fileName || d.title}</span> — documento indexado</span>
+              <span className="text-xs text-slate-700"><span className="font-bold text-white">{d.fileName || d.title}</span> — documento indexado</span>
             </div>
           ))}
         </div>
@@ -221,7 +221,7 @@ ${opt.justificativa}
               const icon  = TIPO_ICON[opt.tipo]  || 'fa-graduation-cap';
               return (
                 <button key={i} onClick={() => selectOption(opt)}
-                  className={`text-left bg-[#05080f] border border-${color}-500/30 hover:border-${color}-500 rounded-2xl p-5 space-y-3 transition-all hover:bg-${color}-500/5 group`}>
+                  className={`text-left bg-slate-50 border border-${color}-500/30 hover:border-${color}-500 rounded-2xl p-5 space-y-3 transition-all hover:bg-${color}-500/5 group`}>
                   <div className="flex items-center gap-3">
                     <div className={`w-9 h-9 rounded-xl bg-${color}-500/20 flex items-center justify-center`}>
                       <i className={`fa-solid ${icon} text-${color}-400 text-sm`}></i>
@@ -254,7 +254,7 @@ ${opt.justificativa}
       )}
 
       {/* Chat de resultado */}
-      <div className="bg-[#05080f] border border-slate-800 rounded-2xl overflow-hidden">
+      <div className="bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden">
         <div className="h-80 overflow-y-auto p-6 space-y-4 custom-scrollbar">
           {messages.length === 0 && trainingOptions.length === 0 && (
             <div className="h-full flex flex-col items-center justify-center text-center opacity-30">
@@ -267,7 +267,7 @@ ${opt.justificativa}
           {messages.map((m, i) => (
             <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div className={`max-w-[85%] px-5 py-4 rounded-2xl text-sm leading-relaxed ${
-                m.role === 'user' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-200 border border-slate-700'
+                m.role === 'user' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-800 border border-slate-300'
               }`}>
                 <p className="whitespace-pre-wrap font-mono text-xs">{m.text}</p>
               </div>
@@ -275,7 +275,7 @@ ${opt.justificativa}
           ))}
           {isLoading && (
             <div className="flex justify-start">
-              <div className="bg-slate-800 border border-slate-700 px-5 py-4 rounded-2xl">
+              <div className="bg-slate-800 border border-slate-300 px-5 py-4 rounded-2xl">
                 <i className="fa-solid fa-circle-notch animate-spin text-blue-500"></i>
                 <span className="text-xs text-slate-400 ml-2">IA gerando opções de roteiro...</span>
               </div>
@@ -284,22 +284,22 @@ ${opt.justificativa}
           {selectedOption && messages.length > 0 && (
             <div className="flex gap-2 flex-wrap">
               <button onClick={generateOptions} disabled={isLoading}
-                className="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
+                className="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-700 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
                 <i className="fa-solid fa-rotate mr-1"></i>Gerar novas opções
               </button>
               <button onClick={() => { navigator.clipboard.writeText(messages[messages.length - 1]?.text || ''); showToast('Roteiro copiado!', 'success'); }}
-                className="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
+                className="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-700 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
                 <i className="fa-solid fa-copy mr-1"></i>Copiar roteiro
               </button>
             </div>
           )}
           <div ref={chatEndRef} />
         </div>
-        <div className="p-4 border-t border-slate-800 flex gap-3">
+        <div className="p-4 border-t border-slate-200 flex gap-3">
           <input value={input} onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
             placeholder="Ex: Adapte o roteiro para apenas atendentes de balcão..."
-            className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500" />
+            className="flex-1 bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500" />
           <button type="button" onClick={handleSend} disabled={isLoading || !input.trim()}
             title="Enviar mensagem"
             className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-black text-sm transition-all disabled:opacity-50">
@@ -321,7 +321,7 @@ ${opt.justificativa}
         {/* Coluna esquerda: seleção */}
         <div className="space-y-4">
           {/* Seleção de documento */}
-          <div className="bg-[#05080f] border border-slate-800 rounded-2xl p-4 space-y-3">
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
             <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">1. Selecione o documento</h4>
             {knowledgeDocs.length === 0 ? (
               <p className="text-xs text-slate-500 italic">Nenhum documento na base legal. Adicione documentos na seção "Base Legal".</p>
@@ -332,7 +332,7 @@ ${opt.justificativa}
                     className={`w-full text-left p-3 rounded-xl transition-all border ${
                       selectedDoc?.id === doc.id
                         ? 'border-blue-500 bg-blue-500/10'
-                        : 'border-slate-800 hover:border-slate-600 bg-slate-900/30'
+                        : 'border-slate-200 hover:border-slate-600 bg-slate-900/30'
                     }`}>
                     <p className="text-xs font-bold text-white truncate">{doc.fileName || doc.title}</p>
                     <p className="text-[9px] text-slate-500 mt-0.5">{doc.content?.length || 0} caracteres indexados</p>
@@ -343,7 +343,7 @@ ${opt.justificativa}
           </div>
 
           {/* Seleção de tipo */}
-          <div className="bg-[#05080f] border border-slate-800 rounded-2xl p-4 space-y-3">
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
             <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">2. Tipo de resumo</h4>
             <div className="grid grid-cols-2 gap-2">
               {SUMMARY_TYPES.map(st => (
@@ -351,7 +351,7 @@ ${opt.justificativa}
                   className={`p-3 rounded-xl text-left transition-all border ${
                     summaryType === st.id
                       ? `border-${st.color}-500 bg-${st.color}-500/10`
-                      : 'border-slate-800 hover:border-slate-600'
+                      : 'border-slate-200 hover:border-slate-600'
                   }`}>
                   <p className={`text-xs font-black ${summaryType === st.id ? `text-${st.color}-400` : 'text-white'}`}>{st.label}</p>
                   <p className="text-[9px] text-slate-500 mt-0.5 leading-tight">{st.desc}</p>
@@ -370,12 +370,12 @@ ${opt.justificativa}
         </div>
 
         {/* Coluna direita: resultado */}
-        <div className="bg-[#05080f] border border-slate-800 rounded-2xl p-5 min-h-[350px] flex flex-col">
+        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 min-h-[350px] flex flex-col">
           <div className="flex items-center justify-between mb-4">
             <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Resultado</h4>
             {summary && (
               <button onClick={() => { navigator.clipboard.writeText(summary); showToast('Resumo copiado!', 'success'); }}
-                className="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg font-black uppercase tracking-widest transition-all">
+                className="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-700 px-3 py-1.5 rounded-lg font-black uppercase tracking-widest transition-all">
                 <i className="fa-solid fa-copy mr-1"></i>Copiar
               </button>
             )}
@@ -389,7 +389,7 @@ ${opt.justificativa}
             </div>
           ) : summary ? (
             <div className="flex-1 overflow-y-auto custom-scrollbar">
-              <p className="text-xs text-slate-300 whitespace-pre-wrap leading-relaxed">{summary}</p>
+              <p className="text-xs text-slate-700 whitespace-pre-wrap leading-relaxed">{summary}</p>
             </div>
           ) : (
             <div className="flex-1 flex items-center justify-center opacity-30">
@@ -417,7 +417,7 @@ ${opt.justificativa}
   };
 
   return (
-    <div className="p-8 space-y-6 bg-[#05080f] min-h-screen animate-in fade-in">
+    <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
 
       <header>
         <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
@@ -433,7 +433,7 @@ ${opt.justificativa}
           { label: 'Docs na Base Legal', value: knowledgeDocs.length, icon: 'fa-scale-balanced',  color: 'amber'   },
           { label: 'Cobertura Estimada', value: `${Math.min(100, checklists.length * 12 + knowledgeDocs.length * 8)}%`, icon: 'fa-chart-pie', color: 'purple' },
         ].map((s, i) => (
-          <div key={i} className="bg-[#0a111f] border border-slate-800 rounded-[24px] p-6 space-y-3">
+          <div key={i} className="bg-white border border-slate-200 rounded-[24px] p-6 space-y-3">
             <i className={`fa-solid ${s.icon} text-${s.color}-500 text-xl`}></i>
             <p className="text-3xl font-black text-white">{s.value}</p>
             <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">{s.label}</p>
@@ -441,14 +441,14 @@ ${opt.justificativa}
         ))}
       </div>
 
-      <div className="bg-[#0a111f] border border-slate-800 rounded-[32px] overflow-hidden shadow-2xl">
-        <div className="flex border-b border-slate-800 overflow-x-auto">
+      <div className="bg-white border border-slate-200 rounded-[32px] overflow-hidden shadow-2xl">
+        <div className="flex border-b border-slate-200 overflow-x-auto">
           {TABS.map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-6 py-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all border-b-2 ${
                 activeTab === tab.id
                   ? 'text-blue-400 border-blue-500 bg-blue-500/5'
-                  : 'text-slate-500 border-transparent hover:text-slate-300 hover:bg-slate-800/50'
+                  : 'text-slate-500 border-transparent hover:text-slate-700 hover:bg-slate-800/50'
               }`}>
               <i className={`fa-solid ${tab.icon} text-xs`}></i>{tab.label}
             </button>

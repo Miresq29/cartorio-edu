@@ -53,9 +53,9 @@ const ChatView: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#05080f] m-4 rounded-3xl border border-slate-800 shadow-2xl overflow-hidden">
+    <div className="flex flex-col h-full bg-slate-50 m-4 rounded-3xl border border-slate-200 shadow-2xl overflow-hidden">
       {/* Header */}
-      <div className="p-6 border-b border-slate-800 bg-slate-900/40 flex items-center justify-between">
+      <div className="p-6 border-b border-slate-200 bg-slate-900/40 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-xl">
             ✨
@@ -84,7 +84,7 @@ const ChatView: React.FC = () => {
               <div className={`max-w-[85%] rounded-2xl px-5 py-3 text-sm leading-relaxed ${
                 msg.role === 'user' 
                   ? 'bg-blue-600 text-white rounded-br-none shadow-lg shadow-blue-900/20' 
-                  : 'bg-[#0a0f1d] text-slate-200 border border-slate-800 rounded-bl-none shadow-xl'
+                  : 'bg-slate-50 text-slate-800 border border-slate-200 rounded-bl-none shadow-xl'
               }`}>
                 {msg.content}
               </div>
@@ -93,7 +93,7 @@ const ChatView: React.FC = () => {
         )}
         {isTyping && (
           <div className="flex justify-start">
-            <div className="bg-[#0a0f1d] border border-slate-800 rounded-2xl px-4 py-2 flex items-center gap-3">
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2 flex items-center gap-3">
                 <div className="flex gap-1">
                     <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce"></div>
                     <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:0.2s]"></div>
@@ -106,12 +106,12 @@ const ChatView: React.FC = () => {
       </div>
 
       {/* Input */}
-      <form onSubmit={handleSend} className="p-4 border-t border-slate-800 bg-[#05080f] flex gap-3">
+      <form onSubmit={handleSend} className="p-4 border-t border-slate-200 bg-slate-50 flex gap-3">
         <input 
           value={input} 
           onChange={e => setInput(e.target.value)}
           placeholder="Digite sua dúvida jurídica..."
-          className="flex-1 bg-[#0a0f1d] border border-slate-800 rounded-xl px-5 py-4 text-sm text-white focus:border-blue-500 outline-none transition-all placeholder:text-slate-700"
+          className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-sm text-white focus:border-blue-500 outline-none transition-all placeholder:text-slate-700"
         />
         <button 
           type="submit" 

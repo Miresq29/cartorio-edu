@@ -215,10 +215,10 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
   const progress = totalItems > 0 ? Math.round((checkedCount / totalItems) * 100) : 0;
 
   return (
-    <div className="h-full flex bg-[#05080f] min-h-screen">
+    <div className="h-full flex bg-slate-50 min-h-screen">
       {/* Sidebar */}
-      <aside className="w-80 border-r border-slate-800 flex flex-col bg-[#0a0f1d] flex-shrink-0">
-        <div className="p-6 border-b border-slate-800 flex justify-between items-center">
+      <aside className="w-80 border-r border-slate-200 flex flex-col bg-slate-50 flex-shrink-0">
+        <div className="p-6 border-b border-slate-200 flex justify-between items-center">
           <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest">Protocolos</h2>
           <button onClick={openCreateModal} className="text-blue-500 hover:text-blue-400 transition-colors">
             <i className="fa-solid fa-circle-plus text-2xl"></i>
@@ -280,12 +280,12 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
 
             {/* MODO ROTEIRO */}
             {mode === 'roteiro' && (
-              <div className="bg-[#0a111f] border border-slate-800 rounded-[32px] p-8 space-y-3 shadow-2xl">
+              <div className="bg-white border border-slate-200 rounded-[32px] p-8 space-y-3 shadow-2xl">
                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Itens do Protocolo</p>
                 {activeChecklist.items?.map((item, idx) => (
-                  <div key={item.id} className="flex items-start gap-4 p-4 bg-slate-900/50 border border-slate-800 rounded-2xl">
+                  <div key={item.id} className="flex items-start gap-4 p-4 bg-slate-900/50 border border-slate-200 rounded-2xl">
                     <div className="w-7 h-7 rounded-lg bg-slate-950 flex items-center justify-center text-blue-500 text-xs font-bold flex-shrink-0 mt-0.5">{idx + 1}</div>
-                    <span className="text-sm text-slate-300 font-medium leading-relaxed">{item.text}</span>
+                    <span className="text-sm text-slate-700 font-medium leading-relaxed">{item.text}</span>
                   </div>
                 ))}
               </div>
@@ -295,7 +295,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
             {mode === 'executar' && (
               <div className="space-y-5">
                 {/* Progresso */}
-                <div className="bg-[#0a111f] border border-slate-800 rounded-2xl p-5">
+                <div className="bg-white border border-slate-200 rounded-2xl p-5">
                   <div className="flex justify-between items-center mb-3">
                     <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Progresso da Execução</span>
                     <span className="text-xs font-black text-white">{checkedCount}/{totalItems} — {progress}%</span>
@@ -311,7 +311,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
                 {/* Itens marcáveis */}
                 <div className="space-y-3">
                   {activeChecklist.items?.map((item, idx) => (
-                    <div key={item.id} className={`border rounded-2xl p-5 transition-all ${checkedItems[item.id] ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-[#0a111f] border-slate-800'}`}>
+                    <div key={item.id} className={`border rounded-2xl p-5 transition-all ${checkedItems[item.id] ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-white border-slate-200'}`}>
                       <div className="flex items-start gap-4">
                         <button
                           onClick={() => setCheckedItems(prev => ({ ...prev, [item.id]: !prev[item.id] }))}
@@ -320,7 +320,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
                           {checkedItems[item.id] && <i className="fa-solid fa-check text-xs"></i>}
                         </button>
                         <div className="flex-1">
-                          <span className={`text-sm font-medium leading-relaxed ${checkedItems[item.id] ? 'text-slate-500 line-through' : 'text-slate-300'}`}>
+                          <span className={`text-sm font-medium leading-relaxed ${checkedItems[item.id] ? 'text-slate-500 line-through' : 'text-slate-700'}`}>
                             <span className="text-[10px] font-black text-slate-600 mr-2">{idx + 1}.</span>{item.text}
                           </span>
                           <textarea
@@ -328,7 +328,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
                             onChange={e => setExecutionNotes(prev => ({ ...prev, [item.id]: e.target.value }))}
                             placeholder="Observação (opcional)..."
                             rows={1}
-                            className="mt-2 w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-400 outline-none focus:border-blue-500 resize-none"
+                            className="mt-2 w-full bg-slate-950 border border-slate-200 rounded-lg p-2 text-xs text-slate-400 outline-none focus:border-blue-500 resize-none"
                           />
                         </div>
                       </div>
@@ -337,7 +337,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
                 </div>
 
                 {/* Painel de Análise RAG */}
-                <div className="bg-[#0a111f] border border-blue-500/20 rounded-[32px] p-8 space-y-5">
+                <div className="bg-white border border-blue-500/20 rounded-[32px] p-8 space-y-5">
                   <div>
                     <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest">
                       <i className="fa-solid fa-robot mr-2"></i>Análise RAG — Verificar Documento
@@ -351,7 +351,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
                     <input type="file" ref={docFileRef} onChange={handleDocUpload} className="hidden" accept=".pdf,.doc,.docx,.txt" />
                     <button
                       onClick={() => docFileRef.current?.click()}
-                      className={`flex items-center gap-2 px-5 py-3 rounded-xl text-[10px] font-black uppercase transition-all border ${uploadedDocText ? 'border-emerald-500/40 text-emerald-400 bg-emerald-500/5' : 'border-slate-700 text-slate-400 hover:border-blue-500 hover:text-white'}`}
+                      className={`flex items-center gap-2 px-5 py-3 rounded-xl text-[10px] font-black uppercase transition-all border ${uploadedDocText ? 'border-emerald-500/40 text-emerald-400 bg-emerald-500/5' : 'border-slate-300 text-slate-400 hover:border-blue-500 hover:text-white'}`}
                     >
                       <i className={`fa-solid ${uploadedDocText ? 'fa-file-circle-check' : 'fa-cloud-arrow-up'}`}></i>
                       {uploadedDocText ? uploadedDocName : 'Subir Documento'}
@@ -366,7 +366,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
                   </div>
 
                   {analysisResult && (
-                    <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6">
+                    <div className="bg-slate-950 border border-slate-200 rounded-2xl p-6">
                       <div className="flex justify-between items-center mb-4">
                         <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest">
                           <i className="fa-solid fa-file-invoice mr-2"></i>Parecer Técnico — Baseado na Base Legal Indexada
@@ -378,7 +378,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
                           <i className="fa-solid fa-copy mr-1"></i>Copiar
                         </button>
                       </div>
-                      <pre className="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap font-sans">{analysisResult}</pre>
+                      <pre className="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap font-sans">{analysisResult}</pre>
                     </div>
                   )}
                 </div>
@@ -391,8 +391,8 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
       {/* Modal de criação */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/90 backdrop-blur-sm">
-          <div className="bg-[#0a0f1d] border border-slate-800 rounded-[40px] w-full max-w-2xl overflow-hidden shadow-2xl">
-            <header className="p-8 border-b border-slate-800 flex justify-between items-center">
+          <div className="bg-slate-50 border border-slate-200 rounded-[40px] w-full max-w-2xl overflow-hidden shadow-2xl">
+            <header className="p-8 border-b border-slate-200 flex justify-between items-center">
               <h3 className="text-white font-black uppercase italic">Novo Protocolo</h3>
               <button onClick={() => setIsModalOpen(false)} className="text-slate-500 hover:text-white transition-colors">
                 <i className="fa-solid fa-xmark text-xl"></i>
@@ -402,7 +402,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Nome do Ato</label>
                 <input value={formName} onChange={e => setFormName(e.target.value)} placeholder="Ex: Escritura de Compra e Venda"
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-white font-bold outline-none focus:border-blue-500" />
+                  className="w-full bg-slate-900 border border-slate-200 rounded-xl p-4 text-white font-bold outline-none focus:border-blue-500" />
               </div>
 
               <div className="flex justify-between items-center p-4 bg-blue-600/5 rounded-2xl border border-blue-600/10">
@@ -426,7 +426,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
                   <div key={idx} className="flex gap-2">
                     <input value={item} onChange={e => { const u = [...formItems]; u[idx] = e.target.value; setFormItems(u); }}
                       placeholder={`Item ${idx + 1}`}
-                      className="flex-1 bg-slate-900 border border-slate-800 rounded-xl p-3 text-white text-sm outline-none focus:border-blue-500" />
+                      className="flex-1 bg-slate-900 border border-slate-200 rounded-xl p-3 text-white text-sm outline-none focus:border-blue-500" />
                     <button onClick={() => setFormItems(prev => prev.filter((_, i) => i !== idx))} className="text-slate-600 hover:text-red-500 transition-colors px-2">
                       <i className="fa-solid fa-trash-can text-xs"></i>
                     </button>
@@ -434,7 +434,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
                 ))}
               </div>
             </div>
-            <footer className="p-8 border-t border-slate-800 flex justify-end gap-4">
+            <footer className="p-8 border-t border-slate-200 flex justify-end gap-4">
               <button onClick={() => setIsModalOpen(false)} className="text-slate-500 hover:text-white text-[10px] font-black uppercase px-6 py-3 transition-colors">Cancelar</button>
               <button onClick={handleSave} disabled={isSaving} className="bg-blue-600 text-white text-[10px] font-black uppercase px-8 py-3 rounded-xl hover:bg-blue-500 transition-all disabled:opacity-50">
                 {isSaving ? 'Salvando...' : 'Salvar Protocolo'}

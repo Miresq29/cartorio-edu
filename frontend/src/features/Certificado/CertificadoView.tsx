@@ -292,7 +292,7 @@ const ModalEmitir: React.FC<{
 
   return (
     <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-6">
-      <div className="bg-[#0a111f] border border-slate-700 rounded-2xl p-6 w-full max-w-lg space-y-5">
+      <div className="bg-white border border-slate-300 rounded-2xl p-6 w-full max-w-lg space-y-5">
         <div className="flex items-center justify-between">
           <h3 className="text-white font-black text-sm uppercase tracking-widest">Emitir Certificado</h3>
           <button onClick={onClose} className="text-slate-500 hover:text-white w-8 h-8 flex items-center justify-center">
@@ -304,7 +304,7 @@ const ModalEmitir: React.FC<{
         <div className="space-y-1">
           <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Colaborador *</label>
           <select value={colab} onChange={e => { setColab(e.target.value); setItem(''); }}
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500">
+            className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500">
             <option value="">Selecione...</option>
             {colabsDisponiveis.map(u => (
               <option key={u.id} value={u.id}>{u.name} — {u.cargo || u.role}</option>
@@ -323,7 +323,7 @@ const ModalEmitir: React.FC<{
             ].map(t => (
               <button key={t.id} onClick={() => { setTipo(t.id as any); setItem(''); }}
                 className={`p-3 rounded-xl border text-center transition-all ${
-                  tipo === t.id ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-slate-800 text-slate-400 hover:border-slate-600'
+                  tipo === t.id ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-slate-200 text-slate-400 hover:border-slate-600'
                 }`}>
                 <i className={`fa-solid ${t.icon} block mb-1`}></i>
                 <span className="text-[10px] font-black uppercase">{t.label}</span>
@@ -345,7 +345,7 @@ const ModalEmitir: React.FC<{
               </p>
             ) : (
               <select value={item} onChange={e => setItem(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500">
+                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500">
                 <option value="">Selecione...</option>
                 {opcoesItem.map((o, i) => <option key={i} value={o}>{o}</option>)}
               </select>
@@ -355,7 +355,7 @@ const ModalEmitir: React.FC<{
 
         {/* Preview rápido */}
         {colab && item && (
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-1">
+          <div className="bg-slate-900 border border-slate-200 rounded-xl p-4 space-y-1">
             <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Preview</p>
             <p className="text-sm font-black text-white">{colabUser?.name}</p>
             <p className="text-xs text-slate-400">{colabUser?.cargo} · {cartorio}</p>
@@ -366,7 +366,7 @@ const ModalEmitir: React.FC<{
 
         <div className="flex gap-3">
           <button onClick={onClose}
-            className="px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 border border-slate-800 hover:border-slate-600 transition-all">
+            className="px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 border border-slate-200 hover:border-slate-600 transition-all">
             Cancelar
           </button>
           <button
@@ -492,7 +492,7 @@ const CertificadoView: React.FC = () => {
       </div>
 
       {/* Interface principal */}
-      <div className="p-8 space-y-6 bg-[#05080f] min-h-screen animate-in fade-in">
+      <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
 
         {/* Modal de emissão */}
         {showModal && isGestor && (
@@ -532,7 +532,7 @@ const CertificadoView: React.FC = () => {
             { label: 'Módulos',             value: meusCerts.filter(c => c.tipo === 'modulo').length,       icon: 'fa-book-open',      color: 'blue'    },
             { label: 'Exames',              value: meusCerts.filter(c => c.tipo === 'exame').length,        icon: 'fa-file-pen',       color: 'purple'  },
           ].map((s, i) => (
-            <div key={i} className="bg-[#0a111f] border border-slate-800 rounded-[20px] p-5 space-y-2">
+            <div key={i} className="bg-white border border-slate-200 rounded-[20px] p-5 space-y-2">
               <i className={`fa-solid ${s.icon} text-${s.color}-500`}></i>
               <p className="text-2xl font-black text-white">{s.value}</p>
               <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">{s.label}</p>
@@ -554,7 +554,7 @@ const CertificadoView: React.FC = () => {
 
         {/* Lista de certificados */}
         {meusCerts.length === 0 ? (
-          <div className="bg-[#0a111f] border border-slate-800 rounded-2xl p-16 text-center">
+          <div className="bg-white border border-slate-200 rounded-2xl p-16 text-center">
             <i className="fa-solid fa-certificate text-5xl text-slate-700 mb-4 block"></i>
             <p className="text-slate-600 text-xs font-bold uppercase tracking-widest">Nenhum certificado emitido ainda</p>
             {isGestor && (
@@ -568,7 +568,7 @@ const CertificadoView: React.FC = () => {
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {meusCerts.map(cert => (
-                <div key={cert.id} className="bg-[#0a111f] border border-slate-800 rounded-[20px] p-5 hover:border-amber-500/30 transition-all group">
+                <div key={cert.id} className="bg-white border border-slate-200 rounded-[20px] p-5 hover:border-amber-500/30 transition-all group">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-2">
@@ -603,7 +603,7 @@ const CertificadoView: React.FC = () => {
                         navigator.clipboard.writeText(cert.codigoVerificacao);
                         showToast('Código copiado!', 'success');
                       }}
-                        className="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5">
+                        className="bg-slate-900 hover:bg-slate-800 border border-slate-200 text-slate-400 px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5">
                         <i className="fa-solid fa-copy"></i>Cód.
                       </button>
                     </div>

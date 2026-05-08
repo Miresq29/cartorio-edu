@@ -84,7 +84,7 @@ const ComunicadosView: React.FC = () => {
   const ordenados = [...comunicados].sort((a, b) => (b.fixado ? 1 : 0) - (a.fixado ? 1 : 0));
 
   return (
-    <div className="p-8 space-y-6 bg-[#05080f] min-h-screen animate-in fade-in">
+    <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
       <header className="flex items-start justify-between">
         <div>
           <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
@@ -96,7 +96,7 @@ const ComunicadosView: React.FC = () => {
           {isGestor && (
             <>
               <button onClick={() => setModo(modo === 'mural' ? 'gestao' : 'mural')}
-                className="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                className="bg-slate-800 hover:bg-slate-700 text-slate-700 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
                 <i className={`fa-solid ${modo === 'mural' ? 'fa-cog' : 'fa-eye'} mr-2`}></i>
                 {modo === 'mural' ? 'Gestão' : 'Mural'}
               </button>
@@ -117,7 +117,7 @@ const ComunicadosView: React.FC = () => {
           { label: 'Urgentes',  value: comunicados.filter(c => c.prioridade === 'urgente').length, icon: 'fa-circle-exclamation', color: 'red' },
           { label: 'Fixados',   value: comunicados.filter(c => c.fixado).length,                  icon: 'fa-thumbtack', color: 'purple' },
         ].map((k, i) => (
-          <div key={i} className="bg-[#0a111f] border border-slate-800 rounded-[20px] p-5 space-y-2">
+          <div key={i} className="bg-white border border-slate-200 rounded-[20px] p-5 space-y-2">
             <i className={`fa-solid ${k.icon} text-${k.color}-500`}></i>
             <p className="text-2xl font-black text-white">{k.value}</p>
             <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">{k.label}</p>
@@ -127,25 +127,25 @@ const ComunicadosView: React.FC = () => {
 
       {/* Formulário */}
       {showForm && isGestor && (
-        <div className="bg-[#0a111f] border border-amber-500/30 rounded-[24px] p-6 space-y-4">
+        <div className="bg-white border border-amber-500/30 rounded-[24px] p-6 space-y-4">
           <h3 className="text-white font-black uppercase text-sm">Novo Comunicado</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Título *</label>
               <input value={form.titulo} onChange={e => setForm(p => ({ ...p, titulo: e.target.value }))}
                 placeholder="Ex: Reunião de equipe - Semana de 14/04"
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-amber-500" />
+                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-amber-500" />
             </div>
             <div className="md:col-span-2">
               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Mensagem *</label>
               <textarea value={form.corpo} onChange={e => setForm(p => ({ ...p, corpo: e.target.value }))} rows={4}
                 placeholder="Digite o comunicado completo aqui..."
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-amber-500 resize-none" />
+                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-amber-500 resize-none" />
             </div>
             <div>
               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Prioridade</label>
               <select value={form.prioridade} onChange={e => setForm(p => ({ ...p, prioridade: e.target.value as any }))}
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-amber-500">
+                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-amber-500">
                 <option value="informativo">Informativo</option>
                 <option value="normal">Normal</option>
                 <option value="urgente">Urgente</option>
@@ -154,18 +154,18 @@ const ComunicadosView: React.FC = () => {
             <div>
               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Prazo (opcional)</label>
               <input type="date" value={form.prazo} onChange={e => setForm(p => ({ ...p, prazo: e.target.value }))}
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-amber-500" />
+                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-amber-500" />
             </div>
             <div>
               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Link de Anexo (opcional)</label>
               <input value={form.anexoUrl} onChange={e => setForm(p => ({ ...p, anexoUrl: e.target.value }))}
                 placeholder="https://drive.google.com/..."
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-amber-500" />
+                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-amber-500" />
             </div>
             <div className="flex items-center gap-3">
               <input type="checkbox" id="fixado" checked={form.fixado} onChange={e => setForm(p => ({ ...p, fixado: e.target.checked }))}
                 className="w-4 h-4 accent-amber-500" />
-              <label htmlFor="fixado" className="text-sm text-slate-300 font-bold cursor-pointer">Fixar comunicado no topo</label>
+              <label htmlFor="fixado" className="text-sm text-slate-700 font-bold cursor-pointer">Fixar comunicado no topo</label>
             </div>
           </div>
           <div className="flex gap-3">
@@ -173,7 +173,7 @@ const ComunicadosView: React.FC = () => {
               className="bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
               {loading ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Publicando...</> : <><i className="fa-solid fa-bullhorn mr-2"></i>Publicar</>}
             </button>
-            <button onClick={() => setShowForm(false)} className="bg-slate-800 hover:bg-slate-700 text-slate-300 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+            <button onClick={() => setShowForm(false)} className="bg-slate-800 hover:bg-slate-700 text-slate-700 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
               Cancelar
             </button>
           </div>
@@ -192,8 +192,8 @@ const ComunicadosView: React.FC = () => {
           const lido = lidos.has(c.id);
           const aberto = expandido === c.id;
           return (
-            <div key={c.id} className={`bg-[#0a111f] border rounded-[20px] overflow-hidden transition-all ${
-              c.prioridade === 'urgente' ? 'border-red-500/40' : lido ? 'border-slate-800' : 'border-amber-500/30'
+            <div key={c.id} className={`bg-white border rounded-[20px] overflow-hidden transition-all ${
+              c.prioridade === 'urgente' ? 'border-red-500/40' : lido ? 'border-slate-200' : 'border-amber-500/30'
             }`}>
               <div className="p-5 flex items-start gap-4 cursor-pointer" onClick={() => { setExpandido(aberto ? null : c.id); marcarLido(c.id); }}>
                 <div className={`w-10 h-10 rounded-xl bg-${prio.color}-500/20 flex items-center justify-center flex-shrink-0`}>
@@ -202,7 +202,7 @@ const ComunicadosView: React.FC = () => {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     {c.fixado && <i className="fa-solid fa-thumbtack text-amber-400 text-xs"></i>}
-                    <h3 className={`text-sm font-black ${lido ? 'text-slate-300' : 'text-white'} truncate`}>{c.titulo}</h3>
+                    <h3 className={`text-sm font-black ${lido ? 'text-slate-700' : 'text-white'} truncate`}>{c.titulo}</h3>
                     {!lido && <span className="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0"></span>}
                     <span className={`text-[9px] font-black text-${prio.color}-400 uppercase tracking-widest bg-${prio.color}-500/10 px-2 py-0.5 rounded-lg`}>
                       {prio.label}
@@ -216,11 +216,11 @@ const ComunicadosView: React.FC = () => {
                 <i className={`fa-solid fa-chevron-down text-slate-600 transition-transform ${aberto ? 'rotate-180' : ''}`}></i>
               </div>
               {aberto && (
-                <div className="px-5 pb-5 border-t border-slate-800/50 pt-4 space-y-3">
-                  <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">{c.corpo}</p>
+                <div className="px-5 pb-5 border-t border-slate-200/50 pt-4 space-y-3">
+                  <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{c.corpo}</p>
                   {c.anexoUrl && (
                     <a href={c.anexoUrl} target="_blank" rel="noreferrer"
-                      className="inline-flex items-center gap-2 text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
+                      className="inline-flex items-center gap-2 text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-700 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
                       <i className="fa-solid fa-paperclip"></i>Ver Anexo
                     </a>
                   )}

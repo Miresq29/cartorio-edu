@@ -253,7 +253,7 @@ const ExamesView: React.FC = () => {
   /* FASE: gerando */
   if (fase === 'gerando') {
     return (
-      <div className="p-8 min-h-screen bg-[#05080f] flex flex-col items-center justify-center gap-6">
+      <div className="p-8 min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-6">
         <div className="w-20 h-20 rounded-full bg-blue-600/20 flex items-center justify-center animate-pulse">
           <i className="fa-solid fa-brain text-blue-400 text-3xl"></i>
         </div>
@@ -273,7 +273,7 @@ const ExamesView: React.FC = () => {
   /* FASE: fazendo o exame */
   if (fase === 'fazendo') {
     return (
-      <div className="p-6 md:p-8 min-h-screen bg-[#05080f] space-y-6 animate-in fade-in">
+      <div className="p-6 md:p-8 min-h-screen bg-slate-50 space-y-6 animate-in fade-in">
         {/* cabeçalho */}
         <div className="flex items-center justify-between">
           <div>
@@ -302,8 +302,8 @@ const ExamesView: React.FC = () => {
             const respondida = respostas[q.id];
             return (
               <div key={q.id}
-                className={`bg-[#0a111f] border rounded-[20px] p-5 space-y-4 transition-all ${
-                  respondida ? 'border-blue-500/40' : 'border-slate-800'
+                className={`bg-white border rounded-[20px] p-5 space-y-4 transition-all ${
+                  respondida ? 'border-blue-500/40' : 'border-slate-200'
                 }`}>
                 <div className="flex items-start gap-3">
                   <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg bg-${bloomColor}-500/20 text-${bloomColor}-400 flex-shrink-0 mt-0.5`}>
@@ -320,7 +320,7 @@ const ExamesView: React.FC = () => {
                       className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${
                         respondida === alt.letra
                           ? 'border-blue-500 bg-blue-500/20 text-white'
-                          : 'border-slate-800 hover:border-slate-600 text-slate-300 hover:bg-slate-900'
+                          : 'border-slate-200 hover:border-slate-600 text-slate-700 hover:bg-slate-900'
                       }`}>
                       <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black flex-shrink-0 ${
                         respondida === alt.letra ? 'bg-blue-500 text-white' : 'bg-slate-800 text-slate-400'
@@ -355,7 +355,7 @@ const ExamesView: React.FC = () => {
   if (fase === 'resultado' && resultado) {
     const { score, aprovado } = resultado;
     return (
-      <div className="p-8 min-h-screen bg-[#05080f] flex flex-col items-center justify-center gap-6 animate-in fade-in">
+      <div className="p-8 min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-6 animate-in fade-in">
         {/* badge principal */}
         <div className={`w-28 h-28 rounded-full flex items-center justify-center shadow-lg ${
           aprovado ? 'bg-emerald-500/20 shadow-emerald-900/30' : 'bg-red-500/20 shadow-red-900/30'
@@ -377,7 +377,7 @@ const ExamesView: React.FC = () => {
         </div>
 
         {/* gabarito */}
-        <div className="w-full max-w-2xl bg-[#0a111f] border border-slate-800 rounded-[24px] p-6 space-y-3">
+        <div className="w-full max-w-2xl bg-white border border-slate-200 rounded-[24px] p-6 space-y-3">
           <h3 className="text-white font-black uppercase text-sm">Gabarito</h3>
           <div className="space-y-2">
             {questoes.map((q, idx) => {
@@ -425,7 +425,7 @@ const ExamesView: React.FC = () => {
 
   /* FASE: escolher conteúdo */
   return (
-    <div className="p-6 md:p-8 min-h-screen bg-[#05080f] space-y-6 animate-in fade-in">
+    <div className="p-6 md:p-8 min-h-screen bg-slate-50 space-y-6 animate-in fade-in">
       {/* cabeçalho */}
       <header>
         <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
@@ -437,7 +437,7 @@ const ExamesView: React.FC = () => {
       </header>
 
       {/* info bloom */}
-      <div className="bg-[#0a111f] border border-slate-800 rounded-[20px] p-5 grid grid-cols-3 gap-4">
+      <div className="bg-white border border-slate-200 rounded-[20px] p-5 grid grid-cols-3 gap-4">
         {[
           { bloom: 'compreensao', label: 'Compreensão', pct: '30%', color: 'blue',    desc: 'Identificar e descrever conceitos' },
           { bloom: 'aplicacao',   label: 'Aplicação',   pct: '40%', color: 'emerald', desc: 'Utilizar e demonstrar na prática'  },
@@ -461,7 +461,7 @@ const ExamesView: React.FC = () => {
         {loadingFontes ? (
           <div className="text-slate-500 text-sm italic">Carregando conteúdos...</div>
         ) : fontes.filter(f => f.conteudo && f.conteudo.length >= 50).length === 0 ? (
-          <div className="bg-[#0a111f] border border-slate-800 rounded-[20px] p-8 text-center text-slate-500 text-sm italic">
+          <div className="bg-white border border-slate-200 rounded-[20px] p-8 text-center text-slate-500 text-sm italic">
             Nenhum conteúdo com texto suficiente encontrado.<br/>
             Adicione treinamentos ou documentos na Base de Conhecimento.
           </div>
@@ -476,12 +476,12 @@ const ExamesView: React.FC = () => {
               return (
                 <div key={fonte.id}
                   onClick={() => !bloqueio && setFonteEscolhida(selecionada ? null : fonte)}
-                  className={`bg-[#0a111f] border rounded-[20px] p-5 cursor-pointer transition-all space-y-3 ${
+                  className={`bg-white border rounded-[20px] p-5 cursor-pointer transition-all space-y-3 ${
                     bloqueio
-                      ? 'border-slate-800 opacity-50 cursor-not-allowed'
+                      ? 'border-slate-200 opacity-50 cursor-not-allowed'
                       : selecionada
                         ? 'border-blue-500 bg-blue-500/10'
-                        : 'border-slate-800 hover:border-slate-600 hover:bg-slate-900/30'
+                        : 'border-slate-200 hover:border-slate-600 hover:bg-slate-900/30'
                   }`}>
                   <div className="flex items-start gap-3">
                     <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
@@ -550,7 +550,7 @@ const ExamesView: React.FC = () => {
 
       {/* histórico pessoal */}
       {resultados.length > 0 && (
-        <div className="bg-[#0a111f] border border-slate-800 rounded-[24px] p-6 space-y-4">
+        <div className="bg-white border border-slate-200 rounded-[24px] p-6 space-y-4">
           <h3 className="text-white font-black uppercase text-sm flex items-center gap-2">
             <i className="fa-solid fa-clock-rotate-left text-slate-400"></i>
             Meu Histórico de Exames
