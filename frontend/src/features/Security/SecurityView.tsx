@@ -22,7 +22,7 @@ const SecurityView: React.FC = () => {
 
     const data = {
       timestamp: new Date().toISOString(),
-      app: 'CartÃ³rioRAG PRO',
+      app: 'CartórioRAG PRO',
       data: {
         users: users ? JSON.parse(users) : [],
         documents: docs ? JSON.parse(docs) : [],
@@ -38,7 +38,7 @@ const SecurityView: React.FC = () => {
     link.click();
     
     showToast('Snapshot completo do sistema exportado.', 'success');
-    logAction('SECURITY_BACKUP', 'ExportaÃ§Ã£o completa da base de dados realizada.');
+    logAction('SECURITY_BACKUP', 'Exportação completa da base de dados realizada.');
   };
 
   return (
@@ -53,7 +53,7 @@ const SecurityView: React.FC = () => {
            <div>
              <h4 className="text-xl font-black text-blue-500 uppercase tracking-widest">Seguranca e Backup</h4>
              <p className="text-lg text-slate-400 mt-3 leading-relaxed font-medium">
-               Central de controle crÃ­tico. Exporte snapshots JSON de todos os dados (Auditoria, Docs, Usuarios) para custodia externa e visualize as polÃ­ticas de senha ativas.
+               Central de controle crítico. Exporte snapshots JSON de todos os dados (Auditoria, Docs, Usuarios) para custodia externa e visualize as políticas de senha ativas.
              </p>
            </div>
         </div>
@@ -76,8 +76,8 @@ const SecurityView: React.FC = () => {
             </div>
             
             <div>
-              <h3 className="text-base font-black uppercase tracking-[0.3em] text-blue-500 mb-5">Snapshot de GovernanÃ§a</h3>
-              <p className="text-slate-400 text-lg max-w-xl leading-relaxed">Realize backups periodicos para garantir a conformidade com as normas de custodia de dados do cartÃ³rio.</p>
+              <h3 className="text-base font-black uppercase tracking-[0.3em] text-blue-500 mb-5">Snapshot de Governança</h3>
+              <p className="text-slate-400 text-lg max-w-xl leading-relaxed">Realize backups periodicos para garantir a conformidade com as normas de custodia de dados do cartório.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -95,18 +95,18 @@ const SecurityView: React.FC = () => {
 
         </div>
 
-        {/* PolÃ­ticas de Acesso */}
+        {/* Políticas de Acesso */}
         <div className="bg-white border border-slate-200 rounded-[24px] p-8 space-y-8 shadow-sm">
            <div className="flex items-center gap-5">
              <i className="fa-solid fa-list-check text-blue-500 text-3xl"></i>
-             <h3 className="text-lg font-black uppercase tracking-[0.3em] text-slate-400">PolÃ­ticas Ativas de SeguranÃ§a</h3>
+             <h3 className="text-lg font-black uppercase tracking-[0.3em] text-slate-400">Políticas Ativas de Segurança</h3>
            </div>
            
            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
                 { title: 'Bloqueio Brute Force', status: 'Ativo', desc: '5 tentativas max. / 5 min pausa' },
                 { title: 'Historico de Senhas', status: 'Ativo', desc: 'Reciclagem proibida (ultimas 3)' },
-                { title: 'Complexidade Exigida', status: 'Ativo', desc: 'Alfa-numÃ©rico + SÃ­mbolos (8+)' }
+                { title: 'Complexidade Exigida', status: 'Ativo', desc: 'Alfa-numérico + Símbolos (8+)' }
               ].map((p, i) => (
                 <div key={i} className="p-8 rounded-3xl bg-slate-950 border border-slate-800 space-y-4">
                   <div className="flex justify-between items-center">
