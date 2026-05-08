@@ -67,6 +67,38 @@ const StatCard: React.FC<{ label: string; value: string | number; sub?: string; 
   </div>
 );
 
+// ── CHART SELECTOR ────────────────────────────────────────────────────────────
+type ChartType = 'area' | 'line' | 'bar' | 'pie' | 'radar';
+
+const ChartSelector: React.FC<{
+  options: ChartType[];
+  value: ChartType;
+  onChange: (t: ChartType) => void;
+}> = ({ options, value, onChange }) => {
+  const icons: Record<ChartType, string> = {
+    area:  'fa-chart-area',
+    line:  'fa-chart-line',
+    bar:   'fa-chart-bar',
+    pie:   'fa-chart-pie',
+    radar: 'fa-spider',
+  };
+  const labels: Record<ChartType, string> = {
+    area: 'Área', line: 'Linha', bar: 'Barra', pie: 'Pizza', radar: 'Radar',
+  };
+  return (
+    <div className="flex items-center gap-1">
+      {options.map(o => (
+        <button key={o} onClick={() => onChange(o)} title={labels[o]}
+          className={"w-7 h-7 rounded-lg flex items-center justify-center text-[10px] transition-all " +
+            (value === o ? "bg-[#C9A84C] text-[#0D1B3E]" : "bg-[#1A2A52] text-slate-400 hover:text-[#C9A84C]")}>
+          <i className={"fa-solid " + icons[o]}></i>
+        </button>
+      ))}
+    </div>
+  );
+};
+
+
 // ── COLABORADOR DASHBOARD ────────────────────────────────────────────────────
 
 const ColabDashboard: React.FC<{
@@ -84,6 +116,9 @@ const ColabDashboard: React.FC<{
   const globalPct   = pct(doneMods, totalMods);
 
   // Dados para gráfico de linha — notas ao longo do tempo
+  const [chartEvolucao, setChartEvolucao] = React.useState<'area'|'line'|'bar'>('area');
+  const [chartTrilha, setChartTrilha] = React.useState<'bar'|'radar'>('bar');
+
   const evolucao = useMemo(() => {
     const map: Record<string, { mes: string; media: number; total: number }> = {};
     myRes.forEach(r => {
@@ -161,20 +196,25 @@ const ColabDashboard: React.FC<{
           {evolucao.length === 0 ? (
             <div className="h-48 flex items-center justify-center text-slate-400 text-sm">Nenhum teste realizado ainda</div>
           ) : (
-            <ResponsiveContainer width="100%" height={200}>
-              <AreaChart data={evolucao} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorNota" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.15} />
-                    <stop offset="95%" stopColor="#4F46E5" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="mes" tick={{ fontSize: 10, fill: '#94a3b8' }} />
-                <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: '#94a3b8' }} />
-                <Tooltip content={<Tip />} />
-                <Area type="monotone" dataKey="Média (%)" stroke="#4F46E5" strokeWidth={2} fill="url(#colorNota)" dot={{ r: 4, fill: '#4F46E5' }} />
-              </AreaChart>
+            <ChartSelector options={['area','line','bar']} value={chartEvolucao} onChange={setChartEvolucao} />
+            <ResponsiveContainer width="100%" height={190}>
+              {chartEvolucao === 'area' ? (
+                <AreaChart data={evolucao} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                  <defs><linearGradient id="colorNota" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#C9A84C" stopOpacity={0.25}/><stop offset="95%" stopColor="#C9A84C" stopOpacity={0}/></linearGradient></defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1A3A6B" /><XAxis dataKey="mes" tick={{ fontSize: 10, fill: '#94a3b8' }} /><YAxis domain={[0,100]} tick={{ fontSize: 10, fill: '#94a3b8' }} /><Tooltip content={<Tip />} />
+                  <Area type="monotone" dataKey="Média (%)" stroke="#C9A84C" strokeWidth={2} fill="url(#colorNota)" dot={{ r: 4, fill: '#C9A84C' }} />
+                </AreaChart>
+              ) : chartEvolucao === 'line' ? (
+                <LineChart data={evolucao} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1A3A6B" /><XAxis dataKey="mes" tick={{ fontSize: 10, fill: '#94a3b8' }} /><YAxis domain={[0,100]} tick={{ fontSize: 10, fill: '#94a3b8' }} /><Tooltip content={<Tip />} />
+                  <Line type="monotone" dataKey="Média (%)" stroke="#C9A84C" strokeWidth={2} dot={{ r: 4, fill: '#C9A84C' }} />
+                </LineChart>
+              ) : (
+                <BarChart data={evolucao} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1A3A6B" /><XAxis dataKey="mes" tick={{ fontSize: 10, fill: '#94a3b8' }} /><YAxis domain={[0,100]} tick={{ fontSize: 10, fill: '#94a3b8' }} /><Tooltip content={<Tip />} />
+                  <Bar dataKey="Média (%)" fill="#C9A84C" radius={[4,4,0,0]} />
+                </BarChart>
+              )}
             </ResponsiveContainer>
           )}
         </div>
@@ -307,6 +347,10 @@ const AdminDashboard: React.FC<{
   const mediaGeral = allTests ? Math.round(quizResults.reduce((a, r) => a + r.nota, 0) / allTests) : 0;
 
   // Linha: testes por mês
+  const [chartMensal, setChartMensal] = React.useState<'line'|'bar'|'area'>('line');
+  const [chartTrilhasAdmin, setChartTrilhasAdmin] = React.useState<'bar'|'pie'>('bar');
+  const [chartTop, setChartTop] = React.useState<'bar'|'area'>('bar');
+
   const testesPorMes = useMemo(() => {
     const map: Record<string, { mes: string; Testes: number; Aprovados: number }> = {};
     quizResults.forEach(r => {
@@ -368,16 +412,28 @@ const AdminDashboard: React.FC<{
           {testesPorMes.length === 0 ? (
             <div className="h-48 flex items-center justify-center text-slate-400 text-sm">Sem dados ainda</div>
           ) : (
-            <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={testesPorMes} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="mes" tick={{ fontSize: 10, fill: '#94a3b8' }} />
-                <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} />
-                <Tooltip content={<Tip />} />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
-                <Line type="monotone" dataKey="Testes"    stroke="#4F46E5" strokeWidth={2} dot={{ r: 3 }} />
-                <Line type="monotone" dataKey="Aprovados" stroke="#059669" strokeWidth={2} dot={{ r: 3 }} />
-              </LineChart>
+            <ChartSelector options={['line','bar','area']} value={chartMensal} onChange={setChartMensal} />
+            <ResponsiveContainer width="100%" height={190}>
+              {chartMensal === 'line' ? (
+                <LineChart data={testesPorMes} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1A3A6B" /><XAxis dataKey="mes" tick={{ fontSize: 10, fill: '#94a3b8' }} /><YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} /><Tooltip content={<Tip />} /><Legend wrapperStyle={{ fontSize: 11 }} />
+                  <Line type="monotone" dataKey="Testes" stroke="#C9A84C" strokeWidth={2} dot={{ r: 3 }} />
+                  <Line type="monotone" dataKey="Aprovados" stroke="#059669" strokeWidth={2} dot={{ r: 3 }} />
+                </LineChart>
+              ) : chartMensal === 'bar' ? (
+                <BarChart data={testesPorMes} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1A3A6B" /><XAxis dataKey="mes" tick={{ fontSize: 10, fill: '#94a3b8' }} /><YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} /><Tooltip content={<Tip />} /><Legend wrapperStyle={{ fontSize: 11 }} />
+                  <Bar dataKey="Testes" fill="#C9A84C" radius={[4,4,0,0]} />
+                  <Bar dataKey="Aprovados" fill="#059669" radius={[4,4,0,0]} />
+                </BarChart>
+              ) : (
+                <AreaChart data={testesPorMes} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                  <defs><linearGradient id="gt" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#C9A84C" stopOpacity={0.2}/><stop offset="95%" stopColor="#C9A84C" stopOpacity={0}/></linearGradient></defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1A3A6B" /><XAxis dataKey="mes" tick={{ fontSize: 10, fill: '#94a3b8' }} /><YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} /><Tooltip content={<Tip />} /><Legend wrapperStyle={{ fontSize: 11 }} />
+                  <Area type="monotone" dataKey="Testes" stroke="#C9A84C" fill="url(#gt)" strokeWidth={2} />
+                  <Area type="monotone" dataKey="Aprovados" stroke="#059669" fill="none" strokeWidth={2} />
+                </AreaChart>
+              )}
             </ResponsiveContainer>
           )}
         </div>
