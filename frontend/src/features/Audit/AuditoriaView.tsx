@@ -172,7 +172,7 @@ const AuditoriaView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#F5F4EF]">
       <div className="max-w-7xl mx-auto p-6 space-y-6">
 
         {/* Header */}
@@ -226,13 +226,13 @@ const AuditoriaView: React.FC = () => {
             <div className="flex flex-wrap gap-3 items-center">
               <input value={busca} onChange={e => { setBusca(e.target.value); setPagina(1); }}
                 placeholder="Buscar por usuário ou descrição..."
-                className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-500 w-64" />
+                className="bg-[#F5F4EF] border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-500 w-64" />
               <div className="flex items-center gap-2">
                 <input type="date" value={dataInicio} onChange={e => { setDataInicio(e.target.value); setPagina(1); }}
-                  className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-500" />
+                  className="bg-[#F5F4EF] border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-500" />
                 <span className="text-slate-400 text-sm">até</span>
                 <input type="date" value={dataFim} onChange={e => { setDataFim(e.target.value); setPagina(1); }}
-                  className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-500" />
+                  className="bg-[#F5F4EF] border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-500" />
               </div>
               {(busca || dataInicio || dataFim || grupo !== 'todos') && (
                 <button onClick={() => { setBusca(''); setDataInicio(''); setDataFim(''); setGrupo('todos'); setPagina(1); }}
@@ -261,7 +261,7 @@ const AuditoriaView: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200">
+                  <tr className="bg-[#F5F4EF] border-b border-slate-200">
                     {['Data/Hora', 'Usuário', 'Tipo', 'Descrição', 'Detalhes'].map(h => (
                       <th key={h} className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
                     ))}
@@ -271,7 +271,7 @@ const AuditoriaView: React.FC = () => {
                   {logsPagina.map(log => {
                     const cfg = TIPO_CONFIG[log.tipo] || { icon: 'fa-circle', color: '#94a3b8', bg: '#f1f5f9', label: log.tipo, grupo: 'outros' };
                     return (
-                      <tr key={log.id} className="border-b border-slate-100 hover:bg-slate-50 transition-all">
+                      <tr key={log.id} className="border-b border-slate-100 hover:bg-[#F5F4EF] transition-all">
                         <td className="p-3 text-slate-400 whitespace-nowrap font-mono text-[10px]">
                           {formatDate(log.createdAt)}
                         </td>

@@ -83,7 +83,7 @@ const MeuProgressoView: React.FC = () => {
   };
 
   return (
-    <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
+    <div className="p-8 space-y-6 bg-[#F5F4EF] min-h-screen animate-in fade-in">
       <header>
         <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
           Meu <span className="text-teal-500">Progresso</span>

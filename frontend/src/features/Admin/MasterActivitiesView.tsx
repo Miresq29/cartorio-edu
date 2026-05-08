@@ -31,7 +31,7 @@ const MasterActivitiesView: React.FC = () => {
   };
 
   return (
-    <div className="p-12 min-h-full bg-slate-50 animate-in fade-in space-y-12">
+    <div className="p-12 min-h-full bg-[#F5F4EF] animate-in fade-in space-y-12">
       <header>
         <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter">
           Atividades <span className="text-emerald-500">Master</span>
@@ -49,7 +49,7 @@ const MasterActivitiesView: React.FC = () => {
             <input 
               type="text" value={name} onChange={e => setName(e.target.value)}
               placeholder="Ex: Provimento 161/2024"
-              className="w-full bg-slate-50 border border-slate-200 rounded-3xl p-5 text-white outline-none focus:border-emerald-600 transition-all font-bold" required 
+              className="w-full bg-[#F5F4EF] border border-slate-200 rounded-3xl p-5 text-white outline-none focus:border-emerald-600 transition-all font-bold" required 
             />
           </div>
           <button type="submit" className="w-full bg-emerald-600 text-white font-black py-6 rounded-3xl uppercase text-[11px] tracking-widest shadow-xl hover:bg-emerald-500 transition-all active:scale-[0.98]">
@@ -64,7 +64,7 @@ const MasterActivitiesView: React.FC = () => {
               <p className="text-slate-700 text-xs font-bold uppercase text-center py-10 italic">Nenhum modelo padrão definido.</p>
             )}
             {allTemplates.map((ct: any) => (
-              <div key={ct.id} className="p-5 bg-slate-50 border border-slate-200 rounded-2xl flex items-center gap-4 group hover:border-emerald-500/30 transition-all">
+              <div key={ct.id} className="p-5 bg-[#F5F4EF] border border-slate-200 rounded-2xl flex items-center gap-4 group hover:border-emerald-500/30 transition-all">
                 <div className="w-10 h-10 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-500">
                    <i className="fa-solid fa-list-check"></i>
                 </div>

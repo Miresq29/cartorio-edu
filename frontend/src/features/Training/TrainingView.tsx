@@ -180,7 +180,7 @@ ${opt.justificativa}
       </div>
 
       {/* Campo para pedido específico */}
-      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+      <div className="bg-[#F5F4EF] border border-slate-200 rounded-2xl p-4">
         <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-2">
           Personalizar pedido (opcional)
         </label>
@@ -194,7 +194,7 @@ ${opt.justificativa}
 
       {/* Base ativa */}
       {(checklists.length > 0 || knowledgeDocs.length > 0) && (
-        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2">
+        <div className="bg-[#F5F4EF] border border-slate-200 rounded-2xl p-4 space-y-2">
           <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">Base Ativa</h4>
           {checklists.slice(0, 3).map((c, i) => (
             <div key={i} className="flex items-center gap-3 p-2 bg-slate-900/50 rounded-xl">
@@ -221,7 +221,7 @@ ${opt.justificativa}
               const icon  = TIPO_ICON[opt.tipo]  || 'fa-graduation-cap';
               return (
                 <button key={i} onClick={() => selectOption(opt)}
-                  className={`text-left bg-slate-50 border border-${color}-500/30 hover:border-${color}-500 rounded-2xl p-5 space-y-3 transition-all hover:bg-${color}-500/5 group`}>
+                  className={`text-left bg-[#F5F4EF] border border-${color}-500/30 hover:border-${color}-500 rounded-2xl p-5 space-y-3 transition-all hover:bg-${color}-500/5 group`}>
                   <div className="flex items-center gap-3">
                     <div className={`w-9 h-9 rounded-xl bg-${color}-500/20 flex items-center justify-center`}>
                       <i className={`fa-solid ${icon} text-${color}-400 text-sm`}></i>
@@ -254,7 +254,7 @@ ${opt.justificativa}
       )}
 
       {/* Chat de resultado */}
-      <div className="bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden">
+      <div className="bg-[#F5F4EF] border border-slate-200 rounded-2xl overflow-hidden">
         <div className="h-80 overflow-y-auto p-6 space-y-4 custom-scrollbar">
           {messages.length === 0 && trainingOptions.length === 0 && (
             <div className="h-full flex flex-col items-center justify-center text-center opacity-30">
@@ -321,7 +321,7 @@ ${opt.justificativa}
         {/* Coluna esquerda: seleção */}
         <div className="space-y-4">
           {/* Seleção de documento */}
-          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
+          <div className="bg-[#F5F4EF] border border-slate-200 rounded-2xl p-4 space-y-3">
             <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">1. Selecione o documento</h4>
             {knowledgeDocs.length === 0 ? (
               <p className="text-xs text-slate-500 italic">Nenhum documento na base legal. Adicione documentos na seção "Base Legal".</p>
@@ -343,7 +343,7 @@ ${opt.justificativa}
           </div>
 
           {/* Seleção de tipo */}
-          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
+          <div className="bg-[#F5F4EF] border border-slate-200 rounded-2xl p-4 space-y-3">
             <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">2. Tipo de resumo</h4>
             <div className="grid grid-cols-2 gap-2">
               {SUMMARY_TYPES.map(st => (
@@ -370,7 +370,7 @@ ${opt.justificativa}
         </div>
 
         {/* Coluna direita: resultado */}
-        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 min-h-[350px] flex flex-col">
+        <div className="bg-[#F5F4EF] border border-slate-200 rounded-2xl p-5 min-h-[350px] flex flex-col">
           <div className="flex items-center justify-between mb-4">
             <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Resultado</h4>
             {summary && (
@@ -417,7 +417,7 @@ ${opt.justificativa}
   };
 
   return (
-    <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
+    <div className="p-8 space-y-6 bg-[#F5F4EF] min-h-screen animate-in fade-in">
 
       <header>
         <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">

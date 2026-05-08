@@ -188,7 +188,7 @@ const BackupView: React.FC = () => {
   const colErro = progresso.filter(p => p.status === 'erro').length;
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#F5F4EF]">
       <div className="max-w-4xl mx-auto p-6 space-y-6">
 
         {/* Header */}
@@ -289,7 +289,7 @@ const BackupView: React.FC = () => {
             {COLECOES_TENANT.map(col => {
               const status = progresso.find(p => p.colecao === col.id);
               return (
-                <div key={col.id} className="flex items-center justify-between p-4 hover:bg-slate-50 transition-all">
+                <div key={col.id} className="flex items-center justify-between p-4 hover:bg-[#F5F4EF] transition-all">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 bg-slate-100 rounded-xl flex items-center justify-center flex-shrink-0">
                       <i className={`fa-solid ${col.icon} text-slate-500 text-sm`}></i>

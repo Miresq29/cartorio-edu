@@ -271,7 +271,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
   ];
 
   return (
-    <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
+    <div className="p-8 space-y-6 bg-[#F5F4EF] min-h-screen animate-in fade-in">
 
       <header>
         <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
@@ -381,7 +381,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                     const isError = tipo.includes('excluido') || tipo.includes('erro');
                     const d = log.createdAt?.toDate ? log.createdAt.toDate() : new Date(log.createdAt);
                     return (
-                      <div key={log.id} className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                      <div key={log.id} className="flex items-center gap-3 p-3 bg-[#F5F4EF] border border-slate-200 rounded-xl">
                         <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isError ? 'bg-red-500' : 'bg-emerald-500'}`}></div>
                         <span className="text-xs text-slate-700 flex-1 truncate">{log.descricao}</span>
                         <span className="text-[9px] text-slate-600 flex-shrink-0">
@@ -429,7 +429,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                     {analise.metricas.map((met, i) => {
                       const color = STATUS_COLOR[met.status];
                       return (
-                        <div key={i} className={`bg-slate-50 border border-${color}-500/20 rounded-2xl p-4 space-y-2`}>
+                        <div key={i} className={`bg-[#F5F4EF] border border-${color}-500/20 rounded-2xl p-4 space-y-2`}>
                           <p className={`text-2xl font-black text-${color}-400`}>{met.valor}</p>
                           <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{met.label}</p>
                           <p className="text-[9px] text-slate-600">{met.detalhe}</p>
@@ -467,7 +467,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                   {/* Recomendações */}
                   <div className="space-y-2">
                     <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Recomendações de Gestão</h4>
-                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-3">
+                    <div className="bg-[#F5F4EF] border border-slate-200 rounded-2xl p-5 space-y-3">
                       {analise.recomendacoes.map((rec, i) => (
                         <div key={i} className="flex items-start gap-3">
                           <div className="w-5 h-5 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -508,7 +508,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                 <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Pergunte sobre métricas, anomalias ou ações corretivas</p>
               </div>
 
-              <div className="bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden">
+              <div className="bg-[#F5F4EF] border border-slate-200 rounded-2xl overflow-hidden">
                 <div className="h-80 overflow-y-auto p-6 space-y-4 custom-scrollbar">
                   {chatMessages.length === 0 && (
                     <div className="h-full flex flex-col items-center justify-center text-center opacity-30 gap-4">

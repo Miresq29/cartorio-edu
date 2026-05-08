@@ -492,7 +492,7 @@ const CertificadoView: React.FC = () => {
       </div>
 
       {/* Interface principal */}
-      <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
+      <div className="p-8 space-y-6 bg-[#F5F4EF] min-h-screen animate-in fade-in">
 
         {/* Modal de emissão */}
         {showModal && isGestor && (

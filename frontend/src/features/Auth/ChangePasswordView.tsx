@@ -66,8 +66,8 @@ const ChangePasswordView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="bg-slate-50 w-full max-w-md rounded-[40px] shadow-2xl p-12 border border-blue-500/20 space-y-8">
+    <div className="min-h-screen bg-[#F5F4EF] flex items-center justify-center p-4">
+      <div className="bg-[#F5F4EF] w-full max-w-md rounded-[40px] shadow-2xl p-12 border border-blue-500/20 space-y-8">
 
         <div className="text-center space-y-4">
           <div className="w-20 h-20 bg-amber-500/10 border border-amber-500/20 rounded-full flex items-center justify-center text-amber-500 mx-auto">
@@ -89,7 +89,7 @@ const ChangePasswordView: React.FC = () => {
                 type={showNew ? 'text' : 'password'}
                 value={newPass}
                 onChange={e => setNewPass(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs font-bold text-slate-800 focus:border-blue-500 outline-none pr-12"
+                className="w-full bg-[#F5F4EF] border border-slate-200 rounded-2xl p-4 text-xs font-bold text-slate-800 focus:border-blue-500 outline-none pr-12"
                 placeholder="••••••••••••"
                 required
               />
@@ -133,7 +133,7 @@ const ChangePasswordView: React.FC = () => {
                 type={showConfirm ? 'text' : 'password'}
                 value={confirmPass}
                 onChange={e => setConfirmPass(e.target.value)}
-                className={`w-full bg-slate-50 border rounded-2xl p-4 text-xs font-bold text-slate-800 focus:border-blue-500 outline-none pr-12 ${confirmPass && confirmPass !== newPass ? 'border-red-500/50' : 'border-slate-200'}`}
+                className={`w-full bg-[#F5F4EF] border rounded-2xl p-4 text-xs font-bold text-slate-800 focus:border-blue-500 outline-none pr-12 ${confirmPass && confirmPass !== newPass ? 'border-red-500/50' : 'border-slate-200'}`}
                 placeholder="••••••••••••"
                 required
               />

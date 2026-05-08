@@ -3,7 +3,7 @@ import React from 'react';
 
 const SupportView: React.FC = () => {
   return (
-    <div className="p-12 bg-slate-50 min-h-screen flex flex-col items-center justify-center text-center space-y-8">
+    <div className="p-12 bg-[#F5F4EF] min-h-screen flex flex-col items-center justify-center text-center space-y-8">
       <div className="w-24 h-24 bg-blue-600/10 rounded-full flex items-center justify-center text-blue-500 text-5xl">
         <i className="fa-solid fa-headset"></i>
       </div>

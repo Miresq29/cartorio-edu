@@ -16,7 +16,7 @@ const DashboardMasterView: React.FC = () => {
   const totalUsers = usersList.length;
 
   return (
-    <div className="p-10 space-y-10 bg-slate-50 min-h-screen animate-in fade-in">
+    <div className="p-10 space-y-10 bg-[#F5F4EF] min-h-screen animate-in fade-in">
       <header>
         <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter">
           Console <span className="text-blue-500">Master</span>
@@ -54,7 +54,7 @@ const DashboardMasterView: React.FC = () => {
         
         <div className="space-y-4 relative z-10">
           {tenants.map((t: any) => (
-            <div key={t.id} className="p-5 bg-slate-50 border border-slate-200 rounded-2xl flex justify-between items-center group hover:bg-slate-900 transition-all">
+            <div key={t.id} className="p-5 bg-[#F5F4EF] border border-slate-200 rounded-2xl flex justify-between items-center group hover:bg-slate-900 transition-all">
               <div className="flex items-center gap-4">
                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
                  <span className="text-white font-bold italic uppercase text-sm">{t.name}</span>

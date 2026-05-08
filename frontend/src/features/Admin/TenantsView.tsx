@@ -34,7 +34,7 @@ const TenantsView: React.FC = () => {
   };
 
   return (
-    <div className="p-12 min-h-full bg-slate-50 animate-in fade-in space-y-12">
+    <div className="p-12 min-h-full bg-[#F5F4EF] animate-in fade-in space-y-12">
       <header>
         <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter">
           Gestão de <span className="text-blue-500">Cartórios</span>
@@ -51,12 +51,12 @@ const TenantsView: React.FC = () => {
             <input 
               type="text" value={name} onChange={e => setName(e.target.value)}
               placeholder="Nome da Serventia (Ex: 1º Ofício de Notas)"
-              className="w-full bg-slate-50 border border-slate-200 rounded-3xl p-5 text-white outline-none focus:border-blue-600 transition-all" required 
+              className="w-full bg-[#F5F4EF] border border-slate-200 rounded-3xl p-5 text-white outline-none focus:border-blue-600 transition-all" required 
             />
             <input 
               type="text" value={slug} onChange={e => setSlug(e.target.value)}
               placeholder="ID do Sistema (Ex: cartorio-bh-01)"
-              className="w-full bg-slate-50 border border-slate-200 rounded-3xl p-5 text-blue-400 font-mono outline-none focus:border-blue-600 transition-all" required 
+              className="w-full bg-[#F5F4EF] border border-slate-200 rounded-3xl p-5 text-blue-400 font-mono outline-none focus:border-blue-600 transition-all" required 
             />
           </div>
           <button type="submit" className="w-full bg-blue-600 text-white font-black py-6 rounded-3xl uppercase text-[11px] tracking-widest shadow-xl hover:bg-blue-500 transition-all">
@@ -71,7 +71,7 @@ const TenantsView: React.FC = () => {
               <p className="text-slate-700 text-xs font-bold uppercase text-center py-10 italic">Nenhum cartório remoto carregado</p>
             )}
             {allTenants.map((t: any) => (
-              <div key={t.id} className="p-5 bg-slate-50 border border-slate-200 rounded-2xl flex justify-between items-center group hover:border-blue-500/30 transition-all">
+              <div key={t.id} className="p-5 bg-[#F5F4EF] border border-slate-200 rounded-2xl flex justify-between items-center group hover:border-blue-500/30 transition-all">
                 <span className="text-white font-bold italic uppercase text-sm">{t.name}</span>
                 <span className="text-[10px] font-mono text-slate-500 bg-slate-900 px-3 py-1 rounded-md">{t.id}</span>
               </div>

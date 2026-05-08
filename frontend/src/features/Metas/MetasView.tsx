@@ -175,7 +175,7 @@ const FormMeta: React.FC<{
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
 
   return (
-    <div className="bg-slate-50 border border-blue-500/30 rounded-2xl p-6 space-y-5">
+    <div className="bg-[#F5F4EF] border border-blue-500/30 rounded-2xl p-6 space-y-5">
       <h4 className="text-blue-400 font-black uppercase text-xs tracking-widest">
         {initial ? 'Editar Meta' : 'Nova Meta de Premiação'}
       </h4>
@@ -589,7 +589,7 @@ const DesempatePlayer: React.FC<{
             const resp = respostas[qi];
             const bloomColor = q.bloom === 'avaliacao' ? 'purple' : 'pink';
             return (
-              <div key={q.id} className={`bg-slate-50 border rounded-2xl p-5 space-y-3 ${resp ? 'border-amber-500/30' : 'border-slate-200'}`}>
+              <div key={q.id} className={`bg-[#F5F4EF] border rounded-2xl p-5 space-y-3 ${resp ? 'border-amber-500/30' : 'border-slate-200'}`}>
                 <div className="flex items-start gap-3">
                   <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg bg-${bloomColor}-500/20 text-${bloomColor}-400 flex-shrink-0 mt-0.5`}>
                     {q.bloom === 'avaliacao' ? 'Avaliar' : 'Criar'} • Bloom {q.bloom === 'avaliacao' ? 'Nível 5' : 'Nível 6'}
@@ -810,7 +810,7 @@ Retorne APENAS um array JSON válido, sem markdown:
   }).length;
 
   return (
-    <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
+    <div className="p-8 space-y-6 bg-[#F5F4EF] min-h-screen animate-in fade-in">
 
       {/* Desempate ativo — modal */}
       {desempateAtivo && (

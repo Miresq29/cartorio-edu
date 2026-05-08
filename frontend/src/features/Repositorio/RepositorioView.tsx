@@ -348,7 +348,7 @@ const FormMidia: React.FC<{
   };
 
   return (
-    <div className="bg-slate-50 border border-blue-500/30 rounded-2xl p-6 space-y-5">
+    <div className="bg-[#F5F4EF] border border-blue-500/30 rounded-2xl p-6 space-y-5">
       <h4 className="text-blue-400 font-black uppercase text-xs tracking-widest">Adicionar Conteúdo ao Repositório</h4>
 
       {/* Tipo */}
@@ -541,7 +541,7 @@ const RepositorioView: React.FC = () => {
   const totalVistos = assistidas.size;
 
   return (
-    <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
+    <div className="p-8 space-y-6 bg-[#F5F4EF] min-h-screen animate-in fade-in">
 
       {/* Player Modal */}
       {playerMidia && (
