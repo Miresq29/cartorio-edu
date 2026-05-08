@@ -571,7 +571,7 @@ const RepositorioView: React.FC = () => {
         {[
           { label: 'Vídeos',         value: totalVideos, icon: 'fa-brands fa-youtube',   color: 'red'    },
           { label: 'Áudios',         value: totalAudios, icon: 'fa-solid fa-headphones', color: 'violet' },
-          { label: 'PDFs',           value: totalPDFs,   icon: 'fa-solid fa-file-pdf',   color: 'rose'   },
+          { label: 'Videos',           value: totalPDFs,   icon: 'fa-solid fa-file-pdf',   color: 'rose'   },
           { label: 'Vistos por mim', value: totalVistos, icon: 'fa-solid fa-circle-check',color: 'emerald'},
         ].map((s, i) => (
           <div key={i} className="bg-white border border-slate-200 rounded-[20px] p-5 space-y-2">

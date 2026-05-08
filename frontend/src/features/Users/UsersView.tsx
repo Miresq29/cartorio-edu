@@ -275,6 +275,10 @@ const UsersView: React.FC = () => {
                       </select>
                     </div>
                     <div className="space-y-1">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Senha Inicial</label>
+                      <input value={(form as any).senhaInicial || ''} onChange={e => setF('senhaInicial', e.target.value)} placeholder="Ex: cartorio123" type="text" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-500" />
+                    </div>
+                    <div className="space-y-1">
                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Cargo</label>
                       <select value={form.cargo} onChange={e => setF('cargo', e.target.value)}
                         className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-500">
