@@ -192,11 +192,13 @@ const ColabDashboard: React.FC<{
       {/* Linha 1: Evolução + Donut */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
-          <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Evolução das Notas</p>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Evolução das Notas</p>
+            <ChartSelector options={['area','line','bar']} value={chartEvolucao} onChange={setChartEvolucao} />
+          </div>
           {evolucao.length === 0 ? (
             <div className="h-48 flex items-center justify-center text-slate-400 text-sm">Nenhum teste realizado ainda</div>
           ) : (
-            <ChartSelector options={['area','line','bar']} value={chartEvolucao} onChange={setChartEvolucao} />
             <ResponsiveContainer width="100%" height={190}>
               {chartEvolucao === 'area' ? (
                 <AreaChart data={evolucao} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
@@ -408,11 +410,10 @@ const AdminDashboard: React.FC<{
       {/* Linha 1: Testes por mês + Distribuição notas */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
-          <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Atividade Mensal da Equipe</p>
+          <div className="flex items-center justify-between mb-3"><p className="text-xs font-black text-slate-500 uppercase tracking-widest">Atividade Mensal da Equipe</p><ChartSelector options={['line','bar','area']} value={chartMensal} onChange={setChartMensal} /></div>
           {testesPorMes.length === 0 ? (
             <div className="h-48 flex items-center justify-center text-slate-400 text-sm">Sem dados ainda</div>
           ) : (
-            <ChartSelector options={['line','bar','area']} value={chartMensal} onChange={setChartMensal} />
             <ResponsiveContainer width="100%" height={190}>
               {chartMensal === 'line' ? (
                 <LineChart data={testesPorMes} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
