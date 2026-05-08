@@ -26,7 +26,7 @@ const hashPassword = async (password: string): Promise<string> => {
 
 const logAudit = async (action: string, userId: string, email: string, details: string, severity: "INFO" | "WARNING" | "CRITICAL" = "INFO") => {
   try {
-    await addDoc(collection(db, "auditLogs"), { action, userId, email, details, severity, timestamp: serverTimestamp(), userAgent: navigator.userAgent });
+    await addDoc(collection(db, "auditLogs"), { tipo: action, descricao: details, usuario: email, usuarioId: userId, severity, createdAt: serverTimestamp(), userAgent: navigator.userAgent });
   } catch { /* silencioso — auditoria é best-effort */ }
 };
 
