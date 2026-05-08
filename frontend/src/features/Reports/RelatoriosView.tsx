@@ -253,6 +253,8 @@ const RelatoriosView: React.FC = () => {
   }, [colab, filteredResults, progresso, certificados, buscaColab]);
 
   // Exportar Excel
+  const handlePrint = () => { window.print(); };
+
   const exportCSV = () => {
     const rows = ['Colaborador,Trilha,Módulo,Data,Nota,Status,Tipo'];
     filteredResults.forEach(r => {
@@ -298,7 +300,7 @@ const RelatoriosView: React.FC = () => {
               <option value="365">Último ano</option>
               <option value="99999">Todo o período</option>
             </select>
-            <button onClick={exportCSV}
+            <button onClick={handlePrint} className="flex items-center gap-2 bg-white border border-slate-200 hover:border-slate-400 text-slate-600 px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm"><i className="fa-solid fa-print text-xs"></i>Imprimir</button><button onClick={exportCSV}
               className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm">
               <i className="fa-solid fa-file-excel text-xs"></i>Exportar Excel
             </button>
@@ -542,7 +544,7 @@ const RelatoriosView: React.FC = () => {
                     {filteredResults.length} registros no período
                     <span className="text-slate-400 font-normal ml-2">— válidos como evidência para dossiê CNJ (Provimentos 149, 161 e 213)</span>
                   </p>
-                  <button onClick={exportCSV}
+                  <button onClick={handlePrint} className="flex items-center gap-2 bg-white border border-slate-200 hover:border-slate-400 text-slate-600 px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm"><i className="fa-solid fa-print text-xs"></i>Imprimir</button><button onClick={exportCSV}
                     className="flex items-center gap-2 bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-indigo-600 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-sm">
                     <i className="fa-solid fa-file-excel"></i>CSV
                   </button>
