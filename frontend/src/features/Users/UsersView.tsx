@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { db } from '../../services/firebase';
+import { AuthService } from '../../services/authService';
 import {
   collection, onSnapshot, query, orderBy,
   doc, updateDoc, deleteDoc, addDoc, serverTimestamp

@@ -1,4 +1,7 @@
-﻿import { auth, db } from "./firebase";
+import { auth, db } from "./firebase";
+import { initializeApp, deleteApp } from "firebase/app";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { firebaseConfig } from "./firebase";
 import {
   signInWithEmailAndPassword,
   signOut,
@@ -122,6 +125,25 @@ export const AuthService = {
   },
 
   updateFirstPassword: async (userId: string, newPassword: string) => { return AuthService.updatePassword(userId, newPassword); },
+
+  createUser: async (email: string, password: string, userData: Record<string, any>) => {
+    let secondaryApp: any = null;
+    try {
+      secondaryApp = initializeApp(firebaseConfig, 'secondary-' + Date.now());
+      const secondaryAuth = getAuth(secondaryApp);
+      const credential = await createUserWithEmailAndPassword(secondaryAuth, email, password);
+      const uid = credential.user.uid;
+      await secondaryAuth.signOut();
+      await setDoc(doc(db, 'users', uid), { ...userData, email, active: true, isFirstLogin: true, createdAt: serverTimestamp() });
+      await logAudit('USER_CREATED', uid, email, 'Usuario criado pelo gestor', 'INFO');
+      return { success: true, uid };
+    } catch (e: any) {
+      const msgs: Record<string, string> = { 'auth/email-already-in-use': 'Este e-mail ja esta cadastrado no Firebase.', 'auth/weak-password': 'Senha fraca — minimo 6 caracteres.' };
+      throw new Error(msgs[e.code] || e.message);
+    } finally {
+      if (secondaryApp) { try { await deleteApp(secondaryApp); } catch {} }
+    }
+  },
 
   logout: async (userId?: string, email?: string) => {
     try {
