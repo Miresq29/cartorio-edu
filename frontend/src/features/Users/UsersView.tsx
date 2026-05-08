@@ -8,7 +8,7 @@ import { db } from '../../services/firebase';
 import { AuthService } from '../../services/authService';
 import {
   collection, onSnapshot, query, orderBy,
-  doc, updateDoc, deleteDoc, addDoc, serverTimestamp
+  doc, updateDoc, deleteDoc, serverTimestamp
 } from 'firebase/firestore';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -141,11 +141,24 @@ const UsersView: React.FC = () => {
         await updateDoc(doc(db, 'users', editUser.id), { ...form });
         showToast('Colaborador atualizado!', 'success');
       } else {
-        await addDoc(collection(db, 'users'), { ...form, ativo: true, createdAt: serverTimestamp() });
-        showToast('Colaborador adicionado!', 'success');
+        const tempPassword = 'Acesso@' + Math.floor(1000 + Math.random() * 9000);
+        const result = await AuthService.createUser(form.email, tempPassword, {
+          ...form,
+          active: true,
+          ativo: true,
+          isFirstLogin: true,
+          createdAt: serverTimestamp(),
+        });
+        if (!result.success) throw new Error(result.message || 'Erro ao criar conta.');
+        alert(`Colaborador ${form.name} adicionado!\n\nSenha temporária: ${tempPassword}\n\nComunique ao colaborador — ele deverá alterá-la no primeiro acesso.`);
       }
       setShowForm(false);
-    } catch { showToast('Erro ao salvar.', 'error'); }
+    } catch (err: any) {
+      const msg = err.message?.includes('email-already-in-use')
+        ? 'Este e-mail já possui conta no sistema.'
+        : err.message || 'Erro ao salvar.';
+      showToast(msg, 'error');
+    }
     setSaving(false);
   };
 

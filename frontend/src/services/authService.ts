@@ -107,19 +107,47 @@ export const AuthService = {
 
   updatePassword: async (userId: string, newPassword: string) => {
     try {
-      const userRef = doc(db, "users", userId);
-      const userDoc = await getDoc(userRef);
-      if (!userDoc.exists()) throw new Error("Usuario nao encontrado.");
-      const userData = userDoc.data();
-      const passwordHistory: string[] = userData.passwordHistory || [];
-      const newHash = await hashPassword(newPassword);
-      const lastThree = passwordHistory.slice(-3);
-      if (lastThree.includes(newHash)) throw new Error("Esta senha ja foi utilizada recentemente. Escolha uma senha diferente das ultimas 3.");
       const currentUser = auth.currentUser;
-      if (currentUser) await firebaseUpdatePassword(currentUser, newPassword);
+      if (!currentUser) throw new Error("Sessao expirada. Faca login novamente.");
+
+      // Check password history (best effort — skip if no Firestore permission yet)
+      let passwordHistory: string[] = [];
+      let userEmail = "";
+      try {
+        const userDoc = await getDoc(doc(db, "users", userId));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          passwordHistory = userData.passwordHistory || [];
+          userEmail = userData.email || "";
+          const newHash = await hashPassword(newPassword);
+          if (passwordHistory.slice(-3).includes(newHash))
+            throw new Error("Esta senha ja foi utilizada recentemente. Escolha uma senha diferente das ultimas 3.");
+        }
+      } catch (e: any) {
+        if (e.message?.includes("utilizada recentemente")) throw e;
+      }
+
+      await firebaseUpdatePassword(currentUser, newPassword);
+
+      const newHash = await hashPassword(newPassword);
       const updatedHistory = [...passwordHistory, newHash].slice(-3);
-      await updateDoc(userRef, { isFirstLogin: false, passwordHistory: updatedHistory, passwordUpdatedAt: serverTimestamp() });
-      await logAudit("PASSWORD_CHANGED", userId, userData.email || "", "Senha atualizada com sucesso", "INFO");
+
+      // Try full update, fallback to minimal update
+      try {
+        await updateDoc(doc(db, "users", userId), {
+          isFirstLogin: false,
+          passwordHistory: updatedHistory,
+          passwordUpdatedAt: serverTimestamp()
+        });
+      } catch {
+        try {
+          await updateDoc(doc(db, "users", userId), { isFirstLogin: false });
+        } catch (minErr: any) {
+          console.error("Nao foi possivel atualizar isFirstLogin:", minErr.message);
+        }
+      }
+
+      await logAudit("PASSWORD_CHANGED", userId, userEmail, "Senha atualizada com sucesso", "INFO");
       return { success: true };
     } catch (error: any) { console.error("Erro ao atualizar senha:", error); return { success: false, message: error.message }; }
   },

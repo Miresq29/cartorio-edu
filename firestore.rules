@@ -26,9 +26,14 @@ service cloud.firestore {
       return isActive() && getUserData().get('role', '') in ['SUPERADMIN', 'gestor', 'admin'];
     }
 
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
     match /users/{userId} {
       allow read: if isAuthenticated();
-      allow write: if isSuperAdmin();
+      allow create, delete: if isSuperAdmin() || isGestor();
+      allow update: if isSuperAdmin() || isGestor() || isOwner(userId);
     }
 
     match /loginAttempts/{docId} {
@@ -37,7 +42,7 @@ service cloud.firestore {
 
     match /auditLogs/{docId} {
       allow read: if isGestor();
-      allow create: if true;
+      allow create: if isAuthenticated();
     }
 
     match /treinamentos/{docId} {
@@ -124,7 +129,6 @@ service cloud.firestore {
       allow update, delete: if isGestor();
     }
 
-
     match /tenants/{docId} {
       allow read: if isAuthenticated();
       allow write: if isSuperAdmin();
@@ -160,7 +164,7 @@ service cloud.firestore {
     match /backup/{docId} {
       allow read, write: if isGestor();
     }
-    // Deny-all fallback
+
     match /{document=**} {
       allow read, write: if false;
     }
