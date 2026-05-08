@@ -63,7 +63,7 @@ const LoginView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F7F2] flex items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-[#0D1B3E] flex items-center justify-center p-6 relative overflow-hidden">
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-900/10 blur-[120px] rounded-full"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-900/10 blur-[120px] rounded-full"></div>
 
@@ -82,7 +82,7 @@ const LoginView: React.FC = () => {
               <input
                 type="email"
                 placeholder="E-mail funcional"
-                className="w-full bg-[#F8F7F2] border border-slate-200 rounded-2xl p-4 pl-12 text-[#0A1628] outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all placeholder:text-slate-700"
+                className="w-full bg-[#0D1B3E] border border-slate-200 rounded-2xl p-4 pl-12 text-[#0A1628] outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all placeholder:text-slate-700"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
@@ -95,7 +95,7 @@ const LoginView: React.FC = () => {
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="Senha"
-                className="w-full bg-[#F8F7F2] border border-slate-200 rounded-2xl p-4 pl-12 pr-12 text-[#0A1628] outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all placeholder:text-slate-700"
+                className="w-full bg-[#0D1B3E] border border-slate-200 rounded-2xl p-4 pl-12 pr-12 text-[#0A1628] outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all placeholder:text-slate-700"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}

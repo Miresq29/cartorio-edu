@@ -131,7 +131,7 @@ const TrainingParticipants: React.FC = () => {
           { label: 'Pendentes', value: pendentes, icon: 'fa-clock', color: 'amber' },
           { label: 'Vencidos', value: vencidos, icon: 'fa-circle-xmark', color: 'red' },
         ].map((stat, i) => (
-          <div key={i} className="bg-[#F8F7F2] border border-slate-200 rounded-2xl p-4 space-y-2">
+          <div key={i} className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-4 space-y-2">
             <i className={`fa-solid ${stat.icon} text-${stat.color}-500 text-lg`}></i>
             <p className="text-2xl font-black text-[#0A1628]">{stat.value}</p>
             <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">{stat.label}</p>
@@ -141,7 +141,7 @@ const TrainingParticipants: React.FC = () => {
 
       {/* Formulário de registro */}
       {showForm && (
-        <div className="bg-[#F8F7F2] border border-blue-500/30 rounded-2xl p-6 space-y-4">
+        <div className="bg-[#0D1B3E] border border-blue-500/30 rounded-2xl p-6 space-y-4">
           <h4 className="text-xs font-black text-blue-400 uppercase tracking-widest">Novo Registro</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
@@ -279,7 +279,7 @@ const TrainingParticipants: React.FC = () => {
       {/* Lista de participantes */}
       <div className="space-y-2">
         {filtered.length === 0 ? (
-          <div className="bg-[#F8F7F2] border border-slate-200 rounded-2xl p-10 text-center">
+          <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-10 text-center">
             <i className="fa-solid fa-users text-4xl text-slate-700 mb-3 block"></i>
             <p className="text-slate-600 text-xs font-bold uppercase tracking-widest">
               {participants.length === 0
@@ -293,7 +293,7 @@ const TrainingParticipants: React.FC = () => {
             return (
               <div
                 key={p.id}
-                className="bg-[#F8F7F2] border border-slate-200 hover:border-slate-200 rounded-2xl p-4 flex items-center gap-4 transition-all group"
+                className="bg-[#0D1B3E] border border-slate-200 hover:border-slate-200 rounded-2xl p-4 flex items-center gap-4 transition-all group"
               >
                 {/* Avatar */}
                 <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center flex-shrink-0">

@@ -284,7 +284,7 @@ const TrainingDashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
         {/* Funcionários x Trilhas */}
-        <div className="bg-[#F8F7F2] border border-slate-200 rounded-2xl p-5 space-y-4">
+        <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-5 space-y-4">
           <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
             Funcionários × Trilhas
           </h4>
@@ -318,7 +318,7 @@ const TrainingDashboard: React.FC = () => {
         </div>
 
         {/* Top Questões Difíceis */}
-        <div className="bg-[#F8F7F2] border border-slate-200 rounded-2xl p-5 space-y-3">
+        <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-5 space-y-3">
           <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
             Top 5 Questões Mais Difíceis
           </h4>
@@ -351,7 +351,7 @@ const TrainingDashboard: React.FC = () => {
       </div>
 
       {/* Taxa de aprovação por treinamento */}
-      <div className="bg-[#F8F7F2] border border-slate-200 rounded-2xl p-5 space-y-4">
+      <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-5 space-y-4">
         <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
           Taxa de Aprovação por Treinamento
         </h4>
@@ -405,14 +405,14 @@ const TrainingDashboard: React.FC = () => {
       </div>
 
       {coberturaData.length === 0 ? (
-        <div className="bg-[#F8F7F2] border border-slate-200 rounded-2xl p-10 text-center">
+        <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-10 text-center">
           <i className="fa-solid fa-road text-4xl text-slate-700 mb-3 block"></i>
           <p className="text-slate-600 text-xs font-bold uppercase tracking-widest">Nenhuma trilha ativa</p>
         </div>
       ) : (
         <div className="space-y-4">
           {coberturaData.map(({ trilha, elegíveis, iniciaram, concluiram, pct }) => (
-            <div key={trilha.id} className="bg-[#F8F7F2] border border-slate-200 rounded-2xl p-5 space-y-4">
+            <div key={trilha.id} className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-5 space-y-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-sm font-black text-[#0A1628]">{trilha.titulo}</p>
@@ -499,7 +499,7 @@ const TrainingDashboard: React.FC = () => {
       </div>
 
       {questaoMetrics.length === 0 ? (
-        <div className="bg-[#F8F7F2] border border-slate-200 rounded-2xl p-10 text-center">
+        <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-10 text-center">
           <i className="fa-solid fa-triangle-exclamation text-4xl text-slate-700 mb-3 block"></i>
           <p className="text-slate-600 text-xs font-bold uppercase tracking-widest">Nenhuma tentativa registrada ainda</p>
           <p className="text-slate-700 text-xs mt-1">As métricas aparecerão após os colaboradores realizarem as avaliações</p>
@@ -524,7 +524,7 @@ const TrainingDashboard: React.FC = () => {
             {questaoMetrics.map((m, i) => {
               const dc = diffColor(m.taxaErro);
               return (
-                <div key={i} className={`bg-[#F8F7F2] border rounded-2xl p-5 space-y-3 ${dc.badge}`}>
+                <div key={i} className={`bg-[#0D1B3E] border rounded-2xl p-5 space-y-3 ${dc.badge}`}>
                   <div className="flex items-start gap-4">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${m.taxaErro >= 70 ? 'bg-red-500/20' : m.taxaErro >= 40 ? 'bg-amber-500/20' : 'bg-emerald-500/20'}`}>
                       <span className={`text-lg font-black ${dc.text}`}>{i + 1}</span>
@@ -569,7 +569,7 @@ const TrainingDashboard: React.FC = () => {
       </div>
 
       {ranking.length === 0 ? (
-        <div className="bg-[#F8F7F2] border border-slate-200 rounded-2xl p-10 text-center">
+        <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-10 text-center">
           <i className="fa-solid fa-ranking-star text-4xl text-slate-700 mb-3 block"></i>
           <p className="text-slate-600 text-xs font-bold uppercase tracking-widest">Nenhum resultado de avaliação ainda</p>
         </div>
@@ -580,7 +580,7 @@ const TrainingDashboard: React.FC = () => {
             const medalIcon = i === 0 ? 'fa-trophy' : i === 1 ? 'fa-medal' : i === 2 ? 'fa-medal' : 'fa-hashtag';
             const scoreColor = user.media >= 80 ? 'text-emerald-400' : user.media >= 70 ? 'text-amber-400' : 'text-red-400';
             return (
-              <div key={user.nome} className="bg-[#F8F7F2] border border-slate-200 hover:border-slate-200 rounded-2xl p-4 flex items-center gap-4 transition-all group">
+              <div key={user.nome} className="bg-[#0D1B3E] border border-slate-200 hover:border-slate-200 rounded-2xl p-4 flex items-center gap-4 transition-all group">
                 {/* Posição */}
                 <div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
                   <i className={`fa-solid ${medalIcon} text-xl ${medalColor}`}></i>

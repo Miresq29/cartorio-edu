@@ -42,7 +42,7 @@ const ROLE_COLORS: Record<ColaboradorRole, string> = {
   gestor:    'bg-blue-500/20 text-blue-300 border border-blue-500/30',
   atendente: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30',
   auditor:   'bg-purple-500/20 text-purple-300 border border-purple-500/30',
-  viewer:    'bg-[#F8F7F2]0/20 text-slate-500 border border-slate-500/30',
+  viewer:    'bg-[#0D1B3E]0/20 text-slate-500 border border-slate-500/30',
 };
 
 const emptyForm = {

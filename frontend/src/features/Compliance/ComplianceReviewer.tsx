@@ -216,7 +216,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 no-print">
         <div className="lg:col-span-5 space-y-6">
-          <div className="bg-[#F8F7F2] border border-slate-200 rounded-[32px] p-8 space-y-7 shadow-2xl">
+          <div className="bg-[#0D1B3E] border border-slate-200 rounded-[32px] p-8 space-y-7 shadow-2xl">
 
             <div className="space-y-3">
               <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Documento a Auditar</label>
@@ -260,7 +260,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
                   <select
                     value={selectedChecklistId}
                     onChange={e => setSelectedChecklistId(e.target.value)}
-                    className="w-full bg-[#F8F7F2] border border-slate-200 rounded-xl px-4 py-4 text-xs font-bold text-[#0A1628] focus:border-blue-600 outline-none transition-all"
+                    className="w-full bg-[#0D1B3E] border border-slate-200 rounded-xl px-4 py-4 text-xs font-bold text-[#0A1628] focus:border-blue-600 outline-none transition-all"
                   >
                     <option value="">Selecione um protocolo...</option>
                     {checklists.map(t => (

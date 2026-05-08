@@ -215,9 +215,9 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
   const progress = totalItems > 0 ? Math.round((checkedCount / totalItems) * 100) : 0;
 
   return (
-    <div className="h-full flex bg-[#F8F7F2] min-h-screen">
+    <div className="h-full flex bg-[#0D1B3E] min-h-screen">
       {/* Sidebar */}
-      <aside className="w-80 border-r border-slate-200 flex flex-col bg-[#F8F7F2] flex-shrink-0">
+      <aside className="w-80 border-r border-slate-200 flex flex-col bg-[#0D1B3E] flex-shrink-0">
         <div className="p-6 border-b border-slate-200 flex justify-between items-center">
           <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest">Protocolos</h2>
           <button onClick={openCreateModal} className="text-blue-500 hover:text-blue-400 transition-colors">
@@ -391,7 +391,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
       {/* Modal de criação */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/90 backdrop-blur-sm">
-          <div className="bg-[#F8F7F2] border border-slate-200 rounded-[40px] w-full max-w-2xl overflow-hidden shadow-2xl">
+          <div className="bg-[#0D1B3E] border border-slate-200 rounded-[40px] w-full max-w-2xl overflow-hidden shadow-2xl">
             <header className="p-8 border-b border-slate-200 flex justify-between items-center">
               <h3 className="text-[#0A1628] font-black uppercase italic">Novo Protocolo</h3>
               <button onClick={() => setIsModalOpen(false)} className="text-slate-500 hover:text-[#0A1628] transition-colors">

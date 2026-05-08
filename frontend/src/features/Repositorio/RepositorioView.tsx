@@ -348,7 +348,7 @@ const FormMidia: React.FC<{
   };
 
   return (
-    <div className="bg-[#F8F7F2] border border-blue-500/30 rounded-2xl p-6 space-y-5">
+    <div className="bg-[#0D1B3E] border border-blue-500/30 rounded-2xl p-6 space-y-5">
       <h4 className="text-blue-400 font-black uppercase text-xs tracking-widest">Adicionar Conteúdo ao Repositório</h4>
 
       {/* Tipo */}

@@ -126,7 +126,7 @@ const KnowledgeBase: React.FC = () => {
   const wordCount = (text: string) => text?.trim().split(/\s+/).length || 0;
 
   return (
-    <div className="p-8 space-y-8 animate-in fade-in duration-500 bg-[#F8F7F2] min-h-screen">
+    <div className="p-8 space-y-8 animate-in fade-in duration-500 bg-[#0D1B3E] min-h-screen">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 px-2">
         <div>
           <h2 className="text-4xl font-black text-[#0A1628] italic uppercase tracking-tighter">Base Legal</h2>
@@ -162,7 +162,7 @@ const KnowledgeBase: React.FC = () => {
           </div>
         )}
         {filteredDocs.map((document) => (
-          <div key={document.id} className="bg-[#F8F7F2] border border-slate-200 rounded-[32px] p-8 flex flex-col justify-between shadow-lg hover:border-blue-500/30 transition-all group">
+          <div key={document.id} className="bg-[#0D1B3E] border border-slate-200 rounded-[32px] p-8 flex flex-col justify-between shadow-lg hover:border-blue-500/30 transition-all group">
             <div>
               <div className="flex justify-between items-start mb-4">
                 <div className="w-12 h-12 bg-blue-600/10 rounded-2xl flex items-center justify-center">
@@ -190,7 +190,7 @@ const KnowledgeBase: React.FC = () => {
 
       {viewingDoc && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/90 backdrop-blur-sm">
-          <div className="bg-[#F8F7F2] border border-slate-200 w-full max-w-5xl max-h-[90vh] rounded-[40px] flex flex-col overflow-hidden shadow-2xl">
+          <div className="bg-[#0D1B3E] border border-slate-200 w-full max-w-5xl max-h-[90vh] rounded-[40px] flex flex-col overflow-hidden shadow-2xl">
             <header className="p-8 border-b border-slate-200 flex justify-between items-center bg-slate-900/20 flex-shrink-0">
               <div>
                 <h3 className="text-[#0A1628] font-black uppercase italic tracking-tight">{viewingDoc.fileName || viewingDoc.title}</h3>
@@ -206,7 +206,7 @@ const KnowledgeBase: React.FC = () => {
                 </button>
               </div>
             </header>
-            <div className="flex-1 overflow-y-auto p-10 bg-[#F8F7F2]">
+            <div className="flex-1 overflow-y-auto p-10 bg-[#0D1B3E]">
               <pre className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap font-sans">{viewingDoc.content}</pre>
             </div>
           </div>

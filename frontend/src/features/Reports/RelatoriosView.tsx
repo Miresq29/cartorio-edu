@@ -282,7 +282,7 @@ const RelatoriosView: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F8F7F2]">
+    <div className="min-h-screen bg-[#0D1B3E]">
       <div className="max-w-7xl mx-auto p-6 space-y-6">
 
         {/* Header */}
@@ -414,7 +414,7 @@ const RelatoriosView: React.FC = () => {
                     { label: 'Reprovações', value: filteredResults.filter(r => !r.aprovado).length },
                     { label: 'Trilhas ativas', value: new Set(progresso.map(p => p.trilhaId)).size },
                   ].map((s, i) => (
-                    <div key={i} className="bg-[#F8F7F2] border border-slate-200 rounded-xl p-4 text-center">
+                    <div key={i} className="bg-[#0D1B3E] border border-slate-200 rounded-xl p-4 text-center">
                       <p className="text-2xl font-black text-slate-700">{s.value}</p>
                       <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-1">{s.label}</p>
                     </div>
@@ -429,13 +429,13 @@ const RelatoriosView: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <input value={buscaColab} onChange={e => setBuscaColab(e.target.value)}
                     placeholder="Buscar colaborador..."
-                    className="bg-[#F8F7F2] border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-[#C9A84C] w-64" />
+                    className="bg-[#0D1B3E] border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-[#C9A84C] w-64" />
                   <span className="text-xs text-slate-500 font-bold">{porColab.length} colaboradores</span>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs">
                     <thead>
-                      <tr className="bg-[#F8F7F2] border-b border-slate-200">
+                      <tr className="bg-[#0D1B3E] border-b border-slate-200">
                         {['Colaborador', 'Cargo', 'Testes', 'Aprovações', 'Taxa', 'Média', 'Trilhas', 'Certs', 'Último Teste'].map(h => (
                           <th key={h} className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
                         ))}
@@ -446,7 +446,7 @@ const RelatoriosView: React.FC = () => {
                         <tr><td colSpan={9} className="text-center p-8 text-slate-500">Nenhum dado encontrado.</td></tr>
                       )}
                       {porColab.map(c => (
-                        <tr key={c.id} className="border-b border-slate-100 hover:bg-[#F8F7F2] transition-all">
+                        <tr key={c.id} className="border-b border-slate-100 hover:bg-[#0D1B3E] transition-all">
                           <td className="p-3 font-bold text-[#0A1628]">{c.name}</td>
                           <td className="p-3 text-slate-500">{c.cargo || '–'}</td>
                           <td className="p-3 text-slate-700 font-bold">{c.testes}</td>
@@ -490,7 +490,7 @@ const RelatoriosView: React.FC = () => {
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs">
                     <thead>
-                      <tr className="bg-[#F8F7F2] border-b border-slate-200">
+                      <tr className="bg-[#0D1B3E] border-b border-slate-200">
                         {['Trilha', 'Total de Testes', 'Aprovações', 'Taxa de Aprovação', 'Média', 'Testes c/ IA'].map(h => (
                           <th key={h} className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
                         ))}
@@ -504,7 +504,7 @@ const RelatoriosView: React.FC = () => {
                         const raw = filteredResults.filter(r => (r.trailTitle || 'Sem trilha') === t.name || (r.trailTitle || 'Sem trilha').startsWith(t.name.replace('…', '')));
                         const ia = raw.filter(r => r.ia).length;
                         return (
-                          <tr key={i} className="border-b border-slate-100 hover:bg-[#F8F7F2] transition-all">
+                          <tr key={i} className="border-b border-slate-100 hover:bg-[#0D1B3E] transition-all">
                             <td className="p-3 font-bold text-[#0A1628]">{t.name}</td>
                             <td className="p-3 text-slate-700 font-bold">{t.testes}</td>
                             <td className="p-3 text-emerald-600 font-bold">{Math.round(t.testes * t['Taxa (%)'] / 100)}</td>
@@ -552,7 +552,7 @@ const RelatoriosView: React.FC = () => {
                 <div className="overflow-x-auto border border-slate-200 rounded-[14px]">
                   <table className="w-full text-xs">
                     <thead>
-                      <tr className="bg-[#F8F7F2] border-b border-slate-200">
+                      <tr className="bg-[#0D1B3E] border-b border-slate-200">
                         {['Colaborador', 'Trilha', 'Módulo', 'Data/Hora', 'Nota', 'Status', 'Tipo'].map(h => (
                           <th key={h} className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
                         ))}
@@ -563,7 +563,7 @@ const RelatoriosView: React.FC = () => {
                         <tr><td colSpan={7} className="text-center p-8 text-slate-500">Nenhum registro no período.</td></tr>
                       )}
                       {filteredResults.map(r => (
-                        <tr key={r.id} className="border-b border-slate-100 hover:bg-[#F8F7F2] transition-all">
+                        <tr key={r.id} className="border-b border-slate-100 hover:bg-[#0D1B3E] transition-all">
                           <td className="p-3 font-bold text-[#0A1628]">{r.colaborador}</td>
                           <td className="p-3 text-slate-600 max-w-[160px] truncate">{r.trailTitle || '–'}</td>
                           <td className="p-3 text-slate-500 max-w-[140px] truncate">{r.moduleTitle || '–'}</td>

@@ -339,7 +339,7 @@ Regras:
             </p>
             <p className="text-xs text-slate-500 mt-1">{selectedQuiz.titulo}</p>
           </div>
-          <div className="bg-[#F8F7F2] border border-red-500/20 rounded-xl p-5 space-y-1">
+          <div className="bg-[#0D1B3E] border border-red-500/20 rounded-xl p-5 space-y-1">
             <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Nova tentativa disponível em</p>
             <p className="text-4xl font-black text-red-400">{formatCountdown(bloqueadoAte)}</p>
             <p className="text-[9px] text-slate-600">
@@ -430,7 +430,7 @@ Regras:
             <div className="bg-blue-500 h-1.5 rounded-full transition-all" style={{ width: `${(currentQ / selectedQuiz.questoes.length) * 100}%` }}></div>
           </div>
         </div>
-        <div className="bg-[#F8F7F2] border border-slate-200 rounded-2xl p-6 space-y-4">
+        <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-6 space-y-4">
           <p className="text-[#0A1628] font-bold text-sm leading-relaxed">{currentQ + 1}. {questao.texto}</p>
           <div className="space-y-2">
             {questao.opcoes.map((opcao, i) => (
@@ -528,7 +528,7 @@ Regras:
             </div>
 
             {questoes.map((q, qi) => (
-              <div key={qi} className="bg-[#F8F7F2] border border-slate-200 rounded-2xl p-5 space-y-3">
+              <div key={qi} className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-5 space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest">Questão {qi + 1}</span>
                   {questoes.length > 1 && (
@@ -598,7 +598,7 @@ Regras:
       </div>
 
       {quizzes.length === 0 ? (
-        <div className="bg-[#F8F7F2] border border-slate-200 rounded-2xl p-10 text-center">
+        <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-10 text-center">
           <i className="fa-solid fa-circle-question text-4xl text-slate-700 mb-3 block"></i>
           <p className="text-slate-600 text-xs font-bold uppercase tracking-widest">Nenhum questionário criado ainda</p>
           <p className="text-slate-700 text-xs mt-1">Clique em "Novo Questionário" e deixe a IA criar para você</p>
@@ -611,7 +611,7 @@ Regras:
             const nomeUsuario = state.user?.name || '';
             const bloqueado = nomeUsuario ? calcLiberadoEm(results, quiz.id, nomeUsuario) : null;
             return (
-              <div key={quiz.id} className={`bg-[#F8F7F2] border rounded-2xl p-5 transition-all group ${bloqueado ? 'border-red-500/30' : 'border-slate-200 hover:border-slate-200'}`}>
+              <div key={quiz.id} className={`bg-[#0D1B3E] border rounded-2xl p-5 transition-all group ${bloqueado ? 'border-red-500/30' : 'border-slate-200 hover:border-slate-200'}`}>
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
