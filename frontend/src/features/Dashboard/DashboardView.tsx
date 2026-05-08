@@ -196,7 +196,7 @@ const ColabDashboard: React.FC<{
           {evolucao.length === 0 ? (
             <div className="h-48 flex items-center justify-center text-slate-500 text-sm">Nenhum teste realizado ainda</div>
           ) : (
-            <><ChartSelector options={['area','line','bar']} value={chartEvolucao} onChange={setChartEvolucao} />
+            <React.Fragment><ChartSelector options={['area','line','bar']} value={chartEvolucao} onChange={setChartEvolucao} />
             <ResponsiveContainer width="100%" height={190}>
               {chartEvolucao === 'area' ? (
                 <AreaChart data={evolucao} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
@@ -215,7 +215,7 @@ const ColabDashboard: React.FC<{
                   <Bar dataKey="Média (%)" fill="#C9A84C" radius={[4,4,0,0]} />
                 </BarChart>
               )}
-            </ResponsiveContainer></>
+            </ResponsiveContainer></React.Fragment>
           )}
         </div>
         <div className="bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
@@ -259,7 +259,7 @@ const ColabDashboard: React.FC<{
                 <Bar dataKey="Conclusão (%)" fill="#4F46E5" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="Média notas"   fill="#059669" radius={[4, 4, 0, 0]} />
               </BarChart>
-            </ResponsiveContainer></>
+            </ResponsiveContainer></React.Fragment>
           )}
         </div>
         <div className="bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
@@ -412,7 +412,7 @@ const AdminDashboard: React.FC<{
           {testesPorMes.length === 0 ? (
             <div className="h-48 flex items-center justify-center text-slate-500 text-sm">Sem dados ainda</div>
           ) : (
-            <><ChartSelector options={['line','bar','area']} value={chartMensal} onChange={setChartMensal} />
+            <React.Fragment><ChartSelector options={['line','bar','area']} value={chartMensal} onChange={setChartMensal} />
             <ResponsiveContainer width="100%" height={190}>
               {chartMensal === 'line' ? (
                 <LineChart data={testesPorMes} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
@@ -434,7 +434,7 @@ const AdminDashboard: React.FC<{
                   <Area type="monotone" dataKey="Aprovados" stroke="#059669" fill="none" strokeWidth={2} />
                 </AreaChart>
               )}
-            </ResponsiveContainer></>
+            </ResponsiveContainer></React.Fragment>
           )}
         </div>
         <div className="bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
@@ -475,7 +475,7 @@ const AdminDashboard: React.FC<{
                   {trilhasPerf.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                 </Bar>
               </BarChart>
-            </ResponsiveContainer></>
+            </ResponsiveContainer></React.Fragment>
           )}
         </div>
         <div className="bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
