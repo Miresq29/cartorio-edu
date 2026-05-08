@@ -42,7 +42,7 @@ const SecurityView: React.FC = () => {
   };
 
   return (
-    <div className="p-8 min-h-full bg-slate-50 text-slate-800">
+    <div className="p-8 min-h-full bg-[#0a0f1d] text-slate-200">
       <div className="max-w-7xl mx-auto space-y-12">
         
         {/* Como usar */}
