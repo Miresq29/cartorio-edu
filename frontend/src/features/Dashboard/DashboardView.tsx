@@ -40,8 +40,8 @@ const COLORS = ['#4F46E5','#059669','#D97706','#DC2626','#7C3AED','#0891B2','#EC
 const Tip: React.FC<any> = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-[#1A2A52] border border-[#C9A84C]/30 rounded-xl p-3 shadow-lg text-xs">
-      {label && <p className="font-black text-slate-200 mb-1">{label}</p>}
+    <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-lg text-xs">
+      {label && <p className="font-black text-slate-700 mb-1">{label}</p>}
       {payload.map((p: any, i: number) => (
         <p key={i} style={{ color: p.color }} className="font-bold">{p.name}: {p.value}{typeof p.value === 'number' && p.name?.includes('%') ? '%' : ''}</p>
       ))}
@@ -50,7 +50,7 @@ const Tip: React.FC<any> = ({ active, payload, label }) => {
 };
 
 const StatCard: React.FC<{ label: string; value: string | number; sub?: string; icon: string; color: string; trend?: number }> = ({ label, value, sub, icon, color, trend }) => (
-  <div className="bg-[#1A2A52] border border-[#C9A84C]/30 rounded-[14px] p-5 shadow-sm">
+  <div className="bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
     <div className="flex items-start justify-between mb-3">
       <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: color + '15' }}>
         <i className={'fa-solid ' + icon} style={{ color }}></i>
@@ -61,9 +61,9 @@ const StatCard: React.FC<{ label: string; value: string | number; sub?: string; 
         </span>
       )}
     </div>
-    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">{label}</p>
-    <p className="text-3xl font-black text-white">{value}</p>
-    {sub && <p className="text-[11px] text-slate-500 mt-1">{sub}</p>}
+    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{label}</p>
+    <p className="text-3xl font-black text-slate-800">{value}</p>
+    {sub && <p className="text-[11px] text-slate-400 mt-1">{sub}</p>}
   </div>
 );
 
@@ -143,23 +143,23 @@ const ColabDashboard: React.FC<{
       </div>
 
       {/* Progresso geral */}
-      <div className="bg-[#1A2A52] border border-[#C9A84C]/30 rounded-[14px] p-5 shadow-sm">
+      <div className="bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
         <div className="flex items-center justify-between mb-3">
-          <span className="text-sm font-black text-white">Progresso Geral do Programa</span>
-          <span className="text-sm font-black text-[#C9A84C]">{globalPct}%</span>
+          <span className="text-sm font-black text-slate-800">Progresso Geral do Programa</span>
+          <span className="text-sm font-black text-indigo-600">{globalPct}%</span>
         </div>
-        <div className="w-full bg-[#132044] rounded-full h-2.5">
-          <div className="h-2.5 rounded-full bg-[#C9A84C] transition-all duration-700" style={{ width: `${globalPct}%` }}></div>
+        <div className="w-full bg-slate-100 rounded-full h-2.5">
+          <div className="h-2.5 rounded-full bg-indigo-600 transition-all duration-700" style={{ width: `${globalPct}%` }}></div>
         </div>
-        <p className="text-[11px] text-slate-500 mt-2">Aprovação mínima: <strong className="text-slate-300">75%</strong> · Taxonomia de Bloom Médio</p>
+        <p className="text-[11px] text-slate-400 mt-2">Aprovação mínima: <strong className="text-slate-600">75%</strong> · Taxonomia de Bloom Médio</p>
       </div>
 
       {/* Linha 1: Evolução + Donut */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-[#1A2A52] border border-[#C9A84C]/30 rounded-[14px] p-5 shadow-sm">
-          <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Evolução das Notas</p>
+        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
+          <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Evolução das Notas</p>
           {evolucao.length === 0 ? (
-            <div className="h-48 flex items-center justify-center text-slate-500 text-sm">Nenhum teste realizado ainda</div>
+            <div className="h-48 flex items-center justify-center text-slate-400 text-sm">Nenhum teste realizado ainda</div>
           ) : (
             <ResponsiveContainer width="100%" height={200}>
               <AreaChart data={evolucao} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
@@ -178,8 +178,8 @@ const ColabDashboard: React.FC<{
             </ResponsiveContainer>
           )}
         </div>
-        <div className="bg-[#1A2A52] border border-[#C9A84C]/30 rounded-[14px] p-5 shadow-sm">
-          <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Status das Trilhas</p>
+        <div className="bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
+          <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Status das Trilhas</p>
           <ResponsiveContainer width="100%" height={160}>
             <PieChart>
               <Pie data={statusTrilhas} cx="50%" cy="50%" innerRadius={45} outerRadius={70} dataKey="value" paddingAngle={3}>
@@ -193,9 +193,9 @@ const ColabDashboard: React.FC<{
               <div key={i} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ background: s.color }}></div>
-                  <span className="text-[11px] text-slate-400">{s.name}</span>
+                  <span className="text-[11px] text-slate-500">{s.name}</span>
                 </div>
-                <span className="text-[11px] font-black text-slate-200">{s.value}</span>
+                <span className="text-[11px] font-black text-slate-700">{s.value}</span>
               </div>
             ))}
           </div>
@@ -204,10 +204,10 @@ const ColabDashboard: React.FC<{
 
       {/* Linha 2: Barras por trilha + Radar */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-[#1A2A52] border border-[#C9A84C]/30 rounded-[14px] p-5 shadow-sm">
-          <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Conclusão e Notas por Trilha</p>
+        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
+          <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Conclusão e Notas por Trilha</p>
           {porTrilha.length === 0 ? (
-            <div className="h-48 flex items-center justify-center text-slate-500 text-sm">Sem dados ainda</div>
+            <div className="h-48 flex items-center justify-center text-slate-400 text-sm">Sem dados ainda</div>
           ) : (
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={porTrilha} margin={{ top: 5, right: 10, left: -20, bottom: 30 }}>
@@ -222,8 +222,8 @@ const ColabDashboard: React.FC<{
             </ResponsiveContainer>
           )}
         </div>
-        <div className="bg-[#1A2A52] border border-[#C9A84C]/30 rounded-[14px] p-5 shadow-sm">
-          <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Perfil de Habilidades</p>
+        <div className="bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
+          <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Perfil de Habilidades</p>
           <ResponsiveContainer width="100%" height={220}>
             <RadarChart data={radarData}>
               <PolarGrid stroke="#e2e8f0" />
@@ -237,7 +237,7 @@ const ColabDashboard: React.FC<{
 
       {/* Trilhas */}
       <div>
-        <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Trilhas de Aprendizado</p>
+        <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">Trilhas de Aprendizado</p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {trilhas.map((t, idx) => {
             const cor  = t.cor || COLORS[idx % COLORS.length];
@@ -248,17 +248,17 @@ const ColabDashboard: React.FC<{
             const chipBg    = p === 100 ? '#d1fae5' : p > 0 ? '#eef2ff' : '#f1f5f9';
             const chipLabel = p === 100 ? '✓ Concluída' : p > 0 ? `${p}%` : 'Iniciar';
             return (
-              <div key={t.id} className="bg-[#1A2A52] border border-[#C9A84C]/30 hover:border-[#C9A84C]/50 rounded-[14px] p-5 shadow-sm hover:shadow-md transition-all cursor-pointer">
+              <div key={t.id} className="bg-white border border-slate-200 hover:border-indigo-300 rounded-[14px] p-5 shadow-sm hover:shadow-md transition-all cursor-pointer">
                 <div className="flex items-center justify-between mb-3">
                   <div className="w-11 h-11 rounded-[12px] flex items-center justify-center text-xl" style={{ background: cor + '20', color: cor }}>
                     {t.icone || '📚'}
                   </div>
                   <span className="text-[10px] font-black px-2.5 py-1 rounded-full" style={{ background: chipBg, color: chipColor }}>{chipLabel}</span>
                 </div>
-                <h3 className="text-sm font-black text-white mb-1 leading-snug">{t.titulo}</h3>
-                <p className="text-[11px] text-slate-500 mb-3 line-clamp-2">{t.descricao}</p>
-                <p className="text-[10px] text-slate-500 mb-2">{done}/{mods} módulos</p>
-                <div className="w-full bg-[#132044] rounded-full h-1.5">
+                <h3 className="text-sm font-black text-slate-800 mb-1 leading-snug">{t.titulo}</h3>
+                <p className="text-[11px] text-slate-400 mb-3 line-clamp-2">{t.descricao}</p>
+                <p className="text-[10px] text-slate-400 mb-2">{done}/{mods} módulos</p>
+                <div className="w-full bg-slate-100 rounded-full h-1.5">
                   <div className="h-1.5 rounded-full transition-all duration-700" style={{ width: `${p}%`, background: p === 100 ? '#059669' : cor }}></div>
                 </div>
               </div>
@@ -270,16 +270,16 @@ const ColabDashboard: React.FC<{
       {/* Atividade recente */}
       {myRes.length > 0 && (
         <div>
-          <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Atividade Recente</p>
+          <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">Atividade Recente</p>
           <div className="space-y-2">
             {myRes.slice(0, 5).map((r, i) => (
-              <div key={i} className="bg-[#1A2A52] border border-[#C9A84C]/30 rounded-[12px] p-4 flex items-center gap-3 shadow-sm">
+              <div key={i} className="bg-white border border-slate-200 rounded-[12px] p-4 flex items-center gap-3 shadow-sm">
                 <i className={'fa-solid text-lg flex-shrink-0 ' + (r.aprovado ? 'fa-circle-check text-emerald-500' : 'fa-circle-xmark text-red-400')}></i>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-white truncate">{r.trailTitle}{r.moduleTitle ? ' · ' + r.moduleTitle : ''}</p>
+                  <p className="text-xs font-bold text-slate-800 truncate">{r.trailTitle}{r.moduleTitle ? ' · ' + r.moduleTitle : ''}</p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <p className="text-[10px] text-slate-500">{formatDate(r.createdAt)}</p>
-                    {r.ia && <span className="text-[9px] font-black bg-[#1A2A52] text-[#C9A84C] px-1.5 py-0.5 rounded-lg">✨ IA</span>}
+                    <p className="text-[10px] text-slate-400">{formatDate(r.createdAt)}</p>
+                    {r.ia && <span className="text-[9px] font-black bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded-lg">✨ IA</span>}
                   </div>
                 </div>
                 <span className={'text-sm font-black ' + (r.aprovado ? 'text-emerald-600' : 'text-red-500')}>{r.nota}%</span>
@@ -363,10 +363,10 @@ const AdminDashboard: React.FC<{
 
       {/* Linha 1: Testes por mês + Distribuição notas */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-[#1A2A52] border border-[#C9A84C]/30 rounded-[14px] p-5 shadow-sm">
-          <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Atividade Mensal da Equipe</p>
+        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
+          <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Atividade Mensal da Equipe</p>
           {testesPorMes.length === 0 ? (
-            <div className="h-48 flex items-center justify-center text-slate-500 text-sm">Sem dados ainda</div>
+            <div className="h-48 flex items-center justify-center text-slate-400 text-sm">Sem dados ainda</div>
           ) : (
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={testesPorMes} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
@@ -381,8 +381,8 @@ const AdminDashboard: React.FC<{
             </ResponsiveContainer>
           )}
         </div>
-        <div className="bg-[#1A2A52] border border-[#C9A84C]/30 rounded-[14px] p-5 shadow-sm">
-          <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Distribuição de Notas</p>
+        <div className="bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
+          <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Distribuição de Notas</p>
           <ResponsiveContainer width="100%" height={160}>
             <PieChart>
               <Pie data={distNotas} cx="50%" cy="50%" innerRadius={40} outerRadius={65} dataKey="value" nameKey="faixa" paddingAngle={3}>
@@ -395,7 +395,7 @@ const AdminDashboard: React.FC<{
             {distNotas.map((d, i) => (
               <div key={i} className="flex items-center gap-1.5">
                 <div className="w-2.5 h-2.5 rounded-sm" style={{ background: d.color }}></div>
-                <span className="text-[10px] text-slate-400">{d.faixa}%: <strong className="text-slate-200">{d.value}</strong></span>
+                <span className="text-[10px] text-slate-500">{d.faixa}%: <strong className="text-slate-700">{d.value}</strong></span>
               </div>
             ))}
           </div>
@@ -404,10 +404,10 @@ const AdminDashboard: React.FC<{
 
       {/* Linha 2: Performance por trilha + Top colaboradores */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-[#1A2A52] border border-[#C9A84C]/30 rounded-[14px] p-5 shadow-sm">
-          <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Taxa de Aprovação por Trilha</p>
+        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
+          <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Taxa de Aprovação por Trilha</p>
           {trilhasPerf.length === 0 ? (
-            <div className="h-48 flex items-center justify-center text-slate-500 text-sm">Sem dados ainda</div>
+            <div className="h-48 flex items-center justify-center text-slate-400 text-sm">Sem dados ainda</div>
           ) : (
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={trilhasPerf} margin={{ top: 5, right: 10, left: -20, bottom: 35 }}>
@@ -422,8 +422,8 @@ const AdminDashboard: React.FC<{
             </ResponsiveContainer>
           )}
         </div>
-        <div className="bg-[#1A2A52] border border-[#C9A84C]/30 rounded-[14px] p-5 shadow-sm">
-          <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Perfis de Acesso</p>
+        <div className="bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
+          <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Perfis de Acesso</p>
           <ResponsiveContainer width="100%" height={160}>
             <PieChart>
               <Pie data={perfisData} cx="50%" cy="50%" outerRadius={65} dataKey="value" label={({ name, value }) => `${name}: ${value}`} labelLine={false}>
@@ -437,9 +437,9 @@ const AdminDashboard: React.FC<{
               <div key={i} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-sm" style={{ background: p.color }}></div>
-                  <span className="text-[11px] text-slate-400">{p.name}</span>
+                  <span className="text-[11px] text-slate-500">{p.name}</span>
                 </div>
-                <span className="text-[11px] font-black text-slate-200">{p.value}</span>
+                <span className="text-[11px] font-black text-slate-700">{p.value}</span>
               </div>
             ))}
           </div>
@@ -448,8 +448,8 @@ const AdminDashboard: React.FC<{
 
       {/* Top colaboradores */}
       {topColab.length > 0 && (
-        <div className="bg-[#1A2A52] border border-[#C9A84C]/30 rounded-[14px] p-5 shadow-sm">
-          <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Ranking de Desempenho — Top Colaboradores</p>
+        <div className="bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
+          <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Ranking de Desempenho — Top Colaboradores</p>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={topColab} layout="vertical" margin={{ top: 0, right: 20, left: 10, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
@@ -494,30 +494,30 @@ const DashboardView: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-[#0D1B3E]">
+      <div className="flex items-center justify-center h-screen bg-slate-50">
         <div className="text-center space-y-3">
-          <div className="w-10 h-10 border-2 border-[#C9A84C]/30 border-t-indigo-500 rounded-full animate-spin mx-auto"></div>
-          <p className="text-slate-500 text-sm">Carregando dashboard...</p>
+          <div className="w-10 h-10 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin mx-auto"></div>
+          <p className="text-slate-400 text-sm">Carregando dashboard...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0D1B3E]">
+    <div className="min-h-screen bg-slate-50">
       <div className="max-w-7xl mx-auto p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-black text-white">
+            <h2 className="text-2xl font-black text-slate-800">
               {isGestor ? 'Painel Geral' : `Olá, ${user.name.split(' ')[0]} 👋`}
             </h2>
-            <p className="text-sm text-slate-500 mt-0.5">
+            <p className="text-sm text-slate-400 mt-0.5">
               {isGestor ? 'Acompanhe o desempenho da sua equipe' : 'Plataforma de Conformidade Notarial'}
             </p>
           </div>
-          <div className="hidden md:flex items-center gap-2 bg-[#1A2A52] border border-[#C9A84C]/30 px-3 py-2 rounded-xl">
-            <i className="fa-solid fa-brain text-[#C9A84C] text-xs"></i>
-            <span className="text-[10px] font-black text-[#C9A84C] uppercase tracking-widest">Bloom Médio · 75% aprovação</span>
+          <div className="hidden md:flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-xl">
+            <i className="fa-solid fa-brain text-indigo-500 text-xs"></i>
+            <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Bloom Médio · 75% aprovação</span>
           </div>
         </div>
 

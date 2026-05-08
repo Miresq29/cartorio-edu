@@ -433,7 +433,7 @@ const UsersView: React.FC = () => {
                   </thead>
                   <tbody>
                     {MODULOS.map((m, idx) => (
-                      <tr key={m.id} className={`border-b border-slate-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-[#0D1B3E]/50'}`}>
+                      <tr key={m.id} className={`border-b border-slate-100 ${idx % 2 === 0 ? 'bg-[#1A2A52]' : 'bg-[#0D1B3E]/50'}`}>
                         <td className="p-3">
                           <div className="flex items-center gap-2">
                             <i className={`fa-solid ${m.icon} text-slate-500 text-[11px] w-4 text-center`}></i>
