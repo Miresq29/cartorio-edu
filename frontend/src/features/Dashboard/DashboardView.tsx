@@ -61,9 +61,9 @@ const StatCard: React.FC<{ label: string; value: string | number; sub?: string; 
         </span>
       )}
     </div>
-    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">{label}</p>
+    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{label}</p>
     <p className="text-3xl font-black text-slate-800">{value}</p>
-    {sub && <p className="text-[11px] text-slate-500 mt-1">{sub}</p>}
+    {sub && <p className="text-[11px] text-slate-400 mt-1">{sub}</p>}
   </div>
 );
 
@@ -90,7 +90,7 @@ const ChartSelector: React.FC<{
       {options.map(o => (
         <button key={o} onClick={() => onChange(o)} title={labels[o]}
           className={"w-7 h-7 rounded-lg flex items-center justify-center text-[10px] transition-all " +
-            (value === o ? "bg-[#C9A84C] text-[#0D1B3E]" : "bg-white text-slate-500 hover:text-[#C9A84C]")}>
+            (value === o ? "bg-[#C9A84C] text-[#0D1B3E]" : "bg-[#1A2A52] text-slate-400 hover:text-[#C9A84C]")}>
           <i className={"fa-solid " + icons[o]}></i>
         </button>
       ))}
@@ -186,7 +186,7 @@ const ColabDashboard: React.FC<{
         <div className="w-full bg-slate-100 rounded-full h-2.5">
           <div className="h-2.5 rounded-full bg-indigo-600 transition-all duration-700" style={{ width: `${globalPct}%` }}></div>
         </div>
-        <p className="text-[11px] text-slate-500 mt-2">Aprovação mínima: <strong className="text-slate-600">75%</strong> · Taxonomia de Bloom Médio</p>
+        <p className="text-[11px] text-slate-400 mt-2">Aprovação mínima: <strong className="text-slate-600">75%</strong> · Taxonomia de Bloom Médio</p>
       </div>
 
       {/* Linha 1: Evolução + Donut */}
@@ -194,28 +194,28 @@ const ColabDashboard: React.FC<{
         <div className="lg:col-span-2 bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
           <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Evolução das Notas</p>
           {evolucao.length === 0 ? (
-            <div className="h-48 flex items-center justify-center text-slate-500 text-sm">Nenhum teste realizado ainda</div>
+            <div className="h-48 flex items-center justify-center text-slate-400 text-sm">Nenhum teste realizado ainda</div>
           ) : (
-            <div><ChartSelector options={['area','line','bar']} value={chartEvolucao} onChange={setChartEvolucao} />
+            <ChartSelector options={['area','line','bar']} value={chartEvolucao} onChange={setChartEvolucao} />
             <ResponsiveContainer width="100%" height={190}>
               {chartEvolucao === 'area' ? (
                 <AreaChart data={evolucao} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
                   <defs><linearGradient id="colorNota" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#C9A84C" stopOpacity={0.25}/><stop offset="95%" stopColor="#C9A84C" stopOpacity={0}/></linearGradient></defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" /><XAxis dataKey="mes" tick={{ fontSize: 10, fill: '#94a3b8' }} /><YAxis domain={[0,100]} tick={{ fontSize: 10, fill: '#94a3b8' }} /><Tooltip content={<Tip />} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1A3A6B" /><XAxis dataKey="mes" tick={{ fontSize: 10, fill: '#94a3b8' }} /><YAxis domain={[0,100]} tick={{ fontSize: 10, fill: '#94a3b8' }} /><Tooltip content={<Tip />} />
                   <Area type="monotone" dataKey="Média (%)" stroke="#C9A84C" strokeWidth={2} fill="url(#colorNota)" dot={{ r: 4, fill: '#C9A84C' }} />
                 </AreaChart>
               ) : chartEvolucao === 'line' ? (
                 <LineChart data={evolucao} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" /><XAxis dataKey="mes" tick={{ fontSize: 10, fill: '#94a3b8' }} /><YAxis domain={[0,100]} tick={{ fontSize: 10, fill: '#94a3b8' }} /><Tooltip content={<Tip />} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1A3A6B" /><XAxis dataKey="mes" tick={{ fontSize: 10, fill: '#94a3b8' }} /><YAxis domain={[0,100]} tick={{ fontSize: 10, fill: '#94a3b8' }} /><Tooltip content={<Tip />} />
                   <Line type="monotone" dataKey="Média (%)" stroke="#C9A84C" strokeWidth={2} dot={{ r: 4, fill: '#C9A84C' }} />
                 </LineChart>
               ) : (
                 <BarChart data={evolucao} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" /><XAxis dataKey="mes" tick={{ fontSize: 10, fill: '#94a3b8' }} /><YAxis domain={[0,100]} tick={{ fontSize: 10, fill: '#94a3b8' }} /><Tooltip content={<Tip />} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1A3A6B" /><XAxis dataKey="mes" tick={{ fontSize: 10, fill: '#94a3b8' }} /><YAxis domain={[0,100]} tick={{ fontSize: 10, fill: '#94a3b8' }} /><Tooltip content={<Tip />} />
                   <Bar dataKey="Média (%)" fill="#C9A84C" radius={[4,4,0,0]} />
                 </BarChart>
               )}
-            </ResponsiveContainer></div>
+            </ResponsiveContainer>
           )}
         </div>
         <div className="bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
@@ -247,7 +247,7 @@ const ColabDashboard: React.FC<{
         <div className="lg:col-span-2 bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
           <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Conclusão e Notas por Trilha</p>
           {porTrilha.length === 0 ? (
-            <div className="h-48 flex items-center justify-center text-slate-500 text-sm">Sem dados ainda</div>
+            <div className="h-48 flex items-center justify-center text-slate-400 text-sm">Sem dados ainda</div>
           ) : (
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={porTrilha} margin={{ top: 5, right: 10, left: -20, bottom: 30 }}>
@@ -259,7 +259,7 @@ const ColabDashboard: React.FC<{
                 <Bar dataKey="Conclusão (%)" fill="#4F46E5" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="Média notas"   fill="#059669" radius={[4, 4, 0, 0]} />
               </BarChart>
-            </ResponsiveContainer></div>
+            </ResponsiveContainer>
           )}
         </div>
         <div className="bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
@@ -296,8 +296,8 @@ const ColabDashboard: React.FC<{
                   <span className="text-[10px] font-black px-2.5 py-1 rounded-full" style={{ background: chipBg, color: chipColor }}>{chipLabel}</span>
                 </div>
                 <h3 className="text-sm font-black text-slate-800 mb-1 leading-snug">{t.titulo}</h3>
-                <p className="text-[11px] text-slate-500 mb-3 line-clamp-2">{t.descricao}</p>
-                <p className="text-[10px] text-slate-500 mb-2">{done}/{mods} módulos</p>
+                <p className="text-[11px] text-slate-400 mb-3 line-clamp-2">{t.descricao}</p>
+                <p className="text-[10px] text-slate-400 mb-2">{done}/{mods} módulos</p>
                 <div className="w-full bg-slate-100 rounded-full h-1.5">
                   <div className="h-1.5 rounded-full transition-all duration-700" style={{ width: `${p}%`, background: p === 100 ? '#059669' : cor }}></div>
                 </div>
@@ -318,7 +318,7 @@ const ColabDashboard: React.FC<{
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-slate-800 truncate">{r.trailTitle}{r.moduleTitle ? ' · ' + r.moduleTitle : ''}</p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <p className="text-[10px] text-slate-500">{formatDate(r.createdAt)}</p>
+                    <p className="text-[10px] text-slate-400">{formatDate(r.createdAt)}</p>
                     {r.ia && <span className="text-[9px] font-black bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded-lg">✨ IA</span>}
                   </div>
                 </div>
@@ -410,31 +410,31 @@ const AdminDashboard: React.FC<{
         <div className="lg:col-span-2 bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
           <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Atividade Mensal da Equipe</p>
           {testesPorMes.length === 0 ? (
-            <div className="h-48 flex items-center justify-center text-slate-500 text-sm">Sem dados ainda</div>
+            <div className="h-48 flex items-center justify-center text-slate-400 text-sm">Sem dados ainda</div>
           ) : (
-            <div><ChartSelector options={['line','bar','area']} value={chartMensal} onChange={setChartMensal} />
+            <ChartSelector options={['line','bar','area']} value={chartMensal} onChange={setChartMensal} />
             <ResponsiveContainer width="100%" height={190}>
               {chartMensal === 'line' ? (
                 <LineChart data={testesPorMes} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" /><XAxis dataKey="mes" tick={{ fontSize: 10, fill: '#94a3b8' }} /><YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} /><Tooltip content={<Tip />} /><Legend wrapperStyle={{ fontSize: 11 }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1A3A6B" /><XAxis dataKey="mes" tick={{ fontSize: 10, fill: '#94a3b8' }} /><YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} /><Tooltip content={<Tip />} /><Legend wrapperStyle={{ fontSize: 11 }} />
                   <Line type="monotone" dataKey="Testes" stroke="#C9A84C" strokeWidth={2} dot={{ r: 3 }} />
                   <Line type="monotone" dataKey="Aprovados" stroke="#059669" strokeWidth={2} dot={{ r: 3 }} />
                 </LineChart>
               ) : chartMensal === 'bar' ? (
                 <BarChart data={testesPorMes} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" /><XAxis dataKey="mes" tick={{ fontSize: 10, fill: '#94a3b8' }} /><YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} /><Tooltip content={<Tip />} /><Legend wrapperStyle={{ fontSize: 11 }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1A3A6B" /><XAxis dataKey="mes" tick={{ fontSize: 10, fill: '#94a3b8' }} /><YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} /><Tooltip content={<Tip />} /><Legend wrapperStyle={{ fontSize: 11 }} />
                   <Bar dataKey="Testes" fill="#C9A84C" radius={[4,4,0,0]} />
                   <Bar dataKey="Aprovados" fill="#059669" radius={[4,4,0,0]} />
                 </BarChart>
               ) : (
                 <AreaChart data={testesPorMes} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
                   <defs><linearGradient id="gt" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#C9A84C" stopOpacity={0.2}/><stop offset="95%" stopColor="#C9A84C" stopOpacity={0}/></linearGradient></defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" /><XAxis dataKey="mes" tick={{ fontSize: 10, fill: '#94a3b8' }} /><YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} /><Tooltip content={<Tip />} /><Legend wrapperStyle={{ fontSize: 11 }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1A3A6B" /><XAxis dataKey="mes" tick={{ fontSize: 10, fill: '#94a3b8' }} /><YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} /><Tooltip content={<Tip />} /><Legend wrapperStyle={{ fontSize: 11 }} />
                   <Area type="monotone" dataKey="Testes" stroke="#C9A84C" fill="url(#gt)" strokeWidth={2} />
                   <Area type="monotone" dataKey="Aprovados" stroke="#059669" fill="none" strokeWidth={2} />
                 </AreaChart>
               )}
-            </ResponsiveContainer></div>
+            </ResponsiveContainer>
           )}
         </div>
         <div className="bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
@@ -463,7 +463,7 @@ const AdminDashboard: React.FC<{
         <div className="lg:col-span-2 bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
           <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Taxa de Aprovação por Trilha</p>
           {trilhasPerf.length === 0 ? (
-            <div className="h-48 flex items-center justify-center text-slate-500 text-sm">Sem dados ainda</div>
+            <div className="h-48 flex items-center justify-center text-slate-400 text-sm">Sem dados ainda</div>
           ) : (
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={trilhasPerf} margin={{ top: 5, right: 10, left: -20, bottom: 35 }}>
@@ -475,7 +475,7 @@ const AdminDashboard: React.FC<{
                   {trilhasPerf.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                 </Bar>
               </BarChart>
-            </ResponsiveContainer></div>
+            </ResponsiveContainer>
           )}
         </div>
         <div className="bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
@@ -553,7 +553,7 @@ const DashboardView: React.FC = () => {
       <div className="flex items-center justify-center h-screen bg-slate-50">
         <div className="text-center space-y-3">
           <div className="w-10 h-10 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin mx-auto"></div>
-          <p className="text-slate-500 text-sm">Carregando dashboard...</p>
+          <p className="text-slate-400 text-sm">Carregando dashboard...</p>
         </div>
       </div>
     );
@@ -567,7 +567,7 @@ const DashboardView: React.FC = () => {
             <h2 className="text-2xl font-black text-slate-800">
               {isGestor ? 'Painel Geral' : `Olá, ${user.name.split(' ')[0]} 👋`}
             </h2>
-            <p className="text-sm text-slate-500 mt-0.5">
+            <p className="text-sm text-slate-400 mt-0.5">
               {isGestor ? 'Acompanhe o desempenho da sua equipe' : 'Plataforma de Conformidade Notarial'}
             </p>
           </div>
@@ -588,4 +588,3 @@ const DashboardView: React.FC = () => {
 };
 
 export default DashboardView;
-
