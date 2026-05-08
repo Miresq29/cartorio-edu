@@ -159,9 +159,9 @@ const PlayerModal: React.FC<{
             />
           </div>
           {/* Fallback: link direto */}
-          <div className="bg-slate-900 border border-slate-200 rounded-2xl p-4 text-center space-y-2">
+          <div className="bg-slate-900 border border-[#E8D5A3] rounded-2xl p-4 text-center space-y-2">
             <i className="fa-solid fa-headphones text-violet-400 text-3xl block mb-2"></i>
-            <p className="text-xs text-slate-400">Se o player não carregar, abra diretamente no Drive:</p>
+            <p className="text-xs text-[#8A9BB0]">Se o player não carregar, abra diretamente no Drive:</p>
             <a
               href={`https://drive.google.com/file/d/${midia.driveId}/view`}
               target="_blank"
@@ -175,7 +175,7 @@ const PlayerModal: React.FC<{
       );
     }
 
-    return <p className="text-slate-500 text-sm text-center py-8">Conteúdo indisponível.</p>;
+    return <p className="text-[#5A6E8A] text-sm text-center py-8">Conteúdo indisponível.</p>;
   };
 
   return (
@@ -187,13 +187,13 @@ const PlayerModal: React.FC<{
             <h3 className="text-white font-black text-lg">{midia.titulo}</h3>
           </div>
           <button onClick={onClose}
-            className="text-slate-400 hover:text-white w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center transition-all">
+            className="text-[#8A9BB0] hover:text-white w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center transition-all">
             <i className="fa-solid fa-xmark"></i>
           </button>
         </div>
         {renderContent()}
         {midia.descricao && (
-          <p className="text-slate-400 text-sm leading-relaxed">{midia.descricao}</p>
+          <p className="text-[#8A9BB0] text-sm leading-relaxed">{midia.descricao}</p>
         )}
       </div>
     </div>
@@ -214,7 +214,7 @@ const MidiaCard: React.FC<{
 
   return (
     <div className={`bg-white border rounded-[20px] overflow-hidden transition-all hover:scale-[1.01] group ${
-      assistida ? 'border-emerald-500/30' : 'border-slate-200'
+      assistida ? 'border-emerald-500/30' : 'border-[#E8D5A3]'
     }`}>
       {/* Thumbnail */}
       <div className="relative cursor-pointer" onClick={onPlay}>
@@ -282,7 +282,7 @@ const MidiaCard: React.FC<{
         </div>
         <h3 className="text-sm font-black text-white leading-tight">{midia.titulo}</h3>
         {midia.descricao && (
-          <p className="text-[10px] text-slate-500 leading-relaxed line-clamp-2">{midia.descricao}</p>
+          <p className="text-[10px] text-[#5A6E8A] leading-relaxed line-clamp-2">{midia.descricao}</p>
         )}
         <div className="flex gap-2 pt-1">
           <button onClick={onPlay}
@@ -292,7 +292,7 @@ const MidiaCard: React.FC<{
           </button>
           {isGestor && (
             <button onClick={onDelete}
-              className="w-9 h-9 bg-slate-900 hover:bg-red-500/20 text-slate-500 hover:text-red-400 rounded-xl flex items-center justify-center transition-all flex-shrink-0">
+              className="w-9 h-9 bg-slate-900 hover:bg-red-500/20 text-[#5A6E8A] hover:text-red-400 rounded-xl flex items-center justify-center transition-all flex-shrink-0">
               <i className="fa-solid fa-trash text-xs"></i>
             </button>
           )}
@@ -348,20 +348,20 @@ const FormMidia: React.FC<{
   };
 
   return (
-    <div className="bg-[#F5F4EF] border border-blue-500/30 rounded-2xl p-6 space-y-5">
+    <div className="bg-[#FBF7EE] border border-blue-500/30 rounded-2xl p-6 space-y-5">
       <h4 className="text-blue-400 font-black uppercase text-xs tracking-widest">Adicionar Conteúdo ao Repositório</h4>
 
       {/* Tipo */}
       <div className="space-y-2">
-        <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Tipo de Conteúdo</label>
+        <label className="text-[9px] font-black uppercase tracking-widest text-[#5A6E8A]">Tipo de Conteúdo</label>
         <div className="grid grid-cols-3 gap-3">
           {(Object.entries(TIPO_CONFIG) as [MidiaTipo, typeof TIPO_CONFIG[MidiaTipo]][]).map(([key, cfg]) => (
             <button type="button" key={key} onClick={() => { setTipo(key); setLinkErro(''); set('link', ''); }}
               className={`p-3 rounded-xl border text-center transition-all ${
-                tipo === key ? `border-${cfg.color}-500 bg-${cfg.color}-500/10` : 'border-slate-200 hover:border-slate-600'
+                tipo === key ? `border-${cfg.color}-500 bg-${cfg.color}-500/10` : 'border-[#E8D5A3] hover:border-slate-600'
               }`}>
-              <i className={`${cfg.icon} text-xl mb-1 block ${tipo === key ? `text-${cfg.color}-400` : 'text-slate-500'}`}></i>
-              <p className={`text-[10px] font-black ${tipo === key ? `text-${cfg.color}-300` : 'text-slate-400'}`}>{cfg.label}</p>
+              <i className={`${cfg.icon} text-xl mb-1 block ${tipo === key ? `text-${cfg.color}-400` : 'text-[#5A6E8A]'}`}></i>
+              <p className={`text-[10px] font-black ${tipo === key ? `text-${cfg.color}-300` : 'text-[#8A9BB0]'}`}>{cfg.label}</p>
             </button>
           ))}
         </div>
@@ -373,7 +373,7 @@ const FormMidia: React.FC<{
           <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest">
             <i className="fa-brands fa-google-drive mr-1.5"></i>Como obter o link do Google Drive
           </p>
-          <ol className="text-xs text-slate-400 space-y-1 list-decimal list-inside">
+          <ol className="text-xs text-[#8A9BB0] space-y-1 list-decimal list-inside">
             <li>Faça upload do arquivo no Google Drive</li>
             <li>Clique com o botão direito no arquivo → <strong className="text-white">Compartilhar</strong></li>
             <li>Em "Acesso geral", selecione <strong className="text-white">"Qualquer pessoa com o link"</strong></li>
@@ -384,7 +384,7 @@ const FormMidia: React.FC<{
 
       {/* Link */}
       <div className="space-y-1">
-        <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">
+        <label className="text-[9px] font-black uppercase tracking-widest text-[#5A6E8A]">
           {tipo === 'youtube' ? 'Link do YouTube *' : 'Link de Compartilhamento do Google Drive *'}
         </label>
         <input
@@ -395,7 +395,7 @@ const FormMidia: React.FC<{
             : 'https://drive.google.com/file/d/.../view?usp=sharing'
           }
           className={`w-full bg-slate-900 border rounded-xl px-4 py-3 text-sm text-white outline-none transition-all ${
-            linkErro ? 'border-red-500' : 'border-slate-200 focus:border-blue-500'
+            linkErro ? 'border-red-500' : 'border-[#E8D5A3] focus:border-blue-500'
           }`}
         />
         {linkErro && <p className="text-xs text-red-400">{linkErro}</p>}
@@ -404,48 +404,48 @@ const FormMidia: React.FC<{
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Título */}
         <div className="space-y-1 md:col-span-2">
-          <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Título *</label>
+          <label className="text-[9px] font-black uppercase tracking-widest text-[#5A6E8A]">Título *</label>
           <input value={form.titulo} onChange={e => set('titulo', e.target.value)}
             placeholder="Ex: Introdução ao Provimento 213/2026"
-            className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500" />
+            className="w-full bg-slate-900 border border-[#E8D5A3] rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500" />
         </div>
 
         {/* Categoria */}
         <div className="space-y-1">
-          <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Categoria</label>
+          <label className="text-[9px] font-black uppercase tracking-widest text-[#5A6E8A]">Categoria</label>
           <select value={form.categoria} onChange={e => set('categoria', e.target.value)}
-            className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500">
+            className="w-full bg-slate-900 border border-[#E8D5A3] rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500">
             {CATEGORIAS.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
           </select>
         </div>
 
         {/* Duração */}
         <div className="space-y-1">
-          <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Duração (minutos)</label>
+          <label className="text-[9px] font-black uppercase tracking-widest text-[#5A6E8A]">Duração (minutos)</label>
           <input type="number" min={1} max={300} value={form.duracaoMin} onChange={e => set('duracaoMin', e.target.value)}
-            className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500" />
+            className="w-full bg-slate-900 border border-[#E8D5A3] rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500" />
         </div>
 
         {/* Trilha */}
         <div className="space-y-1 md:col-span-2">
-          <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Trilha Associada (opcional)</label>
+          <label className="text-[9px] font-black uppercase tracking-widest text-[#5A6E8A]">Trilha Associada (opcional)</label>
           <input value={form.trilhaTitulo} onChange={e => set('trilhaTitulo', e.target.value)}
             placeholder="Ex: Trilha do Atendente"
-            className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500" />
+            className="w-full bg-slate-900 border border-[#E8D5A3] rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500" />
         </div>
 
         {/* Descrição */}
         <div className="space-y-1 md:col-span-2">
-          <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Descrição</label>
+          <label className="text-[9px] font-black uppercase tracking-widest text-[#5A6E8A]">Descrição</label>
           <input value={form.descricao} onChange={e => set('descricao', e.target.value)}
             placeholder="Breve descrição do conteúdo"
-            className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500" />
+            className="w-full bg-slate-900 border border-[#E8D5A3] rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500" />
         </div>
       </div>
 
       <div className="flex gap-3">
         <button onClick={onCancel}
-          className="px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 border border-slate-200 hover:border-slate-600 transition-all">
+          className="px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-[#8A9BB0] border border-[#E8D5A3] hover:border-slate-600 transition-all">
           Cancelar
         </button>
         <button onClick={handleSalvar} disabled={saving || !form.titulo || !form.link}
@@ -554,7 +554,7 @@ const RepositorioView: React.FC = () => {
           <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
             Repositório de <span className="text-blue-500">Conteúdo</span>
           </h2>
-          <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">
+          <p className="text-[#5A6E8A] text-[10px] font-black uppercase tracking-[0.3em]">
             Vídeos · Áudios · PDFs — Google Drive & YouTube
           </p>
         </div>
@@ -574,10 +574,10 @@ const RepositorioView: React.FC = () => {
           { label: 'Videos',           value: totalPDFs,   icon: 'fa-solid fa-file-pdf',   color: 'rose'   },
           { label: 'Vistos por mim', value: totalVistos, icon: 'fa-solid fa-circle-check',color: 'emerald'},
         ].map((s, i) => (
-          <div key={i} className="bg-white border border-slate-200 rounded-[20px] p-5 space-y-2">
+          <div key={i} className="bg-white border border-[#E8D5A3] rounded-[20px] p-5 space-y-2">
             <i className={`${s.icon} text-${s.color}-500`}></i>
             <p className="text-2xl font-black text-white">{s.value}</p>
-            <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">{s.label}</p>
+            <p className="text-[9px] text-[#5A6E8A] font-black uppercase tracking-widest">{s.label}</p>
           </div>
         ))}
       </div>
@@ -591,20 +591,20 @@ const RepositorioView: React.FC = () => {
       <div className="flex flex-wrap gap-3 items-center">
         <input value={busca} onChange={e => setBusca(e.target.value)}
           placeholder="Buscar conteúdo..."
-          className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500 w-56" />
+          className="bg-white border border-[#E8D5A3] rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500 w-56" />
 
         {/* Filtro tipo */}
         <div className="flex gap-2">
           <button onClick={() => setFiltroTipo('')}
             className={`px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
-              !filtroTipo ? 'bg-blue-600 text-white' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border border-slate-200'
+              !filtroTipo ? 'bg-blue-600 text-white' : 'bg-slate-900 text-[#8A9BB0] hover:bg-slate-800 border border-[#E8D5A3]'
             }`}>Todos</button>
           {(Object.entries(TIPO_CONFIG) as [MidiaTipo, typeof TIPO_CONFIG[MidiaTipo]][]).map(([key, cfg]) => (
             <button key={key} onClick={() => setFiltroTipo(filtroTipo === key ? '' : key)}
               className={`px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 ${
                 filtroTipo === key
                   ? `bg-${cfg.color}-600 text-white`
-                  : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border border-slate-200'
+                  : 'bg-slate-900 text-[#8A9BB0] hover:bg-slate-800 border border-[#E8D5A3]'
               }`}>
               <i className={`${cfg.icon} text-[10px]`}></i>{cfg.label}
             </button>
@@ -613,12 +613,12 @@ const RepositorioView: React.FC = () => {
 
         {/* Filtro categoria */}
         <select value={filtroCategoria} onChange={e => setFiltroCategoria(e.target.value)}
-          className="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-[10px] text-slate-700 outline-none focus:border-blue-500">
+          className="bg-white border border-[#E8D5A3] rounded-xl px-3 py-2.5 text-[10px] text-[#1A2744] outline-none focus:border-blue-500">
           <option value="">Todas as categorias</option>
           {CATEGORIAS.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
         </select>
 
-        <span className="ml-auto text-[10px] text-slate-500 font-black uppercase tracking-widest">
+        <span className="ml-auto text-[10px] text-[#5A6E8A] font-black uppercase tracking-widest">
           {filtradas.length} item{filtradas.length !== 1 ? 'ns' : ''}
         </span>
       </div>
@@ -626,9 +626,9 @@ const RepositorioView: React.FC = () => {
       {/* Grid */}
       {filtradas.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 opacity-30">
-          <i className="fa-solid fa-photo-film text-5xl text-slate-600 mb-4"></i>
-          <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Nenhum conteúdo encontrado</p>
-          {isGestor && <p className="text-slate-600 text-[10px] mt-1">Clique em "Adicionar" para inserir o primeiro conteúdo</p>}
+          <i className="fa-solid fa-photo-film text-5xl text-[#2C3E5A] mb-4"></i>
+          <p className="text-[#5A6E8A] text-xs font-bold uppercase tracking-widest">Nenhum conteúdo encontrado</p>
+          {isGestor && <p className="text-[#2C3E5A] text-[10px] mt-1">Clique em "Adicionar" para inserir o primeiro conteúdo</p>}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">

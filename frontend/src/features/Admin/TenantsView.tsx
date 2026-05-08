@@ -34,29 +34,29 @@ const TenantsView: React.FC = () => {
   };
 
   return (
-    <div className="p-12 min-h-full bg-[#F5F4EF] animate-in fade-in space-y-12">
+    <div className="p-12 min-h-full bg-[#FBF7EE] animate-in fade-in space-y-12">
       <header>
         <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter">
           Gestão de <span className="text-blue-500">Cartórios</span>
         </h2>
-        <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.4em] mt-2">
+        <p className="text-[#5A6E8A] text-[10px] font-black uppercase tracking-[0.4em] mt-2">
           Ativação de Novas Instâncias // MJ Consultoria Master
         </p>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        <form onSubmit={handleCreateTenant} className="bg-white border border-slate-200 rounded-[40px] p-12 space-y-6 shadow-2xl">
+        <form onSubmit={handleCreateTenant} className="bg-white border border-[#E8D5A3] rounded-[40px] p-12 space-y-6 shadow-2xl">
           <h3 className="text-white font-bold uppercase text-sm italic">Ativar Novo Cartório Cliente</h3>
           <div className="space-y-4">
             <input 
               type="text" value={name} onChange={e => setName(e.target.value)}
               placeholder="Nome da Serventia (Ex: 1º Ofício de Notas)"
-              className="w-full bg-[#F5F4EF] border border-slate-200 rounded-3xl p-5 text-white outline-none focus:border-blue-600 transition-all" required 
+              className="w-full bg-[#FBF7EE] border border-[#E8D5A3] rounded-3xl p-5 text-white outline-none focus:border-blue-600 transition-all" required 
             />
             <input 
               type="text" value={slug} onChange={e => setSlug(e.target.value)}
               placeholder="ID do Sistema (Ex: cartorio-bh-01)"
-              className="w-full bg-[#F5F4EF] border border-slate-200 rounded-3xl p-5 text-blue-400 font-mono outline-none focus:border-blue-600 transition-all" required 
+              className="w-full bg-[#FBF7EE] border border-[#E8D5A3] rounded-3xl p-5 text-blue-400 font-mono outline-none focus:border-blue-600 transition-all" required 
             />
           </div>
           <button type="submit" className="w-full bg-blue-600 text-white font-black py-6 rounded-3xl uppercase text-[11px] tracking-widest shadow-xl hover:bg-blue-500 transition-all">
@@ -64,16 +64,16 @@ const TenantsView: React.FC = () => {
           </button>
         </form>
 
-        <div className="bg-white border border-slate-200 rounded-[40px] p-10 space-y-6 shadow-lg">
-          <h3 className="text-slate-500 font-bold uppercase text-[10px] tracking-[0.3em] px-2">Instâncias Ativas</h3>
+        <div className="bg-white border border-[#E8D5A3] rounded-[40px] p-10 space-y-6 shadow-lg">
+          <h3 className="text-[#5A6E8A] font-bold uppercase text-[10px] tracking-[0.3em] px-2">Instâncias Ativas</h3>
           <div className="space-y-3 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
             {allTenants.length === 0 && (
-              <p className="text-slate-700 text-xs font-bold uppercase text-center py-10 italic">Nenhum cartório remoto carregado</p>
+              <p className="text-[#1A2744] text-xs font-bold uppercase text-center py-10 italic">Nenhum cartório remoto carregado</p>
             )}
             {allTenants.map((t: any) => (
-              <div key={t.id} className="p-5 bg-[#F5F4EF] border border-slate-200 rounded-2xl flex justify-between items-center group hover:border-blue-500/30 transition-all">
+              <div key={t.id} className="p-5 bg-[#FBF7EE] border border-[#E8D5A3] rounded-2xl flex justify-between items-center group hover:border-blue-500/30 transition-all">
                 <span className="text-white font-bold italic uppercase text-sm">{t.name}</span>
-                <span className="text-[10px] font-mono text-slate-500 bg-slate-900 px-3 py-1 rounded-md">{t.id}</span>
+                <span className="text-[10px] font-mono text-[#5A6E8A] bg-slate-900 px-3 py-1 rounded-md">{t.id}</span>
               </div>
             ))}
           </div>

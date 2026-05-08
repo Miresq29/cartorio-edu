@@ -40,7 +40,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             className={`px-4 py-3 rounded-xl shadow-2xl border text-sm font-medium animate-in slide-in-from-right-full flex items-center gap-3 min-w-[300px] ${
               toast.type === 'error' ? 'bg-red-50 border-red-200 text-red-700' :
               toast.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' :
-              'bg-white border-slate-200 text-slate-700'
+              'bg-white border-[#E8D5A3] text-[#1A2744]'
             }`}
           >
             <i className={`fa-solid ${

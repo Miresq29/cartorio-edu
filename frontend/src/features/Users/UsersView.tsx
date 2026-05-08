@@ -170,18 +170,18 @@ const UsersView: React.FC = () => {
   const roleColor = (r: Role) => ROLES.find(x => x.id === r)?.color || '#64748b';
 
   return (
-    <div className="min-h-screen bg-[#F5F4EF]">
+    <div className="min-h-screen bg-[#FBF7EE]">
       <div className="max-w-7xl mx-auto p-6 space-y-6">
 
         {/* Modal de delete */}
         {deleteId && (
           <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
             <div className="bg-white rounded-2xl p-6 max-w-sm w-full mx-4 shadow-xl">
-              <h3 className="text-lg font-black text-slate-800 mb-2">Remover colaborador?</h3>
-              <p className="text-sm text-slate-500 mb-5">Esta ação não pode ser desfeita.</p>
+              <h3 className="text-lg font-black text-[#0A1628] mb-2">Remover colaborador?</h3>
+              <p className="text-sm text-[#5A6E8A] mb-5">Esta ação não pode ser desfeita.</p>
               <div className="flex gap-3">
                 <button onClick={() => setDeleteId(null)}
-                  className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-bold hover:bg-[#F5F4EF] transition-all">
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-[#E8D5A3] text-[#2C3E5A] text-sm font-bold hover:bg-[#FBF7EE] transition-all">
                   Cancelar
                 </button>
                 <button onClick={() => handleDelete(deleteId)}
@@ -196,12 +196,12 @@ const UsersView: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-black text-slate-800">Colaboradores & Permissões</h2>
-            <p className="text-sm text-slate-500 mt-0.5">Gerencie usuários e controle de acesso</p>
+            <h2 className="text-2xl font-black text-[#0A1628]">Colaboradores & Permissões</h2>
+            <p className="text-sm text-[#5A6E8A] mt-0.5">Gerencie usuários e controle de acesso</p>
           </div>
           {isGestor && (
             <button onClick={() => abrirForm()}
-              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm">
+              className="flex items-center gap-2 bg-[#1A3A6B] hover:bg-[#132A55] text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm">
               <i className="fa-solid fa-plus text-xs"></i>Novo Colaborador
             </button>
           )}
@@ -212,21 +212,21 @@ const UsersView: React.FC = () => {
           {ROLES.map(r => {
             const count = users.filter(u => u.role === r.id).length;
             return (
-              <div key={r.id} className="bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
+              <div key={r.id} className="bg-white border border-[#E8D5A3] rounded-[14px] p-5 shadow-sm">
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3"
                   style={{ background: r.color + '15' }}>
                   <i className="fa-solid fa-user" style={{ color: r.color }}></i>
                 </div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{r.label}</p>
-                <p className="text-3xl font-black text-slate-800">{count}</p>
-                <p className="text-[10px] text-slate-400 mt-1">{r.desc}</p>
+                <p className="text-[10px] font-black text-[#8A9BB0] uppercase tracking-widest mb-1">{r.label}</p>
+                <p className="text-3xl font-black text-[#0A1628]">{count}</p>
+                <p className="text-[10px] text-[#8A9BB0] mt-1">{r.desc}</p>
               </div>
             );
           })}
         </div>
 
         {/* Abas */}
-        <div className="bg-white border border-slate-200 rounded-[16px] shadow-sm overflow-hidden">
+        <div className="bg-white border border-[#E8D5A3] rounded-[16px] shadow-sm overflow-hidden">
           <div className="flex border-b border-slate-100">
             {[
               { id: 'colaboradores', label: 'Colaboradores',    icon: 'fa-users'         },
@@ -235,8 +235,8 @@ const UsersView: React.FC = () => {
               <button key={t.id} onClick={() => setTab(t.id as Tab)}
                 className={`flex items-center gap-2 px-5 py-4 text-xs font-black uppercase tracking-wider transition-all border-b-2 ${
                   tab === t.id
-                    ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50'
-                    : 'border-transparent text-slate-400 hover:text-slate-600'
+                    ? 'border-[#1A3A6B] text-[#1A3A6B] bg-[#FBF5E0]/50'
+                    : 'border-transparent text-[#8A9BB0] hover:text-[#2C3E5A]'
                 }`}>
                 <i className={`fa-solid ${t.icon}`}></i>{t.label}
               </button>
@@ -249,48 +249,48 @@ const UsersView: React.FC = () => {
 
               {/* Formulário inline */}
               {showForm && (
-                <div className="bg-[#F5F4EF] border border-indigo-200 rounded-[14px] p-5 space-y-4">
+                <div className="bg-[#FBF7EE] border border-[#E8D5A3] rounded-[14px] p-5 space-y-4">
                   <h4 className="text-sm font-black text-indigo-700 uppercase tracking-widest">
                     {editUser ? 'Editar Colaborador' : 'Novo Colaborador'}
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Nome *</label>
+                      <label className="text-[10px] font-black text-[#5A6E8A] uppercase tracking-widest">Nome *</label>
                       <input value={form.name} onChange={e => setF('name', e.target.value)}
                         placeholder="Nome completo"
-                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-500" />
+                        className="w-full bg-white border border-[#E8D5A3] rounded-xl px-4 py-2.5 text-sm text-[#1A2744] outline-none focus:border-[#C9A84C]" />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">E-mail *</label>
+                      <label className="text-[10px] font-black text-[#5A6E8A] uppercase tracking-widest">E-mail *</label>
                       <input value={form.email} onChange={e => setF('email', e.target.value)}
                         placeholder="email@cartorio.com.br" type="email"
-                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-500" />
+                        className="w-full bg-white border border-[#E8D5A3] rounded-xl px-4 py-2.5 text-sm text-[#1A2744] outline-none focus:border-[#C9A84C]" />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Perfil de Acesso</label>
+                      <label className="text-[10px] font-black text-[#5A6E8A] uppercase tracking-widest">Perfil de Acesso</label>
                       <select value={form.role} onChange={e => setF('role', e.target.value)}
-                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-500">
+                        className="w-full bg-white border border-[#E8D5A3] rounded-xl px-4 py-2.5 text-sm text-[#1A2744] outline-none focus:border-[#C9A84C]">
                         {ROLES.filter(r => r.id !== 'SUPERADMIN').map(r => (
                           <option key={r.id} value={r.id}>{r.label} — {r.desc}</option>
                         ))}
                       </select>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Senha Inicial</label>
-                      <input value={(form as any).senhaInicial || ''} onChange={e => setF('senhaInicial', e.target.value)} placeholder="Ex: cartorio123" type="text" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-500" />
+                      <label className="text-[10px] font-black text-[#5A6E8A] uppercase tracking-widest">Senha Inicial</label>
+                      <input value={(form as any).senhaInicial || ''} onChange={e => setF('senhaInicial', e.target.value)} placeholder="Ex: cartorio123" type="text" className="w-full bg-white border border-[#E8D5A3] rounded-xl px-4 py-2.5 text-sm text-[#1A2744] outline-none focus:border-[#C9A84C]" />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Cargo</label>
+                      <label className="text-[10px] font-black text-[#5A6E8A] uppercase tracking-widest">Cargo</label>
                       <select value={form.cargo} onChange={e => setF('cargo', e.target.value)}
-                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-500">
+                        className="w-full bg-white border border-[#E8D5A3] rounded-xl px-4 py-2.5 text-sm text-[#1A2744] outline-none focus:border-[#C9A84C]">
                         <option value="">Selecione...</option>
                         {CARGOS.map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
                     </div>
                   </div>
                   {/* Info de permissões do perfil selecionado */}
-                  <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-3">
-                    <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-2">
+                  <div className="bg-[#FBF5E0] border border-indigo-100 rounded-xl p-3">
+                    <p className="text-[10px] font-black text-[#1A3A6B] uppercase tracking-widest mb-2">
                       Permissões do perfil: {roleLabel(form.role as Role)}
                     </p>
                     <div className="flex flex-wrap gap-2">
@@ -309,11 +309,11 @@ const UsersView: React.FC = () => {
                   </div>
                   <div className="flex gap-3">
                     <button onClick={() => setShowForm(false)}
-                      className="px-5 py-2 rounded-xl border border-slate-200 text-slate-600 text-xs font-bold hover:bg-[#F5F4EF] transition-all">
+                      className="px-5 py-2 rounded-xl border border-[#E8D5A3] text-[#2C3E5A] text-xs font-bold hover:bg-[#FBF7EE] transition-all">
                       Cancelar
                     </button>
                     <button onClick={handleSave} disabled={saving}
-                      className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-6 py-2 rounded-xl text-xs font-bold transition-all">
+                      className="flex-1 bg-[#1A3A6B] hover:bg-[#132A55] disabled:opacity-50 text-white px-6 py-2 rounded-xl text-xs font-bold transition-all">
                       {saving ? <><i className="fa-solid fa-spinner animate-spin mr-2"></i>Salvando...</> : 'Salvar'}
                     </button>
                   </div>
@@ -323,33 +323,33 @@ const UsersView: React.FC = () => {
               {/* Busca */}
               <input value={busca} onChange={e => setBusca(e.target.value)}
                 placeholder="Buscar por nome, e-mail ou cargo..."
-                className="bg-[#F5F4EF] border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-500 w-72" />
+                className="bg-[#FBF7EE] border border-[#E8D5A3] rounded-xl px-4 py-2.5 text-sm text-[#1A2744] outline-none focus:border-[#C9A84C] w-72" />
 
               {/* Tabela */}
               {loading ? (
-                <div className="flex items-center justify-center py-12 gap-3 text-slate-400">
-                  <div className="w-5 h-5 border-2 border-indigo-300 border-t-indigo-600 rounded-full animate-spin"></div>
+                <div className="flex items-center justify-center py-12 gap-3 text-[#8A9BB0]">
+                  <div className="w-5 h-5 border-2 border-[#D4B86A] border-t-indigo-600 rounded-full animate-spin"></div>
                   <span className="text-sm">Carregando...</span>
                 </div>
               ) : (
-                <div className="overflow-x-auto border border-slate-200 rounded-[14px]">
+                <div className="overflow-x-auto border border-[#E8D5A3] rounded-[14px]">
                   <table className="w-full text-xs">
                     <thead>
-                      <tr className="bg-[#F5F4EF] border-b border-slate-200">
+                      <tr className="bg-[#FBF7EE] border-b border-[#E8D5A3]">
                         {['Colaborador', 'E-mail', 'Cargo', 'Perfil', 'Status', 'Desde', 'Ações'].map(h => (
-                          <th key={h} className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
+                          <th key={h} className="text-left p-3 text-[10px] font-black text-[#5A6E8A] uppercase tracking-widest whitespace-nowrap">{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {filtrados.length === 0 && (
-                        <tr><td colSpan={7} className="text-center p-8 text-slate-400">Nenhum colaborador encontrado.</td></tr>
+                        <tr><td colSpan={7} className="text-center p-8 text-[#8A9BB0]">Nenhum colaborador encontrado.</td></tr>
                       )}
                       {filtrados.map(u => (
-                        <tr key={u.id} className={`border-b border-slate-100 hover:bg-[#F5F4EF] transition-all ${u.ativo === false ? 'opacity-50' : ''}`}>
-                          <td className="p-3 font-bold text-slate-800">{u.name}</td>
-                          <td className="p-3 text-slate-500">{u.email || '–'}</td>
-                          <td className="p-3 text-slate-500">{u.cargo || '–'}</td>
+                        <tr key={u.id} className={`border-b border-slate-100 hover:bg-[#FBF7EE] transition-all ${u.ativo === false ? 'opacity-50' : ''}`}>
+                          <td className="p-3 font-bold text-[#0A1628]">{u.name}</td>
+                          <td className="p-3 text-[#5A6E8A]">{u.email || '–'}</td>
+                          <td className="p-3 text-[#5A6E8A]">{u.cargo || '–'}</td>
                           <td className="p-3">
                             <span className="text-[10px] font-black px-2.5 py-1 rounded-lg"
                               style={{ background: roleColor(u.role) + '15', color: roleColor(u.role) }}>
@@ -360,17 +360,17 @@ const UsersView: React.FC = () => {
                             <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg ${
                               u.ativo !== false
                                 ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
-                                : 'bg-slate-100 text-slate-400 border border-slate-200'
+                                : 'bg-[#F5EDD8] text-[#8A9BB0] border border-[#E8D5A3]'
                             }`}>
                               {u.ativo !== false ? 'Ativo' : 'Suspenso'}
                             </span>
                           </td>
-                          <td className="p-3 text-slate-400">{formatDate(u.createdAt)}</td>
+                          <td className="p-3 text-[#8A9BB0]">{formatDate(u.createdAt)}</td>
                           <td className="p-3">
                             {isGestor && u.id !== user.id && (
                               <div className="flex items-center gap-1.5">
                                 <button onClick={() => abrirForm(u)}
-                                  className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 flex items-center justify-center transition-all"
+                                  className="w-7 h-7 rounded-lg bg-[#F5EDD8] hover:bg-[#FBF5E0] text-[#8A9BB0] hover:text-[#1A3A6B] flex items-center justify-center transition-all"
                                   title="Editar">
                                   <i className="fa-solid fa-pen text-[10px]"></i>
                                 </button>
@@ -403,7 +403,7 @@ const UsersView: React.FC = () => {
           {/* ── MATRIZ DE PERMISSÕES ──────────────────────────────────────── */}
           {tab === 'permissoes' && (
             <div className="p-5 space-y-5">
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-[#5A6E8A]">
                 Matriz de controle de acesso por perfil. As permissões são aplicadas automaticamente ao perfil atribuído ao colaborador.
               </p>
 
@@ -418,26 +418,26 @@ const UsersView: React.FC = () => {
               </div>
 
               {/* Tabela de permissões */}
-              <div className="overflow-x-auto border border-slate-200 rounded-[14px]">
+              <div className="overflow-x-auto border border-[#E8D5A3] rounded-[14px]">
                 <table className="w-full text-xs">
                   <thead>
-                    <tr className="bg-[#F5F4EF] border-b border-slate-200">
-                      <th className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest w-48">Módulo</th>
+                    <tr className="bg-[#FBF7EE] border-b border-[#E8D5A3]">
+                      <th className="text-left p-3 text-[10px] font-black text-[#5A6E8A] uppercase tracking-widest w-48">Módulo</th>
                       {ROLES.map(r => (
                         <th key={r.id} className="p-3 text-center">
                           <div className="text-[10px] font-black uppercase tracking-widest" style={{ color: r.color }}>{r.label}</div>
-                          <div className="text-[9px] text-slate-400 font-normal mt-0.5">{r.desc}</div>
+                          <div className="text-[9px] text-[#8A9BB0] font-normal mt-0.5">{r.desc}</div>
                         </th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {MODULOS.map((m, idx) => (
-                      <tr key={m.id} className={`border-b border-slate-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-[#F5F4EF]/50'}`}>
+                      <tr key={m.id} className={`border-b border-slate-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-[#FBF7EE]/50'}`}>
                         <td className="p-3">
                           <div className="flex items-center gap-2">
-                            <i className={`fa-solid ${m.icon} text-slate-400 text-[11px] w-4 text-center`}></i>
-                            <span className="font-bold text-slate-700">{m.label}</span>
+                            <i className={`fa-solid ${m.icon} text-[#8A9BB0] text-[11px] w-4 text-center`}></i>
+                            <span className="font-bold text-[#1A2744]">{m.label}</span>
                           </div>
                         </td>
                         {ROLES.map(r => {
@@ -462,15 +462,15 @@ const UsersView: React.FC = () => {
               {/* Cards explicativos */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 {ROLES.map(r => (
-                  <div key={r.id} className="bg-white border border-slate-200 rounded-[14px] p-4">
+                  <div key={r.id} className="bg-white border border-[#E8D5A3] rounded-[14px] p-4">
                     <div className="flex items-center gap-2 mb-3">
                       <div className="w-8 h-8 rounded-xl flex items-center justify-center"
                         style={{ background: r.color + '15' }}>
                         <i className="fa-solid fa-user text-sm" style={{ color: r.color }}></i>
                       </div>
                       <div>
-                        <p className="text-sm font-black text-slate-800">{r.label}</p>
-                        <p className="text-[10px] text-slate-400">{r.desc}</p>
+                        <p className="text-sm font-black text-[#0A1628]">{r.label}</p>
+                        <p className="text-[10px] text-[#8A9BB0]">{r.desc}</p>
                       </div>
                     </div>
                     <div className="space-y-1.5">
@@ -479,8 +479,8 @@ const UsersView: React.FC = () => {
                         const cfg = NIVEL_CONFIG[nivel];
                         return (
                           <div key={m.id} className="flex items-center justify-between">
-                            <span className="text-[11px] text-slate-500 flex items-center gap-1.5">
-                              <i className={`fa-solid ${m.icon} text-[9px] text-slate-400`}></i>
+                            <span className="text-[11px] text-[#5A6E8A] flex items-center gap-1.5">
+                              <i className={`fa-solid ${m.icon} text-[9px] text-[#8A9BB0]`}></i>
                               {m.label}
                             </span>
                             <span className="text-[9px] font-black px-2 py-0.5 rounded-lg"

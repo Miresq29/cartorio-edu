@@ -52,7 +52,7 @@ const SecurityView: React.FC = () => {
            </div>
            <div>
              <h4 className="text-xl font-black text-blue-500 uppercase tracking-widest">Seguranca e Backup</h4>
-             <p className="text-lg text-slate-400 mt-3 leading-relaxed font-medium">
+             <p className="text-lg text-[#8A9BB0] mt-3 leading-relaxed font-medium">
                Central de controle crítico. Exporte snapshots JSON de todos os dados (Auditoria, Docs, Usuarios) para custodia externa e visualize as políticas de senha ativas.
              </p>
            </div>
@@ -64,20 +64,20 @@ const SecurityView: React.FC = () => {
           </div>
           <div>
             <h2 className="text-5xl font-black tracking-tight mb-3">Seguranca e Manutencao</h2>
-            <p className="text-slate-500 font-medium text-xl">Controles de integridade, backups e gestao de acesso.</p>
+            <p className="text-[#5A6E8A] font-medium text-xl">Controles de integridade, backups e gestao de acesso.</p>
           </div>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Card Backup */}
-          <div className="lg:col-span-2 bg-white border border-slate-200 rounded-[40px] p-12 flex flex-col space-y-12 transition-all hover:border-slate-700 shadow-2xl relative overflow-hidden">
+          <div className="lg:col-span-2 bg-white border border-[#E8D5A3] rounded-[40px] p-12 flex flex-col space-y-12 transition-all hover:border-slate-700 shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 right-0 p-12 opacity-5">
                <i className="fa-solid fa-database text-[10rem]"></i>
             </div>
             
             <div>
               <h3 className="text-base font-black uppercase tracking-[0.3em] text-blue-500 mb-5">Snapshot de Governança</h3>
-              <p className="text-slate-400 text-lg max-w-xl leading-relaxed">Realize backups periodicos para garantir a conformidade com as normas de custodia de dados do cartório.</p>
+              <p className="text-[#8A9BB0] text-lg max-w-xl leading-relaxed">Realize backups periodicos para garantir a conformidade com as normas de custodia de dados do cartório.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -87,7 +87,7 @@ const SecurityView: React.FC = () => {
                >
                  <i className="fa-solid fa-download text-blue-500 text-2xl"></i> Exportar Dados Completos
                </button>
-               <button className="bg-slate-900/50 border border-slate-800/50 cursor-not-allowed py-10 rounded-3xl flex items-center justify-center gap-5 font-bold text-base text-slate-600 transition-all uppercase tracking-widest">
+               <button className="bg-slate-900/50 border border-slate-800/50 cursor-not-allowed py-10 rounded-3xl flex items-center justify-center gap-5 font-bold text-base text-[#2C3E5A] transition-all uppercase tracking-widest">
                  <i className="fa-solid fa-upload text-2xl"></i> Importar (Acesso Gestor)
                </button>
             </div>
@@ -96,10 +96,10 @@ const SecurityView: React.FC = () => {
         </div>
 
         {/* Políticas de Acesso */}
-        <div className="bg-white border border-slate-200 rounded-[24px] p-8 space-y-8 shadow-sm">
+        <div className="bg-white border border-[#E8D5A3] rounded-[24px] p-8 space-y-8 shadow-sm">
            <div className="flex items-center gap-5">
              <i className="fa-solid fa-list-check text-blue-500 text-3xl"></i>
-             <h3 className="text-lg font-black uppercase tracking-[0.3em] text-slate-400">Políticas Ativas de Segurança</h3>
+             <h3 className="text-lg font-black uppercase tracking-[0.3em] text-[#8A9BB0]">Políticas Ativas de Segurança</h3>
            </div>
            
            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -113,7 +113,7 @@ const SecurityView: React.FC = () => {
                     <span className="text-sm font-black text-white italic tracking-tighter uppercase">{p.title}</span>
                     <span className="text-xs font-black text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded uppercase">On</span>
                   </div>
-                  <p className="text-sm text-slate-500 font-medium leading-relaxed">{p.desc}</p>
+                  <p className="text-sm text-[#5A6E8A] font-medium leading-relaxed">{p.desc}</p>
                 </div>
               ))}
            </div>

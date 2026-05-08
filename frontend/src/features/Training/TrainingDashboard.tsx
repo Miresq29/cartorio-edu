@@ -272,10 +272,10 @@ const TrainingDashboard: React.FC = () => {
           { label: 'Trilhas Concluídas',   value: trilhasConcluidas,       icon: 'fa-circle-check',  color: 'emerald' },
           { label: 'Média Geral Provas',   value: `${mediaGeral}%`,        icon: 'fa-chart-line',    color: 'amber'   },
         ].map((kpi, i) => (
-          <div key={i} className="bg-white border border-slate-200 rounded-[24px] p-6 space-y-3">
+          <div key={i} className="bg-white border border-[#E8D5A3] rounded-[24px] p-6 space-y-3">
             <i className={`fa-solid ${kpi.icon} text-${kpi.color}-500 text-xl`}></i>
             <p className="text-3xl font-black text-white">{kpi.value}</p>
-            <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">{kpi.label}</p>
+            <p className="text-[9px] text-[#5A6E8A] font-black uppercase tracking-widest">{kpi.label}</p>
           </div>
         ))}
       </div>
@@ -284,12 +284,12 @@ const TrainingDashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
         {/* Funcionários x Trilhas */}
-        <div className="bg-[#F5F4EF] border border-slate-200 rounded-2xl p-5 space-y-4">
-          <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
+        <div className="bg-[#FBF7EE] border border-[#E8D5A3] rounded-2xl p-5 space-y-4">
+          <h4 className="text-[9px] font-black text-[#5A6E8A] uppercase tracking-widest">
             Funcionários × Trilhas
           </h4>
           {trilhasDoTenant.length === 0 ? (
-            <p className="text-xs text-slate-600 italic">Nenhuma trilha ativa cadastrada.</p>
+            <p className="text-xs text-[#2C3E5A] italic">Nenhuma trilha ativa cadastrada.</p>
           ) : (
             trilhasDoTenant.slice(0, 5).map(trilha => {
               const cobertura = coberturaData.find(c => c.trilha.id === trilha.id);
@@ -297,9 +297,9 @@ const TrainingDashboard: React.FC = () => {
               return (
                 <div key={trilha.id} className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-slate-700 truncate max-w-[60%]">{trilha.titulo}</span>
+                    <span className="text-xs text-[#1A2744] truncate max-w-[60%]">{trilha.titulo}</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-[9px] text-slate-500">{cobertura.concluiram}/{cobertura.elegíveis}</span>
+                      <span className="text-[9px] text-[#5A6E8A]">{cobertura.concluiram}/{cobertura.elegíveis}</span>
                       <span className={`text-[9px] font-black ${cobertura.pct >= 80 ? 'text-emerald-400' : cobertura.pct >= 50 ? 'text-amber-400' : 'text-red-400'}`}>
                         {cobertura.pct}%
                       </span>
@@ -318,12 +318,12 @@ const TrainingDashboard: React.FC = () => {
         </div>
 
         {/* Top Questões Difíceis */}
-        <div className="bg-[#F5F4EF] border border-slate-200 rounded-2xl p-5 space-y-3">
-          <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
+        <div className="bg-[#FBF7EE] border border-[#E8D5A3] rounded-2xl p-5 space-y-3">
+          <h4 className="text-[9px] font-black text-[#5A6E8A] uppercase tracking-widest">
             Top 5 Questões Mais Difíceis
           </h4>
           {questaoMetrics.length === 0 ? (
-            <p className="text-xs text-slate-600 italic">Nenhuma tentativa registrada ainda.</p>
+            <p className="text-xs text-[#2C3E5A] italic">Nenhuma tentativa registrada ainda.</p>
           ) : (
             questaoMetrics.slice(0, 5).map((m, i) => {
               const dc = diffColor(m.taxaErro);
@@ -331,8 +331,8 @@ const TrainingDashboard: React.FC = () => {
                 <div key={i} className="flex items-start gap-3">
                   <span className={`text-lg font-black ${dc.text} flex-shrink-0 w-6 text-center`}>{i + 1}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-slate-700 truncate">{m.texto}</p>
-                    <p className="text-[9px] text-slate-500 mt-0.5">{m.treinamento} · {m.totalTentativas} tentativas</p>
+                    <p className="text-xs text-[#1A2744] truncate">{m.texto}</p>
+                    <p className="text-[9px] text-[#5A6E8A] mt-0.5">{m.treinamento} · {m.totalTentativas} tentativas</p>
                   </div>
                   <span className={`text-[9px] font-black px-2 py-1 rounded-lg border flex-shrink-0 ${dc.badge} ${dc.text}`}>
                     {m.taxaErro}% erros
@@ -351,13 +351,13 @@ const TrainingDashboard: React.FC = () => {
       </div>
 
       {/* Taxa de aprovação por treinamento */}
-      <div className="bg-[#F5F4EF] border border-slate-200 rounded-2xl p-5 space-y-4">
-        <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
+      <div className="bg-[#FBF7EE] border border-[#E8D5A3] rounded-2xl p-5 space-y-4">
+        <h4 className="text-[9px] font-black text-[#5A6E8A] uppercase tracking-widest">
           Taxa de Aprovação por Treinamento
         </h4>
         {(() => {
           const treinamentosUnicos = [...new Set(quizResults.map(r => r.treinamento))];
-          if (treinamentosUnicos.length === 0) return <p className="text-xs text-slate-600 italic">Nenhum resultado ainda.</p>;
+          if (treinamentosUnicos.length === 0) return <p className="text-xs text-[#2C3E5A] italic">Nenhum resultado ainda.</p>;
           return (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {treinamentosUnicos.map(t => {
@@ -366,20 +366,20 @@ const TrainingDashboard: React.FC = () => {
                 const taxa = Math.round((aprov / resultados.length) * 100);
                 const media = Math.round(resultados.reduce((a, r) => a + r.nota, 0) / resultados.length);
                 return (
-                  <div key={t} className="bg-slate-900/50 border border-slate-200 rounded-xl p-4 space-y-2">
+                  <div key={t} className="bg-slate-900/50 border border-[#E8D5A3] rounded-xl p-4 space-y-2">
                     <p className="text-xs font-black text-white truncate">{t}</p>
                     <div className="flex gap-3">
                       <div>
-                        <p className="text-[8px] text-slate-500 uppercase tracking-widest">Aprovação</p>
+                        <p className="text-[8px] text-[#5A6E8A] uppercase tracking-widest">Aprovação</p>
                         <p className={`text-lg font-black ${taxa >= 70 ? 'text-emerald-400' : taxa >= 50 ? 'text-amber-400' : 'text-red-400'}`}>{taxa}%</p>
                       </div>
                       <div>
-                        <p className="text-[8px] text-slate-500 uppercase tracking-widest">Média</p>
+                        <p className="text-[8px] text-[#5A6E8A] uppercase tracking-widest">Média</p>
                         <p className="text-lg font-black text-white">{media}%</p>
                       </div>
                       <div>
-                        <p className="text-[8px] text-slate-500 uppercase tracking-widest">Provas</p>
-                        <p className="text-lg font-black text-slate-700">{resultados.length}</p>
+                        <p className="text-[8px] text-[#5A6E8A] uppercase tracking-widest">Provas</p>
+                        <p className="text-lg font-black text-[#1A2744]">{resultados.length}</p>
                       </div>
                     </div>
                     <div className="w-full bg-slate-800 rounded-full h-1">
@@ -399,26 +399,26 @@ const TrainingDashboard: React.FC = () => {
     <div className="space-y-6">
       <div>
         <h3 className="text-white font-black uppercase italic text-sm">Cobertura de Trilhas</h3>
-        <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">
+        <p className="text-[9px] text-[#5A6E8A] uppercase tracking-widest mt-1">
           Funcionários elegíveis × Concluintes por trilha
         </p>
       </div>
 
       {coberturaData.length === 0 ? (
-        <div className="bg-[#F5F4EF] border border-slate-200 rounded-2xl p-10 text-center">
-          <i className="fa-solid fa-road text-4xl text-slate-700 mb-3 block"></i>
-          <p className="text-slate-600 text-xs font-bold uppercase tracking-widest">Nenhuma trilha ativa</p>
+        <div className="bg-[#FBF7EE] border border-[#E8D5A3] rounded-2xl p-10 text-center">
+          <i className="fa-solid fa-road text-4xl text-[#1A2744] mb-3 block"></i>
+          <p className="text-[#2C3E5A] text-xs font-bold uppercase tracking-widest">Nenhuma trilha ativa</p>
         </div>
       ) : (
         <div className="space-y-4">
           {coberturaData.map(({ trilha, elegíveis, iniciaram, concluiram, pct }) => (
-            <div key={trilha.id} className="bg-[#F5F4EF] border border-slate-200 rounded-2xl p-5 space-y-4">
+            <div key={trilha.id} className="bg-[#FBF7EE] border border-[#E8D5A3] rounded-2xl p-5 space-y-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-sm font-black text-white">{trilha.titulo}</p>
                   <div className="flex flex-wrap gap-1.5 mt-1.5">
                     {(trilha.perfis || []).map(p => (
-                      <span key={p} className="text-[8px] font-black uppercase tracking-widest bg-slate-800 text-slate-400 px-2 py-0.5 rounded-md">{p}</span>
+                      <span key={p} className="text-[8px] font-black uppercase tracking-widest bg-slate-800 text-[#8A9BB0] px-2 py-0.5 rounded-md">{p}</span>
                     ))}
                   </div>
                 </div>
@@ -445,7 +445,7 @@ const TrainingDashboard: React.FC = () => {
                   <div key={i} className="bg-slate-900/50 rounded-xl p-3 text-center">
                     <i className={`fa-solid ${s.icon} text-${s.color}-400 text-sm mb-1 block`}></i>
                     <p className="text-xl font-black text-white">{s.value}</p>
-                    <p className="text-[8px] text-slate-500 uppercase tracking-widest">{s.label}</p>
+                    <p className="text-[8px] text-[#5A6E8A] uppercase tracking-widest">{s.label}</p>
                   </div>
                 ))}
               </div>
@@ -453,7 +453,7 @@ const TrainingDashboard: React.FC = () => {
               {/* Usuários que concluíram */}
               {progressoDoTenant.filter(p => p.trilhaId === trilha.id && p.concluida).length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Concluintes</p>
+                  <p className="text-[9px] font-black text-[#5A6E8A] uppercase tracking-widest">Concluintes</p>
                   <div className="flex flex-wrap gap-2">
                     {progressoDoTenant
                       .filter(p => p.trilhaId === trilha.id && p.concluida)
@@ -466,7 +466,7 @@ const TrainingDashboard: React.FC = () => {
                             </div>
                             <div>
                               <p className="text-xs font-bold text-white">{p.userName}</p>
-                              {userInfo?.role && <p className="text-[8px] text-slate-500">{userInfo.role}</p>}
+                              {userInfo?.role && <p className="text-[8px] text-[#5A6E8A]">{userInfo.role}</p>}
                             </div>
                             <button
                               type="button"
@@ -493,16 +493,16 @@ const TrainingDashboard: React.FC = () => {
     <div className="space-y-6">
       <div>
         <h3 className="text-white font-black uppercase italic text-sm">Assuntos com Maior Dificuldade</h3>
-        <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">
+        <p className="text-[9px] text-[#5A6E8A] uppercase tracking-widest mt-1">
           Questões com maior taxa de erro nas avaliações
         </p>
       </div>
 
       {questaoMetrics.length === 0 ? (
-        <div className="bg-[#F5F4EF] border border-slate-200 rounded-2xl p-10 text-center">
-          <i className="fa-solid fa-triangle-exclamation text-4xl text-slate-700 mb-3 block"></i>
-          <p className="text-slate-600 text-xs font-bold uppercase tracking-widest">Nenhuma tentativa registrada ainda</p>
-          <p className="text-slate-700 text-xs mt-1">As métricas aparecerão após os colaboradores realizarem as avaliações</p>
+        <div className="bg-[#FBF7EE] border border-[#E8D5A3] rounded-2xl p-10 text-center">
+          <i className="fa-solid fa-triangle-exclamation text-4xl text-[#1A2744] mb-3 block"></i>
+          <p className="text-[#2C3E5A] text-xs font-bold uppercase tracking-widest">Nenhuma tentativa registrada ainda</p>
+          <p className="text-[#1A2744] text-xs mt-1">As métricas aparecerão após os colaboradores realizarem as avaliações</p>
         </div>
       ) : (
         <>
@@ -524,7 +524,7 @@ const TrainingDashboard: React.FC = () => {
             {questaoMetrics.map((m, i) => {
               const dc = diffColor(m.taxaErro);
               return (
-                <div key={i} className={`bg-[#F5F4EF] border rounded-2xl p-5 space-y-3 ${dc.badge}`}>
+                <div key={i} className={`bg-[#FBF7EE] border rounded-2xl p-5 space-y-3 ${dc.badge}`}>
                   <div className="flex items-start gap-4">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${m.taxaErro >= 70 ? 'bg-red-500/20' : m.taxaErro >= 40 ? 'bg-amber-500/20' : 'bg-emerald-500/20'}`}>
                       <span className={`text-lg font-black ${dc.text}`}>{i + 1}</span>
@@ -532,21 +532,21 @@ const TrainingDashboard: React.FC = () => {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-bold text-white leading-relaxed">{m.texto}</p>
                       <div className="flex flex-wrap items-center gap-3 mt-1.5">
-                        <span className="text-[9px] text-slate-500">
+                        <span className="text-[9px] text-[#5A6E8A]">
                           <i className="fa-solid fa-graduation-cap text-blue-500 mr-1"></i>{m.treinamento}
                         </span>
-                        <span className="text-[9px] text-slate-500">
+                        <span className="text-[9px] text-[#5A6E8A]">
                           <i className="fa-solid fa-clipboard-question mr-1"></i>{m.quizTitulo}
                         </span>
-                        <span className="text-[9px] text-slate-500">
+                        <span className="text-[9px] text-[#5A6E8A]">
                           <i className="fa-solid fa-users mr-1"></i>{m.totalTentativas} tentativas
                         </span>
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0">
                       <p className={`text-2xl font-black ${dc.text}`}>{m.taxaErro}%</p>
-                      <p className="text-[8px] text-slate-500 uppercase tracking-widest">taxa de erro</p>
-                      <p className="text-[9px] text-slate-400 mt-0.5">{m.erros} de {m.totalTentativas}</p>
+                      <p className="text-[8px] text-[#5A6E8A] uppercase tracking-widest">taxa de erro</p>
+                      <p className="text-[9px] text-[#8A9BB0] mt-0.5">{m.erros} de {m.totalTentativas}</p>
                     </div>
                   </div>
                   <div className="w-full bg-slate-800 rounded-full h-2">
@@ -565,22 +565,22 @@ const TrainingDashboard: React.FC = () => {
     <div className="space-y-6">
       <div>
         <h3 className="text-white font-black uppercase italic text-sm">Ranking de Desempenho</h3>
-        <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Colaboradores ordenados por nota média</p>
+        <p className="text-[9px] text-[#5A6E8A] uppercase tracking-widest mt-1">Colaboradores ordenados por nota média</p>
       </div>
 
       {ranking.length === 0 ? (
-        <div className="bg-[#F5F4EF] border border-slate-200 rounded-2xl p-10 text-center">
-          <i className="fa-solid fa-ranking-star text-4xl text-slate-700 mb-3 block"></i>
-          <p className="text-slate-600 text-xs font-bold uppercase tracking-widest">Nenhum resultado de avaliação ainda</p>
+        <div className="bg-[#FBF7EE] border border-[#E8D5A3] rounded-2xl p-10 text-center">
+          <i className="fa-solid fa-ranking-star text-4xl text-[#1A2744] mb-3 block"></i>
+          <p className="text-[#2C3E5A] text-xs font-bold uppercase tracking-widest">Nenhum resultado de avaliação ainda</p>
         </div>
       ) : (
         <div className="space-y-2">
           {ranking.map((user, i) => {
-            const medalColor = i === 0 ? 'text-amber-400' : i === 1 ? 'text-slate-700' : i === 2 ? 'text-amber-700' : 'text-slate-600';
+            const medalColor = i === 0 ? 'text-amber-400' : i === 1 ? 'text-[#1A2744]' : i === 2 ? 'text-amber-700' : 'text-[#2C3E5A]';
             const medalIcon = i === 0 ? 'fa-trophy' : i === 1 ? 'fa-medal' : i === 2 ? 'fa-medal' : 'fa-hashtag';
             const scoreColor = user.media >= 80 ? 'text-emerald-400' : user.media >= 70 ? 'text-amber-400' : 'text-red-400';
             return (
-              <div key={user.nome} className="bg-[#F5F4EF] border border-slate-200 hover:border-slate-300 rounded-2xl p-4 flex items-center gap-4 transition-all group">
+              <div key={user.nome} className="bg-[#FBF7EE] border border-[#E8D5A3] hover:border-[#D4C5A0] rounded-2xl p-4 flex items-center gap-4 transition-all group">
                 {/* Posição */}
                 <div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
                   <i className={`fa-solid ${medalIcon} text-xl ${medalColor}`}></i>
@@ -596,16 +596,16 @@ const TrainingDashboard: React.FC = () => {
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-sm font-black text-white">{user.nome}</span>
                     {user.cargo && (
-                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 bg-slate-900 px-2 py-0.5 rounded-md">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-[#5A6E8A] bg-slate-900 px-2 py-0.5 rounded-md">
                         {user.cargo}
                       </span>
                     )}
                   </div>
                   <div className="flex items-center gap-4 mt-1 flex-wrap">
-                    <span className="text-[9px] text-slate-500">
+                    <span className="text-[9px] text-[#5A6E8A]">
                       <i className="fa-solid fa-clipboard-question mr-1"></i>{user.quizzes} avaliações
                     </span>
-                    <span className="text-[9px] text-slate-500">
+                    <span className="text-[9px] text-[#5A6E8A]">
                       <i className="fa-solid fa-circle-check text-emerald-500 mr-1"></i>{user.aprovados} aprovadas
                     </span>
                     {user.trilhasConcluidas > 0 && (
@@ -619,7 +619,7 @@ const TrainingDashboard: React.FC = () => {
                 {/* Nota média */}
                 <div className="text-right flex-shrink-0">
                   <p className={`text-2xl font-black ${scoreColor}`}>{user.media}%</p>
-                  <p className="text-[8px] text-slate-500 uppercase tracking-widest">nota média</p>
+                  <p className="text-[8px] text-[#5A6E8A] uppercase tracking-widest">nota média</p>
                 </div>
 
                 {/* Certificado */}
@@ -650,17 +650,17 @@ const TrainingDashboard: React.FC = () => {
     <div className="space-y-6">
       <div>
         <h3 className="text-white font-black uppercase italic text-sm">Dashboard de Gestão</h3>
-        <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">
+        <p className="text-[9px] text-[#5A6E8A] uppercase tracking-widest mt-1">
           Métricas de desempenho, cobertura de trilhas e dificuldade
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-slate-900/50 p-1 rounded-2xl border border-slate-200 w-fit overflow-x-auto">
+      <div className="flex gap-1 bg-slate-900/50 p-1 rounded-2xl border border-[#E8D5A3] w-fit overflow-x-auto">
         {DASH_TABS.map(tab => (
           <button type="button" key={tab.id} onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${
-              activeTab === tab.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/30' : 'text-slate-500 hover:text-slate-700'
+              activeTab === tab.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/30' : 'text-[#5A6E8A] hover:text-[#1A2744]'
             }`}>
             <i className={`fa-solid ${tab.icon} text-xs`}></i>{tab.label}
           </button>

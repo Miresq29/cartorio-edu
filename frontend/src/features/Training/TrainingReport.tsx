@@ -238,10 +238,10 @@ const TrainingReport: React.FC = () => {
           { label: 'Taxa de Aprovação', value: `${taxaAprovacao}%`, icon: 'fa-trophy',        color: 'amber'   },
           { label: 'Média nas Provas',  value: `${mediaNotas}%`,    icon: 'fa-chart-line',    color: 'purple'  },
         ].map((stat, i) => (
-          <div key={i} className="bg-[#F5F4EF] border border-slate-200 rounded-2xl p-4 space-y-2">
+          <div key={i} className="bg-[#FBF7EE] border border-[#E8D5A3] rounded-2xl p-4 space-y-2">
             <i className={`fa-solid ${stat.icon} text-${stat.color}-500 text-lg`}></i>
             <p className="text-2xl font-black text-white">{stat.value}</p>
-            <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">{stat.label}</p>
+            <p className="text-[9px] text-[#5A6E8A] font-black uppercase tracking-widest">{stat.label}</p>
           </div>
         ))}
       </div>
@@ -251,14 +251,14 @@ const TrainingReport: React.FC = () => {
         <div className="flex flex-wrap gap-2">
           <input value={filterColaborador} onChange={e => setFilterColaborador(e.target.value)}
             placeholder="Buscar colaborador..."
-            className="bg-slate-900 border border-slate-200 rounded-xl px-4 py-2 text-sm text-white outline-none focus:border-blue-500 min-w-[180px]" />
+            className="bg-slate-900 border border-[#E8D5A3] rounded-xl px-4 py-2 text-sm text-white outline-none focus:border-blue-500 min-w-[180px]" />
           <select value={filterTreinamento} onChange={e => setFilterTreinamento(e.target.value)}
-            className="bg-slate-900 border border-slate-200 rounded-xl px-4 py-2 text-sm text-white outline-none focus:border-blue-500">
+            className="bg-slate-900 border border-[#E8D5A3] rounded-xl px-4 py-2 text-sm text-white outline-none focus:border-blue-500">
             <option value="todos">Todos os Treinamentos</option>
             {treinamentosUnicos.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
           <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
-            className="bg-slate-900 border border-slate-200 rounded-xl px-4 py-2 text-sm text-white outline-none focus:border-blue-500">
+            className="bg-slate-900 border border-[#E8D5A3] rounded-xl px-4 py-2 text-sm text-white outline-none focus:border-blue-500">
             <option value="todos">Todos os Status</option>
             <option value="concluído">Concluído</option>
             <option value="pendente">Pendente</option>
@@ -281,32 +281,32 @@ const TrainingReport: React.FC = () => {
 
       {/* Lista */}
       <div className="space-y-2">
-        <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest">{filtered.length} registros encontrados</p>
+        <p className="text-[9px] font-black text-[#2C3E5A] uppercase tracking-widest">{filtered.length} registros encontrados</p>
 
         {filtered.length === 0 ? (
-          <div className="bg-[#F5F4EF] border border-slate-200 rounded-2xl p-10 text-center">
-            <i className="fa-solid fa-file-chart-column text-4xl text-slate-700 mb-3 block"></i>
-            <p className="text-slate-600 text-xs font-bold uppercase tracking-widest">Nenhum registro encontrado</p>
+          <div className="bg-[#FBF7EE] border border-[#E8D5A3] rounded-2xl p-10 text-center">
+            <i className="fa-solid fa-file-chart-column text-4xl text-[#1A2744] mb-3 block"></i>
+            <p className="text-[#2C3E5A] text-xs font-bold uppercase tracking-widest">Nenhum registro encontrado</p>
           </div>
         ) : (
           filtered.map(p => {
             const quiz = getQuiz(p.nomeColaborador, p.treinamento);
             const statusColor = p.status === 'concluído' ? 'emerald' : p.status === 'pendente' ? 'amber' : 'red';
             return (
-              <div key={p.id} className="bg-[#F5F4EF] border border-slate-200 hover:border-slate-300 rounded-2xl p-4 flex items-center gap-4 transition-all group">
+              <div key={p.id} className="bg-[#FBF7EE] border border-[#E8D5A3] hover:border-[#D4C5A0] rounded-2xl p-4 flex items-center gap-4 transition-all group">
                 <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center flex-shrink-0">
                   <span className="text-sm font-black text-white">{p.nomeColaborador.charAt(0).toUpperCase()}</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-sm font-black text-white">{p.nomeColaborador}</span>
-                    {p.cargo && <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 bg-slate-900 px-2 py-0.5 rounded-md">{p.cargo}</span>}
+                    {p.cargo && <span className="text-[9px] font-black uppercase tracking-widest text-[#5A6E8A] bg-slate-900 px-2 py-0.5 rounded-md">{p.cargo}</span>}
                   </div>
                   <div className="flex items-center gap-3 mt-1 flex-wrap">
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-[#8A9BB0]">
                       <i className="fa-solid fa-graduation-cap text-blue-500 mr-1.5"></i>{p.treinamento}
                     </span>
-                    <span className="text-xs text-slate-500">
+                    <span className="text-xs text-[#5A6E8A]">
                       <i className="fa-solid fa-calendar mr-1.5"></i>
                       {new Date(p.dataConclusao + 'T00:00:00').toLocaleDateString('pt-BR')}
                     </span>

@@ -259,13 +259,13 @@ Regras:
             {quizResult.aprovado ? 'Aprovado!' : 'Reprovado'}
           </h3>
           <p className="text-white text-5xl font-black mt-2">{quizResult.nota}%</p>
-          <p className="text-slate-400 text-sm mt-1">{quizResult.colaborador} — {quizResult.treinamento}</p>
-          <p className="text-slate-500 text-xs mt-1">{corretas} de {selectedQuiz.questoes.length} corretas · Mínimo: 70%</p>
+          <p className="text-[#8A9BB0] text-sm mt-1">{quizResult.colaborador} — {quizResult.treinamento}</p>
+          <p className="text-[#5A6E8A] text-xs mt-1">{corretas} de {selectedQuiz.questoes.length} corretas · Mínimo: 70%</p>
         </div>
 
         {/* Gabarito com explicações */}
         <div className="space-y-3">
-          <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Gabarito Comentado</h4>
+          <h4 className="text-xs font-black text-[#8A9BB0] uppercase tracking-widest">Gabarito Comentado</h4>
           {selectedQuiz.questoes.map((q, i) => {
             const acertou = quizResult.respostas[i] === q.correta;
             return (
@@ -285,7 +285,7 @@ Regras:
                       <div key={oi} className={`px-3 py-2 rounded-lg text-xs flex items-center gap-2 ${
                         isCorreta ? 'bg-emerald-500/20 text-emerald-300 font-bold' :
                         isSua && !isCorreta ? 'bg-red-500/20 text-red-300 line-through' :
-                        'text-slate-500'
+                        'text-[#5A6E8A]'
                       }`}>
                         <span className="font-black">{String.fromCharCode(65 + oi)}.</span>
                         {opcao}
@@ -300,10 +300,10 @@ Regras:
                 {q.explicacao && (
                   <div className={`ml-9 p-3 rounded-xl text-xs leading-relaxed ${
                     acertou
-                      ? 'bg-slate-800/50 text-slate-400 border border-slate-300'
+                      ? 'bg-slate-800/50 text-[#8A9BB0] border border-[#D4C5A0]'
                       : 'bg-amber-500/10 text-amber-300 border border-amber-500/20'
                   }`}>
-                    <i className={`fa-solid fa-circle-info mr-2 ${acertou ? 'text-slate-500' : 'text-amber-400'}`}></i>
+                    <i className={`fa-solid fa-circle-info mr-2 ${acertou ? 'text-[#5A6E8A]' : 'text-amber-400'}`}></i>
                     {q.explicacao}
                   </div>
                 )}
@@ -334,15 +334,15 @@ Regras:
           <i className="fa-solid fa-lock text-5xl text-red-400 block"></i>
           <div>
             <h3 className="text-red-400 font-black uppercase italic text-lg">Avaliação Bloqueada</h3>
-            <p className="text-sm text-slate-400 mt-2">
+            <p className="text-sm text-[#8A9BB0] mt-2">
               Você não atingiu a nota mínima de <span className="font-black text-white">70%</span> na tentativa anterior.
             </p>
-            <p className="text-xs text-slate-500 mt-1">{selectedQuiz.titulo}</p>
+            <p className="text-xs text-[#5A6E8A] mt-1">{selectedQuiz.titulo}</p>
           </div>
-          <div className="bg-[#F5F4EF] border border-red-500/20 rounded-xl p-5 space-y-1">
-            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Nova tentativa disponível em</p>
+          <div className="bg-[#FBF7EE] border border-red-500/20 rounded-xl p-5 space-y-1">
+            <p className="text-[9px] font-black text-[#5A6E8A] uppercase tracking-widest">Nova tentativa disponível em</p>
             <p className="text-4xl font-black text-red-400">{formatCountdown(bloqueadoAte)}</p>
-            <p className="text-[9px] text-slate-600">
+            <p className="text-[9px] text-[#2C3E5A]">
               Liberado em {bloqueadoAte.toLocaleDateString('pt-BR')} às {bloqueadoAte.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
             </p>
           </div>
@@ -350,7 +350,7 @@ Regras:
             <p className="text-[9px] font-black text-amber-400 uppercase tracking-widest mb-1">
               <i className="fa-solid fa-lightbulb mr-1"></i>Dica de Estudo
             </p>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-[#8A9BB0] leading-relaxed">
               Use o tempo de espera para revisar o conteúdo do treinamento <span className="font-bold text-white">{selectedQuiz.treinamento}</span> na base legal e nos checklists.
             </p>
           </div>
@@ -370,7 +370,7 @@ Regras:
         <div className="space-y-6 max-w-lg mx-auto">
           <div>
             <h3 className="text-white font-black uppercase italic text-sm">{selectedQuiz.titulo}</h3>
-            <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">
+            <p className="text-[9px] text-[#5A6E8A] uppercase tracking-widest mt-1">
               {selectedQuiz.treinamento} · {selectedQuiz.questoes.length} questões · Aprovação: 70%
             </p>
             {selectedQuiz.geradoPorIA && (
@@ -381,20 +381,20 @@ Regras:
           </div>
           <div className="space-y-4">
             <div className="space-y-1">
-              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Seu Nome *</label>
+              <label className="text-[9px] font-black uppercase tracking-widest text-[#5A6E8A]">Seu Nome *</label>
               <input value={respondente.nome} onChange={e => setRespondente(r => ({ ...r, nome: e.target.value }))}
                 placeholder="Nome completo"
-                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500" />
+                className="w-full bg-slate-900 border border-[#E8D5A3] rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500" />
             </div>
             <div className="space-y-1">
-              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Cargo / Função</label>
+              <label className="text-[9px] font-black uppercase tracking-widest text-[#5A6E8A]">Cargo / Função</label>
               <input value={respondente.cargo} onChange={e => setRespondente(r => ({ ...r, cargo: e.target.value }))}
                 placeholder="Ex: Escrevente Técnico"
-                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500" />
+                className="w-full bg-slate-900 border border-[#E8D5A3] rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500" />
             </div>
           </div>
           <div className="flex gap-3">
-            <button onClick={() => setMode('list')} className="px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 border border-slate-200 hover:border-slate-600 transition-all">
+            <button onClick={() => setMode('list')} className="px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-[#8A9BB0] border border-[#E8D5A3] hover:border-slate-600 transition-all">
               Cancelar
             </button>
             <button onClick={() => {
@@ -423,19 +423,19 @@ Regras:
       <div className="space-y-6 max-w-lg mx-auto">
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <span className="text-xs text-slate-400 font-bold">{respondente.nome}</span>
-            <span className="text-xs text-slate-500">{currentQ + 1} / {selectedQuiz.questoes.length}</span>
+            <span className="text-xs text-[#8A9BB0] font-bold">{respondente.nome}</span>
+            <span className="text-xs text-[#5A6E8A]">{currentQ + 1} / {selectedQuiz.questoes.length}</span>
           </div>
           <div className="w-full bg-slate-800 rounded-full h-1.5">
             <div className="bg-blue-500 h-1.5 rounded-full transition-all" style={{ width: `${(currentQ / selectedQuiz.questoes.length) * 100}%` }}></div>
           </div>
         </div>
-        <div className="bg-[#F5F4EF] border border-slate-200 rounded-2xl p-6 space-y-4">
+        <div className="bg-[#FBF7EE] border border-[#E8D5A3] rounded-2xl p-6 space-y-4">
           <p className="text-white font-bold text-sm leading-relaxed">{currentQ + 1}. {questao.texto}</p>
           <div className="space-y-2">
             {questao.opcoes.map((opcao, i) => (
               <button key={i} onClick={() => handleAnswer(i)}
-                className="w-full text-left p-4 rounded-xl bg-slate-900 border border-slate-200 hover:border-blue-500 hover:bg-blue-500/10 text-slate-700 text-sm transition-all">
+                className="w-full text-left p-4 rounded-xl bg-slate-900 border border-[#E8D5A3] hover:border-blue-500 hover:bg-blue-500/10 text-[#1A2744] text-sm transition-all">
                 <span className="font-black text-blue-400 mr-3">{String.fromCharCode(65 + i)}.</span>{opcao}
               </button>
             ))}
@@ -450,7 +450,7 @@ Regras:
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-3">
-          <button onClick={() => setMode('list')} className="text-slate-500 hover:text-white transition-colors">
+          <button onClick={() => setMode('list')} className="text-[#5A6E8A] hover:text-white transition-colors">
             <i className="fa-solid fa-arrow-left"></i>
           </button>
           <div>
@@ -463,7 +463,7 @@ Regras:
           {(['ia', 'manual'] as const).map(m => (
             <button key={m} onClick={() => setCreateMode(m)}
               className={`px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
-                createMode === m ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-white'
+                createMode === m ? 'bg-blue-600 text-white' : 'text-[#5A6E8A] hover:text-white'
               }`}>
               <i className={`fa-solid mr-2 ${m === 'ia' ? 'fa-wand-magic-sparkles' : 'fa-pen'}`}></i>
               {m === 'ia' ? 'Gerar com IA' : 'Criar Manual'}
@@ -481,17 +481,17 @@ Regras:
               </p>
             </div>
             <div className="space-y-1">
-              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Treinamento *</label>
+              <label className="text-[9px] font-black uppercase tracking-widest text-[#5A6E8A]">Treinamento *</label>
               <select value={aiForm.treinamento} onChange={e => setAiForm(f => ({ ...f, treinamento: e.target.value }))}
-                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500">
+                className="w-full bg-slate-900 border border-[#E8D5A3] rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500">
                 <option value="">Selecione o treinamento...</option>
                 {checklists.map(c => <option key={c.id} value={c.title}>{c.title}</option>)}
               </select>
             </div>
             <div className="space-y-1">
-              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Quantidade de Questões</label>
+              <label className="text-[9px] font-black uppercase tracking-widest text-[#5A6E8A]">Quantidade de Questões</label>
               <select value={aiForm.quantidade} onChange={e => setAiForm(f => ({ ...f, quantidade: e.target.value }))}
-                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500">
+                className="w-full bg-slate-900 border border-[#E8D5A3] rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500">
                 {['3', '5', '7', '10'].map(n => <option key={n} value={n}>{n} questões</option>)}
               </select>
             </div>
@@ -511,63 +511,63 @@ Regras:
           <div className="space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Treinamento *</label>
+                <label className="text-[9px] font-black uppercase tracking-widest text-[#5A6E8A]">Treinamento *</label>
                 <select value={form.treinamento} onChange={e => setForm(f => ({ ...f, treinamento: e.target.value }))}
-                  className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500">
+                  className="w-full bg-slate-900 border border-[#E8D5A3] rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500">
                   <option value="">Selecione...</option>
                   {checklists.map(c => <option key={c.id} value={c.title}>{c.title}</option>)}
                   <option value="outro">Outro</option>
                 </select>
               </div>
               <div className="space-y-1">
-                <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Título *</label>
+                <label className="text-[9px] font-black uppercase tracking-widest text-[#5A6E8A]">Título *</label>
                 <input value={form.titulo} onChange={e => setForm(f => ({ ...f, titulo: e.target.value }))}
                   placeholder="Ex: Avaliação NR-35"
-                  className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500" />
+                  className="w-full bg-slate-900 border border-[#E8D5A3] rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500" />
               </div>
             </div>
 
             {questoes.map((q, qi) => (
-              <div key={qi} className="bg-[#F5F4EF] border border-slate-200 rounded-2xl p-5 space-y-3">
+              <div key={qi} className="bg-[#FBF7EE] border border-[#E8D5A3] rounded-2xl p-5 space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest">Questão {qi + 1}</span>
                   {questoes.length > 1 && (
-                    <button onClick={() => removeQuestao(qi)} className="text-slate-600 hover:text-red-400 transition-colors">
+                    <button onClick={() => removeQuestao(qi)} className="text-[#2C3E5A] hover:text-red-400 transition-colors">
                       <i className="fa-solid fa-trash text-xs"></i>
                     </button>
                   )}
                 </div>
                 <input value={q.texto} onChange={e => updateQuestao(qi, 'texto', e.target.value)}
                   placeholder="Digite a pergunta..."
-                  className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500" />
+                  className="w-full bg-slate-900 border border-[#E8D5A3] rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500" />
                 <div className="space-y-2">
                   {q.opcoes.map((opcao, oi) => (
                     <div key={oi} className="flex items-center gap-2">
                       <button onClick={() => updateQuestao(qi, 'correta', oi)}
                         className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${
-                          q.correta === oi ? 'border-emerald-500 bg-emerald-500' : 'border-slate-300 hover:border-slate-500'
+                          q.correta === oi ? 'border-emerald-500 bg-emerald-500' : 'border-[#D4C5A0] hover:border-slate-500'
                         }`}>
                         {q.correta === oi && <i className="fa-solid fa-check text-white text-xs"></i>}
                       </button>
                       <input value={opcao} onChange={e => updateOpcao(qi, oi, e.target.value)}
                         placeholder={`Opção ${String.fromCharCode(65 + oi)}`}
-                        className="flex-1 bg-slate-900 border border-slate-200 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-blue-500" />
+                        className="flex-1 bg-slate-900 border border-[#E8D5A3] rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-blue-500" />
                     </div>
                   ))}
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Explicação da resposta correta</label>
+                  <label className="text-[9px] font-black uppercase tracking-widest text-[#5A6E8A]">Explicação da resposta correta</label>
                   <textarea value={q.explicacao} onChange={e => updateQuestao(qi, 'explicacao', e.target.value)}
                     placeholder="Explique por que esta é a resposta correta..."
                     rows={2}
-                    className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500 resize-none" />
+                    className="w-full bg-slate-900 border border-[#E8D5A3] rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500 resize-none" />
                 </div>
               </div>
             ))}
 
             <div className="flex gap-3">
               <button onClick={addQuestao}
-                className="px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 border border-slate-200 hover:border-slate-600 hover:text-white transition-all">
+                className="px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-[#8A9BB0] border border-[#E8D5A3] hover:border-slate-600 hover:text-white transition-all">
                 <i className="fa-solid fa-plus mr-2"></i>Questão
               </button>
               <button onClick={handleCreateQuiz} disabled={!form.treinamento || !form.titulo}
@@ -589,7 +589,7 @@ Regras:
           <h3 className="text-white font-black uppercase italic text-sm">
             Questionários de <span className="text-blue-500">Avaliação</span>
           </h3>
-          <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Criados pela IA ou manualmente</p>
+          <p className="text-[9px] text-[#5A6E8A] uppercase tracking-widest mt-1">Criados pela IA ou manualmente</p>
         </div>
         <button onClick={() => setMode('create')}
           className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
@@ -598,10 +598,10 @@ Regras:
       </div>
 
       {quizzes.length === 0 ? (
-        <div className="bg-[#F5F4EF] border border-slate-200 rounded-2xl p-10 text-center">
-          <i className="fa-solid fa-circle-question text-4xl text-slate-700 mb-3 block"></i>
-          <p className="text-slate-600 text-xs font-bold uppercase tracking-widest">Nenhum questionário criado ainda</p>
-          <p className="text-slate-700 text-xs mt-1">Clique em "Novo Questionário" e deixe a IA criar para você</p>
+        <div className="bg-[#FBF7EE] border border-[#E8D5A3] rounded-2xl p-10 text-center">
+          <i className="fa-solid fa-circle-question text-4xl text-[#1A2744] mb-3 block"></i>
+          <p className="text-[#2C3E5A] text-xs font-bold uppercase tracking-widest">Nenhum questionário criado ainda</p>
+          <p className="text-[#1A2744] text-xs mt-1">Clique em "Novo Questionário" e deixe a IA criar para você</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -611,7 +611,7 @@ Regras:
             const nomeUsuario = state.user?.name || '';
             const bloqueado = nomeUsuario ? calcLiberadoEm(results, quiz.id, nomeUsuario) : null;
             return (
-              <div key={quiz.id} className={`bg-[#F5F4EF] border rounded-2xl p-5 transition-all group ${bloqueado ? 'border-red-500/30' : 'border-slate-200 hover:border-slate-300'}`}>
+              <div key={quiz.id} className={`bg-[#FBF7EE] border rounded-2xl p-5 transition-all group ${bloqueado ? 'border-red-500/30' : 'border-[#E8D5A3] hover:border-[#D4C5A0]'}`}>
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -631,10 +631,10 @@ Regras:
                       )}
                     </div>
                     <div className="flex items-center gap-4 mt-1">
-                      <span className="text-xs text-slate-500">
+                      <span className="text-xs text-[#5A6E8A]">
                         <i className="fa-solid fa-graduation-cap text-blue-500 mr-1.5"></i>{quiz.treinamento}
                       </span>
-                      <span className="text-xs text-slate-600">
+                      <span className="text-xs text-[#2C3E5A]">
                         {qtdResultados} realizações · {aprovados} aprovações
                       </span>
                     </div>
@@ -645,11 +645,11 @@ Regras:
                       <i className={`fa-solid ${bloqueado ? 'fa-lock' : 'fa-play'} mr-1`}></i>
                       {bloqueado ? 'Ver bloqueio' : 'Responder'}
                     </button>
-                    <button type="button" title="Excluir questionário" onClick={() => deleteQuiz(quiz.id)} className="text-slate-600 hover:text-red-400 transition-colors p-2">
+                    <button type="button" title="Excluir questionário" onClick={() => deleteQuiz(quiz.id)} className="text-[#2C3E5A] hover:text-red-400 transition-colors p-2">
                       <i className="fa-solid fa-trash text-xs"></i>
                     </button>
                   </div>
-                  <i className="fa-solid fa-chevron-right text-slate-700 text-xs ml-3 group-hover:opacity-0 transition-all"></i>
+                  <i className="fa-solid fa-chevron-right text-[#1A2744] text-xs ml-3 group-hover:opacity-0 transition-all"></i>
                 </div>
               </div>
             );

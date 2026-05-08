@@ -63,26 +63,26 @@ const LoginView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F4EF] flex items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-[#FBF7EE] flex items-center justify-center p-6 relative overflow-hidden">
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-900/10 blur-[120px] rounded-full"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-900/10 blur-[120px] rounded-full"></div>
 
       <div className="w-full max-w-[440px] z-10">
-        <div className="bg-white border border-slate-200 rounded-[40px] p-10 shadow-2xl backdrop-blur-sm">
+        <div className="bg-white border border-[#E8D5A3] rounded-[40px] p-10 shadow-2xl backdrop-blur-sm">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-black text-white italic uppercase tracking-tighter">
               MJ <span className="text-blue-500">Consultoria</span>
             </h1>
-            <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.3em] mt-2">Plataforma de Treinamento Corporativo</p>
+            <p className="text-[#5A6E8A] text-[10px] font-bold uppercase tracking-[0.3em] mt-2">Plataforma de Treinamento Corporativo</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="relative">
-              <Mail className="absolute left-4 top-4 text-slate-500 w-5 h-5" />
+              <Mail className="absolute left-4 top-4 text-[#5A6E8A] w-5 h-5" />
               <input
                 type="email"
                 placeholder="E-mail funcional"
-                className="w-full bg-[#F5F4EF] border border-slate-200 rounded-2xl p-4 pl-12 text-white outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all placeholder:text-slate-700"
+                className="w-full bg-[#FBF7EE] border border-[#E8D5A3] rounded-2xl p-4 pl-12 text-white outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all placeholder:text-[#1A2744]"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
@@ -91,11 +91,11 @@ const LoginView: React.FC = () => {
             </div>
 
             <div className="relative">
-              <Lock className="absolute left-4 top-4 text-slate-500 w-5 h-5" />
+              <Lock className="absolute left-4 top-4 text-[#5A6E8A] w-5 h-5" />
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="Senha"
-                className="w-full bg-[#F5F4EF] border border-slate-200 rounded-2xl p-4 pl-12 pr-12 text-white outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all placeholder:text-slate-700"
+                className="w-full bg-[#FBF7EE] border border-[#E8D5A3] rounded-2xl p-4 pl-12 pr-12 text-white outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all placeholder:text-[#1A2744]"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
@@ -103,7 +103,7 @@ const LoginView: React.FC = () => {
               />
               <button
                 type="button"
-                className="absolute right-4 top-4 text-slate-500 hover:text-white transition-colors"
+                className="absolute right-4 top-4 text-[#5A6E8A] hover:text-white transition-colors"
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -131,7 +131,7 @@ const LoginView: React.FC = () => {
           </form>
         </div>
 
-        <p className="text-center mt-8 text-slate-600 text-[10px] uppercase tracking-widest">
+        <p className="text-center mt-8 text-[#2C3E5A] text-[10px] uppercase tracking-widest">
           © {new Date().getFullYear()} MJ Consultoria - Todos os direitos reservados
         </p>
       </div>

@@ -170,12 +170,12 @@ CTA: [chamada para ação aqui]`;
 
   /* ══════════════════ RENDER ══════════════════════════ */
   return (
-    <div className="p-8 space-y-6 bg-[#F5F4EF] min-h-screen animate-in fade-in">
+    <div className="p-8 space-y-6 bg-[#FBF7EE] min-h-screen animate-in fade-in">
       <header>
         <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
           Banners e <span className="text-pink-500">Materiais</span>
         </h2>
-        <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">
+        <p className="text-[#5A6E8A] text-[10px] font-black uppercase tracking-[0.3em]">
           Crie, gerencie e compartilhe materiais de treinamento
         </p>
       </header>
@@ -184,11 +184,11 @@ CTA: [chamada para ação aqui]`;
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
           {/* ── Link externo ────────────────────────────── */}
-          <div className="bg-white border border-slate-200 rounded-[24px] p-6 space-y-4">
+          <div className="bg-white border border-[#E8D5A3] rounded-[24px] p-6 space-y-4">
             <h3 className="text-white font-black uppercase text-sm flex items-center gap-2">
               <i className="fa-solid fa-link text-blue-400"></i>Adicionar Material via Link
             </h3>
-            <p className="text-[10px] text-slate-500 leading-relaxed">
+            <p className="text-[10px] text-[#5A6E8A] leading-relaxed">
               Cole um link do Google Drive, OneDrive, Dropbox ou qualquer URL pública.
             </p>
 
@@ -196,14 +196,14 @@ CTA: [chamada para ação aqui]`;
               value={formLink.titulo}
               onChange={e => setFormLink(p => ({ ...p, titulo: e.target.value }))}
               placeholder="Nome do material..."
-              className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500 transition-colors"
+              className="w-full bg-slate-900 border border-[#E8D5A3] rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500 transition-colors"
             />
 
             <input
               value={formLink.url}
               onChange={e => setFormLink(p => ({ ...p, url: e.target.value }))}
               placeholder="https://drive.google.com/..."
-              className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500 transition-colors"
+              className="w-full bg-slate-900 border border-[#E8D5A3] rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500 transition-colors"
             />
 
             {/* Tipo */}
@@ -213,7 +213,7 @@ CTA: [chamada para ação aqui]`;
                   className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${
                     formLink.tipo === t
                       ? 'bg-blue-600 text-white'
-                      : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                      : 'bg-slate-800 text-[#8A9BB0] hover:bg-slate-700'
                   }`}>
                   <i className={`fa-solid ${TIPO_CONFIG[t].icon} mr-1`}></i>{TIPO_CONFIG[t].label}
                 </button>
@@ -234,7 +234,7 @@ CTA: [chamada para ação aqui]`;
             <h3 className="text-white font-black uppercase text-sm flex items-center gap-2">
               <i className="fa-solid fa-wand-magic-sparkles text-pink-400"></i>Gerar Banner com IA
             </h3>
-            <p className="text-[10px] text-slate-500 leading-relaxed">
+            <p className="text-[10px] text-[#5A6E8A] leading-relaxed">
               A IA cria título, subtítulo e call-to-action. Você imprime ou salva o texto.
             </p>
             <textarea
@@ -242,7 +242,7 @@ CTA: [chamada para ação aqui]`;
               onChange={e => setPromptBanner(e.target.value)}
               rows={4}
               placeholder="Ex: Banner para treinamento de atendimento ao cliente com foco em excelência..."
-              className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-pink-500 resize-none"
+              className="w-full bg-slate-900 border border-[#E8D5A3] rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-pink-500 resize-none"
             />
             <button type="button" onClick={gerarTextoBanner} disabled={gerando || !promptBanner.trim()}
               className="w-full bg-pink-600 hover:bg-pink-500 disabled:opacity-50 text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
@@ -263,14 +263,14 @@ CTA: [chamada para ação aqui]`;
             <div className="flex items-center justify-between flex-wrap gap-3">
               <h3 className="text-white font-black uppercase text-sm">Preview do Banner</h3>
               <button type="button" onClick={() => imprimirBanner(textoBannerGerado)}
-                className="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-700 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
+                className="text-[9px] bg-slate-800 hover:bg-slate-700 text-[#1A2744] px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
                 <i className="fa-solid fa-print mr-1"></i>Imprimir / PDF
               </button>
             </div>
 
             <div className="bg-gradient-to-br from-blue-900 to-slate-900 rounded-2xl p-10 text-center space-y-4 border border-blue-500/20">
               <h1 className="text-2xl md:text-4xl font-black text-white uppercase tracking-tight">{titulo || 'Título'}</h1>
-              <p className="text-slate-700 text-sm md:text-base leading-relaxed max-w-lg mx-auto">{subtitulo}</p>
+              <p className="text-[#1A2744] text-sm md:text-base leading-relaxed max-w-lg mx-auto">{subtitulo}</p>
               {cta && (
                 <div className="inline-block bg-blue-600 text-white px-8 py-3 rounded-xl font-black text-sm uppercase tracking-widest">{cta}</div>
               )}
@@ -281,14 +281,14 @@ CTA: [chamada para ação aqui]`;
                 value={tituloBanner}
                 onChange={e => setTituloBanner(e.target.value)}
                 placeholder="Nome para salvar este banner..."
-                className="flex-1 min-w-0 bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-pink-500"
+                className="flex-1 min-w-0 bg-slate-900 border border-[#E8D5A3] rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-pink-500"
               />
               <button type="button" onClick={salvarBannerGerado} disabled={!tituloBanner.trim()}
                 className="bg-pink-600 hover:bg-pink-500 disabled:opacity-50 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
                 <i className="fa-solid fa-floppy-disk mr-2"></i>Salvar
               </button>
               <button type="button" onClick={() => setPreviewBanner(false)}
-                className="bg-slate-800 hover:bg-slate-700 text-slate-700 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                className="bg-slate-800 hover:bg-slate-700 text-[#1A2744] px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
                 Fechar
               </button>
             </div>
@@ -300,14 +300,14 @@ CTA: [chamada para ação aqui]`;
       <div className="flex flex-wrap gap-2 items-center">
         <button type="button" onClick={() => setFiltroTipo('')}
           className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-            !filtroTipo ? 'bg-pink-600 text-white' : 'bg-slate-900 text-slate-400 hover:bg-slate-800'
+            !filtroTipo ? 'bg-pink-600 text-white' : 'bg-slate-900 text-[#8A9BB0] hover:bg-slate-800'
           }`}>
           Todos ({materiais.length})
         </button>
         {Object.entries(TIPO_CONFIG).map(([id, cfg]) => (
           <button type="button" key={id} onClick={() => setFiltroTipo(filtroTipo === id ? '' : id)}
             className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-              filtroTipo === id ? 'bg-pink-600 text-white' : 'bg-slate-900 text-slate-400 hover:bg-slate-800'
+              filtroTipo === id ? 'bg-pink-600 text-white' : 'bg-slate-900 text-[#8A9BB0] hover:bg-slate-800'
             }`}>
             <i className={`fa-solid ${cfg.icon} mr-1.5`}></i>{cfg.label}
           </button>
@@ -317,8 +317,8 @@ CTA: [chamada para ação aqui]`;
       {/* ── Galeria ────────────────────────────────────── */}
       {filtrados.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 opacity-30">
-          <i className="fa-solid fa-images text-5xl text-slate-600 mb-4"></i>
-          <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Nenhum material encontrado</p>
+          <i className="fa-solid fa-images text-5xl text-[#2C3E5A] mb-4"></i>
+          <p className="text-[#5A6E8A] text-xs font-bold uppercase tracking-widest">Nenhum material encontrado</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -326,20 +326,20 @@ CTA: [chamada para ação aqui]`;
             const cfg = TIPO_CONFIG[m.tipo] || TIPO_CONFIG.link;
             return (
               <div key={m.id}
-                className="bg-white border border-slate-200 rounded-[20px] p-5 space-y-3 hover:border-slate-300 transition-all">
+                className="bg-white border border-[#E8D5A3] rounded-[20px] p-5 space-y-3 hover:border-[#D4C5A0] transition-all">
                 <div className="flex items-start gap-3">
                   <div className={`w-10 h-10 rounded-xl bg-${cfg.color}-500/20 flex items-center justify-center flex-shrink-0`}>
                     <i className={`fa-solid ${cfg.icon} text-${cfg.color}-400`}></i>
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-black text-white truncate">{m.titulo}</p>
-                    <p className="text-[9px] text-slate-500 uppercase tracking-widest">{cfg.label}</p>
+                    <p className="text-[9px] text-[#5A6E8A] uppercase tracking-widest">{cfg.label}</p>
                   </div>
                 </div>
 
                 {/* preview texto banner IA */}
                 {m.textoBanner && (
-                  <p className="text-[10px] text-slate-500 leading-relaxed line-clamp-3">
+                  <p className="text-[10px] text-[#5A6E8A] leading-relaxed line-clamp-3">
                     {m.textoBanner.replace(/TÍTULO:|SUBTÍTULO:|CTA:/g, '').substring(0, 120)}...
                   </p>
                 )}
@@ -348,20 +348,20 @@ CTA: [chamada para ação aqui]`;
                   {/* abrir link externo */}
                   {m.linkUrl && (
                     <a href={m.linkUrl} target="_blank" rel="noreferrer"
-                      className="flex-1 text-center text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-700 px-3 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
+                      className="flex-1 text-center text-[9px] bg-slate-800 hover:bg-slate-700 text-[#1A2744] px-3 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
                       <i className="fa-solid fa-arrow-up-right-from-square mr-1"></i>Abrir
                     </a>
                   )}
                   {/* imprimir banner IA */}
                   {m.textoBanner && (
                     <button type="button" onClick={() => imprimirBanner(m.textoBanner)}
-                      className="flex-1 text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-700 px-3 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
+                      className="flex-1 text-[9px] bg-slate-800 hover:bg-slate-700 text-[#1A2744] px-3 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
                       <i className="fa-solid fa-print mr-1"></i>Imprimir
                     </button>
                   )}
                   {isGestor && (
                     <button type="button" title="Excluir material" onClick={() => excluir(m.id)}
-                      className="w-8 h-8 bg-slate-900 hover:bg-red-500/20 text-slate-500 hover:text-red-400 rounded-xl flex items-center justify-center transition-all flex-shrink-0">
+                      className="w-8 h-8 bg-slate-900 hover:bg-red-500/20 text-[#5A6E8A] hover:text-red-400 rounded-xl flex items-center justify-center transition-all flex-shrink-0">
                       <i className="fa-solid fa-trash text-xs"></i>
                     </button>
                   )}

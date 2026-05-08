@@ -53,16 +53,16 @@ const ChatView: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#F5F4EF] m-4 rounded-3xl border border-slate-200 shadow-2xl overflow-hidden">
+    <div className="flex flex-col h-full bg-[#FBF7EE] m-4 rounded-3xl border border-[#E8D5A3] shadow-2xl overflow-hidden">
       {/* Header */}
-      <div className="p-6 border-b border-slate-200 bg-slate-900/40 flex items-center justify-between">
+      <div className="p-6 border-b border-[#E8D5A3] bg-slate-900/40 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-xl">
             ✨
           </div>
           <div>
             <h2 className="text-sm font-black text-white uppercase tracking-widest">IA Notarial</h2>
-            <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Base Legal Ativa</p>
+            <p className="text-[10px] text-[#5A6E8A] uppercase font-bold tracking-wider">Base Legal Ativa</p>
           </div>
         </div>
         <div className="text-[10px] font-black text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded-md border border-emerald-500/20 uppercase tracking-widest">
@@ -76,7 +76,7 @@ const ChatView: React.FC = () => {
           <div className="h-full flex flex-col items-center justify-center text-center p-10 opacity-50">
             <div className="text-5xl mb-4">💬</div>
             <h3 className="text-white font-bold uppercase tracking-widest">Inicie uma consulta</h3>
-            <p className="text-slate-500 text-xs mt-2 max-w-xs leading-relaxed font-medium">Pergunte sobre provimentos, normas ou processos internos do cartório.</p>
+            <p className="text-[#5A6E8A] text-xs mt-2 max-w-xs leading-relaxed font-medium">Pergunte sobre provimentos, normas ou processos internos do cartório.</p>
           </div>
         ) : (
           chatHistory.map((msg, i) => (
@@ -84,7 +84,7 @@ const ChatView: React.FC = () => {
               <div className={`max-w-[85%] rounded-2xl px-5 py-3 text-sm leading-relaxed ${
                 msg.role === 'user' 
                   ? 'bg-blue-600 text-white rounded-br-none shadow-lg shadow-blue-900/20' 
-                  : 'bg-[#F5F4EF] text-slate-800 border border-slate-200 rounded-bl-none shadow-xl'
+                  : 'bg-[#FBF7EE] text-[#0A1628] border border-[#E8D5A3] rounded-bl-none shadow-xl'
               }`}>
                 {msg.content}
               </div>
@@ -93,25 +93,25 @@ const ChatView: React.FC = () => {
         )}
         {isTyping && (
           <div className="flex justify-start">
-            <div className="bg-[#F5F4EF] border border-slate-200 rounded-2xl px-4 py-2 flex items-center gap-3">
+            <div className="bg-[#FBF7EE] border border-[#E8D5A3] rounded-2xl px-4 py-2 flex items-center gap-3">
                 <div className="flex gap-1">
                     <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce"></div>
                     <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:0.2s]"></div>
                     <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:0.4s]"></div>
                 </div>
-                <span className="text-[10px] text-slate-500 font-black uppercase tracking-tighter">Analisando...</span>
+                <span className="text-[10px] text-[#5A6E8A] font-black uppercase tracking-tighter">Analisando...</span>
             </div>
           </div>
         )}
       </div>
 
       {/* Input */}
-      <form onSubmit={handleSend} className="p-4 border-t border-slate-200 bg-[#F5F4EF] flex gap-3">
+      <form onSubmit={handleSend} className="p-4 border-t border-[#E8D5A3] bg-[#FBF7EE] flex gap-3">
         <input 
           value={input} 
           onChange={e => setInput(e.target.value)}
           placeholder="Digite sua dúvida jurídica..."
-          className="flex-1 bg-[#F5F4EF] border border-slate-200 rounded-xl px-5 py-4 text-sm text-white focus:border-blue-500 outline-none transition-all placeholder:text-slate-700"
+          className="flex-1 bg-[#FBF7EE] border border-[#E8D5A3] rounded-xl px-5 py-4 text-sm text-white focus:border-blue-500 outline-none transition-all placeholder:text-[#1A2744]"
         />
         <button 
           type="submit" 

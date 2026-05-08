@@ -188,21 +188,21 @@ const BackupView: React.FC = () => {
   const colErro = progresso.filter(p => p.status === 'erro').length;
 
   return (
-    <div className="min-h-screen bg-[#F5F4EF]">
+    <div className="min-h-screen bg-[#FBF7EE]">
       <div className="max-w-4xl mx-auto p-6 space-y-6">
 
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="text-2xl font-black text-slate-800">Backup de Dados</h2>
-            <p className="text-sm text-slate-500 mt-0.5">
-              Exportação segura dos dados do cartório <strong className="text-slate-700">{tenantId}</strong>
+            <h2 className="text-2xl font-black text-[#0A1628]">Backup de Dados</h2>
+            <p className="text-sm text-[#5A6E8A] mt-0.5">
+              Exportação segura dos dados do cartório <strong className="text-[#1A2744]">{tenantId}</strong>
             </p>
           </div>
           {ultimoBackup && (
             <div className="text-right">
-              <p className="text-[10px] text-slate-400 uppercase tracking-widest font-black">Último backup</p>
-              <p className="text-xs text-slate-600 font-bold">{ultimoBackup}</p>
+              <p className="text-[10px] text-[#8A9BB0] uppercase tracking-widest font-black">Último backup</p>
+              <p className="text-xs text-[#2C3E5A] font-bold">{ultimoBackup}</p>
             </div>
           )}
         </div>
@@ -222,18 +222,18 @@ const BackupView: React.FC = () => {
 
         {/* Botão principal */}
         {isGestor && (
-          <div className="bg-white border border-slate-200 rounded-[16px] p-6 shadow-sm space-y-4">
+          <div className="bg-white border border-[#E8D5A3] rounded-[16px] p-6 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-black text-slate-800">Backup Completo</h3>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <h3 className="text-sm font-black text-[#0A1628]">Backup Completo</h3>
+                <p className="text-xs text-[#5A6E8A] mt-0.5">
                   Exporta todas as {COLECOES_TENANT.length} coleções em um único arquivo JSON
                 </p>
               </div>
               <button
                 onClick={executarBackup}
                 disabled={rodando}
-                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all shadow-sm">
+                className="flex items-center gap-2 bg-[#1A3A6B] hover:bg-[#132A55] disabled:bg-slate-300 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all shadow-sm">
                 {rodando
                   ? <><i className="fa-solid fa-spinner animate-spin"></i>Exportando...</>
                   : <><i className="fa-solid fa-download"></i>Exportar Backup</>
@@ -244,8 +244,8 @@ const BackupView: React.FC = () => {
             {/* Barra de progresso */}
             {(rodando || concluido) && progresso.length > 0 && (
               <div className="space-y-3">
-                <div className="w-full bg-slate-100 rounded-full h-2">
-                  <div className="bg-indigo-600 h-2 rounded-full transition-all duration-500"
+                <div className="w-full bg-[#F5EDD8] rounded-full h-2">
+                  <div className="bg-[#1A3A6B] h-2 rounded-full transition-all duration-500"
                     style={{ width: `${(progresso.length / COLECOES_TENANT.length) * 100}%` }} />
                 </div>
 
@@ -280,23 +280,23 @@ const BackupView: React.FC = () => {
         )}
 
         {/* Backup por coleção */}
-        <div className="bg-white border border-slate-200 rounded-[16px] shadow-sm overflow-hidden">
+        <div className="bg-white border border-[#E8D5A3] rounded-[16px] shadow-sm overflow-hidden">
           <div className="p-5 border-b border-slate-100">
-            <h3 className="text-sm font-black text-slate-800">Backup por Coleção</h3>
-            <p className="text-xs text-slate-500 mt-0.5">Exporte uma coleção específica de forma individual</p>
+            <h3 className="text-sm font-black text-[#0A1628]">Backup por Coleção</h3>
+            <p className="text-xs text-[#5A6E8A] mt-0.5">Exporte uma coleção específica de forma individual</p>
           </div>
           <div className="divide-y divide-slate-100">
             {COLECOES_TENANT.map(col => {
               const status = progresso.find(p => p.colecao === col.id);
               return (
-                <div key={col.id} className="flex items-center justify-between p-4 hover:bg-[#F5F4EF] transition-all">
+                <div key={col.id} className="flex items-center justify-between p-4 hover:bg-[#FBF7EE] transition-all">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-slate-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <i className={`fa-solid ${col.icon} text-slate-500 text-sm`}></i>
+                    <div className="w-9 h-9 bg-[#F5EDD8] rounded-xl flex items-center justify-center flex-shrink-0">
+                      <i className={`fa-solid ${col.icon} text-[#5A6E8A] text-sm`}></i>
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-slate-700">{col.label}</p>
-                      <p className="text-[10px] text-slate-400 font-mono">{col.id}</p>
+                      <p className="text-sm font-bold text-[#1A2744]">{col.label}</p>
+                      <p className="text-[10px] text-[#8A9BB0] font-mono">{col.id}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -304,7 +304,7 @@ const BackupView: React.FC = () => {
                       <span className={`text-[10px] font-black px-2 py-1 rounded-lg ${
                         status.status === 'ok'    ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' :
                         status.status === 'erro'  ? 'bg-red-50 text-red-500 border border-red-200' :
-                        status.status === 'vazio' ? 'bg-slate-100 text-slate-400 border border-slate-200' :
+                        status.status === 'vazio' ? 'bg-[#F5EDD8] text-[#8A9BB0] border border-[#E8D5A3]' :
                                                     'bg-amber-50 text-amber-600 border border-amber-200'
                       }`}>
                         {status.status === 'ok'    ? `${status.registros} registros` :
@@ -316,7 +316,7 @@ const BackupView: React.FC = () => {
                       <button
                         onClick={() => backupColecao(col.id, col.label)}
                         disabled={rodando}
-                        className="flex items-center gap-1.5 bg-white border border-slate-200 hover:border-indigo-400 hover:text-indigo-600 text-slate-500 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-40">
+                        className="flex items-center gap-1.5 bg-white border border-[#E8D5A3] hover:border-indigo-400 hover:text-[#1A3A6B] text-[#5A6E8A] px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-40">
                         <i className="fa-solid fa-download text-[9px]"></i>JSON
                       </button>
                     )}
