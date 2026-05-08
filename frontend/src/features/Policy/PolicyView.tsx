@@ -11,7 +11,7 @@ const PolicyView: React.FC = () => {
         <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
           Política de <span className="text-red-500">Segurança</span>
         </h2>
-        <p className="text-[#5A6E8A] font-bold uppercase tracking-widest text-sm">
+        <p className="text-slate-400 font-bold uppercase tracking-widest text-sm">
           Controles, Proteções e Responsabilidades — CartórioRAG PRO v3.0
         </p>
         <div className="flex items-center gap-3 flex-wrap">
@@ -21,14 +21,14 @@ const PolicyView: React.FC = () => {
         </div>
       </header>
 
-      <div className="bg-[#FBF7EE] border border-[#E8D5A3] rounded-[40px] p-12 space-y-10 shadow-2xl">
+      <div className="bg-[#0D1B3E] border border-[#C9A84C]/30 rounded-[40px] p-12 space-y-10 shadow-2xl">
 
         {/* 1 */}
         <div className="space-y-4">
           <h3 className="text-lg font-black text-red-500 uppercase tracking-widest flex items-center gap-3">
             <i className="fa-solid fa-bullseye"></i> 1. Objetivo e Escopo
           </h3>
-          <p className="text-[#1A2744] text-sm leading-loose text-justify">
+          <p className="text-slate-200 text-sm leading-loose text-justify">
             Esta Política de Segurança estabelece os princípios, controles e responsabilidades para proteção dos sistemas, dados e infraestrutura do <strong>CartórioRAG PRO</strong>. Aplica-se a todos os usuários, colaboradores das serventias contratantes e à equipe da <strong>MJ Consultoria</strong>, em conformidade com o Provimento CNJ nº 212/2026 e as melhores práticas de segurança da informação.
           </p>
         </div>
@@ -52,7 +52,7 @@ const PolicyView: React.FC = () => {
                   <i className={`fa-solid ${item.icon} text-${item.color}-400`}></i>
                   <p className={`text-[10px] font-black text-${item.color}-400 uppercase tracking-widest`}>{item.title}</p>
                 </div>
-                <p className="text-xs text-[#8A9BB0] leading-relaxed">{item.desc}</p>
+                <p className="text-xs text-slate-500 leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -77,7 +77,7 @@ const PolicyView: React.FC = () => {
                   <i className={`fa-solid ${item.icon} text-${item.color}-400`}></i>
                   <p className={`text-[10px] font-black text-${item.color}-400 uppercase tracking-widest`}>{item.title}</p>
                 </div>
-                <p className="text-xs text-[#8A9BB0] leading-relaxed">{item.desc}</p>
+                <p className="text-xs text-slate-500 leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -90,7 +90,7 @@ const PolicyView: React.FC = () => {
           <h3 className="text-lg font-black text-emerald-500 uppercase tracking-widest flex items-center gap-3">
             <i className="fa-solid fa-scroll"></i> 4. Auditoria e Rastreabilidade
           </h3>
-          <p className="text-[#1A2744] text-sm leading-loose text-justify">
+          <p className="text-slate-200 text-sm leading-loose text-justify">
             Todas as ações realizadas na plataforma são registradas em logs imutáveis de auditoria, incluindo:
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -104,13 +104,13 @@ const PolicyView: React.FC = () => {
               { icon: 'fa-graduation-cap',   label: 'Atividades Treino',    color: 'emerald' },
               { icon: 'fa-triangle-exclamation', label: 'Tentativas Falhas', color: 'red'    },
             ].map((item, i) => (
-              <div key={i} className="bg-[#FBF7EE] border border-[#E8D5A3] rounded-xl p-3 text-center space-y-2">
+              <div key={i} className="bg-[#0D1B3E] border border-[#C9A84C]/30 rounded-xl p-3 text-center space-y-2">
                 <i className={`fa-solid ${item.icon} text-${item.color}-400`}></i>
-                <p className="text-[9px] font-black text-[#5A6E8A] uppercase tracking-widest leading-tight">{item.label}</p>
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight">{item.label}</p>
               </div>
             ))}
           </div>
-          <p className="text-xs text-[#5A6E8A] italic">Logs são retidos por no mínimo 5 anos conforme exigência do CNJ e não podem ser excluídos por usuários comuns.</p>
+          <p className="text-xs text-slate-400 italic">Logs são retidos por no mínimo 5 anos conforme exigência do CNJ e não podem ser excluídos por usuários comuns.</p>
         </div>
 
         <div className="w-full h-px bg-slate-800/50"></div>
@@ -129,9 +129,9 @@ const PolicyView: React.FC = () => {
               'Não inserir dados falsos, manipulados ou que possam comprometer a integridade dos registros de auditoria.',
               'Encerrar a sessão ao término do uso, especialmente em computadores compartilhados.',
             ].map((item, i) => (
-              <div key={i} className="flex items-start gap-3 p-3 bg-[#FBF7EE] border border-[#E8D5A3] rounded-xl">
+              <div key={i} className="flex items-start gap-3 p-3 bg-[#0D1B3E] border border-[#C9A84C]/30 rounded-xl">
                 <i className="fa-solid fa-circle-check text-purple-400 text-xs mt-1 flex-shrink-0"></i>
-                <p className="text-xs text-[#1A2744] leading-relaxed">{item}</p>
+                <p className="text-xs text-slate-200 leading-relaxed">{item}</p>
               </div>
             ))}
           </div>
@@ -144,7 +144,7 @@ const PolicyView: React.FC = () => {
           <h3 className="text-lg font-black text-red-500 uppercase tracking-widest flex items-center gap-3">
             <i className="fa-solid fa-triangle-exclamation"></i> 6. Incidentes de Segurança
           </h3>
-          <p className="text-[#1A2744] text-sm leading-loose text-justify">
+          <p className="text-slate-200 text-sm leading-loose text-justify">
             Em caso de incidente de segurança (vazamento de dados, acesso não autorizado, perda de credenciais), a MJ Consultoria seguirá o protocolo:
           </p>
           <div className="space-y-2">
@@ -159,20 +159,20 @@ const PolicyView: React.FC = () => {
                 <span className="text-[10px] font-black text-red-400 bg-red-500/10 border border-red-500/20 px-2 py-1 rounded-lg flex-shrink-0">{item.step}</span>
                 <div>
                   <p className="text-[10px] font-black text-red-400 uppercase tracking-widest mb-1">{item.label}</p>
-                  <p className="text-xs text-[#8A9BB0]">{item.desc}</p>
+                  <p className="text-xs text-slate-500">{item.desc}</p>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="bg-slate-900/50 border border-[#E8D5A3] rounded-3xl p-8 flex items-start gap-4">
-          <i className="fa-solid fa-circle-info text-[#8A9BB0] text-xl mt-1 flex-shrink-0"></i>
+        <div className="bg-slate-900/50 border border-[#C9A84C]/30 rounded-3xl p-8 flex items-start gap-4">
+          <i className="fa-solid fa-circle-info text-slate-500 text-xl mt-1 flex-shrink-0"></i>
           <div>
             <p className="text-sm font-black text-white mb-1">Dúvidas sobre Segurança?</p>
-            <p className="text-xs text-[#8A9BB0] leading-relaxed">
+            <p className="text-xs text-slate-500 leading-relaxed">
               Para reportar vulnerabilidades, incidentes ou dúvidas sobre esta política, utilize o módulo de <strong className="text-blue-400">Suporte Técnico</strong> da plataforma.
-              <br /><span className="text-[#2C3E5A] text-[9px] mt-2 block">Última atualização: Fevereiro/2026 — CartórioRAG PRO v3.0 — Conforme Provimento CNJ nº 212/2026</span>
+              <br /><span className="text-slate-300 text-[9px] mt-2 block">Última atualização: Fevereiro/2026 — CartórioRAG PRO v3.0 — Conforme Provimento CNJ nº 212/2026</span>
             </p>
           </div>
         </div>

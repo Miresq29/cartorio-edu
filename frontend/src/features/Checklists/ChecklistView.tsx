@@ -215,22 +215,22 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
   const progress = totalItems > 0 ? Math.round((checkedCount / totalItems) * 100) : 0;
 
   return (
-    <div className="h-full flex bg-[#FBF7EE] min-h-screen">
+    <div className="h-full flex bg-[#0D1B3E] min-h-screen">
       {/* Sidebar */}
-      <aside className="w-80 border-r border-[#E8D5A3] flex flex-col bg-[#FBF7EE] flex-shrink-0">
-        <div className="p-6 border-b border-[#E8D5A3] flex justify-between items-center">
-          <h2 className="text-xs font-black text-[#5A6E8A] uppercase tracking-widest">Protocolos</h2>
+      <aside className="w-80 border-r border-[#C9A84C]/30 flex flex-col bg-[#0D1B3E] flex-shrink-0">
+        <div className="p-6 border-b border-[#C9A84C]/30 flex justify-between items-center">
+          <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest">Protocolos</h2>
           <button onClick={openCreateModal} className="text-blue-500 hover:text-blue-400 transition-colors">
             <i className="fa-solid fa-circle-plus text-2xl"></i>
           </button>
         </div>
         <div className="flex-1 overflow-y-auto p-4 space-y-2">
-          {loading && <p className="text-xs text-[#2C3E5A] text-center py-4 animate-pulse">Carregando...</p>}
+          {loading && <p className="text-xs text-slate-300 text-center py-4 animate-pulse">Carregando...</p>}
           {checklists.map(t => (
             <div key={t.id} className="group flex items-center gap-2">
               <button
                 onClick={() => handleSelectChecklist(t.id)}
-                className={`flex-1 p-4 rounded-xl flex items-center gap-3 transition-all text-left ${activeChecklistId === t.id ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 text-[#8A9BB0]'}`}
+                className={`flex-1 p-4 rounded-xl flex items-center gap-3 transition-all text-left ${activeChecklistId === t.id ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 text-slate-500'}`}
               >
                 <i className="fa-solid fa-file-lines flex-shrink-0 text-sm"></i>
                 <div className="min-w-0">
@@ -240,7 +240,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
               </button>
               <button
                 onClick={() => handleDelete(t.id, t.title)}
-                className={`p-2 rounded-lg transition-colors opacity-0 group-hover:opacity-100 ${deleteConfirmId === t.id ? 'text-red-500' : 'text-[#2C3E5A] hover:text-red-500'}`}
+                className={`p-2 rounded-lg transition-colors opacity-0 group-hover:opacity-100 ${deleteConfirmId === t.id ? 'text-red-500' : 'text-slate-300 hover:text-red-500'}`}
               >
                 <i className={`fa-solid ${deleteConfirmId === t.id ? 'fa-check' : 'fa-trash-can'} text-xs`}></i>
               </button>
@@ -252,7 +252,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
       {/* Main */}
       <main className="flex-1 overflow-y-auto">
         {!activeChecklist ? (
-          <div className="h-full flex flex-col items-center justify-center text-[#1A2744] opacity-30 space-y-4 text-center p-10">
+          <div className="h-full flex flex-col items-center justify-center text-slate-200 opacity-30 space-y-4 text-center p-10">
             <i className="fa-solid fa-clipboard-check text-8xl"></i>
             <p className="text-sm font-bold uppercase tracking-widest">Selecione ou Crie um Protocolo</p>
           </div>
@@ -262,17 +262,17 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
             <div className="flex items-start justify-between flex-wrap gap-4">
               <div>
                 <h3 className="text-3xl font-black text-white italic uppercase">{activeChecklist.title}</h3>
-                <p className="text-[10px] text-[#5A6E8A] font-black tracking-widest uppercase mt-2">
+                <p className="text-[10px] text-slate-400 font-black tracking-widest uppercase mt-2">
                   {totalItems} itens // Unidade: {state.user?.tenantId}
                 </p>
               </div>
               <div className="flex gap-2">
                 <button onClick={() => setMode('roteiro')}
-                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${mode === 'roteiro' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-[#8A9BB0] hover:bg-slate-700'}`}>
+                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${mode === 'roteiro' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-500 hover:bg-slate-700'}`}>
                   <i className="fa-solid fa-list mr-2"></i>Roteiro
                 </button>
                 <button onClick={() => setMode('executar')}
-                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${mode === 'executar' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-[#8A9BB0] hover:bg-slate-700'}`}>
+                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${mode === 'executar' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-500 hover:bg-slate-700'}`}>
                   <i className="fa-solid fa-check-double mr-2"></i>Executar
                 </button>
               </div>
@@ -280,12 +280,12 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
 
             {/* MODO ROTEIRO */}
             {mode === 'roteiro' && (
-              <div className="bg-white border border-[#E8D5A3] rounded-[32px] p-8 space-y-3 shadow-2xl">
-                <p className="text-[10px] font-black text-[#5A6E8A] uppercase tracking-widest mb-4">Itens do Protocolo</p>
+              <div className="bg-[#1A2A52] border border-[#C9A84C]/30 rounded-[32px] p-8 space-y-3 shadow-2xl">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Itens do Protocolo</p>
                 {activeChecklist.items?.map((item, idx) => (
-                  <div key={item.id} className="flex items-start gap-4 p-4 bg-slate-900/50 border border-[#E8D5A3] rounded-2xl">
+                  <div key={item.id} className="flex items-start gap-4 p-4 bg-slate-900/50 border border-[#C9A84C]/30 rounded-2xl">
                     <div className="w-7 h-7 rounded-lg bg-slate-950 flex items-center justify-center text-blue-500 text-xs font-bold flex-shrink-0 mt-0.5">{idx + 1}</div>
-                    <span className="text-sm text-[#1A2744] font-medium leading-relaxed">{item.text}</span>
+                    <span className="text-sm text-slate-200 font-medium leading-relaxed">{item.text}</span>
                   </div>
                 ))}
               </div>
@@ -295,9 +295,9 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
             {mode === 'executar' && (
               <div className="space-y-5">
                 {/* Progresso */}
-                <div className="bg-white border border-[#E8D5A3] rounded-2xl p-5">
+                <div className="bg-[#1A2A52] border border-[#C9A84C]/30 rounded-2xl p-5">
                   <div className="flex justify-between items-center mb-3">
-                    <span className="text-[10px] font-black text-[#5A6E8A] uppercase tracking-widest">Progresso da Execução</span>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Progresso da Execução</span>
                     <span className="text-xs font-black text-white">{checkedCount}/{totalItems} — {progress}%</span>
                   </div>
                   <div className="w-full bg-slate-800 rounded-full h-2">
@@ -311,7 +311,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
                 {/* Itens marcáveis */}
                 <div className="space-y-3">
                   {activeChecklist.items?.map((item, idx) => (
-                    <div key={item.id} className={`border rounded-2xl p-5 transition-all ${checkedItems[item.id] ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-white border-[#E8D5A3]'}`}>
+                    <div key={item.id} className={`border rounded-2xl p-5 transition-all ${checkedItems[item.id] ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-[#1A2A52] border-[#C9A84C]/30'}`}>
                       <div className="flex items-start gap-4">
                         <button
                           onClick={() => setCheckedItems(prev => ({ ...prev, [item.id]: !prev[item.id] }))}
@@ -320,15 +320,15 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
                           {checkedItems[item.id] && <i className="fa-solid fa-check text-xs"></i>}
                         </button>
                         <div className="flex-1">
-                          <span className={`text-sm font-medium leading-relaxed ${checkedItems[item.id] ? 'text-[#5A6E8A] line-through' : 'text-[#1A2744]'}`}>
-                            <span className="text-[10px] font-black text-[#2C3E5A] mr-2">{idx + 1}.</span>{item.text}
+                          <span className={`text-sm font-medium leading-relaxed ${checkedItems[item.id] ? 'text-slate-400 line-through' : 'text-slate-200'}`}>
+                            <span className="text-[10px] font-black text-slate-300 mr-2">{idx + 1}.</span>{item.text}
                           </span>
                           <textarea
                             value={executionNotes[item.id] || ''}
                             onChange={e => setExecutionNotes(prev => ({ ...prev, [item.id]: e.target.value }))}
                             placeholder="Observação (opcional)..."
                             rows={1}
-                            className="mt-2 w-full bg-slate-950 border border-[#E8D5A3] rounded-lg p-2 text-xs text-[#8A9BB0] outline-none focus:border-blue-500 resize-none"
+                            className="mt-2 w-full bg-slate-950 border border-[#C9A84C]/30 rounded-lg p-2 text-xs text-slate-500 outline-none focus:border-blue-500 resize-none"
                           />
                         </div>
                       </div>
@@ -342,7 +342,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
                     <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest">
                       <i className="fa-solid fa-robot mr-2"></i>Análise RAG — Verificar Documento
                     </p>
-                    <p className="text-xs text-[#5A6E8A] mt-1">
+                    <p className="text-xs text-slate-400 mt-1">
                       A IA analisará o documento contra este protocolo e a base legal indexada. Nenhuma informação externa será utilizada.
                     </p>
                   </div>
@@ -351,7 +351,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
                     <input type="file" ref={docFileRef} onChange={handleDocUpload} className="hidden" accept=".pdf,.doc,.docx,.txt" />
                     <button
                       onClick={() => docFileRef.current?.click()}
-                      className={`flex items-center gap-2 px-5 py-3 rounded-xl text-[10px] font-black uppercase transition-all border ${uploadedDocText ? 'border-emerald-500/40 text-emerald-400 bg-emerald-500/5' : 'border-[#D4C5A0] text-[#8A9BB0] hover:border-blue-500 hover:text-white'}`}
+                      className={`flex items-center gap-2 px-5 py-3 rounded-xl text-[10px] font-black uppercase transition-all border ${uploadedDocText ? 'border-emerald-500/40 text-emerald-400 bg-emerald-500/5' : 'border-[#C9A84C]/20 text-slate-500 hover:border-blue-500 hover:text-white'}`}
                     >
                       <i className={`fa-solid ${uploadedDocText ? 'fa-file-circle-check' : 'fa-cloud-arrow-up'}`}></i>
                       {uploadedDocText ? uploadedDocName : 'Subir Documento'}
@@ -366,19 +366,19 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
                   </div>
 
                   {analysisResult && (
-                    <div className="bg-slate-950 border border-[#E8D5A3] rounded-2xl p-6">
+                    <div className="bg-slate-950 border border-[#C9A84C]/30 rounded-2xl p-6">
                       <div className="flex justify-between items-center mb-4">
                         <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest">
                           <i className="fa-solid fa-file-invoice mr-2"></i>Parecer Técnico — Baseado na Base Legal Indexada
                         </p>
                         <button
                           onClick={() => navigator.clipboard.writeText(analysisResult).then(() => showToast('Copiado!', 'success'))}
-                          className="text-[9px] text-[#5A6E8A] hover:text-white font-bold uppercase px-3 py-1 rounded-lg hover:bg-slate-800 transition-all"
+                          className="text-[9px] text-slate-400 hover:text-white font-bold uppercase px-3 py-1 rounded-lg hover:bg-slate-800 transition-all"
                         >
                           <i className="fa-solid fa-copy mr-1"></i>Copiar
                         </button>
                       </div>
-                      <pre className="text-xs text-[#1A2744] leading-relaxed whitespace-pre-wrap font-sans">{analysisResult}</pre>
+                      <pre className="text-xs text-slate-200 leading-relaxed whitespace-pre-wrap font-sans">{analysisResult}</pre>
                     </div>
                   )}
                 </div>
@@ -391,24 +391,24 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
       {/* Modal de criação */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/90 backdrop-blur-sm">
-          <div className="bg-[#FBF7EE] border border-[#E8D5A3] rounded-[40px] w-full max-w-2xl overflow-hidden shadow-2xl">
-            <header className="p-8 border-b border-[#E8D5A3] flex justify-between items-center">
+          <div className="bg-[#0D1B3E] border border-[#C9A84C]/30 rounded-[40px] w-full max-w-2xl overflow-hidden shadow-2xl">
+            <header className="p-8 border-b border-[#C9A84C]/30 flex justify-between items-center">
               <h3 className="text-white font-black uppercase italic">Novo Protocolo</h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-[#5A6E8A] hover:text-white transition-colors">
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-white transition-colors">
                 <i className="fa-solid fa-xmark text-xl"></i>
               </button>
             </header>
             <div className="p-8 space-y-6 max-h-[60vh] overflow-y-auto">
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-[#5A6E8A] uppercase tracking-widest">Nome do Ato</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nome do Ato</label>
                 <input value={formName} onChange={e => setFormName(e.target.value)} placeholder="Ex: Escritura de Compra e Venda"
-                  className="w-full bg-slate-900 border border-[#E8D5A3] rounded-xl p-4 text-white font-bold outline-none focus:border-blue-500" />
+                  className="w-full bg-slate-900 border border-[#C9A84C]/30 rounded-xl p-4 text-white font-bold outline-none focus:border-blue-500" />
               </div>
 
               <div className="flex justify-between items-center p-4 bg-blue-600/5 rounded-2xl border border-blue-600/10">
                 <div className="space-y-1">
                   <span className="text-[10px] font-black text-blue-500 uppercase block">Extrair via IA</span>
-                  <p className="text-[9px] text-[#5A6E8A] uppercase">Gera itens a partir de um PDF/DOCX</p>
+                  <p className="text-[9px] text-slate-400 uppercase">Gera itens a partir de um PDF/DOCX</p>
                 </div>
                 <input type="file" ref={fileInputRef} onChange={handleFileUploadModal} className="hidden" accept=".pdf,.doc,.docx" />
                 <button onClick={() => fileInputRef.current?.click()} disabled={isProcessingFile}
@@ -419,23 +419,23 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
 
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <label className="text-[10px] font-black text-[#5A6E8A] uppercase tracking-widest">Itens</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Itens</label>
                   <button onClick={() => setFormItems(prev => [...prev, ''])} className="text-[9px] text-blue-500 font-black uppercase hover:text-blue-400">+ Adicionar</button>
                 </div>
                 {formItems.map((item, idx) => (
                   <div key={idx} className="flex gap-2">
                     <input value={item} onChange={e => { const u = [...formItems]; u[idx] = e.target.value; setFormItems(u); }}
                       placeholder={`Item ${idx + 1}`}
-                      className="flex-1 bg-slate-900 border border-[#E8D5A3] rounded-xl p-3 text-white text-sm outline-none focus:border-blue-500" />
-                    <button onClick={() => setFormItems(prev => prev.filter((_, i) => i !== idx))} className="text-[#2C3E5A] hover:text-red-500 transition-colors px-2">
+                      className="flex-1 bg-slate-900 border border-[#C9A84C]/30 rounded-xl p-3 text-white text-sm outline-none focus:border-blue-500" />
+                    <button onClick={() => setFormItems(prev => prev.filter((_, i) => i !== idx))} className="text-slate-300 hover:text-red-500 transition-colors px-2">
                       <i className="fa-solid fa-trash-can text-xs"></i>
                     </button>
                   </div>
                 ))}
               </div>
             </div>
-            <footer className="p-8 border-t border-[#E8D5A3] flex justify-end gap-4">
-              <button onClick={() => setIsModalOpen(false)} className="text-[#5A6E8A] hover:text-white text-[10px] font-black uppercase px-6 py-3 transition-colors">Cancelar</button>
+            <footer className="p-8 border-t border-[#C9A84C]/30 flex justify-end gap-4">
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-white text-[10px] font-black uppercase px-6 py-3 transition-colors">Cancelar</button>
               <button onClick={handleSave} disabled={isSaving} className="bg-blue-600 text-white text-[10px] font-black uppercase px-8 py-3 rounded-xl hover:bg-blue-500 transition-all disabled:opacity-50">
                 {isSaving ? 'Salvando...' : 'Salvar Protocolo'}
               </button>

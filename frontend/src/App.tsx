@@ -45,7 +45,7 @@ const MainLayout: React.FC = () => {
 
   if (!state || !state.user) {
     return (
-      <Suspense fallback={<div className="bg-[#F5EDD8] h-screen" />}>
+      <Suspense fallback={<div className="bg-[#132044] h-screen" />}>
         <LoginView />
       </Suspense>
     );
@@ -53,7 +53,7 @@ const MainLayout: React.FC = () => {
 
   if (state.user.isFirstLogin) {
     return (
-      <Suspense fallback={<div className="bg-[#F5EDD8] h-screen" />}>
+      <Suspense fallback={<div className="bg-[#132044] h-screen" />}>
         <ChangePasswordView />
       </Suspense>
     );
@@ -96,24 +96,24 @@ const MainLayout: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#F5EDD8] text-[#0A1628]">
+    <div className="flex h-screen overflow-hidden bg-[#132044] text-white">
       <Sidebar />
       <main className="flex-1 overflow-y-auto relative custom-scrollbar">
-        <header className="px-6 py-3 border-b border-[#E8D5A3] flex justify-between items-center bg-white sticky top-0 z-50 shadow-sm">
+        <header className="px-6 py-3 border-b border-[#C9A84C]/30 flex justify-between items-center bg-[#0D1B3E]/95 sticky top-0 z-50 shadow-sm border-b border-[#C9A84C]/20 backdrop-blur-md">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-            <h2 className="text-[10px] font-black text-[#8A9BB0] uppercase tracking-[0.3em]">
+            <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">
               Ambiente: {state.user.tenantId || 'MJ Consultoria'}
             </h2>
           </div>
           <div className="text-right">
-            <p className="text-xs font-bold text-[#2C3E5A] uppercase italic tracking-tighter">
+            <p className="text-xs font-bold text-slate-300 uppercase italic tracking-tighter">
               {String(state.user.name || 'Operador')}
             </p>
           </div>
         </header>
 
-        <Suspense fallback={<div className="p-10 text-[#5A6E8A] font-bold italic text-center">Iniciando Protocolos MJ...</div>}>
+        <Suspense fallback={<div className="p-10 text-slate-400 font-bold italic text-center">Iniciando Protocolos MJ...</div>}>
           <ErrorBoundary>
             {renderContent()}
           </ErrorBoundary>

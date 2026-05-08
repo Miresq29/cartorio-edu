@@ -42,7 +42,7 @@ const ROLE_COLORS: Record<ColaboradorRole, string> = {
   gestor:    'bg-blue-500/20 text-blue-300 border border-blue-500/30',
   atendente: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30',
   auditor:   'bg-purple-500/20 text-purple-300 border border-purple-500/30',
-  viewer:    'bg-[#FBF7EE]0/20 text-[#8A9BB0] border border-slate-500/30',
+  viewer:    'bg-[#0D1B3E]0/20 text-slate-500 border border-slate-500/30',
 };
 
 const emptyForm = {
@@ -185,7 +185,7 @@ const ColaboradoresView: React.FC = () => {
           <h1 className="text-2xl font-black text-slate-100 uppercase tracking-widest">
             Colaboradores
           </h1>
-          <p className="text-xs text-[#5A6E8A] mt-1 uppercase tracking-widest">
+          <p className="text-xs text-slate-400 mt-1 uppercase tracking-widest">
             {colaboradores.filter(c => c.ativo).length} ativos ·{' '}
             {colaboradores.length} cadastrados
           </p>
@@ -221,11 +221,11 @@ const ColaboradoresView: React.FC = () => {
 
       {/* tabela */}
       {loading ? (
-        <div className="text-center py-16 text-[#5A6E8A] text-sm italic">
+        <div className="text-center py-16 text-slate-400 text-sm italic">
           Iniciando Protocolos MJ...
         </div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-16 text-[#5A6E8A] text-sm italic">
+        <div className="text-center py-16 text-slate-400 text-sm italic">
           {search || filterRole ? 'Nenhum resultado.' : 'Nenhum colaborador cadastrado.'}
         </div>
       ) : (
@@ -234,7 +234,7 @@ const ColaboradoresView: React.FC = () => {
             <thead>
               <tr className="bg-slate-900/50">
                 {['Nome', 'CPF', 'Cargo', 'E-mail', 'Perfil', 'Status', ...(canEdit ? ['Ações'] : [])].map(h => (
-                  <th key={h} className="px-4 py-3 text-left text-[10px] font-black text-[#5A6E8A] uppercase tracking-widest">
+                  <th key={h} className="px-4 py-3 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">
                     {h}
                   </th>
                 ))}
@@ -244,9 +244,9 @@ const ColaboradoresView: React.FC = () => {
               {filtered.map(c => (
                 <tr key={c.id} className={`transition-colors hover:bg-slate-700/20 ${!c.ativo ? 'opacity-40' : ''}`}>
                   <td className="px-4 py-3 font-bold text-slate-200">{c.nome}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-[#5A6E8A]">{c.cpfMask}</td>
-                  <td className="px-4 py-3 text-[#8A9BB0]">{c.cargo}</td>
-                  <td className="px-4 py-3 text-[#8A9BB0]">{c.email}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-slate-400">{c.cpfMask}</td>
+                  <td className="px-4 py-3 text-slate-500">{c.cargo}</td>
+                  <td className="px-4 py-3 text-slate-500">{c.email}</td>
                   <td className="px-4 py-3">
                     <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${ROLE_COLORS[c.role] ?? ROLE_COLORS.viewer}`}>
                       {ROLES.find(r => r.value === c.role)?.label ?? c.role}
@@ -281,7 +281,7 @@ const ColaboradoresView: React.FC = () => {
               <h3 className="text-xs font-black text-slate-200 uppercase tracking-widest">
                 {editTarget ? 'Editar colaborador' : 'Novo colaborador'}
               </h3>
-              <button onClick={closeForm} className="text-[#5A6E8A] hover:text-slate-300 text-xl leading-none transition-colors">×</button>
+              <button onClick={closeForm} className="text-slate-400 hover:text-slate-300 text-xl leading-none transition-colors">×</button>
             </div>
 
             <div className="px-6 py-5 flex flex-col gap-4">
@@ -297,7 +297,7 @@ const ColaboradoresView: React.FC = () => {
                 { label: 'E-mail *', key: 'email', type: 'email', placeholder: 'colaborador@cartorio.com', disabled: !!editTarget },
               ].map(({ label, key, type, placeholder, disabled }) => (
                 <label key={key} className="flex flex-col gap-1">
-                  <span className="text-[10px] font-bold text-[#8A9BB0] uppercase tracking-widest">{label}</span>
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{label}</span>
                   <input
                     type={type}
                     value={(form as any)[key]}
@@ -313,7 +313,7 @@ const ColaboradoresView: React.FC = () => {
               ))}
 
               <label className="flex flex-col gap-1">
-                <span className="text-[10px] font-bold text-[#8A9BB0] uppercase tracking-widest">Cargo *</span>
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Cargo *</span>
                 <select
                   value={form.cargo}
                   onChange={e => setForm(f => ({ ...f, cargo: e.target.value }))}
@@ -325,7 +325,7 @@ const ColaboradoresView: React.FC = () => {
               </label>
 
               <label className="flex flex-col gap-1">
-                <span className="text-[10px] font-bold text-[#8A9BB0] uppercase tracking-widest">Perfil de acesso *</span>
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Perfil de acesso *</span>
                 <select
                   value={form.role}
                   onChange={e => setForm(f => ({ ...f, role: e.target.value as ColaboradorRole }))}
@@ -340,7 +340,7 @@ const ColaboradoresView: React.FC = () => {
               <button
                 onClick={closeForm}
                 disabled={saving}
-                className="px-4 py-2 text-xs text-[#8A9BB0] hover:text-slate-200 uppercase tracking-widest font-bold transition-colors disabled:opacity-50"
+                className="px-4 py-2 text-xs text-slate-500 hover:text-slate-200 uppercase tracking-widest font-bold transition-colors disabled:opacity-50"
               >
                 Cancelar
               </button>

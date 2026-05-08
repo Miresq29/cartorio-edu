@@ -73,7 +73,7 @@ const Sidebar: React.FC = () => {
 
   return (
     <aside
-      className={`bg-[#05080f] text-[#8A9BB0] flex flex-col h-screen sticky top-0 border-r border-slate-800/50 no-print transition-all duration-300 ${
+      className={`bg-[#05080f] text-slate-500 flex flex-col h-screen sticky top-0 border-r border-slate-800/50 no-print transition-all duration-300 ${
         expanded ? 'w-72' : 'w-16'
       }`}
     >
@@ -118,13 +118,13 @@ const Sidebar: React.FC = () => {
                   className={`w-full flex items-center justify-center p-2 rounded-xl transition-all ${
                     hasActiveItem
                       ? 'bg-blue-600/20 text-blue-400'
-                      : 'hover:bg-slate-900 text-[#2C3E5A] hover:text-slate-300'
+                      : 'hover:bg-slate-900 text-slate-300 hover:text-slate-300'
                   }`}
                 >
                   <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
                     hasActiveItem ? 'bg-blue-600/30' : 'bg-slate-900'
                   }`}>
-                    <i className={`fa-solid ${section.icon} text-sm ${hasActiveItem ? 'text-blue-400' : 'text-[#5A6E8A]'}`}></i>
+                    <i className={`fa-solid ${section.icon} text-sm ${hasActiveItem ? 'text-blue-400' : 'text-slate-400'}`}></i>
                   </div>
                   {hasActiveItem && (
                     <span className="absolute right-1.5 top-1.5 w-1.5 h-1.5 rounded-full bg-blue-500"></span>
@@ -146,17 +146,17 @@ const Sidebar: React.FC = () => {
               >
                 <div className="flex items-center gap-2">
                   <i className={`fa-solid ${section.icon} text-[10px] ${
-                    hasActiveItem ? 'text-blue-400' : 'text-[#2C3E5A]'
+                    hasActiveItem ? 'text-blue-400' : 'text-slate-300'
                   }`}></i>
                   <span className={`text-xs font-black tracking-[0.12em] uppercase ${
-                    hasActiveItem && !isOpen ? 'text-blue-400' : 'text-[#2C3E5A] group-hover:text-[#8A9BB0]'
+                    hasActiveItem && !isOpen ? 'text-blue-400' : 'text-slate-300 group-hover:text-slate-500'
                   }`}>
                     {section.label}
                   </span>
                   {hasActiveItem && !isOpen && <span className="w-1.5 h-1.5 rounded-full bg-blue-500 ml-1"></span>}
                 </div>
                 <i className={`fa-solid fa-chevron-down text-[9px] transition-transform duration-200 ${
-                  isOpen ? 'rotate-180 text-[#5A6E8A]' : 'text-[#1A2744]'
+                  isOpen ? 'rotate-180 text-slate-400' : 'text-slate-200'
                 }`}></i>
               </button>
 
@@ -177,14 +177,14 @@ const Sidebar: React.FC = () => {
                           isActive ? 'bg-white/10' : 'bg-slate-900 group-hover:bg-slate-800'
                         }`}>
                           <i className={`fa-solid ${item.icon} text-[10px] ${
-                            isActive ? 'text-white' : item.color ?? 'text-[#5A6E8A] group-hover:text-blue-400'
+                            isActive ? 'text-white' : item.color ?? 'text-slate-400 group-hover:text-blue-400'
                           }`}></i>
                         </div>
                         <div className="text-left min-w-0">
                           <p className={`text-sm font-black truncate ${isActive ? 'text-white' : 'text-slate-300 group-hover:text-white'}`}>
                             {item.label}
                           </p>
-                          <p className={`text-[11px] truncate leading-tight ${isActive ? 'text-blue-200' : 'text-[#2C3E5A] group-hover:text-[#8A9BB0]'}`}>
+                          <p className={`text-[11px] truncate leading-tight ${isActive ? 'text-blue-200' : 'text-slate-300 group-hover:text-slate-500'}`}>
                             {item.desc}
                           </p>
                         </div>
@@ -212,7 +212,7 @@ const Sidebar: React.FC = () => {
               </p>
             </div>
             <button type="button" onClick={handleLogout} title="Sair do sistema"
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-[#2C3E5A] hover:text-rose-400 hover:bg-rose-500/10 transition-all flex-shrink-0">
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-300 hover:text-rose-400 hover:bg-rose-500/10 transition-all flex-shrink-0">
               <i className="fa-solid fa-arrow-right-from-bracket text-sm"></i>
             </button>
           </div>
@@ -222,7 +222,7 @@ const Sidebar: React.FC = () => {
               {state.user?.name ? state.user.name.substring(0, 2).toUpperCase() : '??'}
             </div>
             <button type="button" onClick={handleLogout} title="Sair do sistema"
-              className="w-10 h-8 rounded-lg flex items-center justify-center text-[#2C3E5A] hover:text-rose-400 hover:bg-rose-500/10 transition-all">
+              className="w-10 h-8 rounded-lg flex items-center justify-center text-slate-300 hover:text-rose-400 hover:bg-rose-500/10 transition-all">
               <i className="fa-solid fa-arrow-right-from-bracket text-sm"></i>
             </button>
           </div>

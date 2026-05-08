@@ -216,7 +216,7 @@ ${allContent}
           <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
             Tutorial da <span className="text-blue-500">Plataforma</span>
           </h2>
-          <p className="text-[#5A6E8A] text-xs font-black uppercase tracking-widest mt-1">CartórioRAG PRO v3.0 — Guia Completo do Usuário</p>
+          <p className="text-slate-400 text-xs font-black uppercase tracking-widest mt-1">CartórioRAG PRO v3.0 — Guia Completo do Usuário</p>
         </div>
         <button
           onClick={exportPDF}
@@ -239,7 +239,7 @@ ${allContent}
 
         {/* Menu lateral */}
         <div className="rounded-3xl border border-slate-800 p-4 space-y-1 h-fit" style={{ background: '#0a111f' }}>
-          <p className="text-xs font-black text-[#2C3E5A] uppercase tracking-widest px-3 py-2">Módulos</p>
+          <p className="text-xs font-black text-slate-300 uppercase tracking-widest px-3 py-2">Módulos</p>
           {SECTIONS.map(s => {
             const isActive = activeSection === s.id;
             return (
@@ -253,11 +253,11 @@ ${allContent}
                 }`}
               >
                 <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-white/20' : 'bg-slate-800'}`}>
-                  <i className={`fa-solid ${s.icon} text-xs ${isActive ? 'text-white' : 'text-[#5A6E8A]'}`}></i>
+                  <i className={`fa-solid ${s.icon} text-xs ${isActive ? 'text-white' : 'text-slate-400'}`}></i>
                 </div>
                 <div className="min-w-0">
-                  <p className={`text-xs font-black truncate ${isActive ? 'text-white' : 'text-[#8A9BB0]'}`}>{s.title}</p>
-                  <p className={`text-xs truncate leading-tight ${isActive ? 'text-blue-200' : 'text-[#2C3E5A]'}`} style={{ fontSize: '9px' }}>{s.subtitle}</p>
+                  <p className={`text-xs font-black truncate ${isActive ? 'text-white' : 'text-slate-500'}`}>{s.title}</p>
+                  <p className={`text-xs truncate leading-tight ${isActive ? 'text-blue-200' : 'text-slate-300'}`} style={{ fontSize: '9px' }}>{s.subtitle}</p>
                 </div>
               </button>
             );
@@ -292,7 +292,7 @@ ${allContent}
                 </div>
                 <div>
                   <p className="text-sm font-black text-blue-400 mb-2">{step.title}</p>
-                  <p className="text-sm text-[#8A9BB0] leading-relaxed">{step.desc}</p>
+                  <p className="text-sm text-slate-500 leading-relaxed">{step.desc}</p>
                 </div>
               </div>
             ))}

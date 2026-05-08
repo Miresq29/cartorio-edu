@@ -70,20 +70,20 @@ const BadgeCard: React.FC<{ badge: BadgeDef; earned: boolean }> = ({ badge, earn
   const nc = NIVEL_CONFIG[badge.nivel];
   return (
     <div className={'rounded-[14px] border p-4 flex flex-col items-center gap-2 text-center transition-all ' +
-      (earned ? 'bg-white border-[#E8D5A3] shadow-sm hover:shadow-md' : 'bg-[#F5EDD8]/50 border-[#E8D5A3] opacity-40 grayscale')}>
+      (earned ? 'bg-[#1A2A52] border-[#C9A84C]/30 shadow-sm hover:shadow-md' : 'bg-[#132044]/50 border-[#C9A84C]/30 opacity-40 grayscale')}>
       <div className="w-14 h-14 rounded-full flex items-center justify-center text-2xl border-2 shadow-sm"
         style={{ background: earned ? badge.bg : '#f1f5f9', borderColor: earned ? badge.border : '#e2e8f0' }}>
         <i className={'fa-solid ' + badge.icon} style={{ color: earned ? badge.color : '#94a3b8' }}></i>
       </div>
       <div>
-        <p className="text-xs font-black text-[#0A1628] leading-tight">{badge.nome}</p>
-        <p className="text-[10px] text-[#8A9BB0] mt-0.5 leading-snug">{badge.desc}</p>
+        <p className="text-xs font-black text-white leading-tight">{badge.nome}</p>
+        <p className="text-[10px] text-slate-500 mt-0.5 leading-snug">{badge.desc}</p>
       </div>
       <span className="text-[9px] font-black px-2 py-0.5 rounded-full"
         style={{ background: nc.bg, color: nc.color }}>
         {nc.label}
       </span>
-      {!earned && <span className="text-[9px] text-[#8A9BB0] font-bold">Bloqueado</span>}
+      {!earned && <span className="text-[9px] text-slate-500 font-bold">Bloqueado</span>}
     </div>
   );
 };
@@ -136,30 +136,30 @@ const MeuProgressoView: React.FC = () => {
   }, []);
 
   if (loading) return (
-    <div className="flex items-center justify-center h-screen bg-[#FBF7EE]">
+    <div className="flex items-center justify-center h-screen bg-[#0D1B3E]">
       <div className="text-center space-y-3">
         <div className="w-8 h-8 border-2 border-[#C9A84C]/30 border-t-indigo-500 rounded-full animate-spin mx-auto"></div>
-        <p className="text-[#8A9BB0] text-sm">Carregando...</p>
+        <p className="text-slate-500 text-sm">Carregando...</p>
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-[#FBF7EE]">
+    <div className="min-h-screen bg-[#0D1B3E]">
       <div className="max-w-5xl mx-auto p-6 space-y-6">
 
         {/* Header */}
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-[#1A3A6B] flex items-center justify-center text-white text-xl font-black shadow-lg">
+          <div className="w-14 h-14 rounded-2xl bg-[#C9A84C] flex items-center justify-center text-white text-xl font-black shadow-lg">
             {userName.substring(0, 2).toUpperCase()}
           </div>
           <div>
-            <h2 className="text-2xl font-black text-[#0A1628]">{userName}</h2>
-            <p className="text-sm text-[#5A6E8A]">{user.cargo || 'Colaborador'} · {earnedBadges.length}/{totalBadges} badges conquistados</p>
+            <h2 className="text-2xl font-black text-white">{userName}</h2>
+            <p className="text-sm text-slate-400">{user.cargo || 'Colaborador'} · {earnedBadges.length}/{totalBadges} badges conquistados</p>
           </div>
-          <div className="ml-auto hidden md:flex items-center gap-2 bg-[#FBF5E0] border border-[#E8D5A3] px-3 py-2 rounded-xl">
+          <div className="ml-auto hidden md:flex items-center gap-2 bg-[#1A2A52] border border-[#C9A84C]/30 px-3 py-2 rounded-xl">
             <i className="fa-solid fa-trophy text-[#C9A84C] text-xs"></i>
-            <span className="text-[10px] font-black text-[#1A3A6B] uppercase tracking-widest">{earnedBadges.length} conquistas</span>
+            <span className="text-[10px] font-black text-[#C9A84C] uppercase tracking-widest">{earnedBadges.length} conquistas</span>
           </div>
         </div>
 
@@ -171,35 +171,35 @@ const MeuProgressoView: React.FC = () => {
             { label: 'Média Geral',  value: `${mediaGeral}%`,           sub: 'nos testes',              icon: 'fa-chart-bar',    color: '#D97706' },
             { label: 'Certificados', value: myCerts.length,             sub: 'emitidos',                icon: 'fa-certificate',  color: '#7C3AED' },
           ].map((k, i) => (
-            <div key={i} className="bg-white border border-[#E8D5A3] rounded-[14px] p-5 shadow-sm">
+            <div key={i} className="bg-[#1A2A52] border border-[#C9A84C]/30 rounded-[14px] p-5 shadow-sm">
               <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3" style={{ background: k.color + '15' }}>
                 <i className={'fa-solid ' + k.icon} style={{ color: k.color }}></i>
               </div>
-              <p className="text-[10px] font-black text-[#8A9BB0] uppercase tracking-widest mb-1">{k.label}</p>
-              <p className="text-3xl font-black text-[#0A1628]">{k.value}</p>
-              <p className="text-[11px] text-[#8A9BB0] mt-1">{k.sub}</p>
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">{k.label}</p>
+              <p className="text-3xl font-black text-white">{k.value}</p>
+              <p className="text-[11px] text-slate-500 mt-1">{k.sub}</p>
             </div>
           ))}
         </div>
 
         {/* Barra de progresso geral */}
-        <div className="bg-white border border-[#E8D5A3] rounded-[14px] p-5 shadow-sm">
+        <div className="bg-[#1A2A52] border border-[#C9A84C]/30 rounded-[14px] p-5 shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-black text-[#0A1628]">Progresso no Programa</span>
-            <span className="text-sm font-black text-[#1A3A6B]">{globalPct}%</span>
+            <span className="text-sm font-black text-white">Progresso no Programa</span>
+            <span className="text-sm font-black text-[#C9A84C]">{globalPct}%</span>
           </div>
-          <div className="w-full bg-[#F5EDD8] rounded-full h-2.5">
-            <div className="h-2.5 rounded-full bg-[#1A3A6B] transition-all duration-700" style={{ width: `${globalPct}%` }}></div>
+          <div className="w-full bg-[#132044] rounded-full h-2.5">
+            <div className="h-2.5 rounded-full bg-[#C9A84C] transition-all duration-700" style={{ width: `${globalPct}%` }}></div>
           </div>
           <div className="flex items-center gap-4 mt-3">
-            <span className="text-[11px] text-[#8A9BB0]">Aprovação mínima: <strong className="text-[#2C3E5A]">75%</strong></span>
-            <span className="text-[11px] text-[#8A9BB0]">Badges: <strong className="text-[#2C3E5A]">{earnedBadges.length}/{totalBadges}</strong></span>
-            <span className="text-[11px] text-[#8A9BB0]">Certificados: <strong className="text-[#2C3E5A]">{myCerts.length}</strong></span>
+            <span className="text-[11px] text-slate-500">Aprovação mínima: <strong className="text-slate-300">75%</strong></span>
+            <span className="text-[11px] text-slate-500">Badges: <strong className="text-slate-300">{earnedBadges.length}/{totalBadges}</strong></span>
+            <span className="text-[11px] text-slate-500">Certificados: <strong className="text-slate-300">{myCerts.length}</strong></span>
           </div>
         </div>
 
         {/* Abas */}
-        <div className="bg-white border border-[#E8D5A3] rounded-[16px] shadow-sm overflow-hidden">
+        <div className="bg-[#1A2A52] border border-[#C9A84C]/30 rounded-[16px] shadow-sm overflow-hidden">
           <div className="flex border-b border-slate-100 overflow-x-auto">
             {[
               { id: 'resumo',       label: 'Trilhas',      icon: 'fa-road'          },
@@ -209,10 +209,10 @@ const MeuProgressoView: React.FC = () => {
             ].map(t => (
               <button key={t.id} onClick={() => setTab(t.id as Tab)}
                 className={'flex items-center gap-2 px-5 py-4 text-xs font-black uppercase tracking-wider transition-all border-b-2 whitespace-nowrap ' +
-                  (tab === t.id ? 'border-[#1A3A6B] text-[#1A3A6B] bg-[#FBF5E0]/50' : 'border-transparent text-[#8A9BB0] hover:text-[#2C3E5A]')}>
+                  (tab === t.id ? 'border-[#C9A84C] text-[#C9A84C] bg-[#1A2A52]/50' : 'border-transparent text-slate-500 hover:text-slate-300')}>
                 <i className={'fa-solid ' + t.icon}></i>{t.label}
                 {t.id === 'badges' && earnedBadges.length > 0 && (
-                  <span className="bg-[#1A3A6B] text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">{earnedBadges.length}</span>
+                  <span className="bg-[#C9A84C] text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">{earnedBadges.length}</span>
                 )}
               </button>
             ))}
@@ -222,7 +222,7 @@ const MeuProgressoView: React.FC = () => {
           {tab === 'resumo' && (
             <div className="p-5">
               {trilhas.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 text-[#8A9BB0]">
+                <div className="flex flex-col items-center justify-center py-16 text-slate-500">
                   <i className="fa-solid fa-road text-4xl mb-3 opacity-30"></i>
                   <p className="text-sm">Nenhuma trilha disponível ainda.</p>
                 </div>
@@ -237,27 +237,27 @@ const MeuProgressoView: React.FC = () => {
                     const res  = myRes.filter(r => r.trailTitle === t.titulo);
                     const media = res.length ? Math.round(res.reduce((a, r) => a + r.nota, 0) / res.length) : null;
                     return (
-                      <div key={t.id} className="border border-[#E8D5A3] rounded-[14px] p-5 hover:border-[#D4B86A] transition-all">
+                      <div key={t.id} className="border border-[#C9A84C]/30 rounded-[14px] p-5 hover:border-[#C9A84C]/50 transition-all">
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: cor + '20', color: cor }}>
                               {t.icone || '📚'}
                             </div>
                             <div>
-                              <p className="text-sm font-black text-[#0A1628] leading-tight">{t.titulo}</p>
-                              <p className="text-[10px] text-[#8A9BB0]">{done}/{mods} módulos</p>
+                              <p className="text-sm font-black text-white leading-tight">{t.titulo}</p>
+                              <p className="text-[10px] text-slate-500">{done}/{mods} módulos</p>
                             </div>
                           </div>
                           {p === 100
                             ? <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200">✓ Concluída</span>
-                            : <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-[#FBF5E0] text-[#1A3A6B]">{p}%</span>
+                            : <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-[#1A2A52] text-[#C9A84C]">{p}%</span>
                           }
                         </div>
-                        <div className="w-full bg-[#F5EDD8] rounded-full h-1.5 mb-2">
+                        <div className="w-full bg-[#132044] rounded-full h-1.5 mb-2">
                           <div className="h-1.5 rounded-full transition-all" style={{ width: `${p}%`, background: p === 100 ? '#059669' : cor }}></div>
                         </div>
                         {media !== null && (
-                          <p className="text-[10px] text-[#8A9BB0] mt-1">Média nos testes: <strong style={{ color: media >= 75 ? '#059669' : '#dc2626' }}>{media}%</strong></p>
+                          <p className="text-[10px] text-slate-500 mt-1">Média nos testes: <strong style={{ color: media >= 75 ? '#059669' : '#dc2626' }}>{media}%</strong></p>
                         )}
                       </div>
                     );
@@ -271,7 +271,7 @@ const MeuProgressoView: React.FC = () => {
           {tab === 'badges' && (
             <div className="p-5 space-y-6">
               <div className="flex items-center justify-between">
-                <p className="text-xs text-[#5A6E8A]">{earnedBadges.length} de {totalBadges} badges conquistados</p>
+                <p className="text-xs text-slate-400">{earnedBadges.length} de {totalBadges} badges conquistados</p>
                 <div className="flex gap-2">
                   {Object.entries(NIVEL_CONFIG).reverse().map(([k, v]) => (
                     <span key={k} className="text-[9px] font-black px-2 py-1 rounded-lg" style={{ background: v.bg, color: v.color }}>{v.label}</span>
@@ -296,20 +296,20 @@ const MeuProgressoView: React.FC = () => {
           {tab === 'historico' && (
             <div className="p-5">
               {myRes.length === 0 ? (
-                <div className="flex flex.col items-center justify-center py-16 text-[#8A9BB0]">
+                <div className="flex flex.col items-center justify-center py-16 text-slate-500">
                   <i className="fa-solid fa-clock-rotate-left text-4xl mb-3 opacity-30 block text-center"></i>
                   <p className="text-sm text-center">Nenhum teste realizado ainda.</p>
                 </div>
               ) : (
                 <div className="space-y-2">
                   {myRes.map((r, i) => (
-                    <div key={i} className="border border-[#E8D5A3] rounded-[12px] p-4 flex items-center gap-3 bg-white">
+                    <div key={i} className="border border-[#C9A84C]/30 rounded-[12px] p-4 flex items-center gap-3 bg-white">
                       <i className={'fa-solid text-lg flex-shrink-0 ' + (r.aprovado ? 'fa-circle-check text-emerald-500' : 'fa-circle-xmark text-red-400')}></i>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold text-[#0A1628] truncate">{r.trailTitle}{r.moduleTitle ? ' · ' + r.moduleTitle : ''}</p>
+                        <p className="text-xs font-bold text-white truncate">{r.trailTitle}{r.moduleTitle ? ' · ' + r.moduleTitle : ''}</p>
                         <div className="flex items-center gap-2 mt-0.5">
-                          <p className="text-[10px] text-[#8A9BB0]">{formatDate(r.createdAt)}</p>
-                          {r.ia && <span className="text-[9px] font-black bg-[#FBF5E0] text-[#1A3A6B] px-1.5 py-0.5 rounded-lg">✨ IA</span>}
+                          <p className="text-[10px] text-slate-500">{formatDate(r.createdAt)}</p>
+                          {r.ia && <span className="text-[9px] font-black bg-[#1A2A52] text-[#C9A84C] px-1.5 py-0.5 rounded-lg">✨ IA</span>}
                           <span className={'text-[9px] font-black px-1.5 py-0.5 rounded-lg ' + (r.aprovado ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500')}>
                             {r.aprovado ? 'Aprovado' : 'Reprovado'}
                           </span>
@@ -327,10 +327,10 @@ const MeuProgressoView: React.FC = () => {
           {tab === 'certificados' && (
             <div className="p-5">
               {myCerts.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 text-[#8A9BB0]">
+                <div className="flex flex-col items-center justify-center py-16 text-slate-500">
                   <i className="fa-solid fa-certificate text-4xl mb-3 opacity-30"></i>
                   <p className="text-sm">Nenhum certificado emitido ainda.</p>
-                  <p className="text-xs text-[#8A9BB0] mt-1">Conclua uma trilha para emitir seu certificado.</p>
+                  <p className="text-xs text-slate-500 mt-1">Conclua uma trilha para emitir seu certificado.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -341,13 +341,13 @@ const MeuProgressoView: React.FC = () => {
                           <i className="fa-solid fa-certificate text-amber-600 text-lg"></i>
                         </div>
                         <div>
-                          <p className="text-sm font-black text-[#0A1628]">{c.trilhaTitulo}</p>
-                          <p className="text-[10px] text-[#5A6E8A]">{formatDate(c.emitidoEm)}</p>
+                          <p className="text-sm font-black text-white">{c.trilhaTitulo}</p>
+                          <p className="text-[10px] text-slate-400">{formatDate(c.emitidoEm)}</p>
                         </div>
                         <span className="ml-auto text-sm font-black text-amber-700">{c.notaFinal}%</span>
                       </div>
                       {c.codigoVerificacao && (
-                        <p className="text-[9px] text-[#8A9BB0] font-mono bg-white/60 px-2 py-1 rounded-lg">
+                        <p className="text-[9px] text-slate-500 font-mono bg-white/60 px-2 py-1 rounded-lg">
                           Cód: {c.codigoVerificacao}
                         </p>
                       )}

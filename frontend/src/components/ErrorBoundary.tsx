@@ -35,13 +35,13 @@ class ErrorBoundary extends Component<Props, State> {
     // Check state for rendering errors
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center p-8 bg-[#FBF7EE]">
+        <div className="min-h-screen flex items-center justify-center p-8 bg-[#0D1B3E]">
           <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-xl border border-red-100 text-center">
             <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
               <i className="fa-solid fa-triangle-exclamation text-2xl"></i>
             </div>
-            <h1 className="text-xl font-bold text-[#0A1628] mb-2">Ops! Algo deu errado</h1>
-            <p className="text-[#5A6E8A] text-sm mb-6">
+            <h1 className="text-xl font-bold text-white mb-2">Ops! Algo deu errado</h1>
+            <p className="text-slate-400 text-sm mb-6">
               Ocorreu um erro inesperado nesta parte da aplicação. Nossa equipe técnica já foi notificada.
             </p>
             <button

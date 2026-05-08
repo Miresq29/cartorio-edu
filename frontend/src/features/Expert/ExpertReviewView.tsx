@@ -50,7 +50,7 @@ const ExpertReviewView: React.FC = () => {
          </div>
          <div>
            <h4 className="text-xl font-black text-blue-500 uppercase tracking-widest">IA Correcional</h4>
-           <p className="text-lg text-[#8A9BB0] mt-3 leading-relaxed font-medium">
+           <p className="text-lg text-slate-500 mt-3 leading-relaxed font-medium">
              Descreva situações complexas, incomuns ou suspeitas. A IA assumirá a persona de um Corregedor Sênior para emitir um parecer sobre viabilidade jurídica, nulidades e riscos.
            </p>
          </div>
@@ -62,7 +62,7 @@ const ExpertReviewView: React.FC = () => {
            </div>
            <div>
              <h2 className="text-5xl font-black text-white italic uppercase tracking-tighter">IA <span className="text-blue-500">Analítica</span></h2>
-             <p className="text-[#5A6E8A] font-black uppercase tracking-widest text-sm mt-3 flex items-center gap-3">
+             <p className="text-slate-400 font-black uppercase tracking-widest text-sm mt-3 flex items-center gap-3">
                <span className="w-4 h-4 rounded-full bg-blue-500"></span> Motor de Alta Complexidade Jurídica
              </p>
            </div>
@@ -74,13 +74,13 @@ const ExpertReviewView: React.FC = () => {
         <div className="p-12 space-y-10 relative z-10">
           <div className="flex items-center gap-4">
             <div className="w-2 h-8 bg-blue-500 rounded-full"></div>
-            <h3 className="text-lg font-black text-[#8A9BB0] uppercase tracking-[0.4em]">Submissão de Caso Técnico</h3>
+            <h3 className="text-lg font-black text-slate-500 uppercase tracking-[0.4em]">Submissão de Caso Técnico</h3>
           </div>
           
           <textarea 
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full h-80 bg-slate-950 border border-slate-800 rounded-[32px] p-10 focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 focus:outline-none transition-all text-slate-300 leading-loose font-serif text-xl placeholder:text-[#1A2744]"
+            className="w-full h-80 bg-slate-950 border border-slate-800 rounded-[32px] p-10 focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 focus:outline-none transition-all text-slate-300 leading-loose font-serif text-xl placeholder:text-slate-200"
             placeholder="Ex: Análise de viabilidade jurídica de inventário extrajudicial com herdeiro incapaz assistido por curador especial sob a égide do novo provimento..."
           />
           

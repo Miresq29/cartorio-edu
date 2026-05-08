@@ -4,11 +4,11 @@ const TermsView: React.FC = () => {
   return (
     <div className="p-12 max-w-5xl mx-auto space-y-10 animate-in fade-in duration-700 pb-20">
       <header className="space-y-4">
-        <div className="w-16 h-16 bg-slate-800 rounded-3xl flex items-center justify-center text-[#8A9BB0] border border-slate-700 shadow-xl">
+        <div className="w-16 h-16 bg-slate-800 rounded-3xl flex items-center justify-center text-slate-500 border border-slate-700 shadow-xl">
           <i className="fa-solid fa-file-contract text-3xl"></i>
         </div>
         <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">Termos de Uso & Privacidade</h2>
-        <p className="text-[#5A6E8A] font-bold uppercase tracking-widest text-sm">
+        <p className="text-slate-400 font-bold uppercase tracking-widest text-sm">
           Políticas de Utilização do CartórioRAG PRO v3.0
         </p>
       </header>
@@ -79,10 +79,10 @@ const TermsView: React.FC = () => {
 
         <div className="bg-blue-500/5 border border-blue-500/20 rounded-3xl p-8 mt-8 flex items-start gap-4">
           <i className="fa-solid fa-circle-info text-blue-400 text-xl mt-1 flex-shrink-0"></i>
-          <p className="text-sm text-[#8A9BB0] font-medium leading-relaxed">
+          <p className="text-sm text-slate-500 font-medium leading-relaxed">
             Ao utilizar este sistema, você concorda com todos os termos acima descritos. 
             Em caso de dúvidas, entre em contato com a MJ Consultoria pelo módulo de <strong className="text-blue-400">Suporte Técnico</strong>.
-            <br /><span className="text-[#2C3E5A] text-xs mt-2 block">Última atualização: Fevereiro/2026 — CartórioRAG PRO v3.0</span>
+            <br /><span className="text-slate-300 text-xs mt-2 block">Última atualização: Fevereiro/2026 — CartórioRAG PRO v3.0</span>
           </p>
         </div>
 
