@@ -289,7 +289,8 @@ const TrainingParticipants: React.FC = () => {
           </div>
         ) : (
           filtered.map(p => {
-            const sc = STATUS_CONFIG[p.status];
+            const sc = STATUS_CONFIG[p.status as keyof typeof STATUS_CONFIG]
+              ?? { color: 'slate', icon: 'fa-circle-question', label: p.status || 'Desconhecido' };
             return (
               <div
                 key={p.id}

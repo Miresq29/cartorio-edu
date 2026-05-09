@@ -113,7 +113,7 @@ const CampanhasView: React.FC = () => {
   const activePlatformConfig = PLATFORMS.find(p => p.id === activePlatformTab);
 
   return (
-    <div className="p-8 space-y-6 bg-[#0D1B3E] min-h-screen animate-in fade-in">
+    <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
 
       <header>
         <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">

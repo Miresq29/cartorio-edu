@@ -31,7 +31,7 @@ const MasterActivitiesView: React.FC = () => {
   };
 
   return (
-    <div className="p-12 min-h-full bg-[#0D1B3E] animate-in fade-in space-y-12">
+    <div className="p-12 min-h-full bg-slate-50 animate-in fade-in space-y-12">
       <header>
         <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter">
           Atividades <span className="text-emerald-500">Master</span>

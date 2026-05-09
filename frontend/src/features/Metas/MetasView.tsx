@@ -810,7 +810,7 @@ Retorne APENAS um array JSON válido, sem markdown:
   }).length;
 
   return (
-    <div className="p-8 space-y-6 bg-[#0D1B3E] min-h-screen animate-in fade-in">
+    <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
 
       {/* Desempate ativo — modal */}
       {desempateAtivo && (

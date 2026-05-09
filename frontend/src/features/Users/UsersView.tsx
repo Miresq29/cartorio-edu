@@ -183,7 +183,7 @@ const UsersView: React.FC = () => {
   const roleColor = (r: Role) => ROLES.find(x => x.id === r)?.color || '#64748b';
 
   return (
-    <div className="min-h-screen bg-[#0D1B3E]">
+    <div className="min-h-screen bg-slate-50">
       <div className="max-w-7xl mx-auto p-6 space-y-6">
 
         {/* Modal de delete */}

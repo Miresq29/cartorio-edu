@@ -68,6 +68,7 @@ const ExamesView: React.FC = () => {
   const [respostas, setRespostas] = useState<Record<number, string>>({});
   const [resultado, setResultado] = useState<{ score: number; aprovado: boolean } | null>(null);
   const [salvando, setSalvando] = useState(false);
+  const [numQuestoes, setNumQuestoes] = useState<5 | 7 | 10>(5);
 
   /* ── carrega fontes de conteúdo ─────────────────────────── */
   useEffect(() => {
@@ -146,7 +147,7 @@ const ExamesView: React.FC = () => {
 
     setFase('gerando');
     try {
-      const qs = await GeminiService.generateExam(fonteEscolhida.titulo, fonteEscolhida.conteudo, 10);
+      const qs = await GeminiService.generateExam(fonteEscolhida.titulo, fonteEscolhida.conteudo, numQuestoes);
       setQuestoes(qs);
       setRespostas({});
       setFase('fazendo');
@@ -253,7 +254,7 @@ const ExamesView: React.FC = () => {
   /* FASE: gerando */
   if (fase === 'gerando') {
     return (
-      <div className="p-8 min-h-screen bg-[#0D1B3E] flex flex-col items-center justify-center gap-6">
+      <div className="p-8 min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-6">
         <div className="w-20 h-20 rounded-full bg-blue-600/20 flex items-center justify-center animate-pulse">
           <i className="fa-solid fa-brain text-blue-400 text-3xl"></i>
         </div>
@@ -273,7 +274,7 @@ const ExamesView: React.FC = () => {
   /* FASE: fazendo o exame */
   if (fase === 'fazendo') {
     return (
-      <div className="p-6 md:p-8 min-h-screen bg-[#0D1B3E] space-y-6 animate-in fade-in">
+      <div className="p-6 md:p-8 min-h-screen bg-slate-50 space-y-6 animate-in fade-in">
         {/* cabeçalho */}
         <div className="flex items-center justify-between">
           <div>
@@ -355,7 +356,7 @@ const ExamesView: React.FC = () => {
   if (fase === 'resultado' && resultado) {
     const { score, aprovado } = resultado;
     return (
-      <div className="p-8 min-h-screen bg-[#0D1B3E] flex flex-col items-center justify-center gap-6 animate-in fade-in">
+      <div className="p-8 min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-6 animate-in fade-in">
         {/* badge principal */}
         <div className={`w-28 h-28 rounded-full flex items-center justify-center shadow-lg ${
           aprovado ? 'bg-emerald-500/20 shadow-emerald-900/30' : 'bg-red-500/20 shadow-red-900/30'
@@ -425,7 +426,7 @@ const ExamesView: React.FC = () => {
 
   /* FASE: escolher conteúdo */
   return (
-    <div className="p-6 md:p-8 min-h-screen bg-[#0D1B3E] space-y-6 animate-in fade-in">
+    <div className="p-6 md:p-8 min-h-screen bg-slate-50 space-y-6 animate-in fade-in">
       {/* cabeçalho */}
       <header>
         <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
@@ -536,14 +537,33 @@ const ExamesView: React.FC = () => {
         )}
       </div>
 
-      {/* botão gerar */}
+      {/* seletor de questões + botão gerar */}
       {fonteEscolhida && (
-        <div className="flex justify-center pt-2 pb-8">
+        <div className="flex flex-col items-center gap-4 pt-2 pb-8">
+          {/* seletor de quantidade */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-black text-[#7a5c1e] uppercase tracking-widest">Questões:</span>
+            {([5, 7, 10] as const).map(n => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setNumQuestoes(n)}
+                className={`w-10 h-10 rounded-xl text-sm font-black transition-all border ${
+                  numQuestoes === n
+                    ? 'bg-[#c9a84c] text-[#0f172a] border-[#c9a84c] shadow-sm'
+                    : 'bg-white text-[#8a6e2f] border-[#c9a84c]/30 hover:border-[#c9a84c]/60'
+                }`}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+
           <button onClick={handleGerarExame}
-            className="px-10 py-4 bg-blue-600 hover:bg-blue-500 text-[#0A1628] font-black uppercase tracking-widest rounded-2xl transition-all text-sm shadow-lg shadow-blue-900/30 flex items-center gap-3">
+            className="px-10 py-4 bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-widest rounded-2xl transition-all text-sm shadow-lg shadow-blue-900/30 flex items-center gap-3">
             <i className="fa-solid fa-brain text-lg"></i>
             Gerar Exame com IA
-            <span className="text-blue-200 text-xs font-normal">10 questões · Bloom médio</span>
+            <span className="text-blue-200 text-xs font-normal">{numQuestoes} questões · Bloom médio</span>
           </button>
         </div>
       )}

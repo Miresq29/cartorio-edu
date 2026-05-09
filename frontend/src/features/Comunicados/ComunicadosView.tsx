@@ -84,7 +84,7 @@ const ComunicadosView: React.FC = () => {
   const ordenados = [...comunicados].sort((a, b) => (b.fixado ? 1 : 0) - (a.fixado ? 1 : 0));
 
   return (
-    <div className="p-8 space-y-6 bg-[#0D1B3E] min-h-screen animate-in fade-in">
+    <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
       <header className="flex items-start justify-between">
         <div>
           <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
