@@ -89,9 +89,9 @@ const Sidebar: React.FC = () => {
         {expanded && (
           <div className="overflow-hidden">
             <h1 className="text-text-primary font-bold text-xl leading-tight whitespace-nowrap">
-              MJ <span className="text-brand-blue">Consultoria</span>
+              MJ <span className="text-brand-gold">Consultoria</span>
             </h1>
-            <span className="text-[10px] bg-brand-blue/10 text-brand-blue px-2 py-0.5 rounded font-black tracking-widest uppercase">
+            <span className="text-[10px] bg-brand-gold/15 text-brand-gold px-2 py-0.5 rounded font-black tracking-widest uppercase">
               Treinamento
             </span>
           </div>
@@ -193,11 +193,6 @@ const Sidebar: React.FC = () => {
                             isActive ? 'text-white' : 'text-text-secondary group-hover:text-text-primary'
                           }`}>
                             {item.label}
-                          </p>
-                          <p className={`text-[11px] truncate leading-tight ${
-                            isActive ? 'text-blue-200' : 'text-text-muted'
-                          }`}>
-                            {item.desc}
                           </p>
                         </div>
                       </button>
