@@ -7,3 +7,16 @@ body {
   background-color: #05080f;
   color: white;
 }
+
+/*
+ * Browsers don't inherit `color` into form elements.
+ * Force inputs/textareas/selects to inherit so typed text is
+ * always visible on dark backgrounds.
+ */
+@layer base {
+  input:not([type="checkbox"]):not([type="radio"]),
+  textarea,
+  select {
+    color: inherit;
+  }
+}

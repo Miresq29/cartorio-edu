@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
   collection, addDoc, updateDoc, deleteDoc, doc,
-  onSnapshot, query, where, serverTimestamp, getDoc, setDoc
+  onSnapshot, query, where, serverTimestamp, getDoc, setDoc, getDocs,
 } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
+import { shuffleArray, shuffleOpcoes } from '../Exames/BancoQuestoesView';
+import type { Questao } from '../Exames/BancoQuestoesView';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -287,35 +289,56 @@ const ModuloPlayer: React.FC<{
   const gerarQuiz = async () => {
     if (!modulo) return;
     setGerandoQuiz(true);
+
+    if (!progModulo.iniciadoEm) {
+      const agora = new Date().toISOString();
+      const novosProg = { ...progresso.modulos, [modulo.id]: { ...progModulo, iniciadoEm: agora } };
+      onUpdateProgresso({ ...progresso, modulos: novosProg, iniciadoEm: progresso.iniciadoEm || agora });
+    }
+
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          system: `Você é um gerador de quiz para treinamento notarial. 
-Retorne APENAS um JSON válido, sem texto adicional, sem markdown, sem explicações.
-Formato exato:
-{"questoes":[{"pergunta":"...","opcoes":["A","B","C","D"],"correta":0,"explicacao":"..."}]}
-correta é o índice (0-3) da opção correta.`,
-          messages: [{
-            role: 'user',
-            content: `Gere 4 questões de múltipla escolha sobre este conteúdo:
+      // 1. Banco de questões aprovadas primeiro
+      const tenantId = progresso.tenantId;
+      const snap = await getDocs(
+        query(collection(db, 'bancoDQuestoes'), where('tenantId', '==', tenantId), where('status', '==', 'approved'))
+      );
+      const approved = snap.docs.map(d => ({ id: d.id, ...d.data() } as Questao));
+      const keywords = (modulo.titulo + ' ' + (modulo.descricao || '')).toLowerCase().split(/\s+/).filter(w => w.length > 4);
+      const relevantes = approved.filter(q =>
+        keywords.some(kw => (q.contexto_ou_norma || '').toLowerCase().includes(kw)) ||
+        keywords.some(kw => (q.pergunta || '').toLowerCase().includes(kw))
+      );
+      if (relevantes.length >= 4) {
+        const sorteadas = shuffleArray(relevantes).slice(0, 4).map(q => ({ ...q, ...shuffleOpcoes(q) }));
+        setQuizQuestoes(sorteadas.map(q => ({ pergunta: q.pergunta, opcoes: q.opcoes, correta: q.correta, explicacao: q.explicacao })));
+        setGerandoQuiz(false);
+        return;
+      }
+
+      // 2. Fallback: Gemini + cache como pending_review
+      const { GeminiService } = await import('../../services/geminiService');
+      const prompt = `Você é especialista em treinamento notarial. Gere 4 questões de múltipla escolha.
 Módulo: ${modulo.titulo}
-Conteúdo: ${modulo.conteudo || modulo.descricao}
-Nota mínima para aprovação: ${modulo.notaMinima}/10`
-          }]
-        })
-      });
-      const data = await res.json();
-      const text = data.content?.[0]?.text || '{}';
-      const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
-      setQuizQuestoes(parsed.questoes || []);
+Conteúdo: ${(modulo.conteudo || modulo.descricao || '').substring(0, 3000)}
+Nota mínima: ${modulo.notaMinima}/10
+Retorne APENAS JSON: {"questoes":[{"pergunta":"...","opcoes":["A","B","C","D"],"correta":0,"explicacao":"..."}]}`;
+
+      const resp = await GeminiService.chat(prompt, 'Quiz de módulo');
+      const raw = typeof resp === 'string' ? resp : (resp as any).text;
+      const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
+      const questoes = parsed.questoes || [];
+
+      questoes.forEach((q: any) =>
+        addDoc(collection(db, 'bancoDQuestoes'), {
+          tenantId, contexto_ou_norma: modulo.titulo,
+          pergunta: q.pergunta, opcoes: q.opcoes, correta: q.correta, explicacao: q.explicacao,
+          dificuldade: 'intermediario', status: 'pending_review',
+          geradoPorIA: true, criadoPor: 'auto', criadoEm: serverTimestamp(),
+        }).catch(() => {})
+      );
+      setQuizQuestoes(questoes.map((q: any) => ({ ...q, ...shuffleOpcoes(q) })));
     } catch {
-      setQuizQuestoes([
-        { pergunta: 'Erro ao gerar quiz. Tente novamente.', opcoes: ['Ok'], correta: 0, explicacao: '' }
-      ]);
+      setQuizQuestoes([{ pergunta: 'Erro ao gerar quiz. Tente novamente.', opcoes: ['Ok'], correta: 0, explicacao: '' }]);
     }
     setGerandoQuiz(false);
   };
