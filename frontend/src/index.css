@@ -44,8 +44,8 @@ html {
 
 body {
   margin: 0;
-  background-color: var(--bg-base);
-  color: var(--text-secondary);
+  background-color: #f8fafc; /* slate-50 — base for content area */
+  color: #475569;             /* slate-600 — legible default */
   font-family: Inter, system-ui, sans-serif;
   line-height: 1.6;
 }
