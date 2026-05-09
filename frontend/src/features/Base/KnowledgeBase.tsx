@@ -126,7 +126,7 @@ const KnowledgeBase: React.FC = () => {
   const wordCount = (text: string) => text?.trim().split(/\s+/).length || 0;
 
   return (
-    <div className="p-8 space-y-8 animate-in fade-in duration-500 bg-[#0D1B3E] min-h-screen">
+    <div className="p-8 space-y-8 animate-in fade-in duration-500 bg-slate-50 min-h-screen">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 px-2">
         <div>
           <h2 className="text-4xl font-black text-[#0A1628] italic uppercase tracking-tighter">Base Legal</h2>

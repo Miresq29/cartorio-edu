@@ -253,7 +253,7 @@ const ExamesView: React.FC = () => {
   /* FASE: gerando */
   if (fase === 'gerando') {
     return (
-      <div className="p-8 min-h-screen bg-[#0D1B3E] flex flex-col items-center justify-center gap-6">
+      <div className="p-8 min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-6">
         <div className="w-20 h-20 rounded-full bg-blue-600/20 flex items-center justify-center animate-pulse">
           <i className="fa-solid fa-brain text-blue-400 text-3xl"></i>
         </div>
@@ -273,7 +273,7 @@ const ExamesView: React.FC = () => {
   /* FASE: fazendo o exame */
   if (fase === 'fazendo') {
     return (
-      <div className="p-6 md:p-8 min-h-screen bg-[#0D1B3E] space-y-6 animate-in fade-in">
+      <div className="p-6 md:p-8 min-h-screen bg-slate-50 space-y-6 animate-in fade-in">
         {/* cabeçalho */}
         <div className="flex items-center justify-between">
           <div>
@@ -355,7 +355,7 @@ const ExamesView: React.FC = () => {
   if (fase === 'resultado' && resultado) {
     const { score, aprovado } = resultado;
     return (
-      <div className="p-8 min-h-screen bg-[#0D1B3E] flex flex-col items-center justify-center gap-6 animate-in fade-in">
+      <div className="p-8 min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-6 animate-in fade-in">
         {/* badge principal */}
         <div className={`w-28 h-28 rounded-full flex items-center justify-center shadow-lg ${
           aprovado ? 'bg-emerald-500/20 shadow-emerald-900/30' : 'bg-red-500/20 shadow-red-900/30'
@@ -425,7 +425,7 @@ const ExamesView: React.FC = () => {
 
   /* FASE: escolher conteúdo */
   return (
-    <div className="p-6 md:p-8 min-h-screen bg-[#0D1B3E] space-y-6 animate-in fade-in">
+    <div className="p-6 md:p-8 min-h-screen bg-slate-50 space-y-6 animate-in fade-in">
       {/* cabeçalho */}
       <header>
         <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">

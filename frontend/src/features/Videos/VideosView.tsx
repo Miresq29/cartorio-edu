@@ -112,7 +112,7 @@ const VideosView: React.FC = () => {
   const getCatInfo = (id: string) => CATEGORIAS.find(c => c.id === id) || CATEGORIAS[0];
 
   return (
-    <div className="p-8 space-y-6 bg-[#0D1B3E] min-h-screen animate-in fade-in">
+    <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
       <header className="flex items-start justify-between">
         <div>
           <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">

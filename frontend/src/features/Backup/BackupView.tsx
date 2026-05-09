@@ -188,7 +188,7 @@ const BackupView: React.FC = () => {
   const colErro = progresso.filter(p => p.status === 'erro').length;
 
   return (
-    <div className="min-h-screen bg-[#0D1B3E]">
+    <div className="min-h-screen bg-slate-50">
       <div className="max-w-4xl mx-auto p-6 space-y-6">
 
         {/* Header */}

@@ -170,7 +170,7 @@ CTA: [chamada para ação aqui]`;
 
   /* ══════════════════ RENDER ══════════════════════════ */
   return (
-    <div className="p-8 space-y-6 bg-[#0D1B3E] min-h-screen animate-in fade-in">
+    <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
       <header>
         <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">
           Banners e <span className="text-pink-500">Materiais</span>

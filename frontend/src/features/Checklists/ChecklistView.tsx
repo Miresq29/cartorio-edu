@@ -215,7 +215,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
   const progress = totalItems > 0 ? Math.round((checkedCount / totalItems) * 100) : 0;
 
   return (
-    <div className="h-full flex bg-[#0D1B3E] min-h-screen">
+    <div className="h-full flex bg-slate-50 min-h-screen">
       {/* Sidebar */}
       <aside className="w-80 border-r border-slate-200 flex flex-col bg-[#0D1B3E] flex-shrink-0">
         <div className="p-6 border-b border-slate-200 flex justify-between items-center">

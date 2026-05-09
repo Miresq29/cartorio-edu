@@ -541,7 +541,7 @@ const RepositorioView: React.FC = () => {
   const totalVistos = assistidas.size;
 
   return (
-    <div className="p-8 space-y-6 bg-[#05080f] min-h-screen animate-in fade-in">
+    <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
 
       {/* Player Modal */}
       {playerMidia && (

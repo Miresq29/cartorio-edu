@@ -66,7 +66,7 @@ const ChangePasswordView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0D1B3E] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
       <div className="bg-[#0D1B3E] w-full max-w-md rounded-[40px] shadow-2xl p-12 border border-blue-500/20 space-y-8">
 
         <div className="text-center space-y-4">
