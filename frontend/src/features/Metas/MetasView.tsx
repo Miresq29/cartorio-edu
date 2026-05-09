@@ -837,7 +837,7 @@ Retorne APENAS um array JSON válido, sem markdown:
       {/* Header */}
       <header className="flex items-start justify-between">
         <div>
-          <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">
+          <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
             Metas de <span className="text-amber-500">Premiação</span>
           </h2>
           <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">

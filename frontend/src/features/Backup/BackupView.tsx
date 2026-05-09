@@ -194,7 +194,7 @@ const BackupView: React.FC = () => {
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="text-2xl font-black text-[#0A1628]">Backup de Dados</h2>
+            <h2 className="text-2xl font-black text-white">Backup de Dados</h2>
             <p className="text-sm text-slate-500 mt-0.5">
               Exportação segura dos dados do cartório <strong className="text-slate-700">{tenantId}</strong>
             </p>

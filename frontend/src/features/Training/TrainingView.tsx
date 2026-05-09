@@ -420,7 +420,7 @@ ${opt.justificativa}
     <div className="p-8 space-y-6 bg-[#0D1B3E] min-h-screen animate-in fade-in">
 
       <header>
-        <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">
+        <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
           Centro de <span className="text-blue-500">Treinamento</span>
         </h2>
         <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">MJ Consultoria // Capacitação Notarial IA</p>

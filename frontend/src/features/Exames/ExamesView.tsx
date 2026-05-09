@@ -277,7 +277,7 @@ const ExamesView: React.FC = () => {
         {/* cabeçalho */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-black text-[#0A1628] uppercase tracking-tighter">
+            <h2 className="text-2xl font-black text-white uppercase tracking-tighter">
               Exame: <span className="text-blue-400">{fonteEscolhida?.titulo}</span>
             </h2>
             <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mt-1">
@@ -428,7 +428,7 @@ const ExamesView: React.FC = () => {
     <div className="p-6 md:p-8 min-h-screen bg-[#0D1B3E] space-y-6 animate-in fade-in">
       {/* cabeçalho */}
       <header>
-        <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">
+        <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
           Exames <span className="text-blue-400">IA</span>
         </h2>
         <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">

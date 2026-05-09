@@ -288,7 +288,7 @@ const RelatoriosView: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-black text-[#0A1628]">Relatórios de Treinamento</h2>
+            <h2 className="text-2xl font-black text-white">Relatórios de Treinamento</h2>
             <p className="text-sm text-slate-500 mt-0.5">Desempenho · Evidências · Exportação</p>
           </div>
           <div className="flex items-center gap-3">

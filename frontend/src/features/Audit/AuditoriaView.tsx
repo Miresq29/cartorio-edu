@@ -178,7 +178,7 @@ const AuditoriaView: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-black text-[#0A1628]">Trilha de Auditoria</h2>
+            <h2 className="text-2xl font-black text-white">Trilha de Auditoria</h2>
             <p className="text-sm text-slate-500 mt-0.5">Registro completo de acessos e ações na plataforma</p>
           </div>
           <button onClick={exportCSV}

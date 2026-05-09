@@ -88,7 +88,7 @@ const Sidebar: React.FC = () => {
         </div>
         {expanded && (
           <div className="overflow-hidden">
-            <h1 className="text-[#0A1628] font-bold text-xl leading-tight whitespace-nowrap">
+            <h1 className="text-white font-bold text-xl leading-tight whitespace-nowrap">
               MJ <span className="text-blue-500">Consultoria</span>
             </h1>
             <span className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded font-black tracking-widest uppercase">Treinamento</span>
@@ -181,7 +181,7 @@ const Sidebar: React.FC = () => {
                           }`}></i>
                         </div>
                         <div className="text-left min-w-0">
-                          <p className={`text-sm font-black truncate ${isActive ? 'text-[#0A1628]' : 'text-slate-600 group-hover:text-[#0A1628]'}`}>
+                          <p className={`text-sm font-black truncate ${isActive ? 'text-[#0A1628]' : 'text-slate-600 group-hover:text-white'}`}>
                             {item.label}
                           </p>
                           <p className={`text-[11px] truncate leading-tight ${isActive ? 'text-blue-200' : 'text-slate-600 group-hover:text-slate-500'}`}>
@@ -206,7 +206,7 @@ const Sidebar: React.FC = () => {
               {state.user?.name ? state.user.name.substring(0, 2).toUpperCase() : '??'}
             </div>
             <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-bold text-slate-700 truncate">{state.user?.name || 'Usuario'}</p>
+              <p className="text-sm font-bold text-slate-300 truncate">{state.user?.name || 'Usuario'}</p>
               <p className="text-[9px] text-blue-500 font-black uppercase tracking-widest truncate">
                 {state.user?.role === 'SUPERADMIN' ? 'SUPER ADMIN' : state.user?.role || 'Acesso'}
               </p>

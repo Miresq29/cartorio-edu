@@ -63,7 +63,7 @@ const SecurityView: React.FC = () => {
             <i className="fa-solid fa-shield-halved text-5xl"></i>
           </div>
           <div>
-            <h2 className="text-5xl font-black tracking-tight mb-3">Seguranca e Manutencao</h2>
+            <h2 className="text-5xl font-black tracking-tight mb-3 text-white">Seguranca e Manutencao</h2>
             <p className="text-slate-500 font-medium text-xl">Controles de integridade, backups e gestao de acesso.</p>
           </div>
         </header>
