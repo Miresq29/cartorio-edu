@@ -8,7 +8,7 @@ const SupportView: React.FC = () => {
         <i className="fa-solid fa-headset"></i>
       </div>
       <div className="space-y-4">
-        <h2 className="text-3xl font-black text-white uppercase italic">Suporte MJ Consultoria</h2>
+        <h2 className="text-3xl font-black text-[#0D1B3E] uppercase italic">Suporte MJ Consultoria</h2>
         <p className="text-slate-500 max-w-md mx-auto">
           Precisa de ajuda com a IA ou configuração de novos cartórios? Nossa equipe técnica está disponível.
         </p>

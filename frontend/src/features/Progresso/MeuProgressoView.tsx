@@ -154,7 +154,7 @@ const MeuProgressoView: React.FC = () => {
             {userName.substring(0, 2).toUpperCase()}
           </div>
           <div>
-            <h2 className="text-2xl font-black text-white">{userName}</h2>
+            <h2 className="text-2xl font-black text-[#0D1B3E]">{userName}</h2>
             <p className="text-sm text-slate-500">{user.cargo || 'Colaborador'} · {earnedBadges.length}/{totalBadges} badges conquistados</p>
           </div>
           <div className="ml-auto hidden md:flex items-center gap-2 bg-white border border-slate-200 px-3 py-2 rounded-xl">

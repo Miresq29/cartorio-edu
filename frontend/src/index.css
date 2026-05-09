@@ -17,9 +17,9 @@
   --text-disabled:  #6b5120;   /* deep muted gold */
 
   /* Content-area gold (dark enough for white backgrounds) */
-  --gold-strong: #7a5c1e;      /* ~5.8:1 on white — titles, labels */
-  --gold-body:   #8a6e2f;      /* ~4.5:1 on white — body secondary */
-  --gold-soft:   #a8882f;      /* ~3.5:1 on white — captions */
+  --gold-strong: #4a3410;      /* ~11:1 on white — titles, labels */
+  --gold-body:   #5c4515;      /* ~8.5:1 on white — body text */
+  --gold-soft:   #7a5c1e;      /* ~5.3:1 on white — captions */
 
   /* Brand */
   --brand-blue: #3b82f6;

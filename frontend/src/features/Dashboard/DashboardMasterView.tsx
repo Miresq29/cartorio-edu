@@ -18,7 +18,7 @@ const DashboardMasterView: React.FC = () => {
   return (
     <div className="p-10 space-y-10 bg-slate-50 min-h-screen animate-in fade-in">
       <header>
-        <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter">
+        <h2 className="text-4xl font-black text-[#0D1B3E] italic uppercase tracking-tighter">
           Console <span className="text-blue-500">Master</span>
         </h2>
         <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.4em] mt-2">

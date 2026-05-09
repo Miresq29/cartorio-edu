@@ -116,7 +116,7 @@ const CampanhasView: React.FC = () => {
     <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
 
       <header>
-        <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
+        <h2 className="text-3xl font-black text-[#0D1B3E] italic uppercase tracking-tighter">
           Campanhas de <span className="text-pink-500">Comunicação</span>
         </h2>
         <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">

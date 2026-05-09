@@ -209,7 +209,7 @@ const UsersView: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-black text-white">Colaboradores & Permissões</h2>
+            <h2 className="text-2xl font-black text-[#0D1B3E]">Colaboradores & Permissões</h2>
             <p className="text-sm text-slate-500 mt-0.5">Gerencie usuários e controle de acesso</p>
           </div>
           {isGestor && (

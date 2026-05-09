@@ -8,7 +8,7 @@ const PrivacyView: React.FC = () => {
         <div className="w-16 h-16 bg-blue-500/10 border border-blue-500/20 rounded-3xl flex items-center justify-center">
           <i className="fa-solid fa-shield-heart text-blue-400 text-3xl"></i>
         </div>
-        <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
+        <h2 className="text-3xl font-black text-[#0D1B3E] italic uppercase tracking-tighter">
           Política de <span className="text-blue-500">Privacidade</span>
         </h2>
         <p className="text-slate-500 font-bold uppercase tracking-widest text-sm">
