@@ -74,6 +74,34 @@ main .text-gray-500  { color: var(--gold-body)   !important; }
 main .text-slate-600,
 main .text-gray-600  { color: var(--gold-strong) !important; }
 
+/* ── Fix dark-background inputs on light layout ── */
+main input[type="text"],
+main input[type="search"],
+main input[type="email"],
+main input[type="number"],
+main input[type="password"],
+main textarea {
+  background-color: #ffffff;
+  color: #1e293b;
+  border-color: rgba(201, 168, 76, 0.25);
+}
+
+/* Date inputs: always light + native picker uses light theme */
+main input[type="date"],
+input[type="date"] {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+  border-color: rgba(201, 168, 76, 0.35) !important;
+  color-scheme: light;
+}
+
+main input[type="date"]:focus,
+input[type="date"]:focus {
+  border-color: #c9a84c !important;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(201, 168, 76, 0.2) !important;
+}
+
 /* Subtle placeholder gold */
 main input::placeholder,
 main textarea::placeholder {
