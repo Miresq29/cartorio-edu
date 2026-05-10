@@ -9,6 +9,7 @@ import { useApp } from '../../context/AppContext';
 interface Trilha { id: string; titulo: string; descricao: string; icone: string; cor: string; modulos: any[]; tenantId: string; }
 interface TrilhaProgresso { id: string; userId: string; userName: string; trilhaId: string; trilhaTitulo?: string; concluido: boolean; tenantId: string; }
 interface QuizResult { id: string; colaborador: string; userId?: string; nota: number; aprovado: boolean; trailTitle?: string; moduleTitle?: string; ia?: boolean; createdAt: any; }
+interface ExameResultado { id: string; userId: string; userName: string; score: number; aprovado: boolean; fonteTitulo: string; tenantId: string; createdAt: any; }
 interface Certificado { id: string; colaboradorNome: string; trilhaTitulo: string; notaFinal: number; emitidoEm: any; tenantId: string; codigoVerificacao?: string; }
 
 function pct(a: number, b: number) { return b === 0 ? 0 : Math.round((a / b) * 100); }
@@ -103,6 +104,7 @@ const MeuProgressoView: React.FC = () => {
   const [trilhas, setTrilhas] = useState<Trilha[]>([]);
   const [progresso, setProgresso] = useState<TrilhaProgresso[]>([]);
   const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
+  const [exameResults, setExameResults] = useState<ExameResultado[]>([]);
   const [certificados, setCertificados] = useState<Certificado[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -111,12 +113,19 @@ const MeuProgressoView: React.FC = () => {
     unsubs.push(onSnapshot(query(collection(db,'trilhas'), where('tenantId','==',tenantId)), s => setTrilhas(s.docs.map(d => ({id:d.id,...d.data()} as Trilha)))));
     unsubs.push(onSnapshot(query(collection(db,'trilhasProgresso'), where('tenantId','==',tenantId)), s => setProgresso(s.docs.map(d => ({id:d.id,...d.data()} as TrilhaProgresso)))));
     unsubs.push(onSnapshot(query(collection(db,'treinamentosQuizResults'), orderBy('createdAt','desc')), s => { setQuizResults(s.docs.map(d => ({id:d.id,...d.data()} as QuizResult))); setLoading(false); }));
+    unsubs.push(onSnapshot(query(collection(db,'examesResultados'), where('userId','==',userId)), s => setExameResults(s.docs.map(d => ({id:d.id,...d.data()} as ExameResultado)))));
     unsubs.push(onSnapshot(query(collection(db,'certificados'), where('tenantId','==',tenantId)), s => setCertificados(s.docs.map(d => ({id:d.id,...d.data()} as Certificado)))));
     return () => unsubs.forEach(u => u());
-  }, [tenantId]);
+  }, [tenantId, userId]);
 
   const myProg  = progresso.filter(p => p.userId === userId || p.userName === userName);
-  const myRes   = quizResults.filter(r => r.userId === userId || r.colaborador === userName);
+  const quizDoUser = quizResults.filter(r => r.userId === userId || r.colaborador === userName);
+  // Merge treinamentosQuizResults + examesResultados into unified list
+  const examesMapped: QuizResult[] = exameResults.map(e => ({
+    id: e.id, colaborador: e.userName, userId: e.userId,
+    nota: e.score, aprovado: e.aprovado, trailTitle: e.fonteTitulo, createdAt: e.createdAt,
+  }));
+  const myRes = [...quizDoUser, ...examesMapped];
   const myCerts = certificados.filter(c => c.colaboradorNome === userName);
 
   const totalMods  = trilhas.reduce((a, t) => a + (t.modulos?.length ?? 0), 0);

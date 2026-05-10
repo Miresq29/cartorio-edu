@@ -160,6 +160,27 @@ const ExamesView: React.FC = () => {
         createdAt: serverTimestamp(),
         proximaTentativa,
       });
+
+      if (aprovado) {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        const codigo = Array.from({ length: 12 }, (_, i) =>
+          (i > 0 && i % 4 === 0 ? '-' : '') + chars[Math.floor(Math.random() * chars.length)]
+        ).join('');
+        await addDoc(collection(db, 'certificados'), {
+          colaboradorId: user.id,
+          colaboradorNome: user.name,
+          cargo: (user as any).cargo || user.role,
+          cartorio: user.tenantId,
+          trilhaTitulo: quizEscolhido!.titulo,
+          tipo: 'exame',
+          notaFinal: score,
+          cargaHoraria: 1,
+          codigoVerificacao: codigo,
+          emitidoEm: serverTimestamp(),
+          emitidoPor: user.id,
+          tenantId: user.tenantId,
+        });
+      }
     } catch {
       showToast('Não foi possível salvar o resultado. Recarregue a página.', 'error');
     } finally {
