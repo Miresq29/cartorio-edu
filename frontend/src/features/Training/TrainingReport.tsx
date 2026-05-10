@@ -294,8 +294,8 @@ const TrainingReport: React.FC = () => {
             const statusColor = p.status === 'concluído' ? 'emerald' : p.status === 'pendente' ? 'amber' : 'red';
             return (
               <div key={p.id} className="bg-white border border-slate-200 hover:border-slate-200 rounded-2xl p-4 flex items-center gap-4 transition-all group">
-                <div className="w-10 h-10 rounded-xl bg-slate-200 border border-slate-300 flex items-center justify-center flex-shrink-0">
-                  <span className="text-sm font-black text-[#0A1628]">{p.nomeColaborador.charAt(0).toUpperCase()}</span>
+                <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+                  <span className="text-sm font-black text-blue-700">{p.nomeColaborador.charAt(0).toUpperCase()}</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">

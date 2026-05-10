@@ -390,12 +390,13 @@ ${opt.justificativa}
   const renderResumosTab = () => {
     const trilhaDocs = trilhas.flatMap(t =>
       (t.modulos || [])
-        .filter(m => m.descricao || m.conteudo)
+        .filter(m => m.titulo)
         .map(m => ({
-          id: `trilha_${t.id}_mod_${m.id}`,
+          id: `trilha_${t.id}_mod_${m.id || m.titulo}`,
           fileName: `${t.titulo} — ${m.titulo}`,
           title: m.titulo,
-          content: [m.descricao, m.conteudo].filter(Boolean).join('\n\n'),
+          content: [m.descricao, m.conteudo].filter(Boolean).join('\n\n')
+            || `Módulo "${m.titulo}" da trilha "${t.titulo}". ${t.descricao || ''}`.trim(),
           _isTrilha: true,
         }))
     );
