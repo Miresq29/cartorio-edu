@@ -1,279 +1,215 @@
 /**
  * SERVIÇO DE INTEGRAÇÃO COM GEMINI (FRONTEND DIRETO)
- * Chama a API do Google Gemini diretamente.
- * Chave configurada via VITE_GEMINI_API_KEY no Vercel.
+ * Usa VITE_GEMINI_API_KEY ou VITE_FIREBASE_API_KEY (mesmo projeto Google Cloud).
+ *
+ * Estratégia de quota:
+ *  - gemini-2.0-flash-lite  → tarefas simples (resumo, chat, campanhas, treinamento)
+ *  - gemini-2.0-flash       → tarefas pesadas (exame com Bloom, conformidade)
+ * Cada modelo tem cota diária independente no Google AI Studio (free tier: 1500 req/dia por modelo).
  */
 
-// Usa VITE_GEMINI_API_KEY se disponível; caso contrário usa VITE_FIREBASE_API_KEY
-// (ambas são chaves do mesmo projeto Google Cloud — a chave Firebase funciona para a API Gemini)
 const GEMINI_API_KEY =
   import.meta.env.VITE_GEMINI_API_KEY ||
   import.meta.env.VITE_FIREBASE_API_KEY;
 
-// gemini-2.0-flash: 1500 req/dia grátis vs 50/dia do gemini-2.5-pro
-const GEMINI_MODEL = 'gemini-2.0-flash';
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+const LITE_MODEL = 'gemini-2.0-flash-lite';
+const PRO_MODEL  = 'gemini-2.0-flash';
 
-/**
- * Remove blocos de código Markdown e extrai JSON limpo
- */
+const apiUrl = (model: string) =>
+  `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+
 export const cleanJsonOutput = (text: string): string => {
   if (!text) return '[]';
-  let cleaned = text
-    .replace(/```json\s*/gi, '')
-    .replace(/```\s*/g, '')
-    .trim();
-
-  const firstBracket = cleaned.indexOf('[');
-  const lastBracket = cleaned.lastIndexOf(']');
-  if (firstBracket !== -1 && lastBracket !== -1 && lastBracket > firstBracket) {
-    cleaned = cleaned.substring(firstBracket, lastBracket + 1);
-  }
-  return cleaned;
+  let c = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+  const fb = c.indexOf('['), lb = c.lastIndexOf(']');
+  if (fb !== -1 && lb > fb) c = c.substring(fb, lb + 1);
+  return c;
 };
 
-/**
- * Função base: envia prompt para o Gemini e retorna texto da resposta
- */
-const callGemini = async (prompt: string): Promise<string> => {
-  if (!GEMINI_API_KEY) {
-    console.error('[Gemini] VITE_GEMINI_API_KEY não configurada. Verifique as variáveis de ambiente no Vercel e no .env');
-    throw new Error('Chave da API Gemini não configurada. Contate o administrador.');
-  }
-  console.info(`[Gemini] chamando ${GEMINI_MODEL} | prompt ${prompt.length} chars`);
+// ─── Core caller ────────────────────────────────────────────────────────────
 
-  const response = await fetch(GEMINI_API_URL, {
+const callGemini = async (
+  prompt: string,
+  model: string,
+  maxOutputTokens: number,
+  temperature = 0.2
+): Promise<string> => {
+  if (!GEMINI_API_KEY) {
+    throw new Error('Chave da API Gemini não configurada. Verifique VITE_GEMINI_API_KEY no Vercel.');
+  }
+  console.info(`[Gemini] ${model} | in:${prompt.length}ch | maxOut:${maxOutputTokens}`);
+
+  const res = await fetch(apiUrl(model), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: 0.2,
-        maxOutputTokens: 8192,
-      }
-    })
+      generationConfig: { temperature, maxOutputTokens },
+    }),
   });
 
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    const msg = err?.error?.message || response.statusText;
-    const status = response.status;
-    if (status === 400 && msg?.includes('blocked')) {
-      throw new Error('Chave de API bloqueada para o Gemini. Configure VITE_GEMINI_API_KEY no Vercel com uma chave do Google AI Studio (ai.google.dev).');
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = err?.error?.message || res.statusText;
+    if (res.status === 429) {
+      throw new Error(`Cota da API Gemini (${model}) esgotada. Aguarde ou verifique ai.google.dev.`);
     }
-    if (status === 429) {
-      throw new Error('Cota da API Gemini esgotada. Aguarde algumas horas ou verifique seu plano em ai.google.dev.');
-    }
-    throw new Error(`[Gemini ${status}] ${msg}`);
+    throw new Error(`[Gemini ${res.status}] ${msg}`);
   }
 
-  const data = await response.json();
+  const data = await res.json();
   return data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Sem resposta da IA.';
 };
 
-/**
- * Chat principal — usado por todos os módulos
- */
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+const cap = (s: string, n: number) => s.length > n ? s.substring(0, n) + '…' : s;
+
+const extractJsonObject = (text: string): any => {
+  const c = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+  const fb = c.indexOf('['), lb = c.lastIndexOf(']');
+  if (fb !== -1 && lb > fb) {
+    try { return JSON.parse(c.substring(fb, lb + 1)); } catch {}
+  }
+  const fB = c.indexOf('{'), lB = c.lastIndexOf('}');
+  if (fB !== -1 && lB > fB) {
+    try { return JSON.parse(c.substring(fB, lB + 1)); } catch {}
+  }
+  throw new Error('JSON inválido na resposta da IA');
+};
+
+// ─── Public API ───────────────────────────────────────────────────────────────
+
+/** Chat principal (IA de Treinamento) */
 export const chat = async (message: string, context: string, _token?: string) => {
-  const prompt = context ? `Contexto: ${context}\n\n${message}` : message;
-  const text = await callGemini(prompt);
+  // Truncate heavy context to avoid burning large token batches
+  const ctx = context ? `Contexto: ${cap(context, 2000)}\n\n` : '';
+  const text = await callGemini(`${ctx}${cap(message, 1000)}`, LITE_MODEL, 800);
   return { text };
 };
 
-/**
- * Parecer direto (Expert Review)
- */
+/** Parecer Expert Review */
 export const getGeminiResponse = async (prompt: string): Promise<string> => {
   try {
-    return await callGemini(prompt);
-  } catch (error: any) {
-    console.error('Erro Expert Review:', error);
+    return await callGemini(cap(prompt, 3000), PRO_MODEL, 1200);
+  } catch (e: any) {
+    console.error('Erro Expert Review:', e);
     return 'Erro ao gerar parecer técnico.';
   }
 };
 
-/**
- * Auditoria de conformidade com JSON estruturado
- */
+/** Auditoria de conformidade */
 export const analyzeComplianceDeep = async (
   doc: { text?: string },
   checklist: string[],
   context: string
 ) => {
-  const prompt = `Analise o documento abaixo contra o checklist. Retorne APENAS um array JSON válido, sem texto adicional, sem markdown:
-[{"requirement": "...", "compliant": true/false, "comment": "...", "suggestion": "..."}]
+  const prompt = `Analise o documento contra o checklist. Retorne APENAS array JSON sem markdown:
+[{"requirement":"...","compliant":true/false,"comment":"...","suggestion":"..."}]
 
 Checklist:
-${checklist.map(item => `- ${item}`).join('\n')}
+${checklist.map(i => `- ${i}`).join('\n')}
 
-Contexto legal: ${context}
-
-Documento: ${doc.text || 'Conteúdo não disponível.'}`;
+Contexto: ${cap(context, 300)}
+Documento: ${cap(doc.text || '', 2500)}`;
 
   try {
-    const text = await callGemini(prompt);
-    const cleaned = cleanJsonOutput(text);
-    return JSON.parse(cleaned);
+    const text = await callGemini(prompt, PRO_MODEL, 1500);
+    return JSON.parse(cleanJsonOutput(text));
   } catch (e) {
     console.error('Erro conformidade:', e);
-    return [{ requirement: 'Erro de Processamento', compliant: false, comment: 'A IA não gerou JSON válido.', suggestion: 'Tente novamente.' }];
+    return [{ requirement: 'Erro', compliant: false, comment: 'IA não retornou JSON válido.', suggestion: 'Tente novamente.' }];
   }
 };
 
-/**
- * Extração de checklist de documento
- */
+/** Extração de checklist de documento */
 export const extractChecklistFromDocument = async (doc: { text: string; fileName: string }) => {
-  const prompt = `Extraia requisitos do documento "${doc.fileName}" para checklist notarial.
-Retorne APENAS um array JSON: [{"id": "1", "text": "requisito"}]
-
-Documento: ${doc.text}`;
+  const prompt = `Extraia requisitos de "${doc.fileName}" para checklist notarial.
+Retorne APENAS array JSON: [{"id":"1","text":"requisito"}]
+Documento: ${cap(doc.text, 2000)}`;
 
   try {
-    const text = await callGemini(prompt);
-    const cleaned = cleanJsonOutput(text);
-    return JSON.parse(cleaned);
+    const text = await callGemini(prompt, LITE_MODEL, 800);
+    return JSON.parse(cleanJsonOutput(text));
   } catch (e) {
-    console.error('Erro extração:', e);
+    console.error('Erro extração checklist:', e);
     return [];
   }
 };
 
-/**
- * Gera 3 opções distintas de roteiro de treinamento em JSON estruturado
- */
+/** Gera 3 opções de roteiro de treinamento */
 export const generateTrainingOptions = async (context: string, customRequest?: string): Promise<any[]> => {
-  const prompt = `${context}
-
-${customRequest ? `Pedido específico: ${customRequest}\n\n` : ''}Gere EXATAMENTE 3 opções distintas de roteiro de treinamento para esta unidade notarial.
-Cada opção deve ter uma abordagem diferente:
-- Opção 1: Treinamento ESSENCIAL (básico, foco nos itens críticos, duração curta)
-- Opção 2: Treinamento COMPLETO (abrangente, todos os módulos, profundidade técnica)
-- Opção 3: Treinamento RELÂMPAGO (formato intensivo, pontos-chave, ideal para reciclagem)
-
-Retorne APENAS um array JSON válido com exatamente 3 objetos, sem texto adicional, sem markdown:
-[{
-  "titulo": "Nome da opção",
-  "tipo": "essencial|completo|relampago",
-  "descricao": "Breve descrição da abordagem",
-  "duracao": "ex: 4 horas",
-  "publico": "ex: Atendentes novos",
-  "modulos": [
-    {"nome": "Nome do módulo", "objetivo": "O que o aluno aprenderá", "duracao": "30 min", "obrigatorio": true}
-  ],
-  "justificativa": "Por que esta opção é indicada"
-}]`;
+  const prompt = `${cap(context, 1500)}
+${customRequest ? `\nPedido: ${cap(customRequest, 200)}\n` : ''}
+Gere EXATAMENTE 3 roteiros distintos (essencial/completo/relampago).
+Retorne APENAS array JSON sem markdown:
+[{"titulo":"...","tipo":"essencial|completo|relampago","descricao":"...","duracao":"...","publico":"...","modulos":[{"nome":"...","objetivo":"...","duracao":"...","obrigatorio":true}],"justificativa":"..."}]`;
 
   try {
-    const text = await callGemini(prompt);
-    const cleaned = cleanJsonOutput(text);
-    return JSON.parse(cleaned);
+    const text = await callGemini(prompt, LITE_MODEL, 1500);
+    return JSON.parse(cleanJsonOutput(text));
   } catch (e) {
-    console.error('Erro ao gerar opções de treinamento:', e);
+    console.error('Erro opções treinamento:', e);
     return [];
   }
 };
 
-/**
- * Gera resumo de documento com tipo escolhido pelo usuário
- */
+/** Resumo inteligente de documento */
 export const generateSummary = async (
   docContent: string,
   docTitle: string,
   summaryType: 'executivo' | 'tecnico' | 'didatico' | 'operacional'
 ): Promise<string> => {
-  const instructions: Record<string, string> = {
-    executivo: 'Resumo executivo de 1 página: pontos principais, impactos e conclusão. Linguagem direta para gestores.',
-    tecnico: 'Resumo técnico detalhado: fundamentos legais, artigos relevantes, requisitos normativos e análise crítica.',
-    didatico: 'Resumo didático para treinamento: explique como se fosse para um colaborador novo, com exemplos práticos e pontos de atenção.',
-    operacional: 'Resumo operacional: foque em procedimentos, checklists de ação e passo a passo para aplicação no dia a dia.',
+  const inst: Record<string, string> = {
+    executivo:   'Resumo executivo: pontos-chave, impactos, conclusão. Linguagem direta para gestores.',
+    tecnico:     'Resumo técnico: fundamentos legais, artigos relevantes, requisitos normativos.',
+    didatico:    'Resumo didático: explique para colaborador novo, com exemplos práticos e pontos de atenção.',
+    operacional: 'Resumo operacional: procedimentos, checklists e passo a passo para o dia a dia.',
   };
 
-  const prompt = `Você é um especialista em direito notarial da MJ Consultoria.
-Documento: "${docTitle}"
-
-INSTRUÇÃO: ${instructions[summaryType]}
-
-CONTEÚDO DO DOCUMENTO:
-${docContent.substring(0, 6000)}
-
-Gere o resumo no formato solicitado. Use formatação clara com títulos em MAIÚSCULAS e bullets quando necessário.`;
+  const prompt = `Especialista em direito notarial. Documento: "${docTitle}"
+Instrução: ${inst[summaryType]}
+Conteúdo: ${cap(docContent, 2500)}
+Gere o resumo com títulos em MAIÚSCULAS e bullets quando útil.`;
 
   try {
-    return await callGemini(prompt);
-  } catch (e) {
-    console.error('Erro ao gerar resumo:', e);
-    return 'Erro ao gerar resumo. Tente novamente.';
+    return await callGemini(prompt, LITE_MODEL, 700);
+  } catch (e: any) {
+    console.error('Erro resumo:', e);
+    throw e;
   }
 };
 
-/**
- * Gera posts para campanhas de comunicação em múltiplas plataformas
- */
+/** Posts para campanhas de comunicação */
 export const generateCampaignPosts = async (
   topic: string,
   platforms: string[],
   tone: string,
   additionalContext?: string
 ): Promise<Record<string, string>> => {
-  const platformInstructions: Record<string, string> = {
-    linkedin: 'Post profissional para LinkedIn: até 1300 caracteres, linguagem formal, hashtags relevantes ao final, foco em autoridade e credibilidade.',
-    instagram: 'Post para Instagram: até 300 caracteres na legenda principal + chamada para ação, emojis moderados, 5-10 hashtags relevantes.',
-    whatsapp: 'Mensagem para WhatsApp/grupos: informal mas respeitoso, direto ao ponto, máximo 3 parágrafos curtos, sem hashtags excessivas.',
-    email: 'Assunto + corpo de e-mail institucional: formal, estruturado com cumprimento, desenvolvimento e encerramento, assinatura da cartório.',
+  const plat: Record<string, string> = {
+    linkedin:  'LinkedIn: até 800ch, formal, hashtags.',
+    instagram: 'Instagram: até 250ch, emojis moderados, 5 hashtags.',
+    whatsapp:  'WhatsApp: máx 3 parágrafos curtos, informal.',
+    email:     'E-mail: assunto + corpo formal com cumprimento e encerramento.',
   };
 
-  const platformsText = platforms.map(p => `### ${p.toUpperCase()}\n${platformInstructions[p] || ''}`).join('\n\n');
-
-  const prompt = `Você é especialista em comunicação institucional para cartórios.
-Unidade: MJ Consultoria | Tom desejado: ${tone}
-${additionalContext ? `Contexto adicional: ${additionalContext}\n` : ''}
-TEMA DA CAMPANHA: ${topic}
-
-Crie posts DISTINTOS e adaptados para cada plataforma abaixo:
-
-${platformsText}
-
-Retorne APENAS um objeto JSON válido, sem markdown, no formato:
-{${platforms.map(p => `"${p}": "conteúdo do post"`).join(', ')}}`;
+  const prompt = `Comunicação institucional para cartório. Tom: ${tone}.
+${additionalContext ? `Contexto: ${cap(additionalContext, 200)}\n` : ''}Tema: ${cap(topic, 200)}
+Crie posts distintos para: ${platforms.join(', ')}
+${platforms.map(p => `${p.toUpperCase()}: ${plat[p] || ''}`).join('\n')}
+Retorne APENAS objeto JSON: {${platforms.map(p => `"${p}":"..."`).join(',')}}`;
 
   try {
-    const text = await callGemini(prompt);
-    const cleaned = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-    const firstBrace = cleaned.indexOf('{');
-    const lastBrace = cleaned.lastIndexOf('}');
-    if (firstBrace !== -1 && lastBrace > firstBrace) {
-      return JSON.parse(cleaned.substring(firstBrace, lastBrace + 1));
-    }
+    const text = await callGemini(prompt, LITE_MODEL, 1200);
+    const c = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    const fB = c.indexOf('{'), lB = c.lastIndexOf('}');
+    if (fB !== -1 && lB > fB) return JSON.parse(c.substring(fB, lB + 1));
     return {};
   } catch (e) {
-    console.error('Erro ao gerar posts de campanha:', e);
+    console.error('Erro campanhas:', e);
     return {};
   }
-};
-
-/**
- * Extrai JSON de qualquer formato (com ou sem blocos markdown)
- * Tenta array [] primeiro (mais comum), depois objeto {}
- */
-const extractJsonObject = (text: string): any => {
-  const cleaned = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-
-  // 1. Tenta array [] — prioridade porque generateExam retorna array
-  const firstBracket = cleaned.indexOf('[');
-  const lastBracket = cleaned.lastIndexOf(']');
-  if (firstBracket !== -1 && lastBracket > firstBracket) {
-    try { return JSON.parse(cleaned.substring(firstBracket, lastBracket + 1)); } catch {}
-  }
-
-  // 2. Tenta objeto {}
-  const firstBrace = cleaned.indexOf('{');
-  const lastBrace = cleaned.lastIndexOf('}');
-  if (firstBrace !== -1 && lastBrace > firstBrace) {
-    try { return JSON.parse(cleaned.substring(firstBrace, lastBrace + 1)); } catch {}
-  }
-
-  throw new Error('JSON inválido na resposta da IA');
 };
 
 export interface QuestaoExame {
@@ -285,56 +221,33 @@ export interface QuestaoExame {
   justificativa: string;
 }
 
-/**
- * Gera exame com Taxonomia de Bloom (nível médio)
- * 3 questões de Compreensão + 4 de Aplicação + 3 de Análise = 10 questões
- */
+/** Gera exame com Taxonomia de Bloom */
 export const generateExam = async (
   titulo: string,
   conteudo: string,
-  numQuestoes: number = 10
+  numQuestoes = 10
 ): Promise<QuestaoExame[]> => {
-  const prompt = `Você é um especialista em avaliação educacional corporativa.
+  const c = Math.round(numQuestoes * 0.3);
+  const a = Math.round(numQuestoes * 0.4);
+  const an = numQuestoes - c - a;
 
-TEMA DO EXAME: "${titulo}"
-CONTEÚDO BASE:
-${conteudo.substring(0, 5000)}
+  const prompt = `Avaliação educacional corporativa. Tema: "${titulo}"
+Conteúdo: ${cap(conteudo, 2500)}
 
-Gere EXATAMENTE ${numQuestoes} questões de múltipla escolha usando a TAXONOMIA DE BLOOM nível médio:
-- ${Math.round(numQuestoes * 0.3)} questões de COMPREENSÃO (bloom: "compreensao") — explique, descreva, identifique
-- ${Math.round(numQuestoes * 0.4)} questões de APLICAÇÃO (bloom: "aplicacao") — demonstre, utilize, execute, aplique
-- ${Math.round(numQuestoes * 0.3)} questões de ANÁLISE (bloom: "analise") — compare, diferencie, examine, avalie
+Gere EXATAMENTE ${numQuestoes} questões de múltipla escolha (Taxonomia de Bloom):
+- ${c} COMPREENSÃO | ${a} APLICAÇÃO | ${an} ANÁLISE
+Regras: 4 alternativas (A-D), 1 correta, incorretas plausíveis, justificativa breve.
 
-REGRAS OBRIGATÓRIAS:
-1. Cada questão tem exatamente 4 alternativas (A, B, C, D)
-2. Apenas 1 alternativa correta por questão
-3. As alternativas incorretas devem ser plausíveis (não óbvias)
-4. Justifique brevemente por que a resposta está correta
-5. Questões contextualizadas na realidade corporativa/profissional
-6. Linguagem clara e objetiva
-
-Retorne APENAS um array JSON válido, sem markdown, sem texto adicional:
-[{
-  "id": 1,
-  "enunciado": "texto da questão",
-  "alternativas": [
-    {"letra": "A", "texto": "..."},
-    {"letra": "B", "texto": "..."},
-    {"letra": "C", "texto": "..."},
-    {"letra": "D", "texto": "..."}
-  ],
-  "correta": "A",
-  "bloom": "compreensao|aplicacao|analise",
-  "justificativa": "Explicação breve da resposta correta"
-}]`;
+Retorne APENAS array JSON sem markdown:
+[{"id":1,"enunciado":"...","alternativas":[{"letra":"A","texto":"..."}],"correta":"A","bloom":"compreensao|aplicacao|analise","justificativa":"..."}]`;
 
   try {
-    const text = await callGemini(prompt);
+    const text = await callGemini(prompt, PRO_MODEL, 2500);
     const questoes = extractJsonObject(text);
-    if (!Array.isArray(questoes) || questoes.length === 0) throw new Error('Formato inválido na resposta da IA.');
+    if (!Array.isArray(questoes) || questoes.length === 0) throw new Error('Formato inválido.');
     return questoes;
   } catch (e: any) {
-    console.error('Erro ao gerar exame:', e);
+    console.error('Erro exame:', e);
     throw new Error(e?.message || 'Não foi possível gerar o exame. Tente novamente.');
   }
 };
