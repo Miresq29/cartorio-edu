@@ -405,7 +405,7 @@ ${opt.justificativa}
             ) : (
               <div className="space-y-2 max-h-52 overflow-y-auto custom-scrollbar">
                 {knowledgeDocs.map((doc, i) => (
-                  <button type="button" key={i} onClick={() => setSelectedDoc(doc)}>
+                  <button type="button" key={i} onClick={() => setSelectedDoc(doc)}
                     className={`w-full text-left p-3 rounded-xl transition-all border ${
                       selectedDoc?.id === doc.id
                         ? 'border-blue-500 bg-blue-50 text-[#0A1628]'
@@ -424,7 +424,7 @@ ${opt.justificativa}
             <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">2. Tipo de resumo</h4>
             <div className="grid grid-cols-2 gap-2">
               {SUMMARY_TYPES.map(st => (
-                <button type="button" key={st.id} onClick={() => setSummaryType(st.id)}>
+                <button type="button" key={st.id} onClick={() => setSummaryType(st.id)}
                   className={`p-3 rounded-xl text-left transition-all border ${
                     summaryType === st.id
                       ? `border-${st.color}-500 bg-${st.color}-50`
@@ -437,7 +437,7 @@ ${opt.justificativa}
             </div>
           </div>
 
-          <button type="button" onClick={generateSummary} disabled={summaryLoading || !selectedDoc}>
+          <button type="button" onClick={generateSummary} disabled={summaryLoading || !selectedDoc}
             className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
             {summaryLoading
               ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Gerando resumo...</>
@@ -451,7 +451,7 @@ ${opt.justificativa}
           <div className="flex items-center justify-between mb-4">
             <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Resultado</h4>
             {summary && (
-              <button type="button" onClick={() => { navigator.clipboard.writeText(summary); showToast('Resumo copiado!', 'success'); }}>
+              <button type="button" onClick={() => { navigator.clipboard.writeText(summary); showToast('Resumo copiado!', 'success'); }}
                 className="text-[9px] bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg font-black uppercase tracking-widest transition-all border border-slate-200">
                 <i className="fa-solid fa-copy mr-1"></i>Copiar
               </button>
@@ -521,7 +521,7 @@ ${opt.justificativa}
       <div className="bg-white border border-slate-200 rounded-[32px] overflow-hidden shadow-sm">
         <div className="flex border-b border-slate-200 overflow-x-auto">
           {TABS.map(tab => (
-            <button type="button" key={tab.id} onClick={() => setActiveTab(tab.id)}>
+            <button type="button" key={tab.id} onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-6 py-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all border-b-2 ${
                 activeTab === tab.id
                   ? 'text-blue-600 border-blue-500 bg-blue-50'
