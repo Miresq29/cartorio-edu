@@ -245,10 +245,17 @@ const FormMeta: React.FC<{
 
       {/* Prêmio */}
       <div className="space-y-1">
-        <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Prêmio / Reconhecimento *</label>
+        <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">
+          Prêmio / Reconhecimento <span className="text-red-500">*</span>
+        </label>
         <input value={form.premio} onChange={e => set('premio', e.target.value)}
           placeholder="Ex: Voucher R$200, Folga extra, Certificado de Destaque..."
-          className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+          className={`w-full bg-white border rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none transition-all ${
+            !form.premio ? 'border-red-300 focus:border-red-500' : 'border-slate-200 focus:border-blue-500'
+          }`} />
+        {!form.premio && (
+          <p className="text-[10px] text-red-400 font-bold">Campo obrigatório para salvar</p>
+        )}
       </div>
 
       {/* Status */}

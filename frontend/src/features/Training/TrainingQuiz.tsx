@@ -5,6 +5,7 @@ import {
   addDoc, deleteDoc, doc, serverTimestamp
 } from 'firebase/firestore';
 import { useApp } from '../../context/AppContext';
+import { GeminiService } from '../../services/geminiService';
 
 interface Question {
   id: string;
@@ -39,6 +40,7 @@ interface QuizResult {
 
 interface Props {
   checklists: any[];
+  trilhas?: any[];
 }
 
 const DIAS_BLOQUEIO = 3;
@@ -65,7 +67,7 @@ const formatCountdown = (liberadoEm: Date): string => {
   return `${hours}h ${mins}min`;
 };
 
-const TrainingQuiz: React.FC<Props> = ({ checklists }) => {
+const TrainingQuiz: React.FC<Props> = ({ checklists, trilhas = [] }) => {
   const { state } = useApp();
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [results, setResults] = useState<QuizResult[]>([]);
@@ -138,20 +140,8 @@ Regras:
 - Retorne exatamente ${aiForm.quantidade} questões`;
 
     try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 4000,
-          messages: [{ role: 'user', content: prompt }]
-        })
-      });
+      const raw = await GeminiService.getGeminiResponse(prompt);
 
-      const data = await response.json();
-      const raw = data.content?.[0]?.text || '';
-
-      // Parse JSON da resposta
       const jsonMatch = raw.match(/\{[\s\S]*\}/);
       if (!jsonMatch) throw new Error('Resposta inválida da IA');
 
@@ -355,7 +345,7 @@ Regras:
             </p>
           </div>
           <button type="button" onClick={() => { setMode('list'); setBloqueadoAte(null); }}
-            className="w-full bg-slate-800 hover:bg-slate-700 text-[#0A1628] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+            className="w-full bg-slate-700 hover:bg-slate-600 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
             <i className="fa-solid fa-arrow-left mr-2"></i>Voltar para Avaliações
           </button>
         </div>
@@ -459,11 +449,11 @@ Regras:
         </div>
 
         {/* Toggle IA / Manual */}
-        <div className="flex gap-2 bg-slate-900 p-1 rounded-xl w-fit">
+        <div className="flex gap-2 bg-slate-100 p-1 rounded-xl w-fit border border-slate-200">
           {(['ia', 'manual'] as const).map(m => (
             <button key={m} onClick={() => setCreateMode(m)}
               className={`px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
-                createMode === m ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-[#0A1628]'
+                createMode === m ? 'bg-blue-600 text-white' : 'text-slate-600 hover:text-slate-900'
               }`}>
               <i className={`fa-solid mr-2 ${m === 'ia' ? 'fa-wand-magic-sparkles' : 'fa-pen'}`}></i>
               {m === 'ia' ? 'Gerar com IA' : 'Criar Manual'}
@@ -485,7 +475,8 @@ Regras:
               <select value={aiForm.treinamento} onChange={e => setAiForm(f => ({ ...f, treinamento: e.target.value }))}
                 className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500">
                 <option value="">Selecione o treinamento...</option>
-                {checklists.map(c => <option key={c.id} value={c.title}>{c.title}</option>)}
+                {trilhas.length > 0 && <optgroup label="Trilhas">{trilhas.map((t: any) => <option key={t.id} value={t.titulo}>{t.titulo}</option>)}</optgroup>}
+                {checklists.length > 0 && <optgroup label="Protocolos">{checklists.map((c: any) => <option key={c.id} value={c.title}>{c.title}</option>)}</optgroup>}
               </select>
             </div>
             <div className="space-y-1">
@@ -515,7 +506,8 @@ Regras:
                 <select value={form.treinamento} onChange={e => setForm(f => ({ ...f, treinamento: e.target.value }))}
                   className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500">
                   <option value="">Selecione...</option>
-                  {checklists.map(c => <option key={c.id} value={c.title}>{c.title}</option>)}
+                  {trilhas.length > 0 && <optgroup label="Trilhas">{trilhas.map((t: any) => <option key={t.id} value={t.titulo}>{t.titulo}</option>)}</optgroup>}
+                  {checklists.length > 0 && <optgroup label="Protocolos">{checklists.map((c: any) => <option key={c.id} value={c.title}>{c.title}</option>)}</optgroup>}
                   <option value="outro">Outro</option>
                 </select>
               </div>

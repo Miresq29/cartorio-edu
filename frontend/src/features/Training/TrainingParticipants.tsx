@@ -254,7 +254,7 @@ const TrainingParticipants: React.FC = () => {
               className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${
                 filterStatus === s
                   ? 'bg-blue-600 text-white'
-                  : 'bg-slate-900 text-slate-500 hover:text-[#0A1628] border border-slate-200'
+                  : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
               }`}
             >
               {s === 'todos' ? 'Todos' : STATUS_CONFIG[s as keyof typeof STATUS_CONFIG]?.label}
@@ -297,8 +297,8 @@ const TrainingParticipants: React.FC = () => {
                 className="bg-white border border-slate-200 hover:border-slate-200 rounded-2xl p-4 flex items-center gap-4 transition-all group"
               >
                 {/* Avatar */}
-                <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center flex-shrink-0">
-                  <span className="text-sm font-black text-[#0A1628]">
+                <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+                  <span className="text-sm font-black text-blue-700">
                     {p.nomeColaborador.charAt(0).toUpperCase()}
                   </span>
                 </div>
@@ -308,7 +308,7 @@ const TrainingParticipants: React.FC = () => {
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-sm font-black text-[#0A1628]">{p.nomeColaborador}</span>
                     {p.cargo && (
-                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 bg-slate-900 px-2 py-0.5 rounded-md">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
                         {p.cargo}
                       </span>
                     )}

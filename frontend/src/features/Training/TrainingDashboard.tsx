@@ -305,7 +305,7 @@ const TrainingDashboard: React.FC = () => {
                       </span>
                     </div>
                   </div>
-                  <div className="w-full bg-slate-800 rounded-full h-1.5">
+                  <div className="w-full bg-slate-200 rounded-full h-1.5">
                     <div
                       className={`h-1.5 rounded-full transition-all ${cobertura.pct >= 80 ? 'bg-emerald-500' : cobertura.pct >= 50 ? 'bg-amber-500' : 'bg-red-500'}`}
                       style={{ width: `${cobertura.pct}%` }}
@@ -366,7 +366,7 @@ const TrainingDashboard: React.FC = () => {
                 const taxa = Math.round((aprov / resultados.length) * 100);
                 const media = Math.round(resultados.reduce((a, r) => a + r.nota, 0) / resultados.length);
                 return (
-                  <div key={t} className="bg-slate-900/50 border border-slate-200 rounded-xl p-4 space-y-2">
+                  <div key={t} className="bg-white border border-slate-200 rounded-xl p-4 space-y-2">
                     <p className="text-xs font-black text-[#0A1628] truncate">{t}</p>
                     <div className="flex gap-3">
                       <div>
@@ -382,7 +382,7 @@ const TrainingDashboard: React.FC = () => {
                         <p className="text-lg font-black text-slate-700">{resultados.length}</p>
                       </div>
                     </div>
-                    <div className="w-full bg-slate-800 rounded-full h-1">
+                    <div className="w-full bg-slate-200 rounded-full h-1">
                       <div className={`h-1 rounded-full ${taxa >= 70 ? 'bg-emerald-500' : taxa >= 50 ? 'bg-amber-500' : 'bg-red-500'}`} style={{ width: `${taxa}%` }}></div>
                     </div>
                   </div>
@@ -418,7 +418,7 @@ const TrainingDashboard: React.FC = () => {
                   <p className="text-sm font-black text-[#0A1628]">{trilha.titulo}</p>
                   <div className="flex flex-wrap gap-1.5 mt-1.5">
                     {(trilha.perfis || []).map(p => (
-                      <span key={p} className="text-[8px] font-black uppercase tracking-widest bg-slate-800 text-slate-500 px-2 py-0.5 rounded-md">{p}</span>
+                      <span key={p} className="text-[8px] font-black uppercase tracking-widest bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md">{p}</span>
                     ))}
                   </div>
                 </div>
@@ -428,7 +428,7 @@ const TrainingDashboard: React.FC = () => {
               </div>
 
               {/* Barra de progresso */}
-              <div className="w-full bg-slate-800 rounded-full h-2">
+              <div className="w-full bg-slate-200 rounded-full h-2">
                 <div
                   className={`h-2 rounded-full transition-all ${pct >= 80 ? 'bg-emerald-500' : pct >= 50 ? 'bg-amber-500' : 'bg-red-500'}`}
                   style={{ width: `${Math.min(100, pct)}%` }}
@@ -549,7 +549,7 @@ const TrainingDashboard: React.FC = () => {
                       <p className="text-[9px] text-slate-500 mt-0.5">{m.erros} de {m.totalTentativas}</p>
                     </div>
                   </div>
-                  <div className="w-full bg-slate-800 rounded-full h-2">
+                  <div className="w-full bg-slate-200 rounded-full h-2">
                     <div className={`h-2 rounded-full transition-all ${m.taxaErro >= 70 ? 'bg-red-500' : m.taxaErro >= 40 ? 'bg-amber-500' : 'bg-emerald-500'}`} style={{ width: `${m.taxaErro}%` }}></div>
                   </div>
                 </div>

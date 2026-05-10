@@ -486,7 +486,7 @@ ${opt.justificativa}
       case 'ia':           return renderIATab();
       case 'resumos':      return renderResumosTab();
       case 'participantes': return <TrainingParticipants />;
-      case 'questionarios': return <TrainingQuiz checklists={checklists} />;
+      case 'questionarios': return <TrainingQuiz checklists={checklists} trilhas={trilhas} />;
       case 'relatorios':   return <TrainingReport />;
       case 'dashboard':    return <TrainingDashboard />;
       default:             return null;
