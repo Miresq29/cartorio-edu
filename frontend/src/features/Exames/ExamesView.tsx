@@ -1,21 +1,28 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { db } from '../../services/firebase';
 import {
-  collection, onSnapshot, query, where, addDoc, serverTimestamp,
-  Timestamp,
+  collection, onSnapshot, query, where, addDoc, serverTimestamp, orderBy, Timestamp,
 } from 'firebase/firestore';
 import { GeminiService, QuestaoExame } from '../../services/geminiService';
 
-/* ─── tipos internos ──────────────────────────────────────── */
+/* ─── tipos ───────────────────────────────────────────────── */
 type Fase = 'escolher' | 'gerando' | 'fazendo' | 'resultado';
 
-interface FonteConteudo {
+interface QuizSalvo {
   id: string;
   titulo: string;
-  conteudo: string;
-  tipo: 'treinamento' | 'knowledgeBase' | 'video' | 'checklist';
+  treinamento: string;
+  questoes: {
+    id: string;
+    texto: string;
+    opcoes: string[];
+    correta: number;
+    explicacao: string;
+  }[];
+  geradoPorIA: boolean;
+  createdAt?: any;
 }
 
 interface ExameResultado {
@@ -30,9 +37,10 @@ interface ExameResultado {
   proximaTentativa?: any;
 }
 
-/* ─── helpers ────────────────────────────────────────────── */
+/* ─── helpers ─────────────────────────────────────────────── */
 const DIAS_BLOQUEIO = 5;
 const NOTA_APROVACAO = 70;
+const LETRAS = ['A', 'B', 'C', 'D', 'E'];
 
 function diasRestantes(proximaTentativa: any): number {
   if (!proximaTentativa) return 0;
@@ -42,155 +50,110 @@ function diasRestantes(proximaTentativa: any): number {
   return Math.max(0, Math.ceil(ms / 86_400_000));
 }
 
-function bloomLabel(bloom: string) {
-  if (bloom === 'compreensao') return { label: 'Compreensão', color: 'blue' };
-  if (bloom === 'aplicacao')   return { label: 'Aplicação',   color: 'emerald' };
-  return                              { label: 'Análise',     color: 'purple' };
+function quizToQuestoes(quiz: QuizSalvo): QuestaoExame[] {
+  return quiz.questoes.map((q, idx) => ({
+    id: idx + 1,
+    enunciado: q.texto,
+    alternativas: q.opcoes.map((o, i) => ({ letra: LETRAS[i] ?? String(i), texto: o })),
+    correta: LETRAS[q.correta] ?? 'A',
+    bloom: 'aplicacao' as const,
+    justificativa: q.explicacao || '',
+  }));
 }
 
-/* ══════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════ */
 const ExamesView: React.FC = () => {
   const { state } = useApp();
   const { showToast } = useToast();
   const user = state.user!;
 
-  /* fontes de conteúdo */
-  const [fontes, setFontes] = useState<FonteConteudo[]>([]);
-  const [loadingFontes, setLoadingFontes] = useState(true);
-
-  /* resultados anteriores do usuário */
+  const [quizzes, setQuizzes] = useState<QuizSalvo[]>([]);
+  const [loadingQuizzes, setLoadingQuizzes] = useState(true);
   const [resultados, setResultados] = useState<ExameResultado[]>([]);
 
-  /* estado do exame */
   const [fase, setFase] = useState<Fase>('escolher');
-  const [fonteEscolhida, setFonteEscolhida] = useState<FonteConteudo | null>(null);
+  const [quizEscolhido, setQuizEscolhido] = useState<QuizSalvo | null>(null);
   const [questoes, setQuestoes] = useState<QuestaoExame[]>([]);
   const [respostas, setRespostas] = useState<Record<number, string>>({});
   const [resultado, setResultado] = useState<{ score: number; aprovado: boolean } | null>(null);
   const [salvando, setSalvando] = useState(false);
-  const [numQuestoes, setNumQuestoes] = useState<5 | 7 | 10>(5);
 
-  /* ── carrega fontes de conteúdo ─────────────────────────── */
+  /* ── carrega quizzes do treinamento ─────────────────────── */
   useEffect(() => {
-    const unsubs: (() => void)[] = [];
-    const allFontes: FonteConteudo[] = [];
-
-    const carrega = (colecao: string, tipo: FonteConteudo['tipo'], campoConteudo: string, campoTitulo: string) => {
-      const u = onSnapshot(collection(db, colecao), snap => {
-        const novos = snap.docs.map(d => ({
-          id: d.id,
-          titulo: d.data()[campoTitulo] || d.data()['title'] || d.data()['nome'] || 'Sem título',
-          conteudo: d.data()[campoConteudo] || d.data()['content'] || d.data()['rawText'] || d.data()['descricao'] || '',
-          tipo,
-        }));
-        // substitui as fontes desse tipo
-        const filtered = allFontes.filter(f => f.tipo !== tipo);
-        allFontes.splice(0, allFontes.length, ...filtered, ...novos);
-        setFontes([...allFontes]);
-        setLoadingFontes(false);
-      });
-      unsubs.push(u);
-    };
-
-    carrega('treinamentos',  'treinamento',   'descricao',  'titulo');
-    carrega('knowledgeBase', 'knowledgeBase', 'rawText',    'title');
-
-    return () => unsubs.forEach(u => u());
+    const q = query(collection(db, 'treinamentosQuizzes'), orderBy('createdAt', 'desc'));
+    return onSnapshot(q, snap => {
+      setQuizzes(snap.docs.map(d => ({ id: d.id, ...d.data() } as QuizSalvo)));
+      setLoadingQuizzes(false);
+    });
   }, []);
 
-  /* ── carrega resultados do usuário ──────────────────────── */
+  /* ── carrega resultados do usuário ─────────────────────── */
   useEffect(() => {
     if (!user?.id) return;
-    const q = query(
-      collection(db, 'examesResultados'),
-      where('userId', '==', user.id),
-    );
+    const q = query(collection(db, 'examesResultados'), where('userId', '==', user.id));
     return onSnapshot(q, snap => {
       const docs = snap.docs.map(d => ({ id: d.id, ...d.data() } as ExameResultado));
-      // ordena client-side para evitar índice composto no Firestore
-      docs.sort((a, b) => {
-        const tA = a.createdAt?.toMillis?.() ?? 0;
-        const tB = b.createdAt?.toMillis?.() ?? 0;
-        return tB - tA;
-      });
+      docs.sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
       setResultados(docs);
     });
   }, [user?.id]);
 
-  /* ── verifica bloqueio para uma fonte ───────────────────── */
-  const verificaBloqueio = useCallback((fonteId: string) => {
-    const ultimo = resultados.find(r => r.fonteId === fonteId && !r.aprovado);
+  const verificaBloqueio = useCallback((quizId: string) => {
+    const ultimo = resultados.find(r => r.fonteId === quizId && !r.aprovado);
     if (!ultimo?.proximaTentativa) return null;
     const dias = diasRestantes(ultimo.proximaTentativa);
     return dias > 0 ? dias : null;
   }, [resultados]);
 
-  /* ── verifica aprovação anterior ────────────────────────── */
-  const jaAprovado = useCallback((fonteId: string) =>
-    resultados.some(r => r.fonteId === fonteId && r.aprovado),
+  const jaAprovado = useCallback((quizId: string) =>
+    resultados.some(r => r.fonteId === quizId && r.aprovado),
   [resultados]);
 
-  /* ── gera exame ─────────────────────────────────────────── */
-  const handleGerarExame = async () => {
-    if (!fonteEscolhida) return;
-
-    const bloqueio = verificaBloqueio(fonteEscolhida.id);
+  /* ── inicia exame com quiz salvo ────────────────────────── */
+  const handleIniciarExame = (quiz: QuizSalvo) => {
+    const bloqueio = verificaBloqueio(quiz.id);
     if (bloqueio) {
-      showToast(`Você está bloqueado por mais ${bloqueio} dia(s). Aguarde antes de tentar novamente.`, 'error');
+      showToast(`Disponível em ${bloqueio} dia(s).`, 'error');
       return;
     }
-
-    if (!fonteEscolhida.conteudo || fonteEscolhida.conteudo.length < 50) {
-      showToast('Este conteúdo não possui texto suficiente para gerar um exame.', 'error');
+    if (!quiz.questoes || quiz.questoes.length === 0) {
+      showToast('Este questionário não possui questões cadastradas.', 'error');
       return;
     }
-
-    setFase('gerando');
-    try {
-      const qs = await GeminiService.generateExam(fonteEscolhida.titulo, fonteEscolhida.conteudo, numQuestoes);
-      setQuestoes(qs);
-      setRespostas({});
-      setFase('fazendo');
-    } catch (e: any) {
-      showToast(e?.message || 'Erro ao gerar exame com IA. Tente novamente.', 'error');
-      setFase('escolher');
-    }
+    setQuizEscolhido(quiz);
+    setQuestoes(quizToQuestoes(quiz));
+    setRespostas({});
+    setFase('fazendo');
   };
 
-  /* ── submete respostas ──────────────────────────────────── */
+  /* ── submete respostas ─────────────────────────────────── */
   const handleSubmeter = async () => {
     if (Object.keys(respostas).length < questoes.length) {
       showToast('Responda todas as questões antes de enviar.', 'error');
       return;
     }
-
     let acertos = 0;
     const detalhes = questoes.map(q => {
       const escolhida = respostas[q.id] || '';
-      const correta = q.correta;
-      if (escolhida === correta) acertos++;
-      return { questaoId: q.id, escolhida, correta };
+      if (escolhida === q.correta) acertos++;
+      return { questaoId: q.id, escolhida, correta: q.correta };
     });
-
     const score = Math.round((acertos / questoes.length) * 100);
     const aprovado = score >= NOTA_APROVACAO;
-
     setResultado({ score, aprovado });
     setFase('resultado');
 
-    /* salva no Firestore */
     setSalvando(true);
     try {
       const proximaTentativa = aprovado
         ? null
         : Timestamp.fromDate(new Date(Date.now() + DIAS_BLOQUEIO * 86_400_000));
-
       await addDoc(collection(db, 'examesResultados'), {
         userId: user.id,
         userName: user.name,
         tenantId: user.tenantId,
-        fonteId: fonteEscolhida!.id,
-        fonteTitulo: fonteEscolhida!.titulo,
+        fonteId: quizEscolhido!.id,
+        fonteTitulo: quizEscolhido!.titulo,
         score,
         aprovado,
         respostas: detalhes,
@@ -204,7 +167,6 @@ const ExamesView: React.FC = () => {
     }
   };
 
-  /* ── certificado ────────────────────────────────────────── */
   const imprimirCertificado = () => {
     const win = window.open('', '_blank');
     if (!win) return;
@@ -216,9 +178,9 @@ const ExamesView: React.FC = () => {
       .cert { width: 900px; background: white; border: 12px solid #1e3a5f; padding: 60px 80px; text-align: center; position: relative; }
       .cert::before { content: ''; position: absolute; inset: 8px; border: 2px solid #c9a84c; pointer-events: none; }
       .logo { font-size: 13px; font-weight: 800; letter-spacing: 4px; color: #1e3a5f; text-transform: uppercase; margin-bottom: 30px; }
-      .cert h1 { font-family: 'Playfair Display', serif; font-size: 42px; color: #1e3a5f; margin: 0 0 10px; }
+      h1 { font-family: 'Playfair Display', serif; font-size: 42px; color: #1e3a5f; margin: 0 0 10px; }
       .tipo { font-size: 11px; letter-spacing: 5px; text-transform: uppercase; color: #c9a84c; margin-bottom: 30px; font-weight: 600; }
-      .texto { font-size: 15px; color: #555; line-height: 1.8; margin-bottom: 10px; }
+      .texto { font-size: 15px; color: #555; line-height: 1.8; }
       .nome { font-size: 32px; font-weight: 800; color: #1e3a5f; margin: 10px 0; font-style: italic; }
       .curso { font-size: 20px; font-weight: 700; color: #1e3a5f; margin: 20px 0 10px; }
       .data { font-size: 13px; color: #888; margin-top: 40px; }
@@ -232,7 +194,7 @@ const ExamesView: React.FC = () => {
       <p class="texto">Certificamos que</p>
       <p class="nome">${user.name}</p>
       <p class="texto">foi aprovado(a) no exame de</p>
-      <p class="curso">${fonteEscolhida?.titulo || 'Treinamento'}</p>
+      <p class="curso">${quizEscolhido?.titulo || 'Treinamento'}</p>
       <p class="texto" style="font-size:13px;color:#888">Nota obtida: <strong>${resultado?.score}%</strong></p>
       <p class="data">Emitido em ${data}</p>
       <div style="display:flex;justify-content:center;gap:80px;margin-top:50px">
@@ -243,88 +205,57 @@ const ExamesView: React.FC = () => {
     win.print();
   };
 
-  /* ── progresso do exame em curso ────────────────────────── */
   const totalRespondidas = Object.keys(respostas).length;
   const percentualFeito = questoes.length > 0
     ? Math.round((totalRespondidas / questoes.length) * 100)
     : 0;
 
-  /* ═══════════════ RENDER ══════════════════════════════════ */
-
-  /* FASE: gerando */
-  if (fase === 'gerando') {
-    return (
-      <div className="p-8 min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-6">
-        <div className="w-20 h-20 rounded-full bg-blue-600/20 flex items-center justify-center animate-pulse">
-          <i className="fa-solid fa-brain text-blue-400 text-3xl"></i>
-        </div>
-        <div className="text-center">
-          <p className="text-[#0A1628] font-black text-xl uppercase tracking-widest">Gerando Exame com IA</p>
-          <p className="text-slate-500 text-sm mt-2">Elaborando questões com Taxonomia de Bloom...</p>
-        </div>
-        <div className="flex gap-1">
-          {[0,1,2].map(i => (
-            <span key={i} className="w-2 h-2 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: `${i*0.15}s` }}></span>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  /* FASE: fazendo o exame */
+  /* ─── FASE: fazendo ─────────────────────────────────────── */
   if (fase === 'fazendo') {
     return (
       <div className="p-6 md:p-8 min-h-screen bg-slate-50 space-y-6 animate-in fade-in">
-        {/* cabeçalho */}
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-black text-[#0D1B3E] uppercase tracking-tighter">
-              Exame: <span className="text-blue-400">{fonteEscolhida?.titulo}</span>
+              Exame: <span className="text-blue-500">{quizEscolhido?.titulo}</span>
             </h2>
             <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mt-1">
               {questoes.length} questões · Nota mínima {NOTA_APROVACAO}%
             </p>
           </div>
           <div className="text-right">
-            <p className="text-3xl font-black text-[#0A1628]">{totalRespondidas}<span className="text-slate-600">/{questoes.length}</span></p>
+            <p className="text-3xl font-black text-[#0A1628]">{totalRespondidas}<span className="text-slate-400">/{questoes.length}</span></p>
             <p className="text-[9px] text-slate-500 uppercase tracking-widest">Respondidas</p>
           </div>
         </div>
 
-        {/* barra de progresso */}
-        <div className="w-full bg-slate-800 rounded-full h-2">
+        <div className="w-full bg-slate-200 rounded-full h-2">
+          {/* dynamic width requires inline style — Tailwind JIT cannot resolve runtime values */}
           <div className="bg-blue-500 h-2 rounded-full transition-all duration-300" style={{ width: `${percentualFeito}%` }}></div>
         </div>
 
-        {/* questões */}
         <div className="space-y-5">
           {questoes.map((q, idx) => {
-            const { label: bloomLbl, color: bloomColor } = bloomLabel(q.bloom);
             const respondida = respostas[q.id];
             return (
               <div key={q.id}
                 className={`bg-white border rounded-[20px] p-5 space-y-4 transition-all ${
                   respondida ? 'border-blue-500/40' : 'border-slate-200'
                 }`}>
-                <div className="flex items-start gap-3">
-                  <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg bg-${bloomColor}-500/20 text-${bloomColor}-400 flex-shrink-0 mt-0.5`}>
-                    {bloomLbl}
-                  </span>
-                  <p className="text-sm font-bold text-[#0A1628] leading-relaxed">
-                    <span className="text-slate-500 mr-2">{idx + 1}.</span>{q.enunciado}
-                  </p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pl-2">
+                <p className="text-sm font-bold text-[#0A1628] leading-relaxed">
+                  <span className="text-slate-400 mr-2">{idx + 1}.</span>{q.enunciado}
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   {q.alternativas.map(alt => (
                     <button key={alt.letra} type="button"
                       onClick={() => setRespostas(prev => ({ ...prev, [q.id]: alt.letra }))}
                       className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${
                         respondida === alt.letra
-                          ? 'border-blue-500 bg-blue-500/20 text-[#0A1628]'
-                          : 'border-slate-200 hover:border-slate-600 text-slate-700 hover:bg-slate-900'
+                          ? 'border-blue-500 bg-blue-50 text-[#0A1628]'
+                          : 'border-slate-200 hover:border-blue-300 hover:bg-blue-50/40 text-[#0A1628]'
                       }`}>
                       <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black flex-shrink-0 ${
-                        respondida === alt.letra ? 'bg-blue-500 text-[#0A1628]' : 'bg-slate-800 text-slate-500'
+                        respondida === alt.letra ? 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-600'
                       }`}>{alt.letra}</span>
                       <span className="text-xs leading-snug">{alt.texto}</span>
                     </button>
@@ -335,12 +266,11 @@ const ExamesView: React.FC = () => {
           })}
         </div>
 
-        {/* botão enviar */}
         <div className="flex justify-center pt-4 pb-8">
-          <button
+          <button type="button"
             onClick={handleSubmeter}
             disabled={totalRespondidas < questoes.length}
-            className="px-10 py-4 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 text-[#0A1628] font-black uppercase tracking-widest rounded-2xl transition-all text-sm shadow-lg shadow-blue-900/30">
+            className="px-10 py-4 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-200 disabled:text-slate-400 text-white font-black uppercase tracking-widest rounded-2xl transition-all text-sm shadow-lg shadow-blue-900/20">
             <i className="fa-solid fa-paper-plane mr-2"></i>
             Enviar Exame
             {totalRespondidas < questoes.length && (
@@ -352,32 +282,30 @@ const ExamesView: React.FC = () => {
     );
   }
 
-  /* FASE: resultado */
+  /* ─── FASE: resultado ───────────────────────────────────── */
   if (fase === 'resultado' && resultado) {
     const { score, aprovado } = resultado;
     return (
       <div className="p-8 min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-6 animate-in fade-in">
-        {/* badge principal */}
         <div className={`w-28 h-28 rounded-full flex items-center justify-center shadow-lg ${
-          aprovado ? 'bg-emerald-500/20 shadow-emerald-900/30' : 'bg-red-500/20 shadow-red-900/30'
+          aprovado ? 'bg-emerald-100 shadow-emerald-200' : 'bg-red-100 shadow-red-200'
         }`}>
-          <i className={`fa-solid ${aprovado ? 'fa-trophy' : 'fa-xmark'} text-4xl ${aprovado ? 'text-emerald-400' : 'text-red-400'}`}></i>
+          <i className={`fa-solid ${aprovado ? 'fa-trophy' : 'fa-xmark'} text-4xl ${aprovado ? 'text-emerald-500' : 'text-red-500'}`}></i>
         </div>
 
         <div className="text-center space-y-2">
-          <p className={`text-5xl font-black ${aprovado ? 'text-emerald-400' : 'text-red-400'}`}>{score}%</p>
+          <p className={`text-5xl font-black ${aprovado ? 'text-emerald-500' : 'text-red-500'}`}>{score}%</p>
           <p className="text-xl font-black text-[#0A1628] uppercase tracking-widest">
             {aprovado ? 'Aprovado!' : 'Reprovado'}
           </p>
           <p className="text-slate-500 text-sm max-w-sm">
             {aprovado
-              ? `Parabéns! Você atingiu a nota mínima de ${NOTA_APROVACAO}% neste exame.`
-              : `Você precisava de ${NOTA_APROVACAO}% para aprovação. Você poderá tentar novamente em ${DIAS_BLOQUEIO} dias.`
+              ? `Parabéns! Você atingiu a nota mínima de ${NOTA_APROVACAO}%.`
+              : `Nota mínima: ${NOTA_APROVACAO}%. Você poderá tentar novamente em ${DIAS_BLOQUEIO} dias.`
             }
           </p>
         </div>
 
-        {/* gabarito */}
         <div className="w-full max-w-2xl bg-white border border-slate-200 rounded-[24px] p-6 space-y-3">
           <h3 className="text-[#0A1628] font-black uppercase text-sm">Gabarito</h3>
           <div className="space-y-2">
@@ -385,14 +313,16 @@ const ExamesView: React.FC = () => {
               const escolhida = respostas[q.id] || '';
               const acertou = escolhida === q.correta;
               return (
-                <div key={q.id} className={`p-3 rounded-xl border ${acertou ? 'border-emerald-800/50 bg-emerald-900/10' : 'border-red-800/50 bg-red-900/10'}`}>
+                <div key={q.id} className={`p-3 rounded-xl border ${
+                  acertou ? 'border-emerald-200 bg-emerald-50' : 'border-red-200 bg-red-50'
+                }`}>
                   <div className="flex items-start gap-2">
-                    <i className={`fa-solid ${acertou ? 'fa-check' : 'fa-xmark'} text-${acertou ? 'emerald' : 'red'}-400 text-xs mt-1 flex-shrink-0`}></i>
+                    <i className={`fa-solid ${acertou ? 'fa-check' : 'fa-xmark'} ${acertou ? 'text-emerald-500' : 'text-red-500'} text-xs mt-1 flex-shrink-0`}></i>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-bold text-[#0A1628] leading-snug">{idx + 1}. {q.enunciado.substring(0, 80)}{q.enunciado.length > 80 ? '...' : ''}</p>
                       <p className="text-[10px] text-slate-500 mt-1">
-                        Sua resposta: <span className={acertou ? 'text-emerald-400' : 'text-red-400'}>{escolhida}</span>
-                        {!acertou && <span className="text-emerald-400 ml-2">· Correta: {q.correta}</span>}
+                        Sua resposta: <span className={acertou ? 'text-emerald-600' : 'text-red-500'}>{escolhida}</span>
+                        {!acertou && <span className="text-emerald-600 ml-2">· Correta: {q.correta}</span>}
                       </p>
                       {!acertou && q.justificativa && (
                         <p className="text-[10px] text-slate-500 mt-1 italic">{q.justificativa}</p>
@@ -405,16 +335,15 @@ const ExamesView: React.FC = () => {
           </div>
         </div>
 
-        {/* ações */}
         <div className="flex flex-wrap gap-3 justify-center">
           {aprovado && (
-            <button onClick={imprimirCertificado}
-              className="px-6 py-3 bg-amber-600 hover:bg-amber-500 text-[#0A1628] font-black uppercase tracking-widest rounded-xl transition-all text-sm">
+            <button type="button" onClick={imprimirCertificado}
+              className="px-6 py-3 bg-amber-500 hover:bg-amber-400 text-white font-black uppercase tracking-widest rounded-xl transition-all text-sm">
               <i className="fa-solid fa-certificate mr-2"></i>Emitir Certificado
             </button>
           )}
-          <button onClick={() => { setFase('escolher'); setFonteEscolhida(null); setResultado(null); }}
-            className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-[#0A1628] font-black uppercase tracking-widest rounded-xl transition-all text-sm">
+          <button type="button" onClick={() => { setFase('escolher'); setQuizEscolhido(null); setResultado(null); }}
+            className="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-[#0A1628] font-black uppercase tracking-widest rounded-xl transition-all text-sm">
             <i className="fa-solid fa-arrow-left mr-2"></i>Voltar
           </button>
         </div>
@@ -424,111 +353,114 @@ const ExamesView: React.FC = () => {
     );
   }
 
-  /* FASE: escolher conteúdo */
+  /* ─── FASE: escolher ────────────────────────────────────── */
   return (
     <div className="p-6 md:p-8 min-h-screen bg-slate-50 space-y-6 animate-in fade-in">
-      {/* cabeçalho */}
       <header>
         <h2 className="text-3xl font-black text-[#0D1B3E] italic uppercase tracking-tighter">
-          Exames <span className="text-blue-400">IA</span>
+          Exames <span className="text-blue-500">de Avaliação</span>
         </h2>
         <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">
-          Avaliações geradas automaticamente com Taxonomia de Bloom
+          Questionários definidos no módulo de Treinamento
         </p>
       </header>
 
       {/* info bloom */}
       <div className="bg-white border border-slate-200 rounded-[20px] p-5 grid grid-cols-3 gap-4">
         {[
-          { bloom: 'compreensao', label: 'Compreensão', pct: '30%', color: 'blue',    desc: 'Identificar e descrever conceitos' },
-          { bloom: 'aplicacao',   label: 'Aplicação',   pct: '40%', color: 'emerald', desc: 'Utilizar e demonstrar na prática'  },
-          { bloom: 'analise',     label: 'Análise',     pct: '30%', color: 'purple',  desc: 'Comparar, examinar e avaliar'      },
+          { label: 'Compreensão', pct: '30%', color: 'blue',    desc: 'Identificar e descrever conceitos' },
+          { label: 'Aplicação',   pct: '40%', color: 'emerald', desc: 'Utilizar e demonstrar na prática'  },
+          { label: 'Análise',     pct: '30%', color: 'purple',  desc: 'Comparar, examinar e avaliar'      },
         ].map(b => (
-          <div key={b.bloom} className="text-center space-y-1">
-            <span className={`text-xs font-black uppercase text-${b.color}-400`}>{b.label}</span>
-            <p className={`text-2xl font-black text-${b.color}-400`}>{b.pct}</p>
-            <p className="text-[9px] text-slate-600">{b.desc}</p>
+          <div key={b.label} className="text-center space-y-1">
+            <span className={`text-xs font-black uppercase text-${b.color}-600`}>{b.label}</span>
+            <p className={`text-2xl font-black text-${b.color}-500`}>{b.pct}</p>
+            <p className="text-[9px] text-slate-500">{b.desc}</p>
           </div>
         ))}
       </div>
 
-      {/* lista de conteúdos */}
+      {/* lista de quizzes */}
       <div>
         <h3 className="text-[#0A1628] font-black uppercase text-sm mb-4">
-          <i className="fa-solid fa-list-check text-blue-400 mr-2"></i>
-          Escolha o conteúdo para o exame
+          <i className="fa-solid fa-list-check text-blue-500 mr-2"></i>
+          Questionários disponíveis
         </h3>
 
-        {loadingFontes ? (
-          <div className="text-slate-500 text-sm italic">Carregando conteúdos...</div>
-        ) : fontes.filter(f => f.conteudo && f.conteudo.length >= 50).length === 0 ? (
-          <div className="bg-white border border-slate-200 rounded-[20px] p-8 text-center text-slate-500 text-sm italic">
-            Nenhum conteúdo com texto suficiente encontrado.<br/>
-            Adicione treinamentos ou documentos na Base de Conhecimento.
+        {loadingQuizzes ? (
+          <div className="text-slate-500 text-sm italic">Carregando questionários...</div>
+        ) : quizzes.length === 0 ? (
+          <div className="bg-white border border-slate-200 rounded-[20px] p-8 text-center space-y-3">
+            <i className="fa-solid fa-circle-question text-4xl text-slate-300"></i>
+            <p className="text-slate-500 text-sm font-semibold">Nenhum questionário cadastrado.</p>
+            <p className="text-slate-400 text-xs">
+              Acesse <strong>Treinamento → Questionários</strong> para criar os exames da sua equipe.
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {fontes.filter(f => f.conteudo && f.conteudo.length >= 50).map(fonte => {
-              const bloqueio = verificaBloqueio(fonte.id);
-              const aprovado = jaAprovado(fonte.id);
-              const ultimoResult = resultados.find(r => r.fonteId === fonte.id);
-              const selecionada = fonteEscolhida?.id === fonte.id;
+            {quizzes.map(quiz => {
+              const bloqueio = verificaBloqueio(quiz.id);
+              const aprovado = jaAprovado(quiz.id);
+              const ultimoResult = resultados.find(r => r.fonteId === quiz.id);
+              const selecionado = quizEscolhido?.id === quiz.id;
 
               return (
-                <div key={fonte.id}
-                  onClick={() => !bloqueio && setFonteEscolhida(selecionada ? null : fonte)}
-                  className={`bg-white border rounded-[20px] p-5 cursor-pointer transition-all space-y-3 ${
+                <div key={quiz.id}
+                  className={`bg-white border rounded-[20px] p-5 space-y-3 transition-all ${
                     bloqueio
-                      ? 'border-slate-200 opacity-50 cursor-not-allowed'
-                      : selecionada
-                        ? 'border-blue-500 bg-blue-500/10'
-                        : 'border-slate-200 hover:border-slate-600 hover:bg-slate-900/30'
+                      ? 'border-slate-200 opacity-60 cursor-not-allowed'
+                      : selecionado
+                        ? 'border-blue-500 shadow-md shadow-blue-100'
+                        : 'border-slate-200 hover:border-blue-300 hover:shadow-sm cursor-pointer'
                   }`}>
                   <div className="flex items-start gap-3">
                     <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                      fonte.tipo === 'treinamento'  ? 'bg-emerald-500/20'  :
-                      fonte.tipo === 'knowledgeBase'? 'bg-amber-500/20'   :
-                      fonte.tipo === 'video'        ? 'bg-red-500/20'     : 'bg-blue-500/20'
+                      quiz.geradoPorIA ? 'bg-purple-100' : 'bg-blue-100'
                     }`}>
-                      <i className={`fa-solid text-sm ${
-                        fonte.tipo === 'treinamento'  ? 'fa-graduation-cap text-emerald-400' :
-                        fonte.tipo === 'knowledgeBase'? 'fa-book-open text-amber-400'       :
-                        fonte.tipo === 'video'        ? 'fa-play text-red-400'             : 'fa-list-check text-blue-400'
+                      <i className={`fa-solid ${quiz.geradoPorIA ? 'fa-robot' : 'fa-file-pen'} text-sm ${
+                        quiz.geradoPorIA ? 'text-purple-600' : 'text-blue-600'
                       }`}></i>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-black text-[#0A1628] truncate">{fonte.titulo}</p>
+                      <p className="text-sm font-black text-[#0A1628] truncate">{quiz.titulo}</p>
                       <p className="text-[9px] text-slate-500 uppercase tracking-widest font-black">
-                        {fonte.tipo === 'treinamento' ? 'Treinamento' :
-                         fonte.tipo === 'knowledgeBase' ? 'Base de Conhecimento' :
-                         fonte.tipo === 'video' ? 'Vídeo' : 'Checklist'}
+                        {quiz.treinamento} · {quiz.questoes?.length || 0} questões
                       </p>
                     </div>
-                    {selecionada && !bloqueio && (
-                      <i className="fa-solid fa-circle-check text-blue-400 text-lg flex-shrink-0"></i>
+                    {quiz.geradoPorIA && (
+                      <span className="text-[9px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-black flex-shrink-0">IA</span>
                     )}
                   </div>
 
-                  {/* status */}
                   {bloqueio ? (
-                    <div className="flex items-center gap-2 text-[10px] text-red-400 font-black">
+                    <div className="flex items-center gap-2 text-[10px] text-red-500 font-black">
                       <i className="fa-solid fa-lock"></i>
                       Disponível em {bloqueio} dia(s)
                     </div>
                   ) : aprovado ? (
-                    <div className="flex items-center gap-2 text-[10px] text-emerald-400 font-black">
+                    <div className="flex items-center gap-2 text-[10px] text-emerald-600 font-black">
                       <i className="fa-solid fa-trophy"></i>
                       Aprovado · {ultimoResult?.score}%
                     </div>
                   ) : ultimoResult && !ultimoResult.aprovado ? (
-                    <div className="flex items-center gap-2 text-[10px] text-amber-400 font-black">
+                    <div className="flex items-center gap-2 text-[10px] text-amber-600 font-black">
                       <i className="fa-solid fa-rotate-right"></i>
                       Última tentativa: {ultimoResult.score}% · Refazer disponível
                     </div>
                   ) : (
-                    <div className="text-[10px] text-slate-600 font-black">
-                      <i className="fa-solid fa-star mr-1"></i>Novo
+                    <div className="text-[10px] text-slate-500 font-bold">
+                      <i className="fa-solid fa-play mr-1 text-blue-400"></i>Disponível
                     </div>
+                  )}
+
+                  {!bloqueio && (
+                    <button type="button"
+                      onClick={() => handleIniciarExame(quiz)}
+                      className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-black text-[10px] uppercase tracking-widest rounded-xl transition-all">
+                      <i className="fa-solid fa-play mr-2"></i>
+                      {aprovado ? 'Refazer Exame' : 'Iniciar Exame'}
+                    </button>
                   )}
                 </div>
               );
@@ -537,55 +469,24 @@ const ExamesView: React.FC = () => {
         )}
       </div>
 
-      {/* seletor de questões + botão gerar */}
-      {fonteEscolhida && (
-        <div className="flex flex-col items-center gap-4 pt-2 pb-8">
-          {/* seletor de quantidade */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-black text-[#7a5c1e] uppercase tracking-widest">Questões:</span>
-            {([5, 7, 10] as const).map(n => (
-              <button
-                key={n}
-                type="button"
-                onClick={() => setNumQuestoes(n)}
-                className={`w-10 h-10 rounded-xl text-sm font-black transition-all border ${
-                  numQuestoes === n
-                    ? 'bg-[#c9a84c] text-[#0f172a] border-[#c9a84c] shadow-sm'
-                    : 'bg-white text-[#8a6e2f] border-[#c9a84c]/30 hover:border-[#c9a84c]/60'
-                }`}
-              >
-                {n}
-              </button>
-            ))}
-          </div>
-
-          <button onClick={handleGerarExame}
-            className="px-10 py-4 bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-widest rounded-2xl transition-all text-sm shadow-lg shadow-blue-900/30 flex items-center gap-3">
-            <i className="fa-solid fa-brain text-lg"></i>
-            Gerar Exame com IA
-            <span className="text-blue-200 text-xs font-normal">{numQuestoes} questões · Bloom médio</span>
-          </button>
-        </div>
-      )}
-
       {/* histórico pessoal */}
       {resultados.length > 0 && (
         <div className="bg-white border border-slate-200 rounded-[24px] p-6 space-y-4">
           <h3 className="text-[#0A1628] font-black uppercase text-sm flex items-center gap-2">
-            <i className="fa-solid fa-clock-rotate-left text-slate-500"></i>
+            <i className="fa-solid fa-clock-rotate-left text-slate-400"></i>
             Meu Histórico de Exames
           </h3>
           <div className="space-y-2">
             {resultados.slice(0, 10).map(r => (
-              <div key={r.id} className="flex items-center gap-3 p-3 bg-slate-900/50 rounded-xl">
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${r.aprovado ? 'bg-emerald-500/20' : 'bg-red-500/20'}`}>
-                  <i className={`fa-solid ${r.aprovado ? 'fa-trophy' : 'fa-xmark'} ${r.aprovado ? 'text-emerald-400' : 'text-red-400'} text-sm`}></i>
+              <div key={r.id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${r.aprovado ? 'bg-emerald-100' : 'bg-red-100'}`}>
+                  <i className={`fa-solid ${r.aprovado ? 'fa-trophy' : 'fa-xmark'} ${r.aprovado ? 'text-emerald-600' : 'text-red-500'} text-sm`}></i>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-[#0A1628] truncate">{r.fonteTitulo}</p>
                   <p className="text-[9px] text-slate-500">{r.createdAt?.toDate?.()?.toLocaleDateString('pt-BR') || ''}</p>
                 </div>
-                <p className={`text-sm font-black ${r.aprovado ? 'text-emerald-400' : 'text-red-400'}`}>{r.score}%</p>
+                <p className={`text-sm font-black ${r.aprovado ? 'text-emerald-600' : 'text-red-500'}`}>{r.score}%</p>
               </div>
             ))}
           </div>
