@@ -435,7 +435,7 @@ const RelatoriosView: React.FC = () => {
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs">
                     <thead>
-                      <tr className="bg-[#0D1B3E] border-b border-slate-200">
+                      <tr className="bg-slate-100 border-b border-slate-200">
                         {['Colaborador', 'Cargo', 'Testes', 'Aprovações', 'Taxa', 'Média', 'Trilhas', 'Certs', 'Último Teste'].map(h => (
                           <th key={h} className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
                         ))}
@@ -446,7 +446,7 @@ const RelatoriosView: React.FC = () => {
                         <tr><td colSpan={9} className="text-center p-8 text-slate-500">Nenhum dado encontrado.</td></tr>
                       )}
                       {porColab.map(c => (
-                        <tr key={c.id} className="border-b border-slate-100 hover:bg-[#0D1B3E] transition-all">
+                        <tr key={c.id} className="border-b border-slate-100 hover:bg-slate-100 transition-all">
                           <td className="p-3 font-bold text-[#0A1628]">{c.name}</td>
                           <td className="p-3 text-slate-500">{c.cargo || '–'}</td>
                           <td className="p-3 text-slate-700 font-bold">{c.testes}</td>
@@ -490,7 +490,7 @@ const RelatoriosView: React.FC = () => {
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs">
                     <thead>
-                      <tr className="bg-[#0D1B3E] border-b border-slate-200">
+                      <tr className="bg-slate-100 border-b border-slate-200">
                         {['Trilha', 'Total de Testes', 'Aprovações', 'Taxa de Aprovação', 'Média', 'Testes c/ IA'].map(h => (
                           <th key={h} className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
                         ))}
@@ -504,7 +504,7 @@ const RelatoriosView: React.FC = () => {
                         const raw = filteredResults.filter(r => (r.trailTitle || 'Sem trilha') === t.name || (r.trailTitle || 'Sem trilha').startsWith(t.name.replace('…', '')));
                         const ia = raw.filter(r => r.ia).length;
                         return (
-                          <tr key={i} className="border-b border-slate-100 hover:bg-[#0D1B3E] transition-all">
+                          <tr key={i} className="border-b border-slate-100 hover:bg-slate-100 transition-all">
                             <td className="p-3 font-bold text-[#0A1628]">{t.name}</td>
                             <td className="p-3 text-slate-700 font-bold">{t.testes}</td>
                             <td className="p-3 text-emerald-600 font-bold">{Math.round(t.testes * t['Taxa (%)'] / 100)}</td>
@@ -552,7 +552,7 @@ const RelatoriosView: React.FC = () => {
                 <div className="overflow-x-auto border border-slate-200 rounded-[14px]">
                   <table className="w-full text-xs">
                     <thead>
-                      <tr className="bg-[#0D1B3E] border-b border-slate-200">
+                      <tr className="bg-slate-100 border-b border-slate-200">
                         {['Colaborador', 'Trilha', 'Módulo', 'Data/Hora', 'Nota', 'Status', 'Tipo'].map(h => (
                           <th key={h} className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
                         ))}
@@ -563,7 +563,7 @@ const RelatoriosView: React.FC = () => {
                         <tr><td colSpan={7} className="text-center p-8 text-slate-500">Nenhum registro no período.</td></tr>
                       )}
                       {filteredResults.map(r => (
-                        <tr key={r.id} className="border-b border-slate-100 hover:bg-[#0D1B3E] transition-all">
+                        <tr key={r.id} className="border-b border-slate-100 hover:bg-slate-100 transition-all">
                           <td className="p-3 font-bold text-[#0A1628]">{r.colaborador}</td>
                           <td className="p-3 text-slate-600 max-w-[160px] truncate">{r.trailTitle || '–'}</td>
                           <td className="p-3 text-slate-500 max-w-[140px] truncate">{r.moduleTitle || '–'}</td>

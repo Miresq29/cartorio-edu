@@ -524,7 +524,7 @@ const TrainingDashboard: React.FC = () => {
             {questaoMetrics.map((m, i) => {
               const dc = diffColor(m.taxaErro);
               return (
-                <div key={i} className={`bg-[#0D1B3E] border rounded-2xl p-5 space-y-3 ${dc.badge}`}>
+                <div key={i} className={`bg-white border rounded-2xl p-5 space-y-3 ${dc.badge}`}>
                   <div className="flex items-start gap-4">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${m.taxaErro >= 70 ? 'bg-red-500/20' : m.taxaErro >= 40 ? 'bg-amber-500/20' : 'bg-emerald-500/20'}`}>
                       <span className={`text-lg font-black ${dc.text}`}>{i + 1}</span>

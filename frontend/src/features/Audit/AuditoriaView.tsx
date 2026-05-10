@@ -261,7 +261,7 @@ const AuditoriaView: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="bg-[#0D1B3E] border-b border-slate-200">
+                  <tr className="bg-slate-100 border-b border-slate-200">
                     {['Data/Hora', 'Usuário', 'Tipo', 'Descrição', 'Detalhes'].map(h => (
                       <th key={h} className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
                     ))}
@@ -271,7 +271,7 @@ const AuditoriaView: React.FC = () => {
                   {logsPagina.map(log => {
                     const cfg = TIPO_CONFIG[log.tipo] || { icon: 'fa-circle', color: '#94a3b8', bg: '#f1f5f9', label: log.tipo, grupo: 'outros' };
                     return (
-                      <tr key={log.id} className="border-b border-slate-100 hover:bg-[#0D1B3E] transition-all">
+                      <tr key={log.id} className="border-b border-slate-100 hover:bg-slate-100 transition-all">
                         <td className="p-3 text-slate-500 whitespace-nowrap font-mono text-[10px]">
                           {formatDate(log.createdAt)}
                         </td>

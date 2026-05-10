@@ -141,7 +141,7 @@ const TrainingParticipants: React.FC = () => {
 
       {/* Formulário de registro */}
       {showForm && (
-        <div className="bg-[#0D1B3E] border border-blue-500/30 rounded-2xl p-6 space-y-4">
+        <div className="bg-white border border-blue-500/30 rounded-2xl p-6 space-y-4">
           <h4 className="text-xs font-black text-blue-400 uppercase tracking-widest">Novo Registro</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 

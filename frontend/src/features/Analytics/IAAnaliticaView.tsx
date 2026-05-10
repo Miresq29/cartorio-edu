@@ -429,7 +429,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                     {analise.metricas.map((met, i) => {
                       const color = STATUS_COLOR[met.status];
                       return (
-                        <div key={i} className={`bg-[#0D1B3E] border border-${color}-500/20 rounded-2xl p-4 space-y-2`}>
+                        <div key={i} className={`bg-white border border-${color}-500/20 rounded-2xl p-4 space-y-2`}>
                           <p className={`text-2xl font-black text-${color}-400`}>{met.valor}</p>
                           <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{met.label}</p>
                           <p className="text-[9px] text-slate-600">{met.detalhe}</p>

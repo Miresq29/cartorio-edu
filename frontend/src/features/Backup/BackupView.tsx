@@ -289,7 +289,7 @@ const BackupView: React.FC = () => {
             {COLECOES_TENANT.map(col => {
               const status = progresso.find(p => p.colecao === col.id);
               return (
-                <div key={col.id} className="flex items-center justify-between p-4 hover:bg-[#0D1B3E] transition-all">
+                <div key={col.id} className="flex items-center justify-between p-4 hover:bg-slate-100 transition-all">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center flex-shrink-0">
                       <i className={`fa-solid ${col.icon} text-slate-500 text-sm`}></i>

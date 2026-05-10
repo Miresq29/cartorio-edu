@@ -339,7 +339,7 @@ Regras:
             </p>
             <p className="text-xs text-slate-500 mt-1">{selectedQuiz.titulo}</p>
           </div>
-          <div className="bg-[#0D1B3E] border border-red-500/20 rounded-xl p-5 space-y-1">
+          <div className="bg-white border border-red-500/20 rounded-xl p-5 space-y-1">
             <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Nova tentativa disponível em</p>
             <p className="text-4xl font-black text-red-400">{formatCountdown(bloqueadoAte)}</p>
             <p className="text-[9px] text-slate-600">
@@ -611,7 +611,7 @@ Regras:
             const nomeUsuario = state.user?.name || '';
             const bloqueado = nomeUsuario ? calcLiberadoEm(results, quiz.id, nomeUsuario) : null;
             return (
-              <div key={quiz.id} className={`bg-[#0D1B3E] border rounded-2xl p-5 transition-all group ${bloqueado ? 'border-red-500/30' : 'border-slate-200 hover:border-slate-200'}`}>
+              <div key={quiz.id} className={`bg-white border rounded-2xl p-5 transition-all group ${bloqueado ? 'border-red-500/30' : 'border-slate-200 hover:border-slate-200'}`}>
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 flex-wrap">

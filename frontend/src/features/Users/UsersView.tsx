@@ -194,7 +194,7 @@ const UsersView: React.FC = () => {
               <p className="text-sm text-slate-500 mb-5">Esta ação não pode ser desfeita.</p>
               <div className="flex gap-3">
                 <button onClick={() => setDeleteId(null)}
-                  className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-bold hover:bg-[#0D1B3E] transition-all">
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-100 transition-all">
                   Cancelar
                 </button>
                 <button onClick={() => handleDelete(deleteId)}
@@ -322,7 +322,7 @@ const UsersView: React.FC = () => {
                   </div>
                   <div className="flex gap-3">
                     <button onClick={() => setShowForm(false)}
-                      className="px-5 py-2 rounded-xl border border-slate-200 text-slate-600 text-xs font-bold hover:bg-[#0D1B3E] transition-all">
+                      className="px-5 py-2 rounded-xl border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-100 transition-all">
                       Cancelar
                     </button>
                     <button onClick={handleSave} disabled={saving}
@@ -348,7 +348,7 @@ const UsersView: React.FC = () => {
                 <div className="overflow-x-auto border border-slate-200 rounded-[14px]">
                   <table className="w-full text-xs">
                     <thead>
-                      <tr className="bg-[#0D1B3E] border-b border-slate-200">
+                      <tr className="bg-slate-100 border-b border-slate-200">
                         {['Colaborador', 'E-mail', 'Cargo', 'Perfil', 'Status', 'Desde', 'Ações'].map(h => (
                           <th key={h} className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
                         ))}
@@ -359,7 +359,7 @@ const UsersView: React.FC = () => {
                         <tr><td colSpan={7} className="text-center p-8 text-slate-500">Nenhum colaborador encontrado.</td></tr>
                       )}
                       {filtrados.map(u => (
-                        <tr key={u.id} className={`border-b border-slate-100 hover:bg-[#0D1B3E] transition-all ${u.ativo === false ? 'opacity-50' : ''}`}>
+                        <tr key={u.id} className={`border-b border-slate-100 hover:bg-slate-100 transition-all ${u.ativo === false ? 'opacity-50' : ''}`}>
                           <td className="p-3 font-bold text-[#0A1628]">{u.name}</td>
                           <td className="p-3 text-slate-500">{u.email || '–'}</td>
                           <td className="p-3 text-slate-500">{u.cargo || '–'}</td>
@@ -434,7 +434,7 @@ const UsersView: React.FC = () => {
               <div className="overflow-x-auto border border-slate-200 rounded-[14px]">
                 <table className="w-full text-xs">
                   <thead>
-                    <tr className="bg-[#0D1B3E] border-b border-slate-200">
+                    <tr className="bg-slate-100 border-b border-slate-200">
                       <th className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest w-48">Módulo</th>
                       {ROLES.map(r => (
                         <th key={r.id} className="p-3 text-center">
@@ -446,7 +446,7 @@ const UsersView: React.FC = () => {
                   </thead>
                   <tbody>
                     {MODULOS.map((m, idx) => (
-                      <tr key={m.id} className={`border-b border-slate-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-[#0D1B3E]/50'}`}>
+                      <tr key={m.id} className={`border-b border-slate-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
                         <td className="p-3">
                           <div className="flex items-center gap-2">
                             <i className={`fa-solid ${m.icon} text-slate-500 text-[11px] w-4 text-center`}></i>
