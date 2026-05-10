@@ -138,7 +138,7 @@ const PlayerModal: React.FC<{
             href={`https://drive.google.com/file/d/${midia.driveId}/view`}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 text-[10px] bg-rose-600 hover:bg-rose-500 text-[#0A1628] px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all"
+            className="inline-flex items-center gap-2 text-[10px] bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all"
           >
             <i className="fa-solid fa-arrow-up-right-from-square"></i>Abrir no Google Drive
           </a>
@@ -166,7 +166,7 @@ const PlayerModal: React.FC<{
               href={`https://drive.google.com/file/d/${midia.driveId}/view`}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 text-[10px] bg-violet-600 hover:bg-violet-500 text-[#0A1628] px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all"
+              className="inline-flex items-center gap-2 text-[10px] bg-violet-600 hover:bg-violet-500 text-white px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all"
             >
               <i className="fa-brands fa-google-drive"></i>Ouvir no Google Drive
             </a>
@@ -184,10 +184,10 @@ const PlayerModal: React.FC<{
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <i className={`${tipo.icon} text-${tipo.color}-400 text-lg`}></i>
-            <h3 className="text-[#0A1628] font-black text-lg">{midia.titulo}</h3>
+            <h3 className="text-white font-black text-lg">{midia.titulo}</h3>
           </div>
           <button onClick={onClose}
-            className="text-slate-500 hover:text-[#0A1628] w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center transition-all">
+            className="text-slate-400 hover:text-white w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center transition-all">
             <i className="fa-solid fa-xmark"></i>
           </button>
         </div>
@@ -228,7 +228,7 @@ const MidiaCard: React.FC<{
             />
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
               <div className="w-14 h-14 bg-red-600 rounded-full flex items-center justify-center shadow-xl">
-                <i className="fa-solid fa-play text-[#0A1628] text-xl ml-1"></i>
+                <i className="fa-solid fa-play text-white text-xl ml-1"></i>
               </div>
             </div>
           </>
@@ -246,7 +246,7 @@ const MidiaCard: React.FC<{
             </div>
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all bg-black/30">
               <div className={`w-14 h-14 bg-${tipo.color}-600 rounded-full flex items-center justify-center shadow-xl`}>
-                <i className={`fa-solid ${midia.tipo === 'mp4' ? 'fa-eye' : 'fa-play'} text-[#0A1628] text-xl ${midia.tipo !== 'mp4' ? 'ml-1' : ''}`}></i>
+                <i className={`fa-solid ${midia.tipo === 'mp4' ? 'fa-eye' : 'fa-play'} text-white text-xl ${midia.tipo !== 'mp4' ? 'ml-1' : ''}`}></i>
               </div>
             </div>
           </div>
@@ -259,7 +259,7 @@ const MidiaCard: React.FC<{
           </div>
         )}
         {midia.duracaoMin > 0 && (
-          <div className="absolute bottom-3 right-3 bg-black/80 text-[#0A1628] text-[9px] font-black px-2 py-1 rounded-lg">
+          <div className="absolute bottom-3 right-3 bg-black/80 text-white text-[9px] font-black px-2 py-1 rounded-lg">
             {midia.duracaoMin} min
           </div>
         )}
@@ -286,13 +286,13 @@ const MidiaCard: React.FC<{
         )}
         <div className="flex gap-2 pt-1">
           <button onClick={onPlay}
-            className={`flex-1 bg-${tipo.color}-600 hover:bg-${tipo.color}-500 text-[#0A1628] py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all`}>
+            className={`flex-1 bg-${tipo.color}-600 hover:bg-${tipo.color}-500 text-white py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all`}>
             <i className={`fa-solid ${midia.tipo === 'mp4' ? 'fa-eye' : 'fa-play'} mr-1`}></i>
             {midia.tipo === 'mp4' ? 'Visualizar' : 'Abrir'}
           </button>
           {isGestor && (
             <button onClick={onDelete}
-              className="w-9 h-9 bg-slate-900 hover:bg-red-500/20 text-slate-500 hover:text-red-400 rounded-xl flex items-center justify-center transition-all flex-shrink-0">
+              className="w-9 h-9 bg-white border border-slate-200 hover:bg-red-500/10 text-slate-500 hover:text-red-400 rounded-xl flex items-center justify-center transition-all flex-shrink-0">
               <i className="fa-solid fa-trash text-xs"></i>
             </button>
           )}
@@ -394,7 +394,7 @@ const FormMidia: React.FC<{
             ? 'https://youtube.com/watch?v=...'
             : 'https://drive.google.com/file/d/.../view?usp=sharing'
           }
-          className={`w-full bg-slate-900 border rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none transition-all ${
+          className={`w-full bg-white border rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none transition-all ${
             linkErro ? 'border-red-500' : 'border-slate-200 focus:border-blue-500'
           }`}
         />
@@ -597,14 +597,14 @@ const RepositorioView: React.FC = () => {
         <div className="flex gap-2">
           <button onClick={() => setFiltroTipo('')}
             className={`px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
-              !filtroTipo ? 'bg-blue-600 text-white' : 'bg-slate-900 text-slate-500 hover:bg-slate-800 border border-slate-200'
+              !filtroTipo ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
             }`}>Todos</button>
           {(Object.entries(TIPO_CONFIG) as [MidiaTipo, typeof TIPO_CONFIG[MidiaTipo]][]).map(([key, cfg]) => (
             <button key={key} onClick={() => setFiltroTipo(filtroTipo === key ? '' : key)}
               className={`px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 ${
                 filtroTipo === key
-                  ? `bg-${cfg.color}-600 text-[#0A1628]`
-                  : 'bg-slate-900 text-slate-500 hover:bg-slate-800 border border-slate-200'
+                  ? `bg-${cfg.color}-600 text-white`
+                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
               }`}>
               <i className={`${cfg.icon} text-[10px]`}></i>{cfg.label}
             </button>
