@@ -45,10 +45,10 @@ const KnowledgeBase: React.FC = () => {
         where('tenantId', '==', user.tenantId)
       );
     }
-    const unsub = onSnapshot(q, snap => {
+    const unsub = onSnapshot(q, (snap: any) => {
       setDocs(
-        snap.docs.map(d => ({ id: d.id, ...d.data() } as KBDoc))
-          .sort((a, b) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0))
+        snap.docs.map((d: any) => ({ id: d.id, ...d.data() } as KBDoc))
+          .sort((a: KBDoc, b: KBDoc) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0))
       );
       setLoading(false);
     });
@@ -193,22 +193,22 @@ const KnowledgeBase: React.FC = () => {
       {viewingDoc && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/90 backdrop-blur-sm">
           <div className="bg-white border border-slate-200 w-full max-w-5xl max-h-[90vh] rounded-[40px] flex flex-col overflow-hidden shadow-2xl">
-            <header className="p-8 border-b border-slate-200 flex justify-between items-center bg-slate-900/20 flex-shrink-0">
+            <header className="p-8 border-b border-slate-200 flex justify-between items-center bg-slate-50 flex-shrink-0">
               <div>
                 <h3 className="text-[#0A1628] font-black uppercase italic tracking-tight">{viewingDoc.fileName || viewingDoc.title}</h3>
                 <p className="text-[9px] text-slate-500 font-bold uppercase mt-1">{wordCount(viewingDoc.content).toLocaleString()} palavras // Conteúdo integral</p>
               </div>
               <div className="flex items-center gap-3">
                 <button onClick={() => navigator.clipboard.writeText(viewingDoc.content).then(() => showToast('Copiado!', 'success'))}
-                  className="text-xs text-slate-500 hover:text-[#0A1628] font-bold uppercase px-4 py-2 rounded-xl hover:bg-slate-800 transition-all">
+                  className="text-xs text-slate-500 hover:text-[#0A1628] font-bold uppercase px-4 py-2 rounded-xl hover:bg-slate-100 transition-all">
                   <i className="fa-solid fa-copy mr-2"></i>Copiar
                 </button>
-                <button onClick={() => setViewingDoc(null)} className="w-10 h-10 rounded-full bg-slate-800 text-[#0A1628] flex items-center justify-center hover:bg-red-500 transition-all">
+                <button onClick={() => setViewingDoc(null)} className="w-10 h-10 rounded-full bg-slate-200 text-[#0A1628] flex items-center justify-center hover:bg-red-500 transition-all">
                   <i className="fa-solid fa-xmark"></i>
                 </button>
               </div>
             </header>
-            <div className="flex-1 overflow-y-auto p-10 bg-[#0D1B3E]">
+            <div className="flex-1 overflow-y-auto p-10 bg-slate-50">
               <pre className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap font-sans">{viewingDoc.content}</pre>
             </div>
           </div>

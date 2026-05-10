@@ -175,7 +175,7 @@ const VideosView: React.FC = () => {
               className="bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
               {loading ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Salvando...</> : <><i className="fa-solid fa-check mr-2"></i>Salvar Vídeo</>}
             </button>
-            <button onClick={() => setShowForm(false)} className="bg-slate-800 hover:bg-slate-700 text-slate-700 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+            <button onClick={() => setShowForm(false)} className="bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
               Cancelar
             </button>
           </div>
@@ -187,12 +187,12 @@ const VideosView: React.FC = () => {
         <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar vídeo..."
           className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-red-500 w-64" />
         <button onClick={() => setFiltroCategoria('')}
-          className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${!filtroCategoria ? 'bg-red-600 text-white' : 'bg-slate-900 text-slate-500 hover:bg-slate-800'}`}>
+          className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${!filtroCategoria ? 'bg-red-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 border border-slate-200'}`}>
           Todos
         </button>
         {CATEGORIAS.map(c => (
           <button key={c.id} onClick={() => setFiltroCategoria(filtroCategoria === c.id ? '' : c.id)}
-            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filtroCategoria === c.id ? `bg-${c.color}-600 text-[#0A1628]` : 'bg-slate-900 text-slate-500 hover:bg-slate-800'}`}>
+            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filtroCategoria === c.id ? `bg-${c.color}-600 text-white` : 'bg-slate-100 text-slate-500 hover:bg-slate-200 border border-slate-200'}`}>
             <i className={`fa-solid ${c.icon} mr-1.5`}></i>{c.label}
           </button>
         ))}
@@ -252,7 +252,7 @@ const VideosView: React.FC = () => {
                     </button>
                     {isGestor && (
                       <button onClick={() => excluirVideo(v.id)}
-                        className="w-9 h-9 bg-slate-900 hover:bg-red-500/20 text-slate-500 hover:text-red-400 rounded-xl flex items-center justify-center transition-all">
+                        className="w-9 h-9 bg-slate-100 hover:bg-red-500/20 border border-slate-200 text-slate-500 hover:text-red-400 rounded-xl flex items-center justify-center transition-all">
                         <i className="fa-solid fa-trash text-xs"></i>
                       </button>
                     )}
@@ -270,7 +270,7 @@ const VideosView: React.FC = () => {
           <div className="w-full max-w-4xl space-y-4" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <h3 className="text-[#0A1628] font-black text-lg">{playerVideo.titulo}</h3>
-              <button onClick={() => setPlayerVideo(null)} className="text-slate-500 hover:text-[#0A1628] w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center">
+              <button onClick={() => setPlayerVideo(null)} className="text-slate-500 hover:text-[#0A1628] w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center">
                 <i className="fa-solid fa-xmark"></i>
               </button>
             </div>

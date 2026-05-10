@@ -217,7 +217,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
   return (
     <div className="h-full flex bg-slate-50 min-h-screen">
       {/* Sidebar */}
-      <aside className="w-80 border-r border-slate-200 flex flex-col bg-[#0D1B3E] flex-shrink-0">
+      <aside className="w-80 border-r border-slate-200 flex flex-col bg-white flex-shrink-0">
         <div className="p-6 border-b border-slate-200 flex justify-between items-center">
           <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest">Protocolos</h2>
           <button onClick={openCreateModal} className="text-blue-500 hover:text-blue-400 transition-colors">
@@ -230,7 +230,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
             <div key={t.id} className="group flex items-center gap-2">
               <button
                 onClick={() => handleSelectChecklist(t.id)}
-                className={`flex-1 p-4 rounded-xl flex items-center gap-3 transition-all text-left ${activeChecklistId === t.id ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 text-slate-500'}`}
+                className={`flex-1 p-4 rounded-xl flex items-center gap-3 transition-all text-left ${activeChecklistId === t.id ? 'bg-blue-600 text-white' : 'hover:bg-slate-100 text-slate-500'}`}
               >
                 <i className="fa-solid fa-file-lines flex-shrink-0 text-sm"></i>
                 <div className="min-w-0">
@@ -268,11 +268,11 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
               </div>
               <div className="flex gap-2">
                 <button onClick={() => setMode('roteiro')}
-                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${mode === 'roteiro' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-500 hover:bg-slate-700'}`}>
+                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${mode === 'roteiro' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 border border-slate-200'}`}>
                   <i className="fa-solid fa-list mr-2"></i>Roteiro
                 </button>
                 <button onClick={() => setMode('executar')}
-                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${mode === 'executar' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-500 hover:bg-slate-700'}`}>
+                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${mode === 'executar' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 border border-slate-200'}`}>
                   <i className="fa-solid fa-check-double mr-2"></i>Executar
                 </button>
               </div>
@@ -283,8 +283,8 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
               <div className="bg-white border border-slate-200 rounded-[32px] p-8 space-y-3 shadow-2xl">
                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Itens do Protocolo</p>
                 {activeChecklist.items?.map((item, idx) => (
-                  <div key={item.id} className="flex items-start gap-4 p-4 bg-slate-900/50 border border-slate-200 rounded-2xl">
-                    <div className="w-7 h-7 rounded-lg bg-slate-950 flex items-center justify-center text-blue-500 text-xs font-bold flex-shrink-0 mt-0.5">{idx + 1}</div>
+                  <div key={item.id} className="flex items-start gap-4 p-4 bg-slate-50 border border-slate-200 rounded-2xl">
+                    <div className="w-7 h-7 rounded-lg bg-slate-200 flex items-center justify-center text-blue-500 text-xs font-bold flex-shrink-0 mt-0.5">{idx + 1}</div>
                     <span className="text-sm text-slate-700 font-medium leading-relaxed">{item.text}</span>
                   </div>
                 ))}
@@ -300,7 +300,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
                     <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Progresso da Execução</span>
                     <span className="text-xs font-black text-[#0A1628]">{checkedCount}/{totalItems} — {progress}%</span>
                   </div>
-                  <div className="w-full bg-slate-800 rounded-full h-2">
+                  <div className="w-full bg-slate-200 rounded-full h-2">
                     <div className={`h-2 rounded-full transition-all duration-500 ${progress === 100 ? 'bg-emerald-500' : 'bg-blue-500'}`} style={{ width: `${progress}%` }} />
                   </div>
                   {progress === 100 && (
@@ -328,7 +328,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
                             onChange={e => setExecutionNotes(prev => ({ ...prev, [item.id]: e.target.value }))}
                             placeholder="Observação (opcional)..."
                             rows={1}
-                            className="mt-2 w-full bg-slate-950 border border-slate-200 rounded-lg p-2 text-xs text-slate-500 outline-none focus:border-blue-500 resize-none"
+                            className="mt-2 w-full bg-white border border-slate-200 rounded-lg p-2 text-xs text-slate-500 outline-none focus:border-blue-500 resize-none"
                           />
                         </div>
                       </div>
@@ -366,14 +366,14 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
                   </div>
 
                   {analysisResult && (
-                    <div className="bg-slate-950 border border-slate-200 rounded-2xl p-6">
+                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6">
                       <div className="flex justify-between items-center mb-4">
                         <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest">
                           <i className="fa-solid fa-file-invoice mr-2"></i>Parecer Técnico — Baseado na Base Legal Indexada
                         </p>
                         <button
                           onClick={() => navigator.clipboard.writeText(analysisResult).then(() => showToast('Copiado!', 'success'))}
-                          className="text-[9px] text-slate-500 hover:text-[#0A1628] font-bold uppercase px-3 py-1 rounded-lg hover:bg-slate-800 transition-all"
+                          className="text-[9px] text-slate-500 hover:text-[#0A1628] font-bold uppercase px-3 py-1 rounded-lg hover:bg-slate-200 transition-all"
                         >
                           <i className="fa-solid fa-copy mr-1"></i>Copiar
                         </button>

@@ -39,10 +39,10 @@ const CARGOS: string[] = [
 ];
 
 const ROLE_COLORS: Record<ColaboradorRole, string> = {
-  gestor:    'bg-blue-500/20 text-blue-300 border border-blue-500/30',
-  atendente: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30',
-  auditor:   'bg-purple-500/20 text-purple-300 border border-purple-500/30',
-  viewer:    'bg-[#0D1B3E]0/20 text-slate-500 border border-slate-500/30',
+  gestor:    'bg-blue-500/10 text-blue-600 border border-blue-500/30',
+  atendente: 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/30',
+  auditor:   'bg-purple-500/10 text-purple-600 border border-purple-500/30',
+  viewer:    'bg-slate-100 text-slate-500 border border-slate-200',
 };
 
 const emptyForm = {
@@ -182,7 +182,7 @@ const ColaboradoresView: React.FC = () => {
       {/* cabeçalho */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-black text-slate-100 uppercase tracking-widest">
+          <h1 className="text-2xl font-black text-[#0A1628] uppercase tracking-widest">
             Colaboradores
           </h1>
           <p className="text-xs text-slate-500 mt-1 uppercase tracking-widest">
@@ -207,12 +207,12 @@ const ColaboradoresView: React.FC = () => {
           placeholder="Buscar por nome, e-mail ou cargo…"
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="flex-1 bg-slate-800/50 border border-slate-700/50 rounded-lg px-4 py-2 text-sm text-slate-700 placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30"
+          className="flex-1 bg-white border border-slate-200 rounded-lg px-4 py-2 text-sm text-[#0A1628] placeholder-slate-400 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30"
         />
         <select
           value={filterRole}
           onChange={e => setFilterRole(e.target.value as ColaboradorRole | '')}
-          className="bg-slate-800/50 border border-slate-700/50 rounded-lg px-4 py-2 text-sm text-slate-600 focus:outline-none focus:border-emerald-500/50"
+          className="bg-white border border-slate-200 rounded-lg px-4 py-2 text-sm text-[#0A1628] focus:outline-none focus:border-emerald-500/50"
         >
           <option value="">Todos os perfis</option>
           {ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
@@ -229,10 +229,10 @@ const ColaboradoresView: React.FC = () => {
           {search || filterRole ? 'Nenhum resultado.' : 'Nenhum colaborador cadastrado.'}
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-slate-700/50 bg-slate-800/30">
-          <table className="min-w-full divide-y divide-slate-700/50 text-sm">
+        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+          <table className="min-w-full divide-y divide-slate-200 text-sm">
             <thead>
-              <tr className="bg-slate-900/50">
+              <tr className="bg-slate-50">
                 {['Nome', 'CPF', 'Cargo', 'E-mail', 'Perfil', 'Status', ...(canEdit ? ['Ações'] : [])].map(h => (
                   <th key={h} className="px-4 py-3 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest">
                     {h}
@@ -240,9 +240,9 @@ const ColaboradoresView: React.FC = () => {
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-700/30">
+            <tbody className="divide-y divide-slate-100">
               {filtered.map(c => (
-                <tr key={c.id} className={`transition-colors hover:bg-slate-700/20 ${!c.ativo ? 'opacity-40' : ''}`}>
+                <tr key={c.id} className={`transition-colors hover:bg-slate-50 ${!c.ativo ? 'opacity-40' : ''}`}>
                   <td className="px-4 py-3 font-bold text-slate-700">{c.nome}</td>
                   <td className="px-4 py-3 font-mono text-xs text-slate-500">{c.cpfMask}</td>
                   <td className="px-4 py-3 text-slate-500">{c.cargo}</td>
@@ -276,9 +276,9 @@ const ColaboradoresView: React.FC = () => {
       {/* modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#0a0f1d] border border-slate-700/50 rounded-xl shadow-2xl w-full max-w-md">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700/50">
-              <h3 className="text-xs font-black text-slate-700 uppercase tracking-widest">
+          <div className="bg-white border border-slate-200 rounded-xl shadow-2xl w-full max-w-md">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+              <h3 className="text-xs font-black text-[#0A1628] uppercase tracking-widest">
                 {editTarget ? 'Editar colaborador' : 'Novo colaborador'}
               </h3>
               <button onClick={closeForm} className="text-slate-500 hover:text-slate-600 text-xl leading-none transition-colors">×</button>
@@ -307,7 +307,7 @@ const ColaboradoresView: React.FC = () => {
                     }}
                     disabled={disabled}
                     placeholder={placeholder}
-                    className="bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-slate-700 placeholder-slate-600 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 disabled:opacity-40"
+                    className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-[#0A1628] placeholder-slate-400 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 disabled:opacity-40"
                   />
                 </label>
               ))}
@@ -317,7 +317,7 @@ const ColaboradoresView: React.FC = () => {
                 <select
                   value={form.cargo}
                   onChange={e => setForm(f => ({ ...f, cargo: e.target.value }))}
-                  className="bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-emerald-500/50"
+                  className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-[#0A1628] focus:outline-none focus:border-emerald-500/50"
                 >
                   <option value="">Selecione…</option>
                   {CARGOS.map(c => <option key={c} value={c}>{c}</option>)}
@@ -329,14 +329,14 @@ const ColaboradoresView: React.FC = () => {
                 <select
                   value={form.role}
                   onChange={e => setForm(f => ({ ...f, role: e.target.value as ColaboradorRole }))}
-                  className="bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-emerald-500/50"
+                  className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-[#0A1628] focus:outline-none focus:border-emerald-500/50"
                 >
                   {ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
                 </select>
               </label>
             </div>
 
-            <div className="flex justify-end gap-3 px-6 py-4 border-t border-slate-700/50">
+            <div className="flex justify-end gap-3 px-6 py-4 border-t border-slate-200">
               <button
                 onClick={closeForm}
                 disabled={saving}

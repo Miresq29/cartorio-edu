@@ -83,11 +83,11 @@ const SecurityView: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                <button 
                  onClick={handleExport}
-                 className="bg-white border border-slate-200 hover:bg-slate-800 py-10 rounded-3xl flex items-center justify-center gap-5 font-bold text-base transition-all active:scale-95 uppercase tracking-widest"
+                 className="bg-white border border-slate-200 hover:bg-slate-100 py-10 rounded-3xl flex items-center justify-center gap-5 font-bold text-base transition-all active:scale-95 uppercase tracking-widest"
                >
                  <i className="fa-solid fa-download text-blue-500 text-2xl"></i> Exportar Dados Completos
                </button>
-               <button className="bg-slate-900/50 border border-slate-800/50 cursor-not-allowed py-10 rounded-3xl flex items-center justify-center gap-5 font-bold text-base text-slate-600 transition-all uppercase tracking-widest">
+               <button className="bg-slate-100 border border-slate-200 cursor-not-allowed py-10 rounded-3xl flex items-center justify-center gap-5 font-bold text-base text-slate-400 transition-all uppercase tracking-widest">
                  <i className="fa-solid fa-upload text-2xl"></i> Importar (Acesso Gestor)
                </button>
             </div>
@@ -108,7 +108,7 @@ const SecurityView: React.FC = () => {
                 { title: 'Historico de Senhas', status: 'Ativo', desc: 'Reciclagem proibida (ultimas 3)' },
                 { title: 'Complexidade Exigida', status: 'Ativo', desc: 'Alfa-numérico + Símbolos (8+)' }
               ].map((p, i) => (
-                <div key={i} className="p-8 rounded-3xl bg-slate-950 border border-slate-800 space-y-4">
+                <div key={i} className="p-8 rounded-3xl bg-white border border-slate-200 space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-black text-[#0A1628] italic tracking-tighter uppercase">{p.title}</span>
                     <span className="text-xs font-black text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded uppercase">On</span>

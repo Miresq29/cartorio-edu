@@ -213,7 +213,7 @@ CTA: [chamada para ação aqui]`;
                   className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${
                     formLink.tipo === t
                       ? 'bg-blue-600 text-white'
-                      : 'bg-slate-800 text-slate-500 hover:bg-slate-700'
+                      : 'bg-slate-100 text-slate-500 hover:bg-slate-200 border border-slate-200'
                   }`}>
                   <i className={`fa-solid ${TIPO_CONFIG[t].icon} mr-1`}></i>{TIPO_CONFIG[t].label}
                 </button>
@@ -263,7 +263,7 @@ CTA: [chamada para ação aqui]`;
             <div className="flex items-center justify-between flex-wrap gap-3">
               <h3 className="text-[#0A1628] font-black uppercase text-sm">Preview do Banner</h3>
               <button type="button" onClick={() => imprimirBanner(textoBannerGerado)}
-                className="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-700 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
+                className="text-[9px] bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
                 <i className="fa-solid fa-print mr-1"></i>Imprimir / PDF
               </button>
             </div>
@@ -288,7 +288,7 @@ CTA: [chamada para ação aqui]`;
                 <i className="fa-solid fa-floppy-disk mr-2"></i>Salvar
               </button>
               <button type="button" onClick={() => setPreviewBanner(false)}
-                className="bg-slate-800 hover:bg-slate-700 text-slate-700 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                className="bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
                 Fechar
               </button>
             </div>
@@ -300,14 +300,14 @@ CTA: [chamada para ação aqui]`;
       <div className="flex flex-wrap gap-2 items-center">
         <button type="button" onClick={() => setFiltroTipo('')}
           className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-            !filtroTipo ? 'bg-pink-600 text-[#0A1628]' : 'bg-slate-900 text-slate-500 hover:bg-slate-800'
+            !filtroTipo ? 'bg-pink-600 text-[#0A1628]' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 border border-slate-200'
           }`}>
           Todos ({materiais.length})
         </button>
         {Object.entries(TIPO_CONFIG).map(([id, cfg]) => (
           <button type="button" key={id} onClick={() => setFiltroTipo(filtroTipo === id ? '' : id)}
             className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-              filtroTipo === id ? 'bg-pink-600 text-[#0A1628]' : 'bg-slate-900 text-slate-500 hover:bg-slate-800'
+              filtroTipo === id ? 'bg-pink-600 text-[#0A1628]' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 border border-slate-200'
             }`}>
             <i className={`fa-solid ${cfg.icon} mr-1.5`}></i>{cfg.label}
           </button>
@@ -348,7 +348,7 @@ CTA: [chamada para ação aqui]`;
                   {/* abrir link externo */}
                   {m.linkUrl && (
                     <a href={m.linkUrl} target="_blank" rel="noreferrer"
-                      className="flex-1 text-center text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-700 px-3 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
+                      className="flex-1 text-center text-[9px] bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 px-3 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
                       <i className="fa-solid fa-arrow-up-right-from-square mr-1"></i>Abrir
                     </a>
                   )}
@@ -361,7 +361,7 @@ CTA: [chamada para ação aqui]`;
                   )}
                   {isGestor && (
                     <button type="button" title="Excluir material" onClick={() => excluir(m.id)}
-                      className="w-8 h-8 bg-slate-900 hover:bg-red-500/20 text-slate-500 hover:text-red-400 rounded-xl flex items-center justify-center transition-all flex-shrink-0">
+                      className="w-8 h-8 bg-slate-100 hover:bg-red-500/20 border border-slate-200 text-slate-500 hover:text-red-400 rounded-xl flex items-center justify-center transition-all flex-shrink-0">
                       <i className="fa-solid fa-trash text-xs"></i>
                     </button>
                   )}

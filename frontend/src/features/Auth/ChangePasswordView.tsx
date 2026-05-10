@@ -67,7 +67,7 @@ const ChangePasswordView: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="bg-[#0D1B3E] w-full max-w-md rounded-[40px] shadow-2xl p-12 border border-blue-500/20 space-y-8">
+      <div className="bg-white w-full max-w-md rounded-[40px] shadow-2xl p-12 border border-slate-200 space-y-8">
 
         <div className="text-center space-y-4">
           <div className="w-20 h-20 bg-amber-500/10 border border-amber-500/20 rounded-full flex items-center justify-center text-amber-500 mx-auto">
@@ -108,7 +108,7 @@ const ChangePasswordView: React.FC = () => {
                     {strengthLabel}
                   </span>
                 </div>
-                <div className="w-full bg-slate-800 rounded-full h-1.5">
+                <div className="w-full bg-slate-200 rounded-full h-1.5">
                   <div className={`h-1.5 rounded-full transition-all duration-300 ${strengthColor}`}
                     style={{ width: `${(strength / 5) * 100}%` }} />
                 </div>

@@ -96,7 +96,7 @@ const ComunicadosView: React.FC = () => {
           {isGestor && (
             <>
               <button onClick={() => setModo(modo === 'mural' ? 'gestao' : 'mural')}
-                className="bg-slate-800 hover:bg-slate-700 text-slate-700 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                className="bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
                 <i className={`fa-solid ${modo === 'mural' ? 'fa-cog' : 'fa-eye'} mr-2`}></i>
                 {modo === 'mural' ? 'Gestão' : 'Mural'}
               </button>
@@ -173,7 +173,7 @@ const ComunicadosView: React.FC = () => {
               className="bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
               {loading ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Publicando...</> : <><i className="fa-solid fa-bullhorn mr-2"></i>Publicar</>}
             </button>
-            <button onClick={() => setShowForm(false)} className="bg-slate-800 hover:bg-slate-700 text-slate-700 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+            <button onClick={() => setShowForm(false)} className="bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
               Cancelar
             </button>
           </div>
@@ -220,7 +220,7 @@ const ComunicadosView: React.FC = () => {
                   <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{c.corpo}</p>
                   {c.anexoUrl && (
                     <a href={c.anexoUrl} target="_blank" rel="noreferrer"
-                      className="inline-flex items-center gap-2 text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-700 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
+                      className="inline-flex items-center gap-2 text-[10px] bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
                       <i className="fa-solid fa-paperclip"></i>Ver Anexo
                     </a>
                   )}
@@ -233,7 +233,7 @@ const ComunicadosView: React.FC = () => {
                     )}
                     {isGestor && modo === 'gestao' && (
                       <button onClick={() => arquivar(c.id)}
-                        className="text-[9px] bg-slate-800 hover:bg-red-500/20 text-slate-500 hover:text-red-400 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
+                        className="text-[9px] bg-slate-100 hover:bg-red-500/20 border border-slate-200 text-slate-500 hover:text-red-400 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
                         <i className="fa-solid fa-archive mr-1"></i>Arquivar
                       </button>
                     )}

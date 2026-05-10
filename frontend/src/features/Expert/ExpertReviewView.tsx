@@ -68,7 +68,7 @@ const ExpertReviewView: React.FC = () => {
            </div>
       </header>
 
-      <div className="bg-[#0a0f1d] rounded-[48px] border border-slate-800 shadow-4xl overflow-hidden relative group">
+      <div className="bg-white rounded-[48px] border border-slate-200 shadow-2xl overflow-hidden relative group">
         <div className="absolute inset-0 bg-blue-600/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
         
         <div className="p-12 space-y-10 relative z-10">
@@ -80,7 +80,7 @@ const ExpertReviewView: React.FC = () => {
           <textarea 
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full h-80 bg-slate-950 border border-slate-800 rounded-[32px] p-10 focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 focus:outline-none transition-all text-slate-600 leading-loose font-serif text-xl placeholder:text-slate-700"
+            className="w-full h-80 bg-white border border-slate-200 rounded-[32px] p-10 focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 focus:outline-none transition-all text-[#0A1628] leading-loose font-serif text-xl placeholder:text-slate-400"
             placeholder="Ex: Análise de viabilidade jurídica de inventário extrajudicial com herdeiro incapaz assistido por curador especial sob a égide do novo provimento..."
           />
           
@@ -99,7 +99,7 @@ const ExpertReviewView: React.FC = () => {
       </div>
 
       {report && (
-        <div className="bg-[#0a0f1d] rounded-[48px] p-16 border border-slate-800 shadow-4xl animate-in slide-in-from-bottom-12 duration-700 relative overflow-hidden">
+        <div className="bg-white rounded-[48px] p-16 border border-slate-200 shadow-2xl animate-in slide-in-from-bottom-12 duration-700 relative overflow-hidden">
           <div className="absolute top-0 right-0 p-16 opacity-5 pointer-events-none">
              <i className="fa-solid fa-scale-balanced text-[180px] text-[#0A1628]"></i>
           </div>
@@ -113,13 +113,13 @@ const ExpertReviewView: React.FC = () => {
             </div>
             <button 
               onClick={() => window.print()}
-              className="text-blue-500 text-xs font-black uppercase tracking-widest hover:text-[#0A1628] transition-all flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-slate-900"
+              className="text-blue-500 text-xs font-black uppercase tracking-widest hover:text-[#0A1628] transition-all flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-slate-100"
             >
               <i className="fa-solid fa-print"></i> Exportar Parecer
             </button>
           </div>
           
-          <div className="prose prose-invert max-w-none prose-xl font-serif leading-loose text-slate-600">
+          <div className="prose max-w-none prose-xl font-serif leading-loose text-slate-700">
              {report.split('\n').map((line, i) => (
                <p key={i} className="mb-8">{line}</p>
              ))}

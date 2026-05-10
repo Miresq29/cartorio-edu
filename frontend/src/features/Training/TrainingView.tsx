@@ -186,7 +186,7 @@ ${opt.justificativa}
   };
 
   const generateSummary = async () => {
-    if (!selectedDoc) { showToast('Selecione um documento da base legal.', 'error'); return; }
+    if (!selectedDoc) { showToast('Selecione um documento ou módulo de trilha.', 'error'); return; }
     setSummaryLoading(true);
     setSummary('');
     try {
@@ -387,7 +387,21 @@ ${opt.justificativa}
     </div>
   );
 
-  const renderResumosTab = () => (
+  const renderResumosTab = () => {
+    const trilhaDocs = trilhas.flatMap(t =>
+      (t.modulos || [])
+        .filter(m => m.descricao || m.conteudo)
+        .map(m => ({
+          id: `trilha_${t.id}_mod_${m.id}`,
+          fileName: `${t.titulo} — ${m.titulo}`,
+          title: m.titulo,
+          content: [m.descricao, m.conteudo].filter(Boolean).join('\n\n'),
+          _isTrilha: true,
+        }))
+    );
+    const allDocs = [...knowledgeDocs, ...trilhaDocs];
+
+    return (
     <div className="space-y-6">
       <div>
         <h3 className="text-[#0A1628] font-black uppercase italic text-sm">Resumos Inteligentes</h3>
@@ -400,19 +414,23 @@ ${opt.justificativa}
           {/* 1. Seleção de documento */}
           <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3">
             <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">1. Selecione o documento</h4>
-            {knowledgeDocs.length === 0 ? (
-              <p className="text-xs text-slate-500 italic">Nenhum documento na base legal. Adicione documentos na seção "Base Legal".</p>
+            {allDocs.length === 0 ? (
+              <p className="text-xs text-slate-500 italic">Nenhum documento ou módulo de trilha disponível. Adicione documentos na seção "Base Legal" ou crie trilhas com módulos.</p>
             ) : (
               <div className="space-y-2 max-h-52 overflow-y-auto custom-scrollbar">
-                {knowledgeDocs.map((doc, i) => (
-                  <button type="button" key={i} onClick={() => setSelectedDoc(doc)}
+                {allDocs.map((doc) => (
+                  <button type="button" key={doc.id} onClick={() => setSelectedDoc(doc)}
                     className={`w-full text-left p-3 rounded-xl transition-all border ${
                       selectedDoc?.id === doc.id
                         ? 'border-blue-500 bg-blue-50 text-[#0A1628]'
                         : 'border-slate-200 hover:border-blue-300 bg-slate-50 hover:bg-blue-50/50 text-[#0A1628]'
                     }`}>
                     <p className="text-xs font-bold truncate">{doc.fileName || doc.title}</p>
-                    <p className="text-[9px] text-slate-500 mt-0.5">{doc.content?.length || 0} caracteres indexados</p>
+                    <p className="text-[9px] text-slate-500 mt-0.5">
+                      {(doc as any)._isTrilha
+                        ? <><i className="fa-solid fa-road mr-1 text-teal-500"></i>Módulo de trilha</>
+                        : `${doc.content?.length || 0} caracteres indexados`}
+                    </p>
                   </button>
                 ))}
               </div>
@@ -479,7 +497,8 @@ ${opt.justificativa}
         </div>
       </div>
     </div>
-  );
+    );
+  };
 
   const renderTab = () => {
     switch (activeTab) {

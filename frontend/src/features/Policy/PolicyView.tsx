@@ -33,7 +33,7 @@ const PolicyView: React.FC = () => {
           </p>
         </div>
 
-        <div className="w-full h-px bg-slate-800/50"></div>
+        <div className="w-full h-px bg-slate-200"></div>
 
         {/* 2 */}
         <div className="space-y-4">
@@ -58,7 +58,7 @@ const PolicyView: React.FC = () => {
           </div>
         </div>
 
-        <div className="w-full h-px bg-slate-800/50"></div>
+        <div className="w-full h-px bg-slate-200"></div>
 
         {/* 3 */}
         <div className="space-y-4">
@@ -83,7 +83,7 @@ const PolicyView: React.FC = () => {
           </div>
         </div>
 
-        <div className="w-full h-px bg-slate-800/50"></div>
+        <div className="w-full h-px bg-slate-200"></div>
 
         {/* 4 */}
         <div className="space-y-4">
@@ -113,7 +113,7 @@ const PolicyView: React.FC = () => {
           <p className="text-xs text-slate-500 italic">Logs são retidos por no mínimo 5 anos conforme exigência do CNJ e não podem ser excluídos por usuários comuns.</p>
         </div>
 
-        <div className="w-full h-px bg-slate-800/50"></div>
+        <div className="w-full h-px bg-slate-200"></div>
 
         {/* 5 */}
         <div className="space-y-4">
@@ -137,7 +137,7 @@ const PolicyView: React.FC = () => {
           </div>
         </div>
 
-        <div className="w-full h-px bg-slate-800/50"></div>
+        <div className="w-full h-px bg-slate-200"></div>
 
         {/* 6 */}
         <div className="space-y-4">
@@ -166,7 +166,7 @@ const PolicyView: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-slate-900/50 border border-slate-200 rounded-3xl p-8 flex items-start gap-4">
+        <div className="bg-slate-100 border border-slate-200 rounded-3xl p-8 flex items-start gap-4">
           <i className="fa-solid fa-circle-info text-slate-500 text-xl mt-1 flex-shrink-0"></i>
           <div>
             <p className="text-sm font-black text-[#0A1628] mb-1">Dúvidas sobre Segurança?</p>

@@ -305,7 +305,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
               className={`flex items-center gap-2 px-6 py-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all border-b-2 ${
                 activeTab === tab.id
                   ? 'text-blue-400 border-blue-500 bg-blue-500/5'
-                  : 'text-slate-500 border-transparent hover:text-slate-700 hover:bg-slate-800/50'
+                  : 'text-slate-500 border-transparent hover:text-slate-700 hover:bg-slate-100'
               }`}>
               <i className={`fa-solid ${tab.icon} text-xs`}></i>{tab.label}
             </button>
@@ -480,7 +480,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                   </div>
 
                   <button onClick={executarAnalise}
-                    className="w-full bg-slate-800 hover:bg-slate-700 text-[#0A1628] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2">
+                    className="w-full bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[#0A1628] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2">
                     <i className="fa-solid fa-rotate"></i>Refazer Análise
                   </button>
                 </div>
@@ -524,7 +524,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                   {chatMessages.map((m, i) => (
                     <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                       <div className={`max-w-[80%] px-5 py-4 rounded-2xl text-sm leading-relaxed ${
-                        m.role === 'user' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-[#0A1628] border border-slate-200'
+                        m.role === 'user' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-[#0A1628] border border-slate-200'
                       }`}>
                         <p className="whitespace-pre-wrap">{m.text}</p>
                       </div>
@@ -532,7 +532,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                   ))}
                   {isChatLoading && (
                     <div className="flex justify-start">
-                      <div className="bg-slate-800 border border-slate-200 px-5 py-4 rounded-2xl">
+                      <div className="bg-slate-100 border border-slate-200 px-5 py-4 rounded-2xl">
                         <i className="fa-solid fa-circle-notch animate-spin text-blue-500"></i>
                         <span className="text-xs text-slate-500 ml-2">Analisando dados...</span>
                       </div>

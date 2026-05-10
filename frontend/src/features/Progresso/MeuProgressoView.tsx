@@ -145,7 +145,7 @@ const MeuProgressoView: React.FC = () => {
   }, []);
 
   if (loading) return (
-    <div className="flex items-center justify-center h-screen bg-[#0D1B3E]">
+    <div className="flex items-center justify-center h-screen bg-slate-50">
       <div className="text-center space-y-3">
         <div className="w-8 h-8 border-2 border-slate-200 border-t-indigo-500 rounded-full animate-spin mx-auto"></div>
         <p className="text-slate-500 text-sm">Carregando...</p>
@@ -164,7 +164,7 @@ const MeuProgressoView: React.FC = () => {
           </div>
           <div>
             <h2 className="text-2xl font-black text-[#0D1B3E]">{userName}</h2>
-            <p className="text-sm text-slate-500">{user.cargo || 'Colaborador'} · {earnedBadges.length}/{totalBadges} badges conquistados</p>
+            <p className="text-sm text-slate-500">{(user as any).cargo || 'Colaborador'} · {earnedBadges.length}/{totalBadges} badges conquistados</p>
           </div>
           <div className="ml-auto hidden md:flex items-center gap-2 bg-white border border-slate-200 px-3 py-2 rounded-xl">
             <i className="fa-solid fa-trophy text-[#C9A84C] text-xs"></i>

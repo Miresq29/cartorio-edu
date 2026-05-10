@@ -354,7 +354,7 @@ const MetaCard: React.FC<{
             {/* Minha posição */}
             {meuRanking >= 0 && (
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                meuRanking < meta.topN ? 'bg-amber-500/20 border border-amber-500/30' : 'bg-slate-800'
+                meuRanking < meta.topN ? 'bg-amber-500/20 border border-amber-500/30' : 'bg-slate-100 border border-slate-200'
               }`}>
                 <span className={`text-sm font-black ${meuRanking < meta.topN ? 'text-amber-400' : 'text-slate-500'}`}>
                   #{meuRanking + 1}
@@ -445,10 +445,10 @@ const MetaCard: React.FC<{
                     <div key={item.nome} className={`flex items-center gap-3 p-2.5 rounded-xl transition-all ${
                       item.isPremiated ? 'bg-amber-500/5 border border-amber-500/20' :
                       isMe            ? 'bg-blue-500/5 border border-blue-500/20' :
-                                        'bg-slate-900/30'
+                                        'bg-slate-100'
                     }`}>
                       <i className={`fa-solid ${medalIcon} text-sm w-5 text-center ${medalColor}`}></i>
-                      <span className={`flex-1 text-sm font-bold truncate ${isMe ? 'text-blue-400' : 'text-white'}`}>
+                      <span className={`flex-1 text-sm font-bold truncate ${isMe ? 'text-blue-400' : 'text-[#0A1628]'}`}>
                         {item.nome}
                         {isMe && <span className="text-[9px] text-blue-500 ml-1.5 font-black uppercase">(você)</span>}
                       </span>
@@ -490,7 +490,7 @@ const MetaCard: React.FC<{
             <div className="flex gap-2 flex-wrap border-t border-slate-200/50 pt-4">
               {meta.status === 'ativa' && (
                 <button onClick={onEncerrar}
-                  className="px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest bg-slate-800 hover:bg-slate-700 text-slate-700 transition-all">
+                  className="px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 transition-all">
                   <i className="fa-solid fa-lock mr-1"></i>Encerrar
                 </button>
               )}
@@ -550,7 +550,7 @@ const DesempatePlayer: React.FC<{
           <p className={`text-4xl font-black ${resultado.nota >= 70 ? 'text-emerald-400' : 'text-red-400'}`}>{resultado.nota}%</p>
           <p className="text-[#0A1628] font-black text-lg uppercase">Desempate concluído!</p>
           <p className="text-slate-500 text-sm">Seu resultado foi registrado. Aguarde a apuração final pelo gestor.</p>
-          <div className="bg-slate-900 rounded-xl p-4 text-left space-y-1">
+          <div className="bg-slate-100 border border-slate-200 rounded-xl p-4 text-left space-y-1">
             <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Gabarito rápido</p>
             {sessao.questoes.map((q, i) => {
               const acertou = respostas[i] === q.correta;
@@ -584,7 +584,7 @@ const DesempatePlayer: React.FC<{
               <p className="text-[9px] text-slate-500 uppercase">respondidas</p>
             </div>
           </div>
-          <div className="w-full bg-slate-800 rounded-full h-1.5">
+          <div className="w-full bg-slate-200 rounded-full h-1.5">
             <div className="bg-amber-500 h-1.5 rounded-full transition-all"
               style={{ width: `${(Object.keys(respostas).length / total) * 100}%` }}></div>
           </div>
@@ -615,7 +615,7 @@ const DesempatePlayer: React.FC<{
                           : 'border-slate-200 hover:border-slate-600 text-slate-700'
                       }`}>
                       <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black flex-shrink-0 ${
-                        resp === alt.letra ? 'bg-amber-500 text-white' : 'bg-slate-800 text-slate-500'
+                        resp === alt.letra ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-500'
                       }`}>{alt.letra}</span>
                       <span className="text-xs leading-snug">{alt.texto}</span>
                     </button>

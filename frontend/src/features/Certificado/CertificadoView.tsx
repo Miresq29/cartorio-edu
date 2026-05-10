@@ -607,7 +607,7 @@ const CertificadoView: React.FC = () => {
                         navigator.clipboard.writeText(cert.codigoVerificacao);
                         showToast('Código copiado!', 'success');
                       }}
-                        className="bg-slate-900 hover:bg-slate-800 border border-slate-200 text-slate-500 px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5">
+                        className="bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-500 px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5">
                         <i className="fa-solid fa-copy"></i>Cód.
                       </button>
                     </div>

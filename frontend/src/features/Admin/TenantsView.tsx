@@ -73,7 +73,7 @@ const TenantsView: React.FC = () => {
             {allTenants.map((t: any) => (
               <div key={t.id} className="p-5 bg-white border border-slate-200 rounded-2xl flex justify-between items-center group hover:border-blue-500/30 transition-all">
                 <span className="text-[#0A1628] font-bold italic uppercase text-sm">{t.name}</span>
-                <span className="text-[10px] font-mono text-slate-500 bg-slate-900 px-3 py-1 rounded-md">{t.id}</span>
+                <span className="text-[10px] font-mono text-slate-500 bg-slate-100 border border-slate-200 px-3 py-1 rounded-md">{t.id}</span>
               </div>
             ))}
           </div>

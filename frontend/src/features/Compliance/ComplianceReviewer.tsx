@@ -203,7 +203,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
             <i className="fa-solid fa-shield-check text-3xl"></i>
           </div>
           <div>
-            <h2 className="text-3xl font-black text-slate-100 tracking-tight italic uppercase">Conformidade</h2>
+            <h2 className="text-3xl font-black text-[#0A1628] tracking-tight italic uppercase">Conformidade</h2>
             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Tenant: {state.user?.tenantId}</p>
           </div>
         </div>
@@ -238,13 +238,13 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => setAnalysisMode('checklist')}
-                  className={`py-3 rounded-xl text-[10px] font-black uppercase transition-all ${analysisMode === 'checklist' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-500 hover:bg-slate-700'}`}
+                  className={`py-3 rounded-xl text-[10px] font-black uppercase transition-all ${analysisMode === 'checklist' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 border border-slate-200'}`}
                 >
                   <i className="fa-solid fa-clipboard-list mr-2"></i>Protocolo
                 </button>
                 <button
                   onClick={() => setAnalysisMode('baselegal')}
-                  className={`py-3 rounded-xl text-[10px] font-black uppercase transition-all ${analysisMode === 'baselegal' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-500 hover:bg-slate-700'}`}
+                  className={`py-3 rounded-xl text-[10px] font-black uppercase transition-all ${analysisMode === 'baselegal' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 border border-slate-200'}`}
                 >
                   <i className="fa-solid fa-book-open mr-2"></i>Base Legal
                 </button>
@@ -310,7 +310,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
         </div>
 
         <div className="lg:col-span-7 flex flex-col justify-center items-center text-center p-10 bg-blue-600/5 border border-blue-500/10 rounded-[32px] shadow-inner">
-          <div className="w-24 h-24 bg-slate-900 rounded-3xl flex items-center justify-center text-blue-500 text-4xl mb-6 shadow-2xl">
+          <div className="w-24 h-24 bg-slate-100 border border-slate-200 rounded-3xl flex items-center justify-center text-blue-500 text-4xl mb-6 shadow-2xl">
             <i className="fa-solid fa-robot"></i>
           </div>
           <h3 className="text-xl font-black text-[#0A1628] uppercase italic">Análise RAG Estrita</h3>
@@ -318,11 +318,11 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
             O sistema usa apenas os documentos que você indexou na Base Legal e os protocolos cadastrados. Nenhuma lei ou norma externa é consultada.
           </p>
           <div className="mt-6 grid grid-cols-2 gap-4 w-full max-w-sm">
-            <div className="bg-slate-900 rounded-2xl p-4 text-center">
+            <div className="bg-slate-100 border border-slate-200 rounded-2xl p-4 text-center">
               <p className="text-2xl font-black text-blue-500">{checklists.length}</p>
               <p className="text-[9px] text-slate-500 uppercase font-bold mt-1">Protocolos</p>
             </div>
-            <div className="bg-slate-900 rounded-2xl p-4 text-center">
+            <div className="bg-slate-100 border border-slate-200 rounded-2xl p-4 text-center">
               <p className="text-2xl font-black text-blue-500">{kbDocs.length}</p>
               <p className="text-[9px] text-slate-500 uppercase font-bold mt-1">Docs Indexados</p>
             </div>
@@ -352,7 +352,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
               <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Índice de Conformidade</span>
               <span className="text-sm font-black text-[#0A1628]">{conformePercent}%</span>
             </div>
-            <div className="w-full bg-slate-800 rounded-full h-3">
+            <div className="w-full bg-slate-200 rounded-full h-3">
               <div
                 className={`h-3 rounded-full transition-all duration-700 ${conformePercent >= 80 ? 'bg-emerald-500' : conformePercent >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`}
                 style={{ width: `${conformePercent}%` }}
@@ -364,7 +364,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
             </div>
           </div>
 
-          <div className="p-8 bg-slate-900/40 border border-slate-200 rounded-3xl backdrop-blur-md">
+          <div className="p-8 bg-slate-50 border border-slate-200 rounded-3xl">
             <h3 className="text-xl font-black text-[#0A1628] italic uppercase mb-6 flex items-center gap-3">
               <i className="fa-solid fa-file-invoice text-blue-500"></i> Parecer Técnico Detalhado
             </h3>
@@ -379,7 +379,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
                   </div>
                   <p className="text-xs text-slate-500 leading-relaxed mb-3">{res.comment}</p>
                   {!res.compliant && res.suggestion && (
-                    <div className="bg-slate-950 p-4 rounded-xl border border-red-500/10">
+                    <div className="bg-slate-100 p-4 rounded-xl border border-red-500/10">
                       <p className="text-[10px] font-black text-red-400 uppercase mb-2">Sugestão de Retificação:</p>
                       <p className="text-xs text-slate-700 leading-relaxed">{res.suggestion}</p>
                     </div>

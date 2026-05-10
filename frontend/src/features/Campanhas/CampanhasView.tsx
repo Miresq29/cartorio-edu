@@ -146,7 +146,7 @@ const CampanhasView: React.FC = () => {
               <div className="flex flex-wrap gap-2">
                 {TOPIC_SUGGESTIONS.map((s, i) => (
                   <button type="button" key={i} onClick={() => setTopic(s)}
-                    className="text-[9px] bg-slate-50 hover:bg-slate-800 text-slate-500 hover:text-[#0A1628] px-3 py-1.5 rounded-lg font-bold transition-all border border-slate-200 hover:border-slate-600">
+                    className="text-[9px] bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-[#0A1628] px-3 py-1.5 rounded-lg font-bold transition-all border border-slate-200 hover:border-slate-400">
                     {s}
                   </button>
                 ))}
@@ -170,7 +170,7 @@ const CampanhasView: React.FC = () => {
                         : 'border-slate-200 hover:border-slate-600'
                     }`}>
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                      selected ? `bg-${p.color}-500/20` : 'bg-slate-800'
+                      selected ? `bg-${p.color}-500/20` : 'bg-slate-100'
                     }`}>
                       <i className={`fa-brands ${p.icon} text-sm ${selected ? `text-${p.color}-400` : 'text-slate-500'}`}></i>
                     </div>
@@ -279,20 +279,20 @@ const CampanhasView: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <i className={`fa-brands ${activePlatformConfig?.icon} text-${activePlatformConfig?.color}-400`}></i>
                     <span className="text-xs font-black text-[#0A1628]">{activePlatformConfig?.label}</span>
-                    <span className="text-[9px] text-slate-500 bg-slate-800 px-2 py-0.5 rounded-lg">
+                    <span className="text-[9px] text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-lg">
                       {posts[activePlatformTab].length} chars
                     </span>
                   </div>
                   <div className="flex gap-2">
                     <button type="button" onClick={regenerate} disabled={isLoading}
-                      className="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-700 px-3 py-1.5 rounded-lg font-black uppercase tracking-widest transition-all">
+                      className="text-[9px] bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg font-black uppercase tracking-widest transition-all">
                       <i className="fa-solid fa-rotate mr-1"></i>Regenerar
                     </button>
                     <button type="button" onClick={() => copyPost(activePlatformTab, posts[activePlatformTab])}
                       className={`text-[9px] px-3 py-1.5 rounded-lg font-black uppercase tracking-widest transition-all ${
                         copiedPlatform === activePlatformTab
                           ? 'bg-emerald-600 text-white'
-                          : 'bg-slate-800 hover:bg-slate-700 text-slate-700'
+                          : 'bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600'
                       }`}>
                       <i className={`fa-solid ${copiedPlatform === activePlatformTab ? 'fa-check' : 'fa-copy'} mr-1`}></i>
                       {copiedPlatform === activePlatformTab ? 'Copiado!' : 'Copiar'}
@@ -301,7 +301,7 @@ const CampanhasView: React.FC = () => {
                 </div>
 
                 {/* Conteúdo do post */}
-                <div className="flex-1 bg-slate-900/50 border border-slate-200 rounded-2xl p-5 overflow-y-auto custom-scrollbar">
+                <div className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl p-5 overflow-y-auto custom-scrollbar">
                   <p className="text-sm text-[#0A1628] whitespace-pre-wrap leading-relaxed">{posts[activePlatformTab]}</p>
                 </div>
 

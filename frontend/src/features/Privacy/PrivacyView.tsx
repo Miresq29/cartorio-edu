@@ -34,7 +34,7 @@ const PrivacyView: React.FC = () => {
           </p>
         </div>
 
-        <div className="w-full h-px bg-slate-800/50"></div>
+        <div className="w-full h-px bg-slate-200"></div>
 
         {/* 2 - Base Legal */}
         <div className="space-y-4">
@@ -55,7 +55,7 @@ const PrivacyView: React.FC = () => {
           </div>
         </div>
 
-        <div className="w-full h-px bg-slate-800/50"></div>
+        <div className="w-full h-px bg-slate-200"></div>
 
         {/* 3 */}
         <div className="space-y-4">
@@ -80,7 +80,7 @@ const PrivacyView: React.FC = () => {
           </div>
         </div>
 
-        <div className="w-full h-px bg-slate-800/50"></div>
+        <div className="w-full h-px bg-slate-200"></div>
 
         {/* 4 */}
         <div className="space-y-4">
@@ -104,7 +104,7 @@ const PrivacyView: React.FC = () => {
           </div>
         </div>
 
-        <div className="w-full h-px bg-slate-800/50"></div>
+        <div className="w-full h-px bg-slate-200"></div>
 
         {/* 5 */}
         <div className="space-y-4">
@@ -128,7 +128,7 @@ const PrivacyView: React.FC = () => {
           </div>
         </div>
 
-        <div className="w-full h-px bg-slate-800/50"></div>
+        <div className="w-full h-px bg-slate-200"></div>
 
         {/* 6 */}
         <div className="space-y-4">
@@ -152,7 +152,7 @@ const PrivacyView: React.FC = () => {
               </div>
             ))}
           </div>
-          <div className="bg-slate-900/50 border border-slate-200 rounded-xl p-4">
+          <div className="bg-slate-100 border border-slate-200 rounded-xl p-4">
             <p className="text-xs text-slate-500 italic">
               <i className="fa-solid fa-circle-info text-slate-600 mr-2"></i>
               Como o tratamento tem base em <strong className="text-slate-500">execução de contrato</strong> (Art. 7º, V — LGPD), não se aplica o direito de revogação de consentimento nem portabilidade de dados, pois o uso da plataforma é determinado pela própria serventia no exercício de suas atividades.
@@ -161,7 +161,7 @@ const PrivacyView: React.FC = () => {
           <p className="text-xs text-slate-500 italic">Para exercer seus direitos, entre em contato via módulo de Suporte Técnico.</p>
         </div>
 
-        <div className="w-full h-px bg-slate-800/50"></div>
+        <div className="w-full h-px bg-slate-200"></div>
 
         {/* 7 */}
         <div className="space-y-4">
