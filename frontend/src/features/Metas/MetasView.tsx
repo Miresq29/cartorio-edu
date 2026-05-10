@@ -656,8 +656,11 @@ const MetasView: React.FC = () => {
 
   // Load data
   useEffect(() => {
-    const q1 = query(collection(db, 'metas'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'));
-    const u1 = onSnapshot(q1, s => setMetas(s.docs.map(d => ({ id: d.id, ...d.data() } as Meta))));
+    const q1 = query(collection(db, 'metas'), where('tenantId', '==', tenantId));
+    const u1 = onSnapshot(q1, s => setMetas(
+      s.docs.map(d => ({ id: d.id, ...d.data() } as Meta))
+        .sort((a, b) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0))
+    ));
 
     const q2 = query(collection(db, 'treinamentosQuizResults'), orderBy('createdAt', 'desc'));
     const u2 = onSnapshot(q2, s => setQuizResults(s.docs.map(d => ({ id: d.id, ...d.data() } as QuizResult))));
@@ -668,8 +671,11 @@ const MetasView: React.FC = () => {
     const q4 = query(collection(db, 'examesResultados'), where('tenantId', '==', tenantId));
     const u4 = onSnapshot(q4, s => setExamesResultados(s.docs.map(d => ({ id: d.id, ...d.data() } as ExameResultado))));
 
-    const q5 = query(collection(db, 'metasDesempate'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'));
-    const u5 = onSnapshot(q5, s => setDesempateSessions(s.docs.map(d => ({ id: d.id, ...d.data() } as DesempateSession))));
+    const q5 = query(collection(db, 'metasDesempate'), where('tenantId', '==', tenantId));
+    const u5 = onSnapshot(q5, s => setDesempateSessions(
+      s.docs.map(d => ({ id: d.id, ...d.data() } as DesempateSession))
+        .sort((a, b) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0))
+    ));
 
     return () => { u1(); u2(); u3(); u4(); u5(); };
   }, [tenantId]);

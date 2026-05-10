@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   collection, addDoc, updateDoc, deleteDoc, doc,
-  query, where, onSnapshot, serverTimestamp, orderBy,
+  query, where, onSnapshot, serverTimestamp,
 } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
@@ -102,10 +102,12 @@ const BancoQuestoesView: React.FC = () => {
     const q = query(
       collection(db, 'bancoDQuestoes'),
       where('tenantId', '==', tenantId),
-      orderBy('criadoEm', 'desc'),
     );
     return onSnapshot(q, snap => {
-      setQuestoes(snap.docs.map(d => ({ id: d.id, ...d.data() } as Questao)));
+      setQuestoes(
+        snap.docs.map(d => ({ id: d.id, ...d.data() } as Questao))
+          .sort((a, b) => (b.criadoEm?.seconds ?? 0) - (a.criadoEm?.seconds ?? 0))
+      );
     });
   }, [tenantId]);
 

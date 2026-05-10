@@ -42,12 +42,14 @@ const KnowledgeBase: React.FC = () => {
     } else {
       q = query(
         collection(db, 'knowledgeBase'),
-        where('tenantId', '==', user.tenantId),
-        orderBy('createdAt', 'desc')
+        where('tenantId', '==', user.tenantId)
       );
     }
     const unsub = onSnapshot(q, snap => {
-      setDocs(snap.docs.map(d => ({ id: d.id, ...d.data() } as KBDoc)));
+      setDocs(
+        snap.docs.map(d => ({ id: d.id, ...d.data() } as KBDoc))
+          .sort((a, b) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0))
+      );
       setLoading(false);
     });
     return () => unsub();

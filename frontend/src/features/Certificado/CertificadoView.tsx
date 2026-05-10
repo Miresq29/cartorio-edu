@@ -415,8 +415,11 @@ const CertificadoView: React.FC = () => {
 
   // Load data
   useEffect(() => {
-    const q1 = query(collection(db, 'certificados'), where('tenantId', '==', tenantId), orderBy('emitidoEm', 'desc'));
-    const u1 = onSnapshot(q1, s => setCertificados(s.docs.map(d => ({ id: d.id, ...d.data() } as Certificado))));
+    const q1 = query(collection(db, 'certificados'), where('tenantId', '==', tenantId));
+    const u1 = onSnapshot(q1, s => setCertificados(
+      s.docs.map(d => ({ id: d.id, ...d.data() } as Certificado))
+        .sort((a, b) => (b.emitidoEm?.seconds ?? 0) - (a.emitidoEm?.seconds ?? 0))
+    ));
 
     const q2 = query(collection(db, 'treinamentosQuizResults'), orderBy('createdAt', 'desc'));
     const u2 = onSnapshot(q2, s => setQuizResults(s.docs.map(d => ({ id: d.id, ...d.data() } as QuizResult))));
