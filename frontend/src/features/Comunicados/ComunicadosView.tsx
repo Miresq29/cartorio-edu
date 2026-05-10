@@ -101,7 +101,7 @@ const ComunicadosView: React.FC = () => {
                 {modo === 'mural' ? 'Gestão' : 'Mural'}
               </button>
               <button onClick={() => setShowForm(!showForm)}
-                className="bg-amber-600 hover:bg-amber-500 text-[#0A1628] px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                className="bg-amber-600 hover:bg-amber-500 text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
                 <i className="fa-solid fa-plus mr-2"></i>Publicar
               </button>
             </>
@@ -134,18 +134,18 @@ const ComunicadosView: React.FC = () => {
               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Título *</label>
               <input value={form.titulo} onChange={e => setForm(p => ({ ...p, titulo: e.target.value }))}
                 placeholder="Ex: Reunião de equipe - Semana de 14/04"
-                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-amber-500" />
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-amber-500" />
             </div>
             <div className="md:col-span-2">
               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Mensagem *</label>
               <textarea value={form.corpo} onChange={e => setForm(p => ({ ...p, corpo: e.target.value }))} rows={4}
                 placeholder="Digite o comunicado completo aqui..."
-                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-amber-500 resize-none" />
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-amber-500 resize-none" />
             </div>
             <div>
               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Prioridade</label>
               <select value={form.prioridade} onChange={e => setForm(p => ({ ...p, prioridade: e.target.value as any }))}
-                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-amber-500">
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-amber-500">
                 <option value="informativo">Informativo</option>
                 <option value="normal">Normal</option>
                 <option value="urgente">Urgente</option>
@@ -154,13 +154,13 @@ const ComunicadosView: React.FC = () => {
             <div>
               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Prazo (opcional)</label>
               <input type="date" value={form.prazo} onChange={e => setForm(p => ({ ...p, prazo: e.target.value }))}
-                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-amber-500" />
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-amber-500" />
             </div>
             <div>
               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Link de Anexo (opcional)</label>
               <input value={form.anexoUrl} onChange={e => setForm(p => ({ ...p, anexoUrl: e.target.value }))}
                 placeholder="https://drive.google.com/..."
-                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-amber-500" />
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-amber-500" />
             </div>
             <div className="flex items-center gap-3">
               <input type="checkbox" id="fixado" checked={form.fixado} onChange={e => setForm(p => ({ ...p, fixado: e.target.checked }))}
@@ -170,7 +170,7 @@ const ComunicadosView: React.FC = () => {
           </div>
           <div className="flex gap-3">
             <button onClick={salvar} disabled={loading}
-              className="bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-[#0A1628] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+              className="bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
               {loading ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Publicando...</> : <><i className="fa-solid fa-bullhorn mr-2"></i>Publicar</>}
             </button>
             <button onClick={() => setShowForm(false)} className="bg-slate-800 hover:bg-slate-700 text-slate-700 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
@@ -227,7 +227,7 @@ const ComunicadosView: React.FC = () => {
                   <div className="flex gap-2 pt-1">
                     {!lido && (
                       <button onClick={() => marcarLido(c.id)}
-                        className="text-[9px] bg-emerald-600 hover:bg-emerald-500 text-[#0A1628] px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
+                        className="text-[9px] bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
                         <i className="fa-solid fa-check mr-1"></i>Marcar como lido
                       </button>
                     )}

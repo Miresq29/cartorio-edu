@@ -13,7 +13,7 @@ const SupportView: React.FC = () => {
           Precisa de ajuda com a IA ou configuração de novos cartórios? Nossa equipe técnica está disponível.
         </p>
       </div>
-      <button className="bg-blue-600 text-[#0A1628] px-10 py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-blue-500 transition-all">
+      <button className="bg-blue-600 text-white px-10 py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-blue-500 transition-all">
         Abrir Chamado via WhatsApp
       </button>
     </div>

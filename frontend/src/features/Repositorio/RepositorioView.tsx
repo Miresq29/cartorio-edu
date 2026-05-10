@@ -159,7 +159,7 @@ const PlayerModal: React.FC<{
             />
           </div>
           {/* Fallback: link direto */}
-          <div className="bg-slate-900 border border-slate-200 rounded-2xl p-4 text-center space-y-2">
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 text-center space-y-2">
             <i className="fa-solid fa-headphones text-violet-400 text-3xl block mb-2"></i>
             <p className="text-xs text-slate-500">Se o player não carregar, abra diretamente no Drive:</p>
             <a
@@ -254,7 +254,7 @@ const MidiaCard: React.FC<{
 
         {/* Badges */}
         {assistida && (
-          <div className="absolute top-3 right-3 bg-emerald-600 text-[#0A1628] text-[9px] font-black px-2 py-1 rounded-lg uppercase tracking-widest">
+          <div className="absolute top-3 right-3 bg-emerald-600 text-white text-[9px] font-black px-2 py-1 rounded-lg uppercase tracking-widest">
             <i className="fa-solid fa-check mr-1"></i>Visto
           </div>
         )}
@@ -407,14 +407,14 @@ const FormMidia: React.FC<{
           <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Título *</label>
           <input value={form.titulo} onChange={e => set('titulo', e.target.value)}
             placeholder="Ex: Introdução ao Provimento 213/2026"
-            className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+            className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
         </div>
 
         {/* Categoria */}
         <div className="space-y-1">
           <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Categoria</label>
           <select value={form.categoria} onChange={e => set('categoria', e.target.value)}
-            className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500">
+            className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500">
             {CATEGORIAS.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
           </select>
         </div>
@@ -423,7 +423,7 @@ const FormMidia: React.FC<{
         <div className="space-y-1">
           <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Duração (minutos)</label>
           <input type="number" min={1} max={300} value={form.duracaoMin} onChange={e => set('duracaoMin', e.target.value)}
-            className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+            className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
         </div>
 
         {/* Trilha */}
@@ -431,7 +431,7 @@ const FormMidia: React.FC<{
           <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Trilha Associada (opcional)</label>
           <input value={form.trilhaTitulo} onChange={e => set('trilhaTitulo', e.target.value)}
             placeholder="Ex: Trilha do Atendente"
-            className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+            className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
         </div>
 
         {/* Descrição */}
@@ -439,7 +439,7 @@ const FormMidia: React.FC<{
           <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Descrição</label>
           <input value={form.descricao} onChange={e => set('descricao', e.target.value)}
             placeholder="Breve descrição do conteúdo"
-            className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+            className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
         </div>
       </div>
 
@@ -449,7 +449,7 @@ const FormMidia: React.FC<{
           Cancelar
         </button>
         <button onClick={handleSalvar} disabled={saving || !form.titulo || !form.link}
-          className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-[#0A1628] px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+          className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
           {saving
             ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Salvando...</>
             : <><i className="fa-solid fa-floppy-disk mr-2"></i>Adicionar ao Repositório</>
@@ -560,7 +560,7 @@ const RepositorioView: React.FC = () => {
         </div>
         {isGestor && !showForm && (
           <button onClick={() => setShowForm(true)}
-            className="bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
+            className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
             <i className="fa-solid fa-plus"></i>Adicionar
           </button>
         )}
@@ -597,7 +597,7 @@ const RepositorioView: React.FC = () => {
         <div className="flex gap-2">
           <button onClick={() => setFiltroTipo('')}
             className={`px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
-              !filtroTipo ? 'bg-blue-600 text-[#0A1628]' : 'bg-slate-900 text-slate-500 hover:bg-slate-800 border border-slate-200'
+              !filtroTipo ? 'bg-blue-600 text-white' : 'bg-slate-900 text-slate-500 hover:bg-slate-800 border border-slate-200'
             }`}>Todos</button>
           {(Object.entries(TIPO_CONFIG) as [MidiaTipo, typeof TIPO_CONFIG[MidiaTipo]][]).map(([key, cfg]) => (
             <button key={key} onClick={() => setFiltroTipo(filtroTipo === key ? '' : key)}

@@ -199,7 +199,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
 
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 no-print">
         <div className="flex items-center gap-5">
-          <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-[#0A1628] shadow-lg shadow-blue-900/20">
+          <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-900/20">
             <i className="fa-solid fa-shield-check text-3xl"></i>
           </div>
           <div>
@@ -216,7 +216,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 no-print">
         <div className="lg:col-span-5 space-y-6">
-          <div className="bg-[#0D1B3E] border border-slate-200 rounded-[32px] p-8 space-y-7 shadow-2xl">
+          <div className="bg-white border border-slate-200 rounded-[32px] p-8 space-y-7 shadow-2xl">
 
             <div className="space-y-3">
               <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Documento a Auditar</label>
@@ -238,13 +238,13 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => setAnalysisMode('checklist')}
-                  className={`py-3 rounded-xl text-[10px] font-black uppercase transition-all ${analysisMode === 'checklist' ? 'bg-blue-600 text-[#0A1628]' : 'bg-slate-800 text-slate-500 hover:bg-slate-700'}`}
+                  className={`py-3 rounded-xl text-[10px] font-black uppercase transition-all ${analysisMode === 'checklist' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-500 hover:bg-slate-700'}`}
                 >
                   <i className="fa-solid fa-clipboard-list mr-2"></i>Protocolo
                 </button>
                 <button
                   onClick={() => setAnalysisMode('baselegal')}
-                  className={`py-3 rounded-xl text-[10px] font-black uppercase transition-all ${analysisMode === 'baselegal' ? 'bg-blue-600 text-[#0A1628]' : 'bg-slate-800 text-slate-500 hover:bg-slate-700'}`}
+                  className={`py-3 rounded-xl text-[10px] font-black uppercase transition-all ${analysisMode === 'baselegal' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-500 hover:bg-slate-700'}`}
                 >
                   <i className="fa-solid fa-book-open mr-2"></i>Base Legal
                 </button>
@@ -260,7 +260,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
                   <select
                     value={selectedChecklistId}
                     onChange={e => setSelectedChecklistId(e.target.value)}
-                    className="w-full bg-[#0D1B3E] border border-slate-200 rounded-xl px-4 py-4 text-xs font-bold text-[#0A1628] focus:border-blue-600 outline-none transition-all"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-4 text-xs font-bold text-[#0A1628] focus:border-blue-600 outline-none transition-all"
                   >
                     <option value="">Selecione um protocolo...</option>
                     {checklists.map(t => (
@@ -300,7 +300,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
             <button
               onClick={handleRunAudit}
               disabled={isAnalyzing}
-              className="w-full bg-blue-600 hover:bg-blue-500 text-[#0A1628] py-5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-900/30 disabled:opacity-50"
+              className="w-full bg-blue-600 hover:bg-blue-500 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-900/30 disabled:opacity-50"
             >
               {isAnalyzing
                 ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Auditoria em curso...</>

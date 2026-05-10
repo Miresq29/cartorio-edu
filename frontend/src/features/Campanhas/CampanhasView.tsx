@@ -138,7 +138,7 @@ const CampanhasView: React.FC = () => {
               value={topic}
               onChange={e => setTopic(e.target.value)}
               placeholder="Ex: Novo prazo para registro de imóveis..."
-              className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-pink-500 transition-colors"
+              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-pink-500 transition-colors"
             />
             {/* Sugestões rápidas */}
             <div className="space-y-1">
@@ -146,7 +146,7 @@ const CampanhasView: React.FC = () => {
               <div className="flex flex-wrap gap-2">
                 {TOPIC_SUGGESTIONS.map((s, i) => (
                   <button type="button" key={i} onClick={() => setTopic(s)}
-                    className="text-[9px] bg-slate-900 hover:bg-slate-800 text-slate-500 hover:text-[#0A1628] px-3 py-1.5 rounded-lg font-bold transition-all border border-slate-200 hover:border-slate-600">
+                    className="text-[9px] bg-slate-50 hover:bg-slate-800 text-slate-500 hover:text-[#0A1628] px-3 py-1.5 rounded-lg font-bold transition-all border border-slate-200 hover:border-slate-600">
                     {s}
                   </button>
                 ))}
@@ -222,7 +222,7 @@ const CampanhasView: React.FC = () => {
               onChange={e => setAdditionalContext(e.target.value)}
               placeholder="Ex: campanha do mês do consumidor, novo endereço, promoção de prazo..."
               rows={3}
-              className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-pink-500 resize-none transition-colors"
+              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-pink-500 resize-none transition-colors"
             />
           </div>
 
@@ -291,7 +291,7 @@ const CampanhasView: React.FC = () => {
                     <button type="button" onClick={() => copyPost(activePlatformTab, posts[activePlatformTab])}
                       className={`text-[9px] px-3 py-1.5 rounded-lg font-black uppercase tracking-widest transition-all ${
                         copiedPlatform === activePlatformTab
-                          ? 'bg-emerald-600 text-[#0A1628]'
+                          ? 'bg-emerald-600 text-white'
                           : 'bg-slate-800 hover:bg-slate-700 text-slate-700'
                       }`}>
                       <i className={`fa-solid ${copiedPlatform === activePlatformTab ? 'fa-check' : 'fa-copy'} mr-1`}></i>
@@ -316,7 +316,7 @@ const CampanhasView: React.FC = () => {
                           onClick={() => copyPost(platformId, posts[platformId])}
                           className={`flex items-center gap-1.5 text-[9px] px-3 py-1.5 rounded-lg font-black uppercase tracking-widest transition-all border ${
                             copiedPlatform === platformId
-                              ? 'bg-emerald-600 border-emerald-500 text-[#0A1628]'
+                              ? 'bg-emerald-600 border-emerald-500 text-white'
                               : `border-${pConf.color}-500/30 text-${pConf.color}-400 hover:bg-${pConf.color}-500/10`
                           }`}>
                           <i className={`fa-brands ${pConf.icon} text-[10px]`}></i>

@@ -198,7 +198,7 @@ const UsersView: React.FC = () => {
                   Cancelar
                 </button>
                 <button onClick={() => handleDelete(deleteId)}
-                  className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-[#0A1628] text-sm font-bold transition-all">
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-bold transition-all">
                   Remover
                 </button>
               </div>
@@ -262,7 +262,7 @@ const UsersView: React.FC = () => {
 
               {/* Formulário inline */}
               {showForm && (
-                <div className="bg-[#0D1B3E] border border-slate-200 rounded-[14px] p-5 space-y-4">
+                <div className="bg-white border border-slate-200 rounded-[14px] p-5 space-y-4">
                   <h4 className="text-sm font-black text-indigo-700 uppercase tracking-widest">
                     {editUser ? 'Editar Colaborador' : 'Novo Colaborador'}
                   </h4>
@@ -336,7 +336,7 @@ const UsersView: React.FC = () => {
               {/* Busca */}
               <input value={busca} onChange={e => setBusca(e.target.value)}
                 placeholder="Buscar por nome, e-mail ou cargo..."
-                className="bg-[#0D1B3E] border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-[#C9A84C] w-72" />
+                className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-[#C9A84C] w-72" />
 
               {/* Tabela */}
               {loading ? (

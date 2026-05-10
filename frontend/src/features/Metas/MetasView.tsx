@@ -185,7 +185,7 @@ const FormMeta: React.FC<{
         <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Título da Meta *</label>
         <input value={form.titulo} onChange={e => set('titulo', e.target.value)}
           placeholder="Ex: Campeões do 2º Trimestre"
-          className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+          className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
       </div>
 
       {/* Descrição */}
@@ -194,7 +194,7 @@ const FormMeta: React.FC<{
         <textarea value={form.descricao} onChange={e => set('descricao', e.target.value)}
           placeholder="Descreva os critérios e condições da premiação..."
           rows={2}
-          className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500 resize-none" />
+          className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500 resize-none" />
       </div>
 
       {/* Métrica */}
@@ -223,7 +223,7 @@ const FormMeta: React.FC<{
         <div className="space-y-1">
           <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Top Premiados</label>
           <select value={form.topN} onChange={e => set('topN', Number(e.target.value))}
-            className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500">
+            className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500">
             {[1, 2, 3, 5, 10].map(n => <option key={n} value={n}>Top {n}</option>)}
           </select>
         </div>
@@ -232,14 +232,14 @@ const FormMeta: React.FC<{
         <div className="space-y-1">
           <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Data Início</label>
           <input type="date" value={form.dataInicio} onChange={e => set('dataInicio', e.target.value)}
-            className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+            className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
         </div>
 
         {/* Data Fim */}
         <div className="space-y-1">
           <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Data Encerramento *</label>
           <input type="date" value={form.dataFim} onChange={e => set('dataFim', e.target.value)}
-            className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+            className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
         </div>
       </div>
 
@@ -248,14 +248,14 @@ const FormMeta: React.FC<{
         <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Prêmio / Reconhecimento *</label>
         <input value={form.premio} onChange={e => set('premio', e.target.value)}
           placeholder="Ex: Voucher R$200, Folga extra, Certificado de Destaque..."
-          className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+          className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
       </div>
 
       {/* Status */}
       <div className="space-y-1">
         <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Status</label>
         <select value={form.status} onChange={e => set('status', e.target.value as StatusMeta)}
-          className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500">
+          className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500">
           <option value="rascunho">Rascunho (não visível)</option>
           <option value="ativa">Ativa (visível a todos)</option>
           <option value="encerrada">Encerrada</option>
@@ -273,7 +273,7 @@ const FormMeta: React.FC<{
             onSave(form);
           }}
           disabled={!form.titulo || !form.premio || !form.dataFim}
-          className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-[#0A1628] px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+          className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
           <i className="fa-solid fa-floppy-disk mr-2"></i>Salvar Meta
         </button>
       </div>
@@ -379,7 +379,7 @@ const MetaCard: React.FC<{
                 {!sessaoAberta && (
                   <button
                     onClick={() => onIniciarDesempate(empate.map(r => r.nome))}
-                    className="mt-2 bg-amber-600 hover:bg-amber-500 text-[#0A1628] px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all">
+                    className="mt-2 bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all">
                     <i className="fa-solid fa-gavel mr-2"></i>Iniciar Desempate Bloom Alto
                   </button>
                 )}
@@ -441,7 +441,7 @@ const MetaCard: React.FC<{
                                         'bg-slate-900/30'
                     }`}>
                       <i className={`fa-solid ${medalIcon} text-sm w-5 text-center ${medalColor}`}></i>
-                      <span className={`flex-1 text-sm font-bold truncate ${isMe ? 'text-blue-400' : 'text-[#0A1628]'}`}>
+                      <span className={`flex-1 text-sm font-bold truncate ${isMe ? 'text-blue-400' : 'text-white'}`}>
                         {item.nome}
                         {isMe && <span className="text-[9px] text-blue-500 ml-1.5 font-black uppercase">(você)</span>}
                       </span>
@@ -604,11 +604,11 @@ const DesempatePlayer: React.FC<{
                       onClick={() => handleAnswer(alt.letra)}
                       className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${
                         resp === alt.letra
-                          ? 'border-amber-500 bg-amber-500/20 text-[#0A1628]'
+                          ? 'border-amber-500 bg-amber-500/20 text-white'
                           : 'border-slate-200 hover:border-slate-600 text-slate-700'
                       }`}>
                       <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black flex-shrink-0 ${
-                        resp === alt.letra ? 'bg-amber-500 text-[#0A1628]' : 'bg-slate-800 text-slate-500'
+                        resp === alt.letra ? 'bg-amber-500 text-white' : 'bg-slate-800 text-slate-500'
                       }`}>{alt.letra}</span>
                       <span className="text-xs leading-snug">{alt.texto}</span>
                     </button>
@@ -622,7 +622,7 @@ const DesempatePlayer: React.FC<{
         <button
           onClick={handleEnviar}
           disabled={Object.keys(respostas).length < total}
-          className="w-full py-4 bg-amber-600 hover:bg-amber-500 disabled:bg-slate-700 disabled:text-slate-500 text-[#0A1628] font-black uppercase tracking-widest rounded-2xl transition-all text-sm">
+          className="w-full py-4 bg-amber-600 hover:bg-amber-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-black uppercase tracking-widest rounded-2xl transition-all text-sm">
           <i className="fa-solid fa-gavel mr-2"></i>
           Enviar Respostas de Desempate
           {Object.keys(respostas).length < total && (
@@ -846,7 +846,7 @@ Retorne APENAS um array JSON válido, sem markdown:
         </div>
         {isGestor && !showForm && (
           <button onClick={() => { setShowForm(true); setEditingMeta(null); }}
-            className="bg-amber-600 hover:bg-amber-500 text-[#0A1628] px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
+            className="bg-amber-600 hover:bg-amber-500 text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
             <i className="fa-solid fa-plus"></i>Nova Meta
           </button>
         )}

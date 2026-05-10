@@ -414,7 +414,7 @@ const RelatoriosView: React.FC = () => {
                     { label: 'Reprovações', value: filteredResults.filter(r => !r.aprovado).length },
                     { label: 'Trilhas ativas', value: new Set(progresso.map(p => p.trilhaId)).size },
                   ].map((s, i) => (
-                    <div key={i} className="bg-[#0D1B3E] border border-slate-200 rounded-xl p-4 text-center">
+                    <div key={i} className="bg-white border border-slate-200 rounded-xl p-4 text-center">
                       <p className="text-2xl font-black text-slate-700">{s.value}</p>
                       <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-1">{s.label}</p>
                     </div>
@@ -429,7 +429,7 @@ const RelatoriosView: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <input value={buscaColab} onChange={e => setBuscaColab(e.target.value)}
                     placeholder="Buscar colaborador..."
-                    className="bg-[#0D1B3E] border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-[#C9A84C] w-64" />
+                    className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-[#C9A84C] w-64" />
                   <span className="text-xs text-slate-500 font-bold">{porColab.length} colaboradores</span>
                 </div>
                 <div className="overflow-x-auto">

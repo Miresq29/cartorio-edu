@@ -89,7 +89,7 @@ const ChangePasswordView: React.FC = () => {
                 type={showNew ? 'text' : 'password'}
                 value={newPass}
                 onChange={e => setNewPass(e.target.value)}
-                className="w-full bg-[#0D1B3E] border border-slate-200 rounded-2xl p-4 text-xs font-bold text-[#0A1628] focus:border-blue-500 outline-none pr-12"
+                className="w-full bg-white border border-slate-200 rounded-2xl p-4 text-xs font-bold text-[#0A1628] focus:border-blue-500 outline-none pr-12"
                 placeholder="••••••••••••"
                 required
               />
@@ -158,7 +158,7 @@ const ChangePasswordView: React.FC = () => {
             <button
               type="submit"
               disabled={loading || !validation.isValid || newPass !== confirmPass}
-              className="flex-1 bg-blue-600 hover:bg-blue-500 text-[#0A1628] font-black py-4 rounded-2xl shadow-xl transition-all disabled:opacity-40 text-[10px] uppercase tracking-widest"
+              className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl shadow-xl transition-all disabled:opacity-40 text-[10px] uppercase tracking-widest"
             >
               {loading ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Salvando...</> : 'Salvar e Entrar'}
             </button>

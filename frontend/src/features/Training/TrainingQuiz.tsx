@@ -318,7 +318,7 @@ Regras:
             <i className="fa-solid fa-arrow-left mr-2"></i>Voltar
           </button>
           <button onClick={() => window.print()}
-            className="flex-1 bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+            className="flex-1 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
             <i className="fa-solid fa-print mr-2"></i>Imprimir Resultado
           </button>
         </div>
@@ -384,13 +384,13 @@ Regras:
               <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Seu Nome *</label>
               <input value={respondente.nome} onChange={e => setRespondente(r => ({ ...r, nome: e.target.value }))}
                 placeholder="Nome completo"
-                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
             </div>
             <div className="space-y-1">
               <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Cargo / Função</label>
               <input value={respondente.cargo} onChange={e => setRespondente(r => ({ ...r, cargo: e.target.value }))}
                 placeholder="Ex: Escrevente Técnico"
-                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
             </div>
           </div>
           <div className="flex gap-3">
@@ -410,7 +410,7 @@ Regras:
                 setIdentStarted(true);
               }}
               disabled={!respondente.nome}
-              className="flex-1 bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50">
+              className="flex-1 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50">
               <i className="fa-solid fa-play mr-2"></i>Iniciar Avaliação
             </button>
           </div>
@@ -430,12 +430,12 @@ Regras:
             <div className="bg-blue-500 h-1.5 rounded-full transition-all" style={{ width: `${(currentQ / selectedQuiz.questoes.length) * 100}%` }}></div>
           </div>
         </div>
-        <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-6 space-y-4">
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
           <p className="text-[#0A1628] font-bold text-sm leading-relaxed">{currentQ + 1}. {questao.texto}</p>
           <div className="space-y-2">
             {questao.opcoes.map((opcao, i) => (
               <button key={i} onClick={() => handleAnswer(i)}
-                className="w-full text-left p-4 rounded-xl bg-slate-900 border border-slate-200 hover:border-blue-500 hover:bg-blue-500/10 text-slate-700 text-sm transition-all">
+                className="w-full text-left p-4 rounded-xl bg-white border border-slate-200 hover:border-blue-500 hover:bg-blue-500/10 text-slate-700 text-sm transition-all">
                 <span className="font-black text-blue-400 mr-3">{String.fromCharCode(65 + i)}.</span>{opcao}
               </button>
             ))}
@@ -463,7 +463,7 @@ Regras:
           {(['ia', 'manual'] as const).map(m => (
             <button key={m} onClick={() => setCreateMode(m)}
               className={`px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
-                createMode === m ? 'bg-blue-600 text-[#0A1628]' : 'text-slate-500 hover:text-[#0A1628]'
+                createMode === m ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-[#0A1628]'
               }`}>
               <i className={`fa-solid mr-2 ${m === 'ia' ? 'fa-wand-magic-sparkles' : 'fa-pen'}`}></i>
               {m === 'ia' ? 'Gerar com IA' : 'Criar Manual'}
@@ -483,7 +483,7 @@ Regras:
             <div className="space-y-1">
               <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Treinamento *</label>
               <select value={aiForm.treinamento} onChange={e => setAiForm(f => ({ ...f, treinamento: e.target.value }))}
-                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500">
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500">
                 <option value="">Selecione o treinamento...</option>
                 {checklists.map(c => <option key={c.id} value={c.title}>{c.title}</option>)}
               </select>
@@ -491,13 +491,13 @@ Regras:
             <div className="space-y-1">
               <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Quantidade de Questões</label>
               <select value={aiForm.quantidade} onChange={e => setAiForm(f => ({ ...f, quantidade: e.target.value }))}
-                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500">
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500">
                 {['3', '5', '7', '10'].map(n => <option key={n} value={n}>{n} questões</option>)}
               </select>
             </div>
             {generateError && <p className="text-red-400 text-xs">{generateError}</p>}
             <button onClick={generateQuizWithAI} disabled={isGenerating || !aiForm.treinamento}
-              className="w-full bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+              className="w-full bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50 flex items-center justify-center gap-2">
               {isGenerating
                 ? <><i className="fa-solid fa-circle-notch animate-spin"></i>Gerando com IA...</>
                 : <><i className="fa-solid fa-wand-magic-sparkles"></i>Gerar Questionário</>
@@ -513,7 +513,7 @@ Regras:
               <div className="space-y-1">
                 <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Treinamento *</label>
                 <select value={form.treinamento} onChange={e => setForm(f => ({ ...f, treinamento: e.target.value }))}
-                  className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500">
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500">
                   <option value="">Selecione...</option>
                   {checklists.map(c => <option key={c.id} value={c.title}>{c.title}</option>)}
                   <option value="outro">Outro</option>
@@ -523,12 +523,12 @@ Regras:
                 <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Título *</label>
                 <input value={form.titulo} onChange={e => setForm(f => ({ ...f, titulo: e.target.value }))}
                   placeholder="Ex: Avaliação NR-35"
-                  className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
               </div>
             </div>
 
             {questoes.map((q, qi) => (
-              <div key={qi} className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-5 space-y-3">
+              <div key={qi} className="bg-white border border-slate-200 rounded-2xl p-5 space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest">Questão {qi + 1}</span>
                   {questoes.length > 1 && (
@@ -539,7 +539,7 @@ Regras:
                 </div>
                 <input value={q.texto} onChange={e => updateQuestao(qi, 'texto', e.target.value)}
                   placeholder="Digite a pergunta..."
-                  className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
                 <div className="space-y-2">
                   {q.opcoes.map((opcao, oi) => (
                     <div key={oi} className="flex items-center gap-2">
@@ -551,7 +551,7 @@ Regras:
                       </button>
                       <input value={opcao} onChange={e => updateOpcao(qi, oi, e.target.value)}
                         placeholder={`Opção ${String.fromCharCode(65 + oi)}`}
-                        className="flex-1 bg-slate-900 border border-slate-200 rounded-xl px-3 py-2 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+                        className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
                     </div>
                   ))}
                 </div>
@@ -560,7 +560,7 @@ Regras:
                   <textarea value={q.explicacao} onChange={e => updateQuestao(qi, 'explicacao', e.target.value)}
                     placeholder="Explique por que esta é a resposta correta..."
                     rows={2}
-                    className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500 resize-none" />
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500 resize-none" />
                 </div>
               </div>
             ))}
@@ -571,7 +571,7 @@ Regras:
                 <i className="fa-solid fa-plus mr-2"></i>Questão
               </button>
               <button onClick={handleCreateQuiz} disabled={!form.treinamento || !form.titulo}
-                className="flex-1 bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50">
+                className="flex-1 bg-blue-600 hover:bg-blue-500 text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50">
                 <i className="fa-solid fa-floppy-disk mr-2"></i>Salvar
               </button>
             </div>
@@ -592,13 +592,13 @@ Regras:
           <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Criados pela IA ou manualmente</p>
         </div>
         <button onClick={() => setMode('create')}
-          className="bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
+          className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
           <i className="fa-solid fa-plus"></i>Novo Questionário
         </button>
       </div>
 
       {quizzes.length === 0 ? (
-        <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-10 text-center">
+        <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center">
           <i className="fa-solid fa-circle-question text-4xl text-slate-700 mb-3 block"></i>
           <p className="text-slate-600 text-xs font-bold uppercase tracking-widest">Nenhum questionário criado ainda</p>
           <p className="text-slate-700 text-xs mt-1">Clique em "Novo Questionário" e deixe a IA criar para você</p>

@@ -54,7 +54,7 @@ const DashboardMasterView: React.FC = () => {
         
         <div className="space-y-4 relative z-10">
           {tenants.map((t: any) => (
-            <div key={t.id} className="p-5 bg-[#0D1B3E] border border-slate-200 rounded-2xl flex justify-between items-center group hover:bg-slate-900 transition-all">
+            <div key={t.id} className="p-5 bg-white border border-slate-200 rounded-2xl flex justify-between items-center group hover:bg-slate-900 transition-all">
               <div className="flex items-center gap-4">
                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
                  <span className="text-[#0A1628] font-bold italic uppercase text-sm">{t.name}</span>

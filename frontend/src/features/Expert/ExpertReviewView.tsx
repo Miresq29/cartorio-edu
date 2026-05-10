@@ -57,7 +57,7 @@ const ExpertReviewView: React.FC = () => {
       </div>
 
       <header className="flex items-center gap-8">
-           <div className="w-24 h-24 bg-blue-600 rounded-[32px] flex items-center justify-center text-[#0A1628] shadow-2xl shadow-blue-600/20">
+           <div className="w-24 h-24 bg-blue-600 rounded-[32px] flex items-center justify-center text-white shadow-2xl shadow-blue-600/20">
              <i className="fa-solid fa-brain text-5xl"></i>
            </div>
            <div>
@@ -87,7 +87,7 @@ const ExpertReviewView: React.FC = () => {
           <button 
             onClick={handleDeepAudit}
             disabled={isAnalyzing || !query.trim()}
-            className="w-full bg-blue-600 hover:bg-blue-500 text-[#0A1628] py-8 rounded-[32px] font-black text-base uppercase tracking-[0.2em] shadow-2xl shadow-blue-600/20 transition-all flex items-center justify-center gap-4 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-blue-600 hover:bg-blue-500 text-white py-8 rounded-[32px] font-black text-base uppercase tracking-[0.2em] shadow-2xl shadow-blue-600/20 transition-all flex items-center justify-center gap-4 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isAnalyzing ? (
               <><i className="fa-solid fa-circle-notch animate-spin text-2xl"></i> Processando Parecer Técnico...</>

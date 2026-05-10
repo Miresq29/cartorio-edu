@@ -323,7 +323,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                   <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Métricas em tempo real — últimas 24h</p>
                 </div>
                 <button onClick={executarAnalise}
-                  className="bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
+                  className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
                   <i className="fa-solid fa-wand-magic-sparkles"></i>Analisar com IA
                 </button>
               </div>
@@ -381,7 +381,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                     const isError = tipo.includes('excluido') || tipo.includes('erro');
                     const d = log.createdAt?.toDate ? log.createdAt.toDate() : new Date(log.createdAt);
                     return (
-                      <div key={log.id} className="flex items-center gap-3 p-3 bg-[#0D1B3E] border border-slate-200 rounded-xl">
+                      <div key={log.id} className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl">
                         <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isError ? 'bg-red-500' : 'bg-emerald-500'}`}></div>
                         <span className="text-xs text-slate-700 flex-1 truncate">{log.descricao}</span>
                         <span className="text-[9px] text-slate-600 flex-shrink-0">
@@ -467,7 +467,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                   {/* Recomendações */}
                   <div className="space-y-2">
                     <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Recomendações de Gestão</h4>
-                    <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-5 space-y-3">
+                    <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-3">
                       {analise.recomendacoes.map((rec, i) => (
                         <div key={i} className="flex items-start gap-3">
                           <div className="w-5 h-5 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -492,7 +492,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                   <p className="text-[#0A1628] font-black text-sm uppercase italic">Pronto para Analisar</p>
                   <p className="text-slate-500 text-xs max-w-sm">A IA irá cruzar todos os dados da plataforma e gerar um relatório completo de gestão operacional</p>
                   <button onClick={executarAnalise}
-                    className="bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                    className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
                     <i className="fa-solid fa-wand-magic-sparkles mr-2"></i>Iniciar Análise
                   </button>
                 </div>
@@ -508,7 +508,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                 <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Pergunte sobre métricas, anomalias ou ações corretivas</p>
               </div>
 
-              <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl overflow-hidden">
+              <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
                 <div className="h-80 overflow-y-auto p-6 space-y-4 custom-scrollbar">
                   {chatMessages.length === 0 && (
                     <div className="h-full flex flex-col items-center justify-center text-center opacity-30 gap-4">
@@ -524,7 +524,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                   {chatMessages.map((m, i) => (
                     <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                       <div className={`max-w-[80%] px-5 py-4 rounded-2xl text-sm leading-relaxed ${
-                        m.role === 'user' ? 'bg-blue-600 text-[#0A1628]' : 'bg-slate-800 text-[#0A1628] border border-slate-200'
+                        m.role === 'user' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-[#0A1628] border border-slate-200'
                       }`}>
                         <p className="whitespace-pre-wrap">{m.text}</p>
                       </div>
@@ -544,9 +544,9 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                   <input value={chatInput} onChange={e => setChatInput(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleChat()}
                     placeholder="Ex: Quais são os principais riscos operacionais hoje?"
-                    className="flex-1 bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+                    className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
                   <button onClick={handleChat} disabled={isChatLoading || !chatInput.trim()}
-                    className="bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-6 py-3 rounded-xl font-black text-sm transition-all disabled:opacity-50">
+                    className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-black text-sm transition-all disabled:opacity-50">
                     <i className="fa-solid fa-paper-plane"></i>
                   </button>
                 </div>

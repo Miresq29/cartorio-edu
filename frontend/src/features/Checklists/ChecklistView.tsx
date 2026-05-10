@@ -230,7 +230,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
             <div key={t.id} className="group flex items-center gap-2">
               <button
                 onClick={() => handleSelectChecklist(t.id)}
-                className={`flex-1 p-4 rounded-xl flex items-center gap-3 transition-all text-left ${activeChecklistId === t.id ? 'bg-blue-600 text-[#0A1628]' : 'hover:bg-slate-800 text-slate-500'}`}
+                className={`flex-1 p-4 rounded-xl flex items-center gap-3 transition-all text-left ${activeChecklistId === t.id ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 text-slate-500'}`}
               >
                 <i className="fa-solid fa-file-lines flex-shrink-0 text-sm"></i>
                 <div className="min-w-0">
@@ -268,11 +268,11 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
               </div>
               <div className="flex gap-2">
                 <button onClick={() => setMode('roteiro')}
-                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${mode === 'roteiro' ? 'bg-blue-600 text-[#0A1628]' : 'bg-slate-800 text-slate-500 hover:bg-slate-700'}`}>
+                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${mode === 'roteiro' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-500 hover:bg-slate-700'}`}>
                   <i className="fa-solid fa-list mr-2"></i>Roteiro
                 </button>
                 <button onClick={() => setMode('executar')}
-                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${mode === 'executar' ? 'bg-blue-600 text-[#0A1628]' : 'bg-slate-800 text-slate-500 hover:bg-slate-700'}`}>
+                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${mode === 'executar' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-500 hover:bg-slate-700'}`}>
                   <i className="fa-solid fa-check-double mr-2"></i>Executar
                 </button>
               </div>
@@ -359,7 +359,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
                     <button
                       onClick={handleAnalyzeDoc}
                       disabled={isAnalyzing || !uploadedDocText}
-                      className="flex items-center gap-2 px-6 py-3 rounded-xl text-[10px] font-black uppercase bg-blue-600 hover:bg-blue-500 text-[#0A1628] transition-all disabled:opacity-40"
+                      className="flex items-center gap-2 px-6 py-3 rounded-xl text-[10px] font-black uppercase bg-blue-600 hover:bg-blue-500 text-white transition-all disabled:opacity-40"
                     >
                       {isAnalyzing ? <><i className="fa-solid fa-circle-notch animate-spin"></i> Analisando...</> : <><i className="fa-solid fa-shield-check"></i> Analisar com RAG</>}
                     </button>
@@ -391,7 +391,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
       {/* Modal de criação */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/90 backdrop-blur-sm">
-          <div className="bg-[#0D1B3E] border border-slate-200 rounded-[40px] w-full max-w-2xl overflow-hidden shadow-2xl">
+          <div className="bg-white border border-slate-200 rounded-[40px] w-full max-w-2xl overflow-hidden shadow-2xl">
             <header className="p-8 border-b border-slate-200 flex justify-between items-center">
               <h3 className="text-[#0A1628] font-black uppercase italic">Novo Protocolo</h3>
               <button onClick={() => setIsModalOpen(false)} className="text-slate-500 hover:text-[#0A1628] transition-colors">
@@ -402,7 +402,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Nome do Ato</label>
                 <input value={formName} onChange={e => setFormName(e.target.value)} placeholder="Ex: Escritura de Compra e Venda"
-                  className="w-full bg-slate-900 border border-slate-200 rounded-xl p-4 text-[#0A1628] font-bold outline-none focus:border-blue-500" />
+                  className="w-full bg-white border border-slate-200 rounded-xl p-4 text-[#0A1628] font-bold outline-none focus:border-blue-500" />
               </div>
 
               <div className="flex justify-between items-center p-4 bg-blue-600/5 rounded-2xl border border-blue-600/10">
@@ -412,7 +412,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
                 </div>
                 <input type="file" ref={fileInputRef} onChange={handleFileUploadModal} className="hidden" accept=".pdf,.doc,.docx" />
                 <button onClick={() => fileInputRef.current?.click()} disabled={isProcessingFile}
-                  className="bg-blue-600 text-[#0A1628] text-[10px] font-black uppercase px-6 py-3 rounded-xl hover:bg-blue-500 transition-all disabled:opacity-50">
+                  className="bg-blue-600 text-white text-[10px] font-black uppercase px-6 py-3 rounded-xl hover:bg-blue-500 transition-all disabled:opacity-50">
                   {isProcessingFile ? 'Extraindo...' : 'Subir Documento'}
                 </button>
               </div>
@@ -426,7 +426,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
                   <div key={idx} className="flex gap-2">
                     <input value={item} onChange={e => { const u = [...formItems]; u[idx] = e.target.value; setFormItems(u); }}
                       placeholder={`Item ${idx + 1}`}
-                      className="flex-1 bg-slate-900 border border-slate-200 rounded-xl p-3 text-[#0A1628] text-sm outline-none focus:border-blue-500" />
+                      className="flex-1 bg-white border border-slate-200 rounded-xl p-3 text-[#0A1628] text-sm outline-none focus:border-blue-500" />
                     <button onClick={() => setFormItems(prev => prev.filter((_, i) => i !== idx))} className="text-slate-600 hover:text-red-500 transition-colors px-2">
                       <i className="fa-solid fa-trash-can text-xs"></i>
                     </button>
@@ -436,7 +436,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
             </div>
             <footer className="p-8 border-t border-slate-200 flex justify-end gap-4">
               <button onClick={() => setIsModalOpen(false)} className="text-slate-500 hover:text-[#0A1628] text-[10px] font-black uppercase px-6 py-3 transition-colors">Cancelar</button>
-              <button onClick={handleSave} disabled={isSaving} className="bg-blue-600 text-[#0A1628] text-[10px] font-black uppercase px-8 py-3 rounded-xl hover:bg-blue-500 transition-all disabled:opacity-50">
+              <button onClick={handleSave} disabled={isSaving} className="bg-blue-600 text-white text-[10px] font-black uppercase px-8 py-3 rounded-xl hover:bg-blue-500 transition-all disabled:opacity-50">
                 {isSaving ? 'Salvando...' : 'Salvar Protocolo'}
               </button>
             </footer>

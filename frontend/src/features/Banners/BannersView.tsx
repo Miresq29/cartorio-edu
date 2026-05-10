@@ -196,14 +196,14 @@ CTA: [chamada para ação aqui]`;
               value={formLink.titulo}
               onChange={e => setFormLink(p => ({ ...p, titulo: e.target.value }))}
               placeholder="Nome do material..."
-              className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500 transition-colors"
+              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500 transition-colors"
             />
 
             <input
               value={formLink.url}
               onChange={e => setFormLink(p => ({ ...p, url: e.target.value }))}
               placeholder="https://drive.google.com/..."
-              className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500 transition-colors"
+              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500 transition-colors"
             />
 
             {/* Tipo */}
@@ -212,7 +212,7 @@ CTA: [chamada para ação aqui]`;
                 <button type="button" key={t} onClick={() => setFormLink(p => ({ ...p, tipo: t }))}
                   className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${
                     formLink.tipo === t
-                      ? 'bg-blue-600 text-[#0A1628]'
+                      ? 'bg-blue-600 text-white'
                       : 'bg-slate-800 text-slate-500 hover:bg-slate-700'
                   }`}>
                   <i className={`fa-solid ${TIPO_CONFIG[t].icon} mr-1`}></i>{TIPO_CONFIG[t].label}
@@ -221,7 +221,7 @@ CTA: [chamada para ação aqui]`;
             </div>
 
             <button type="button" onClick={salvarLink} disabled={salvandoLink || !formLink.titulo.trim() || !formLink.url.trim()}
-              className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-[#0A1628] py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+              className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
               {salvandoLink
                 ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Salvando...</>
                 : <><i className="fa-solid fa-plus mr-2"></i>Adicionar Material</>
@@ -242,7 +242,7 @@ CTA: [chamada para ação aqui]`;
               onChange={e => setPromptBanner(e.target.value)}
               rows={4}
               placeholder="Ex: Banner para treinamento de atendimento ao cliente com foco em excelência..."
-              className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-pink-500 resize-none"
+              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-pink-500 resize-none"
             />
             <button type="button" onClick={gerarTextoBanner} disabled={gerando || !promptBanner.trim()}
               className="w-full bg-pink-600 hover:bg-pink-500 disabled:opacity-50 text-[#0A1628] py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
@@ -272,7 +272,7 @@ CTA: [chamada para ação aqui]`;
               <h1 className="text-2xl md:text-4xl font-black text-[#0A1628] uppercase tracking-tight">{titulo || 'Título'}</h1>
               <p className="text-slate-700 text-sm md:text-base leading-relaxed max-w-lg mx-auto">{subtitulo}</p>
               {cta && (
-                <div className="inline-block bg-blue-600 text-[#0A1628] px-8 py-3 rounded-xl font-black text-sm uppercase tracking-widest">{cta}</div>
+                <div className="inline-block bg-blue-600 text-white px-8 py-3 rounded-xl font-black text-sm uppercase tracking-widest">{cta}</div>
               )}
             </div>
 
@@ -281,7 +281,7 @@ CTA: [chamada para ação aqui]`;
                 value={tituloBanner}
                 onChange={e => setTituloBanner(e.target.value)}
                 placeholder="Nome para salvar este banner..."
-                className="flex-1 min-w-0 bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-pink-500"
+                className="flex-1 min-w-0 bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-pink-500"
               />
               <button type="button" onClick={salvarBannerGerado} disabled={!tituloBanner.trim()}
                 className="bg-pink-600 hover:bg-pink-500 disabled:opacity-50 text-[#0A1628] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">

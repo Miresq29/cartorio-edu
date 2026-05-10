@@ -21,7 +21,7 @@ const PolicyView: React.FC = () => {
         </div>
       </header>
 
-      <div className="bg-[#0D1B3E] border border-slate-200 rounded-[40px] p-12 space-y-10 shadow-2xl">
+      <div className="bg-white border border-slate-200 rounded-[40px] p-12 space-y-10 shadow-2xl">
 
         {/* 1 */}
         <div className="space-y-4">
@@ -104,7 +104,7 @@ const PolicyView: React.FC = () => {
               { icon: 'fa-graduation-cap',   label: 'Atividades Treino',    color: 'emerald' },
               { icon: 'fa-triangle-exclamation', label: 'Tentativas Falhas', color: 'red'    },
             ].map((item, i) => (
-              <div key={i} className="bg-[#0D1B3E] border border-slate-200 rounded-xl p-3 text-center space-y-2">
+              <div key={i} className="bg-white border border-slate-200 rounded-xl p-3 text-center space-y-2">
                 <i className={`fa-solid ${item.icon} text-${item.color}-400`}></i>
                 <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-tight">{item.label}</p>
               </div>
@@ -129,7 +129,7 @@ const PolicyView: React.FC = () => {
               'Não inserir dados falsos, manipulados ou que possam comprometer a integridade dos registros de auditoria.',
               'Encerrar a sessão ao término do uso, especialmente em computadores compartilhados.',
             ].map((item, i) => (
-              <div key={i} className="flex items-start gap-3 p-3 bg-[#0D1B3E] border border-slate-200 rounded-xl">
+              <div key={i} className="flex items-start gap-3 p-3 bg-white border border-slate-200 rounded-xl">
                 <i className="fa-solid fa-circle-check text-purple-400 text-xs mt-1 flex-shrink-0"></i>
                 <p className="text-xs text-slate-700 leading-relaxed">{item}</p>
               </div>

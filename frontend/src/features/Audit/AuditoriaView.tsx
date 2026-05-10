@@ -226,13 +226,13 @@ const AuditoriaView: React.FC = () => {
             <div className="flex flex-wrap gap-3 items-center">
               <input value={busca} onChange={e => { setBusca(e.target.value); setPagina(1); }}
                 placeholder="Buscar por usuário ou descrição..."
-                className="bg-[#0D1B3E] border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-[#C9A84C] w-64" />
+                className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-[#C9A84C] w-64" />
               <div className="flex items-center gap-2">
                 <input type="date" value={dataInicio} onChange={e => { setDataInicio(e.target.value); setPagina(1); }}
-                  className="bg-[#0D1B3E] border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#C9A84C]" />
+                  className="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#C9A84C]" />
                 <span className="text-slate-500 text-sm">até</span>
                 <input type="date" value={dataFim} onChange={e => { setDataFim(e.target.value); setPagina(1); }}
-                  className="bg-[#0D1B3E] border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#C9A84C]" />
+                  className="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#C9A84C]" />
               </div>
               {(busca || dataInicio || dataFim || grupo !== 'todos') && (
                 <button onClick={() => { setBusca(''); setDataInicio(''); setDataFim(''); setGrupo('todos'); setPagina(1); }}

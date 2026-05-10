@@ -51,15 +51,15 @@ const TenantsView: React.FC = () => {
             <input 
               type="text" value={name} onChange={e => setName(e.target.value)}
               placeholder="Nome da Serventia (Ex: 1º Ofício de Notas)"
-              className="w-full bg-[#0D1B3E] border border-slate-200 rounded-3xl p-5 text-[#0A1628] outline-none focus:border-blue-600 transition-all" required 
+              className="w-full bg-white border border-slate-200 rounded-3xl p-5 text-[#0A1628] outline-none focus:border-blue-600 transition-all" required 
             />
             <input 
               type="text" value={slug} onChange={e => setSlug(e.target.value)}
               placeholder="ID do Sistema (Ex: cartorio-bh-01)"
-              className="w-full bg-[#0D1B3E] border border-slate-200 rounded-3xl p-5 text-blue-400 font-mono outline-none focus:border-blue-600 transition-all" required 
+              className="w-full bg-white border border-slate-200 rounded-3xl p-5 text-blue-400 font-mono outline-none focus:border-blue-600 transition-all" required 
             />
           </div>
-          <button type="submit" className="w-full bg-blue-600 text-[#0A1628] font-black py-6 rounded-3xl uppercase text-[11px] tracking-widest shadow-xl hover:bg-blue-500 transition-all">
+          <button type="submit" className="w-full bg-blue-600 text-white font-black py-6 rounded-3xl uppercase text-[11px] tracking-widest shadow-xl hover:bg-blue-500 transition-all">
             Criar Ambiente Isolado
           </button>
         </form>
@@ -71,7 +71,7 @@ const TenantsView: React.FC = () => {
               <p className="text-slate-700 text-xs font-bold uppercase text-center py-10 italic">Nenhum cartório remoto carregado</p>
             )}
             {allTenants.map((t: any) => (
-              <div key={t.id} className="p-5 bg-[#0D1B3E] border border-slate-200 rounded-2xl flex justify-between items-center group hover:border-blue-500/30 transition-all">
+              <div key={t.id} className="p-5 bg-white border border-slate-200 rounded-2xl flex justify-between items-center group hover:border-blue-500/30 transition-all">
                 <span className="text-[#0A1628] font-bold italic uppercase text-sm">{t.name}</span>
                 <span className="text-[10px] font-mono text-slate-500 bg-slate-900 px-3 py-1 rounded-md">{t.id}</span>
               </div>

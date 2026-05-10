@@ -83,7 +83,7 @@ const SecurityView: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                <button 
                  onClick={handleExport}
-                 className="bg-slate-900 border border-slate-800 hover:bg-slate-800 py-10 rounded-3xl flex items-center justify-center gap-5 font-bold text-base transition-all active:scale-95 uppercase tracking-widest"
+                 className="bg-white border border-slate-200 hover:bg-slate-800 py-10 rounded-3xl flex items-center justify-center gap-5 font-bold text-base transition-all active:scale-95 uppercase tracking-widest"
                >
                  <i className="fa-solid fa-download text-blue-500 text-2xl"></i> Exportar Dados Completos
                </button>

@@ -57,7 +57,7 @@ const ChatView: React.FC = () => {
       {/* Header */}
       <div className="p-6 border-b border-slate-200 bg-slate-900/40 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-[#0A1628] text-xl">
+          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-xl">
             ✨
           </div>
           <div>
@@ -83,7 +83,7 @@ const ChatView: React.FC = () => {
             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div className={`max-w-[85%] rounded-2xl px-5 py-3 text-sm leading-relaxed ${
                 msg.role === 'user' 
-                  ? 'bg-blue-600 text-[#0A1628] rounded-br-none shadow-lg shadow-blue-900/20' 
+                  ? 'bg-blue-600 text-white rounded-br-none shadow-lg shadow-blue-900/20' 
                   : 'bg-[#0D1B3E] text-[#0A1628] border border-slate-200 rounded-bl-none shadow-xl'
               }`}>
                 {msg.content}
@@ -93,7 +93,7 @@ const ChatView: React.FC = () => {
         )}
         {isTyping && (
           <div className="flex justify-start">
-            <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl px-4 py-2 flex items-center gap-3">
+            <div className="bg-white border border-slate-200 rounded-2xl px-4 py-2 flex items-center gap-3">
                 <div className="flex gap-1">
                     <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce"></div>
                     <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:0.2s]"></div>
@@ -111,12 +111,12 @@ const ChatView: React.FC = () => {
           value={input} 
           onChange={e => setInput(e.target.value)}
           placeholder="Digite sua dúvida jurídica..."
-          className="flex-1 bg-[#0D1B3E] border border-slate-200 rounded-xl px-5 py-4 text-sm text-[#0A1628] focus:border-blue-500 outline-none transition-all placeholder:text-slate-700"
+          className="flex-1 bg-white border border-slate-200 rounded-xl px-5 py-4 text-sm text-[#0A1628] focus:border-blue-500 outline-none transition-all placeholder:text-slate-700"
         />
         <button 
           type="submit" 
           disabled={!input.trim() || isTyping}
-          className="bg-blue-600 hover:bg-blue-500 disabled:opacity-20 px-6 rounded-xl text-[#0A1628] transition-all flex items-center justify-center shadow-lg shadow-blue-900/20"
+          className="bg-blue-600 hover:bg-blue-500 disabled:opacity-20 px-6 rounded-xl text-white transition-all flex items-center justify-center shadow-lg shadow-blue-900/20"
         >
           {isTyping ? '...' : '➤'}
         </button>

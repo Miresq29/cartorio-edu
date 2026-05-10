@@ -22,7 +22,7 @@ const PrivacyView: React.FC = () => {
         </div>
       </header>
 
-      <div className="bg-[#0D1B3E] border border-slate-200 rounded-[40px] p-12 space-y-10 shadow-2xl">
+      <div className="bg-white border border-slate-200 rounded-[40px] p-12 space-y-10 shadow-2xl">
 
         {/* 1 */}
         <div className="space-y-4">
@@ -96,8 +96,8 @@ const PrivacyView: React.FC = () => {
               { num: '05', text: 'Capacitação dos colaboradores por meio do módulo de treinamento com inteligência artificial.' },
               { num: '06', text: 'Cumprimento de obrigações legais e regulatórias impostas pelo CNJ, Provimento 149 e Provimento 213/2026.' },
             ].map((item, i) => (
-              <div key={i} className="flex items-start gap-4 p-4 bg-[#0D1B3E] border border-slate-200 rounded-xl">
-                <span className="text-[10px] font-black text-slate-600 bg-slate-900 border border-slate-200 px-2 py-1 rounded-lg flex-shrink-0">{item.num}</span>
+              <div key={i} className="flex items-start gap-4 p-4 bg-white border border-slate-200 rounded-xl">
+                <span className="text-[10px] font-black text-slate-600 bg-white border border-slate-200 px-2 py-1 rounded-lg flex-shrink-0">{item.num}</span>
                 <p className="text-xs text-slate-700 leading-relaxed">{item.text}</p>
               </div>
             ))}
@@ -145,7 +145,7 @@ const PrivacyView: React.FC = () => {
               { icon: 'fa-trash',       label: 'Eliminação',           desc: 'Solicitar exclusão dos dados desnecessários ao tratamento'  },
               { icon: 'fa-circle-info', label: 'Informação',           desc: 'Ser informado sobre compartilhamentos realizados'           },
             ].map((item, i) => (
-              <div key={i} className="bg-[#0D1B3E] border border-slate-200 rounded-xl p-4 space-y-2 text-center">
+              <div key={i} className="bg-white border border-slate-200 rounded-xl p-4 space-y-2 text-center">
                 <i className={`fa-solid ${item.icon} text-emerald-400 text-lg`}></i>
                 <p className="text-[9px] font-black text-emerald-400 uppercase tracking-widest">{item.label}</p>
                 <p className="text-[9px] text-slate-500 leading-relaxed">{item.desc}</p>

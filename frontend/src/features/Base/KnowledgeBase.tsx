@@ -138,10 +138,10 @@ const KnowledgeBase: React.FC = () => {
           <div className="relative">
             <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
             <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Buscar na base..."
-              className="bg-slate-900 border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-xs text-[#0A1628] outline-none focus:border-blue-500 w-56" />
+              className="bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-xs text-[#0A1628] outline-none focus:border-blue-500 w-56" />
           </div>
           {canManage && (
-            <label className={`bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-6 py-3 rounded-2xl cursor-pointer flex items-center gap-3 text-xs font-black uppercase transition-all shadow-lg shadow-blue-900/20 ${isUploading ? 'opacity-60 pointer-events-none' : ''}`}>
+            <label className={`bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-2xl cursor-pointer flex items-center gap-3 text-xs font-black uppercase transition-all shadow-lg shadow-blue-900/20 ${isUploading ? 'opacity-60 pointer-events-none' : ''}`}>
               <i className={`fa-solid ${isUploading ? 'fa-circle-notch animate-spin' : 'fa-cloud-arrow-up'}`}></i>
               {isUploading ? 'Processando...' : 'Adicionar'}
               <input type="file" className="hidden" onChange={handleFileUpload} disabled={isUploading} accept=".pdf,.docx,.txt,.jpg,.jpeg,.png,.webp,.bmp,.gif" />
@@ -162,7 +162,7 @@ const KnowledgeBase: React.FC = () => {
           </div>
         )}
         {filteredDocs.map((document) => (
-          <div key={document.id} className="bg-[#0D1B3E] border border-slate-200 rounded-[32px] p-8 flex flex-col justify-between shadow-lg hover:border-blue-500/30 transition-all group">
+          <div key={document.id} className="bg-white border border-slate-200 rounded-[32px] p-8 flex flex-col justify-between shadow-lg hover:border-blue-500/30 transition-all group">
             <div>
               <div className="flex justify-between items-start mb-4">
                 <div className="w-12 h-12 bg-blue-600/10 rounded-2xl flex items-center justify-center">
@@ -190,7 +190,7 @@ const KnowledgeBase: React.FC = () => {
 
       {viewingDoc && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/90 backdrop-blur-sm">
-          <div className="bg-[#0D1B3E] border border-slate-200 w-full max-w-5xl max-h-[90vh] rounded-[40px] flex flex-col overflow-hidden shadow-2xl">
+          <div className="bg-white border border-slate-200 w-full max-w-5xl max-h-[90vh] rounded-[40px] flex flex-col overflow-hidden shadow-2xl">
             <header className="p-8 border-b border-slate-200 flex justify-between items-center bg-slate-900/20 flex-shrink-0">
               <div>
                 <h3 className="text-[#0A1628] font-black uppercase italic tracking-tight">{viewingDoc.fileName || viewingDoc.title}</h3>
