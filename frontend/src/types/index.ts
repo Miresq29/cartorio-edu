@@ -25,6 +25,7 @@ export interface Tenant {
   cnpj?: string;
   createdAt: string;
   active: boolean;
+  geminiApiKey?: string;
 }
 
 export interface Document {
@@ -107,9 +108,10 @@ export type AppTab =
   | 'campanhas' | 'banners'
   // Plataforma
   | 'support' | 'tutorial' | 'terms' | 'privacy' | 'policy'
+  | 'configuracoes'
   // Legados (manter compatibilidade)
   | 'chat' | 'compliance' | 'checklists' | 'analytics'
-  | 'revisar' | 'ia-analitica' | 'base' | 'seguranca' | 'security'
+  | 'revisar' | 'ia-analitica' | 'base' | 'seguranca'
   | 'usuarios' | 'admin-cartorios' | 'atividades-master'
   | 'treinamento' | 'auditoria' | 'relatorios' | 'termos'
   | 'manual' | 'suporte' | 'colaboradores';

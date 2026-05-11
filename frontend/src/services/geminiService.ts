@@ -8,15 +8,25 @@
  * Cada modelo tem cota diária independente no Google AI Studio (free tier: 1500 req/dia por modelo).
  */
 
-const GEMINI_API_KEY =
+const ENV_KEY =
   import.meta.env.VITE_GEMINI_API_KEY ||
   import.meta.env.VITE_FIREBASE_API_KEY;
+
+// Chave configurada pelo cartório (sobrepõe a chave da plataforma)
+let _tenantKey: string | null = null;
+
+/** Chamado pelo AppContext após carregar a config do tenant */
+export const configure = (key: string | null) => {
+  _tenantKey = key || null;
+};
+
+const getKey = () => _tenantKey || ENV_KEY;
 
 const LITE_MODEL = 'gemini-2.0-flash-lite';
 const PRO_MODEL  = 'gemini-2.0-flash';
 
 const apiUrl = (model: string) =>
-  `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+  `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${getKey()}`;
 
 export const cleanJsonOutput = (text: string): string => {
   if (!text) return '[]';
@@ -34,8 +44,8 @@ const callGemini = async (
   maxOutputTokens: number,
   temperature = 0.2
 ): Promise<string> => {
-  if (!GEMINI_API_KEY) {
-    throw new Error('Chave da API Gemini não configurada. Verifique VITE_GEMINI_API_KEY no Vercel.');
+  if (!getKey()) {
+    throw new Error('Chave da API Gemini não configurada. Configure em Configurações do cartório ou contate o administrador.');
   }
   console.info(`[Gemini] ${model} | in:${prompt.length}ch | maxOut:${maxOutputTokens}`);
 
@@ -253,6 +263,7 @@ Retorne APENAS array JSON sem markdown:
 };
 
 export const GeminiService = {
+  configure,
   chat,
   getGeminiResponse,
   analyzeComplianceDeep,

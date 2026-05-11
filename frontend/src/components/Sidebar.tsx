@@ -35,11 +35,12 @@ const Sidebar: React.FC = () => {
     {
       label: 'GESTAO', icon: 'fa-chart-column',
       items: [
-        { tab: 'unit',     icon: 'fa-border-all',        label: 'Dashboard',     desc: 'Resumo operacional da sua empresa'                                           },
-        { tab: 'users',    icon: 'fa-users-gear',        label: 'Colaboradores', desc: 'Gerenciar colaboradores e permissoes', roles: ['SUPERADMIN', 'gestor', 'admin'] },
-        { tab: 'reports',  icon: 'fa-chart-column',      label: 'Relatorios',    desc: 'Metricas de treinamento e engajamento'                                        },
-        { tab: 'audit',    icon: 'fa-clock-rotate-left', label: 'Auditoria',     desc: 'Historico de acessos e alteracoes',   roles: ['SUPERADMIN', 'gestor']          },
-        { tab: 'security', icon: 'fa-lock',              label: 'Seguranca',     desc: 'Senhas, bloqueios e politicas',       roles: ['SUPERADMIN', 'gestor']          },
+        { tab: 'unit',          icon: 'fa-border-all',        label: 'Dashboard',      desc: 'Resumo operacional da sua empresa'                                                    },
+        { tab: 'users',         icon: 'fa-users-gear',        label: 'Colaboradores',  desc: 'Gerenciar colaboradores e permissoes',  roles: ['SUPERADMIN', 'gestor', 'admin']      },
+        { tab: 'reports',       icon: 'fa-chart-column',      label: 'Relatorios',     desc: 'Metricas de treinamento e engajamento'                                                 },
+        { tab: 'audit',         icon: 'fa-clock-rotate-left', label: 'Auditoria',      desc: 'Historico de acessos e alteracoes',    roles: ['SUPERADMIN', 'gestor']               },
+        { tab: 'security',      icon: 'fa-lock',              label: 'Seguranca',      desc: 'Senhas, bloqueios e politicas',        roles: ['SUPERADMIN', 'gestor']               },
+        { tab: 'configuracoes', icon: 'fa-sliders',           label: 'Configuracoes',  desc: 'Chave de IA e preferencias do cartorio', roles: ['SUPERADMIN', 'TENANT_ADMIN', 'gestor', 'admin'], color: 'text-blue-400' },
       ]
     },
     {
