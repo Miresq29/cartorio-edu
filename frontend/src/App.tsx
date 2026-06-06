@@ -16,7 +16,7 @@ const UsersView          = lazy(() => import('./features/Users/UsersView'));
 const AuditoriaView      = lazy(() => import('./features/Audit/AuditoriaView'));
 const RelatoriosView     = lazy(() => import('./features/Reports/RelatoriosView'));
 const SupportView        = lazy(() => import('./features/Support/SupportView'));
-const TrainingView       = lazy(() => import('./features/Training/TrainingView'));
+const TrainingView       = lazy(() => import('./features/Training/TrainingViewMain'));
 const IAAnaliticaView    = lazy(() => import('./features/Analytics/IAAnaliticaView'));
 const TermsView          = lazy(() => import('./features/Terms/TermsView'));
 const PrivacyView        = lazy(() => import('./features/Privacy/PrivacyView'));
