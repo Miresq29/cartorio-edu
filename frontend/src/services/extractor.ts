@@ -94,7 +94,7 @@ export const extractTextFromFile = async (
 
       if (!rawText || rawText.replace(/\s/g, '').length < 50) {
         throw new Error('PDF escaneado detectado. Converta para PDF com texto antes de indexar.');
-      }
+
       }
     } else if (isDOCX) {
       rawText = await extractTextFromDOCX(file);
