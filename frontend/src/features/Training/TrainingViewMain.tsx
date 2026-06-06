@@ -17,17 +17,17 @@ const TABS: { id: Tab; icon: string; label: string }[] = [
   { id: 'ia',            icon: 'fa-wand-magic-sparkles', label: 'IA de Treinamento' },
   { id: 'resumos',       icon: 'fa-file-lines',          label: 'Resumos'           },
   { id: 'participantes', icon: 'fa-users',               label: 'Participantes'     },
-  { id: 'questionarios', icon: 'fa-circle-question',     label: 'Questionários'     },
-  { id: 'relatorios',    icon: 'fa-file-chart-column',   label: 'Relatórios'        },
-  { id: 'dashboard',     icon: 'fa-chart-pie',           label: 'Dashboard Gestão'  },
+  { id: 'questionarios', icon: 'fa-circle-question',     label: 'QuestionÃ¡rios'     },
+  { id: 'relatorios',    icon: 'fa-file-chart-column',   label: 'RelatÃ³rios'        },
+  { id: 'dashboard',     icon: 'fa-chart-pie',           label: 'Dashboard GestÃ£o'  },
 ];
 
 type SummaryType = 'executivo' | 'tecnico' | 'didatico' | 'operacional';
 
 const SUMMARY_TYPES: { id: SummaryType; label: string; desc: string; color: string }[] = [
-  { id: 'executivo',   label: 'Executivo',   desc: 'Para gestores — pontos-chave e impactos',       color: 'blue'    },
-  { id: 'tecnico',     label: 'Técnico',     desc: 'Fundamentos legais e análise normativa',         color: 'purple'  },
-  { id: 'didatico',    label: 'Didático',    desc: 'Para treinamento — exemplos práticos',           color: 'emerald' },
+  { id: 'executivo',   label: 'Executivo',   desc: 'Para gestores â€” pontos-chave e impactos',       color: 'blue'    },
+  { id: 'tecnico',     label: 'TÃ©cnico',     desc: 'Fundamentos legais e anÃ¡lise normativa',         color: 'purple'  },
+  { id: 'didatico',    label: 'DidÃ¡tico',    desc: 'Para treinamento â€” exemplos prÃ¡ticos',           color: 'emerald' },
   { id: 'operacional', label: 'Operacional', desc: 'Procedimentos e passo a passo do dia a dia',    color: 'amber'   },
 ];
 
@@ -72,7 +72,11 @@ const TrainingView: React.FC = () => {
   const [summaryType, setSummaryType] = useState<SummaryType>('executivo');
   const [summary, setSummary] = useState('');
   const [summaryLoading, setSummaryLoading] = useState(false);
-  
+
+  // Seletores de contexto para IA de Treinamento
+  const [selectedChecklists, setSelectedChecklists] = useState<string[]>([]);
+  const [selectedKnowledgeDocs, setSelectedKnowledgeDocs] = useState<string[]>([]);
+
 
   useEffect(() => {
     const q1 = query(collection(db, 'checklists'), orderBy('createdAt', 'desc'));
@@ -89,8 +93,16 @@ const TrainingView: React.FC = () => {
   const totalItems = checklists.reduce((acc, c) => acc + (c.items?.length || 0), 0);
 
   const buildContext = () => {
-    const cl = checklists.map(c => `PROTOCOLO: ${c.title}\nITENS: ${c.items?.map((i: any) => i.text).join('; ')}`).join('\n\n');
-    const kl = knowledgeDocs.slice(0, 8).map(d => `DOCUMENTO: ${d.fileName || d.title}\nCONTEÚDO: ${d.content?.substring(0, 800)}`).join('\n\n');
+    // Usa seleção do usuário ou todos se nenhum selecionado
+    const checklistsCtx = selectedChecklists.length > 0
+      ? checklists.filter(c => selectedChecklists.includes(c.id))
+      : checklists;
+    const docsCtx = selectedKnowledgeDocs.length > 0
+      ? knowledgeDocs.filter(d => selectedKnowledgeDocs.includes(d.id))
+      : knowledgeDocs;
+
+    const cl = checklistsCtx.map((c: any) => `PROTOCOLO: ${c.title}\nITENS: ${c.items?.map((i: any) => i.text).join('; ')}`).join('\n\n');
+    const kl = docsCtx.slice(0, 8).map((d: any) => `DOCUMENTO: ${d.fileName || d.title}\nCONTEÚDO: ${d.content?.substring(0, 800)}`).join('\n\n');
     return `Você é um especialista em treinamento notarial da MJ Consultoria.\nBASE LEGAL:\n${kl || 'Nenhum documento.'}\nPROTOCOLOS:\n${cl || 'Nenhum protocolo.'}\nUnidade: ${state.user?.tenantId || 'MJ Consultoria'} | Operador: ${state.user?.name || 'Usuário'}`;
   };
 
@@ -116,11 +128,11 @@ const TrainingView: React.FC = () => {
       const options = await GeminiService.generateTrainingOptions(buildContext(), customRequest || undefined);
       if (options && options.length > 0) {
         setTrainingOptions(options);
-        showToast('3 opções de roteiro geradas! Escolha uma para expandir.', 'success');
+        showToast('3 opÃ§Ãµes de roteiro geradas! Escolha uma para expandir.', 'success');
       } else {
-        showToast('Não foi possível gerar opções. Tente novamente.', 'error');
+        showToast('NÃ£o foi possÃ­vel gerar opÃ§Ãµes. Tente novamente.', 'error');
       }
-    } catch (e: any) { showToast(e?.message || 'Erro ao gerar opções de treinamento.', 'error'); } finally { setIsLoading(false); }
+    } catch (e: any) { showToast(e?.message || 'Erro ao gerar opÃ§Ãµes de treinamento.', 'error'); } finally { setIsLoading(false); }
   };
 
   const selectOption = async (option: TrainingOption) => {
@@ -131,22 +143,22 @@ const TrainingView: React.FC = () => {
 
   const formatSelectedOption = (opt: TrainingOption): string => {
     const modulos = opt.modulos?.map((m, i) =>
-      `  ${i + 1}. ${m.nome} (${m.duracao})${m.obrigatorio ? ' ★' : ''}\n     Objetivo: ${m.objetivo}`
-    ).join('\n') || 'Módulos não especificados';
+      `  ${i + 1}. ${m.nome} (${m.duracao})${m.obrigatorio ? ' â˜…' : ''}\n     Objetivo: ${m.objetivo}`
+    ).join('\n') || 'MÃ³dulos nÃ£o especificados';
 
     return `ROTEIRO: ${opt.titulo.toUpperCase()}
-─────────────────────────────
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 Abordagem: ${opt.descricao}
 Duração total: ${opt.duracao}
-Público-alvo: ${opt.publico}
+PÃºblico-alvo: ${opt.publico}
 
-MÓDULOS:
+MÃ“DULOS:
 ${modulos}
 
 JUSTIFICATIVA:
 ${opt.justificativa}
 
-★ = Módulo obrigatório
+â˜… = MÃ³dulo obrigatÃ³rio
 `;
   };
 
@@ -198,19 +210,19 @@ ${opt.justificativa}
           {checklists.slice(0, 3).map((c, i) => (
             <div key={i} className="flex items-center gap-3 p-2 bg-slate-100 rounded-xl">
               <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <span className="text-xs text-slate-700"><span className="font-bold text-[#0A1628]">{c.title}</span> — {c.items?.length || 0} requisitos</span>
+              <span className="text-xs text-slate-700"><span className="font-bold text-[#0A1628]">{c.title}</span> â€” {c.items?.length || 0} requisitos</span>
             </div>
           ))}
           {knowledgeDocs.slice(0, 3).map((d, i) => (
             <div key={i} className="flex items-center gap-3 p-2 bg-slate-100 rounded-xl">
               <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-              <span className="text-xs text-slate-700"><span className="font-bold text-[#0A1628]">{d.fileName || d.title}</span> — documento indexado</span>
+              <span className="text-xs text-slate-700"><span className="font-bold text-[#0A1628]">{d.fileName || d.title}</span> â€” documento indexado</span>
             </div>
           ))}
         </div>
       )}
 
-      {/* Cards de opções */}
+      {/* Cards de opÃ§Ãµes */}
       {trainingOptions.length > 0 && (
         <div className="space-y-3">
           <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Escolha uma opção para expandir o roteiro completo:</p>
@@ -243,7 +255,7 @@ ${opt.justificativa}
                     </span>
                   </div>
                   <p className={`text-[9px] font-black text-${color}-600 uppercase tracking-widest group-hover:underline`}>
-                    Selecionar este roteiro →
+                    Selecionar este roteiro â†’
                   </p>
                 </button>
               );
@@ -259,7 +271,7 @@ ${opt.justificativa}
             <div className="h-full flex flex-col items-center justify-center text-center opacity-40">
               <i className="fa-solid fa-graduation-cap text-5xl text-slate-400 mb-4"></i>
               <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">
-                Clique em "Gerar 3 Opções" ou faça uma pergunta
+                Clique em "Gerar 3 Opções" ou faÃ§a uma pergunta
               </p>
             </div>
           )}
