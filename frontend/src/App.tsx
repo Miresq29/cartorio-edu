@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react';
+﻿import React, { Suspense, lazy } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { ToastProvider } from './context/ToastContext';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -36,7 +36,7 @@ const RepositorioView    = lazy(() => import('./features/Repositorio/Repositorio
 const CertificadoView   = lazy(() => import('./features/Certificado/CertificadoView'));
 const BackupView        = lazy(() => import('./features/Backup/BackupView'));
 
-// 🛡️ Admin Views
+// ðŸ›¡ï¸ Admin Views
 const TenantsView          = lazy(() => import('./features/Admin/TenantsView'));
 const MasterActivitiesView = lazy(() => import('./features/Admin/MasterActivitiesView'));
 

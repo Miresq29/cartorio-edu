@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useAudit } from '../../hooks/useAudit';
 import { extractTextFromFile } from '../../services/extractor';
@@ -66,12 +66,12 @@ const KnowledgeBase: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
-    // ✅ CORREÇÃO: Validação de nome duplicado
+    // âœ… CORREÃ‡ÃƒO: ValidaÃ§Ã£o de nome duplicado
     const isDuplicate = docs.some(
       d => d.fileName?.toLowerCase() === file.name.toLowerCase() && d.tenantId === user.tenantId
     );
     if (isDuplicate) {
-      showToast(`Já existe um documento com o nome "${file.name}" na base legal. Renomeie o arquivo antes de enviar.`, 'error');
+      showToast(`JÃ¡ existe um documento com o nome "${file.name}" na base legal. Renomeie o arquivo antes de enviar.`, 'error');
       e.target.value = '';
       return;
     }
@@ -84,7 +84,7 @@ const KnowledgeBase: React.FC = () => {
       const content = extracted.rawText || '';
 
       if (!content.trim()) {
-        showToast('Não foi possível extrair texto do arquivo.', 'error');
+        showToast('NÃ£o foi possÃ­vel extrair texto do arquivo.', 'error');
         return;
       }
 
@@ -182,7 +182,7 @@ const KnowledgeBase: React.FC = () => {
               <p className="text-[11px] text-slate-500 mt-3 line-clamp-3 leading-relaxed">{document.content?.substring(0, 150)}...</p>
             </div>
             <button onClick={() => setViewingDoc(document)} className="mt-6 text-[10px] text-blue-400 font-black uppercase tracking-widest text-left hover:text-blue-300 flex items-center gap-2">
-              Ver Conteúdo Integral <i className="fa-solid fa-arrow-right text-[8px]"></i>
+              Ver ConteÃºdo Integral <i className="fa-solid fa-arrow-right text-[8px]"></i>
             </button>
           </div>
         ))}
@@ -194,7 +194,7 @@ const KnowledgeBase: React.FC = () => {
             <header className="p-8 border-b border-slate-200 flex justify-between items-center bg-slate-900/20 flex-shrink-0">
               <div>
                 <h3 className="text-[#0A1628] font-black uppercase italic tracking-tight">{viewingDoc.fileName || viewingDoc.title}</h3>
-                <p className="text-[9px] text-slate-500 font-bold uppercase mt-1">{wordCount(viewingDoc.content).toLocaleString()} palavras // Conteúdo integral</p>
+                <p className="text-[9px] text-slate-500 font-bold uppercase mt-1">{wordCount(viewingDoc.content).toLocaleString()} palavras // ConteÃºdo integral</p>
               </div>
               <div className="flex items-center gap-3">
                 <button onClick={() => navigator.clipboard.writeText(viewingDoc.content).then(() => showToast('Copiado!', 'success'))}

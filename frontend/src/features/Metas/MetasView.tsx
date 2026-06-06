@@ -1,5 +1,5 @@
-// frontend/src/features/Metas/MetasView.tsx
-// Módulo de Metas e Premiação com desempate via Quiz Bloom Alto (Nível 5-6)
+﻿// frontend/src/features/Metas/MetasView.tsx
+// MÃ³dulo de Metas e PremiaÃ§Ã£o com desempate via Quiz Bloom Alto (NÃ­vel 5-6)
 
 import React, { useState, useEffect, useMemo } from 'react';
 import {
@@ -10,7 +10,7 @@ import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type Metrica = 'media_quizzes' | 'trilhas_concluidas' | 'exames_aprovados' | 'total_pontos';
 type StatusMeta = 'rascunho' | 'ativa' | 'encerrada';
@@ -84,13 +84,13 @@ interface DesempateSession {
   createdAt: any;
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const METRICA_CONFIG: Record<Metrica, { label: string; icon: string; color: string; desc: string }> = {
-  media_quizzes:     { label: 'Média nos Quizzes',      icon: 'fa-clipboard-question', color: 'blue',    desc: 'Média percentual de todos os quizzes realizados'     },
-  trilhas_concluidas:{ label: 'Trilhas Concluídas',     icon: 'fa-road',               color: 'teal',    desc: 'Número total de trilhas de aprendizado concluídas'   },
-  exames_aprovados:  { label: 'Exames Aprovados',       icon: 'fa-file-pen',           color: 'purple',  desc: 'Número de exames com nota ≥ 70%'                    },
-  total_pontos:      { label: 'Pontuação Total',        icon: 'fa-star',               color: 'amber',   desc: 'Quizzes (%) + Trilhas (×10) + Exames aprovados (×15)'},
+  media_quizzes:     { label: 'MÃ©dia nos Quizzes',      icon: 'fa-clipboard-question', color: 'blue',    desc: 'MÃ©dia percentual de todos os quizzes realizados'     },
+  trilhas_concluidas:{ label: 'Trilhas ConcluÃ­das',     icon: 'fa-road',               color: 'teal',    desc: 'NÃºmero total de trilhas de aprendizado concluÃ­das'   },
+  exames_aprovados:  { label: 'Exames Aprovados',       icon: 'fa-file-pen',           color: 'purple',  desc: 'NÃºmero de exames com nota â‰¥ 70%'                    },
+  total_pontos:      { label: 'PontuaÃ§Ã£o Total',        icon: 'fa-star',               color: 'amber',   desc: 'Quizzes (%) + Trilhas (Ã—10) + Exames aprovados (Ã—15)'},
 };
 
 const STATUS_CONFIG: Record<StatusMeta, { label: string; color: string; icon: string }> = {
@@ -154,7 +154,7 @@ function marcarPremiacaoEEmpate(ranking: RankingItem[], topN: number): RankingIt
   }));
 }
 
-// ─── Formulário de Meta ───────────────────────────────────────────────────────
+// â”€â”€â”€ FormulÃ¡rio de Meta â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const FormMeta: React.FC<{
   onSave: (data: Omit<Meta, 'id' | 'createdAt' | 'createdBy' | 'tenantId'>) => void;
@@ -177,29 +177,29 @@ const FormMeta: React.FC<{
   return (
     <div className="bg-[#0D1B3E] border border-blue-500/30 rounded-2xl p-6 space-y-5">
       <h4 className="text-blue-400 font-black uppercase text-xs tracking-widest">
-        {initial ? 'Editar Meta' : 'Nova Meta de Premiação'}
+        {initial ? 'Editar Meta' : 'Nova Meta de PremiaÃ§Ã£o'}
       </h4>
 
       {/* Titulo */}
       <div className="space-y-1">
-        <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Título da Meta *</label>
+        <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">TÃ­tulo da Meta *</label>
         <input value={form.titulo} onChange={e => set('titulo', e.target.value)}
-          placeholder="Ex: Campeões do 2º Trimestre"
+          placeholder="Ex: CampeÃµes do 2Âº Trimestre"
           className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
       </div>
 
-      {/* Descrição */}
+      {/* DescriÃ§Ã£o */}
       <div className="space-y-1">
-        <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Descrição</label>
+        <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">DescriÃ§Ã£o</label>
         <textarea value={form.descricao} onChange={e => set('descricao', e.target.value)}
-          placeholder="Descreva os critérios e condições da premiação..."
+          placeholder="Descreva os critÃ©rios e condiÃ§Ãµes da premiaÃ§Ã£o..."
           rows={2}
           className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500 resize-none" />
       </div>
 
-      {/* Métrica */}
+      {/* MÃ©trica */}
       <div className="space-y-2">
-        <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Critério de Avaliação *</label>
+        <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">CritÃ©rio de AvaliaÃ§Ã£o *</label>
         <div className="grid grid-cols-2 gap-2">
           {(Object.entries(METRICA_CONFIG) as [Metrica, typeof METRICA_CONFIG[Metrica]][]).map(([key, cfg]) => (
             <button type="button" key={key} onClick={() => set('metrica', key)}
@@ -228,9 +228,9 @@ const FormMeta: React.FC<{
           </select>
         </div>
 
-        {/* Data Início */}
+        {/* Data InÃ­cio */}
         <div className="space-y-1">
-          <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Data Início</label>
+          <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Data InÃ­cio</label>
           <input type="date" value={form.dataInicio} onChange={e => set('dataInicio', e.target.value)}
             className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
         </div>
@@ -243,9 +243,9 @@ const FormMeta: React.FC<{
         </div>
       </div>
 
-      {/* Prêmio */}
+      {/* PrÃªmio */}
       <div className="space-y-1">
-        <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Prêmio / Reconhecimento *</label>
+        <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">PrÃªmio / Reconhecimento *</label>
         <input value={form.premio} onChange={e => set('premio', e.target.value)}
           placeholder="Ex: Voucher R$200, Folga extra, Certificado de Destaque..."
           className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
@@ -256,8 +256,8 @@ const FormMeta: React.FC<{
         <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Status</label>
         <select value={form.status} onChange={e => set('status', e.target.value as StatusMeta)}
           className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500">
-          <option value="rascunho">Rascunho (não visível)</option>
-          <option value="ativa">Ativa (visível a todos)</option>
+          <option value="rascunho">Rascunho (nÃ£o visÃ­vel)</option>
+          <option value="ativa">Ativa (visÃ­vel a todos)</option>
           <option value="encerrada">Encerrada</option>
         </select>
       </div>
@@ -281,7 +281,7 @@ const FormMeta: React.FC<{
   );
 };
 
-// ─── Card de Meta com Ranking ─────────────────────────────────────────────────
+// â”€â”€â”€ Card de Meta com Ranking â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const MetaCard: React.FC<{
   meta: Meta;
@@ -336,15 +336,15 @@ const MetaCard: React.FC<{
           </div>
 
           <div className="flex items-center gap-3 flex-shrink-0">
-            {/* Prêmio badge */}
+            {/* PrÃªmio badge */}
             <div className="hidden md:block text-right">
-              <p className="text-[8px] text-slate-500 uppercase tracking-widest">Prêmio</p>
+              <p className="text-[8px] text-slate-500 uppercase tracking-widest">PrÃªmio</p>
               <p className="text-xs font-black text-amber-400 flex items-center gap-1">
                 <i className="fa-solid fa-trophy text-amber-400"></i>{meta.premio}
               </p>
             </div>
 
-            {/* Minha posição */}
+            {/* Minha posiÃ§Ã£o */}
             {meuRanking >= 0 && (
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
                 meuRanking < meta.topN ? 'bg-amber-500/20 border border-amber-500/30' : 'bg-slate-800'
@@ -369,12 +369,12 @@ const MetaCard: React.FC<{
             <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex items-start gap-3">
               <i className="fa-solid fa-triangle-exclamation text-amber-400 text-lg mt-0.5 flex-shrink-0"></i>
               <div className="flex-1">
-                <p className="text-amber-400 font-black text-sm">Empate detectado na posição premiada!</p>
+                <p className="text-amber-400 font-black text-sm">Empate detectado na posiÃ§Ã£o premiada!</p>
                 <p className="text-amber-600 text-xs mt-0.5">
-                  {empate.map(r => r.nome).join(', ')} — {empate[0].valor} pontos cada
+                  {empate.map(r => r.nome).join(', ')} â€” {empate[0].valor} pontos cada
                 </p>
                 <p className="text-xs text-slate-500 mt-1">
-                  Inicie o desempate com quiz de Taxonomia de Bloom Nível Alto (Avaliar/Criar).
+                  Inicie o desempate com quiz de Taxonomia de Bloom NÃ­vel Alto (Avaliar/Criar).
                 </p>
                 {!sessaoAberta && (
                   <button
@@ -424,10 +424,10 @@ const MetaCard: React.FC<{
           {/* Ranking */}
           <div className="space-y-2">
             <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
-              Ranking — {mc.label}
+              Ranking â€” {mc.label}
             </h4>
             {marked.length === 0 ? (
-              <p className="text-xs text-slate-600 italic">Nenhum dado disponível ainda.</p>
+              <p className="text-xs text-slate-600 italic">Nenhum dado disponÃ­vel ainda.</p>
             ) : (
               <div className="space-y-1.5">
                 {marked.slice(0, 10).map((item, i) => {
@@ -443,7 +443,7 @@ const MetaCard: React.FC<{
                       <i className={`fa-solid ${medalIcon} text-sm w-5 text-center ${medalColor}`}></i>
                       <span className={`flex-1 text-sm font-bold truncate ${isMe ? 'text-blue-400' : 'text-[#0A1628]'}`}>
                         {item.nome}
-                        {isMe && <span className="text-[9px] text-blue-500 ml-1.5 font-black uppercase">(você)</span>}
+                        {isMe && <span className="text-[9px] text-blue-500 ml-1.5 font-black uppercase">(vocÃª)</span>}
                       </span>
                       {item.empatado && (
                         <span className="text-[8px] font-black text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-lg uppercase tracking-widest">
@@ -464,21 +464,21 @@ const MetaCard: React.FC<{
             )}
           </div>
 
-          {/* Prêmio info */}
+          {/* PrÃªmio info */}
           <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-4 flex items-center gap-3">
             <i className="fa-solid fa-trophy text-amber-400 text-xl flex-shrink-0"></i>
             <div>
-              <p className="text-[9px] font-black text-amber-400 uppercase tracking-widest">Prêmio para o Top {meta.topN}</p>
+              <p className="text-[9px] font-black text-amber-400 uppercase tracking-widest">PrÃªmio para o Top {meta.topN}</p>
               <p className="text-sm font-black text-[#0A1628]">{meta.premio}</p>
               {meta.dataFim && (
                 <p className="text-[9px] text-slate-500 mt-0.5">
-                  Até {new Date(meta.dataFim + 'T12:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                  AtÃ© {new Date(meta.dataFim + 'T12:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
                 </p>
               )}
             </div>
           </div>
 
-          {/* Ações gestor */}
+          {/* AÃ§Ãµes gestor */}
           {isGestor && (
             <div className="flex gap-2 flex-wrap border-t border-slate-200/50 pt-4">
               {meta.status === 'ativa' && (
@@ -503,7 +503,7 @@ const MetaCard: React.FC<{
   );
 };
 
-// ─── Tela de Desempate (colaborador responde) ─────────────────────────────────
+// â”€â”€â”€ Tela de Desempate (colaborador responde) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const DesempatePlayer: React.FC<{
   sessao: DesempateSession;
@@ -541,10 +541,10 @@ const DesempatePlayer: React.FC<{
             <i className={`fa-solid ${resultado.nota >= 70 ? 'fa-trophy' : 'fa-xmark'} text-3xl ${resultado.nota >= 70 ? 'text-emerald-400' : 'text-red-400'}`}></i>
           </div>
           <p className={`text-4xl font-black ${resultado.nota >= 70 ? 'text-emerald-400' : 'text-red-400'}`}>{resultado.nota}%</p>
-          <p className="text-[#0A1628] font-black text-lg uppercase">Desempate concluído!</p>
-          <p className="text-slate-500 text-sm">Seu resultado foi registrado. Aguarde a apuração final pelo gestor.</p>
+          <p className="text-[#0A1628] font-black text-lg uppercase">Desempate concluÃ­do!</p>
+          <p className="text-slate-500 text-sm">Seu resultado foi registrado. Aguarde a apuraÃ§Ã£o final pelo gestor.</p>
           <div className="bg-slate-900 rounded-xl p-4 text-left space-y-1">
-            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Gabarito rápido</p>
+            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Gabarito rÃ¡pido</p>
             {sessao.questoes.map((q, i) => {
               const acertou = respostas[i] === q.correta;
               return (
@@ -568,9 +568,9 @@ const DesempatePlayer: React.FC<{
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[9px] font-black text-amber-400 uppercase tracking-widest">
-                <i className="fa-solid fa-gavel mr-1"></i>Desempate — {sessao.metaTitulo}
+                <i className="fa-solid fa-gavel mr-1"></i>Desempate â€” {sessao.metaTitulo}
               </p>
-              <p className="text-[9px] text-slate-500 mt-0.5">Taxonomia de Bloom Nível Alto • Avaliar / Criar</p>
+              <p className="text-[9px] text-slate-500 mt-0.5">Taxonomia de Bloom NÃ­vel Alto â€¢ Avaliar / Criar</p>
             </div>
             <div className="text-right">
               <p className="text-2xl font-black text-[#0A1628]">{Object.keys(respostas).length}<span className="text-slate-600">/{total}</span></p>
@@ -583,7 +583,7 @@ const DesempatePlayer: React.FC<{
           </div>
         </div>
 
-        {/* Questões */}
+        {/* QuestÃµes */}
         <div className="space-y-4">
           {sessao.questoes.map((q, qi) => {
             const resp = respostas[qi];
@@ -592,7 +592,7 @@ const DesempatePlayer: React.FC<{
               <div key={q.id} className={`bg-[#0D1B3E] border rounded-2xl p-5 space-y-3 ${resp ? 'border-amber-500/30' : 'border-slate-200'}`}>
                 <div className="flex items-start gap-3">
                   <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg bg-${bloomColor}-500/20 text-${bloomColor}-400 flex-shrink-0 mt-0.5`}>
-                    {q.bloom === 'avaliacao' ? 'Avaliar' : 'Criar'} • Bloom {q.bloom === 'avaliacao' ? 'Nível 5' : 'Nível 6'}
+                    {q.bloom === 'avaliacao' ? 'Avaliar' : 'Criar'} â€¢ Bloom {q.bloom === 'avaliacao' ? 'NÃ­vel 5' : 'NÃ­vel 6'}
                   </span>
                   <p className="text-sm font-bold text-[#0A1628] leading-relaxed">
                     <span className="text-slate-500 mr-2">{qi + 1}.</span>{q.enunciado}
@@ -634,7 +634,7 @@ const DesempatePlayer: React.FC<{
   );
 };
 
-// ─── Main View ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Main View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const MetasView: React.FC = () => {
   const { state } = useApp();
@@ -674,7 +674,7 @@ const MetasView: React.FC = () => {
     return () => { u1(); u2(); u3(); u4(); u5(); };
   }, [tenantId]);
 
-  // Verificar se há desempate ativo para o usuário atual
+  // Verificar se hÃ¡ desempate ativo para o usuÃ¡rio atual
   useEffect(() => {
     const sessaoAtiva = desempateSessions.find(s =>
       s.status === 'aberto' &&
@@ -701,9 +701,9 @@ const MetasView: React.FC = () => {
   };
 
   const handleDeleteMeta = async (id: string) => {
-    if (!confirm('Excluir esta meta? Esta ação não pode ser desfeita.')) return;
+    if (!confirm('Excluir esta meta? Esta aÃ§Ã£o nÃ£o pode ser desfeita.')) return;
     await deleteDoc(doc(db, 'metas', id));
-    showToast('Meta excluída.', 'success');
+    showToast('Meta excluÃ­da.', 'success');
   };
 
   const handleEncerrarMeta = async (id: string) => {
@@ -711,29 +711,29 @@ const MetasView: React.FC = () => {
     showToast('Meta encerrada.', 'success');
   };
 
-  // Gerar sessão de desempate com quiz Bloom Alto via Anthropic
+  // Gerar sessÃ£o de desempate com quiz Bloom Alto via Anthropic
   const handleIniciarDesempate = async (metaId: string, metaTitulo: string, participantes: string[]) => {
     setGerandoDesempate(metaId);
     try {
-      const prompt = `Você é um especialista em avaliação educacional corporativa para serventias notariais.
+      const prompt = `VocÃª Ã© um especialista em avaliaÃ§Ã£o educacional corporativa para serventias notariais.
 
-Gere EXATAMENTE 5 questões de múltipla escolha de ALTO NÍVEL usando a Taxonomia de Bloom:
-- 3 questões de AVALIAÇÃO (bloom: "avaliacao", Nível 5) — julgar, justificar, defender, criticar posições
-- 2 questões de CRIAÇÃO (bloom: "criacao", Nível 6) — propor, elaborar, construir, formular soluções
+Gere EXATAMENTE 5 questÃµes de mÃºltipla escolha de ALTO NÃVEL usando a Taxonomia de Bloom:
+- 3 questÃµes de AVALIAÃ‡ÃƒO (bloom: "avaliacao", NÃ­vel 5) â€” julgar, justificar, defender, criticar posiÃ§Ãµes
+- 2 questÃµes de CRIAÃ‡ÃƒO (bloom: "criacao", NÃ­vel 6) â€” propor, elaborar, construir, formular soluÃ§Ãµes
 
-Contexto: Meta de premiação "${metaTitulo}" em serventias notariais. 
-As questões devem ser sobre boas práticas notariais, LGPD em cartórios, gestão de qualidade e conformidade com provimentos do CNJ.
+Contexto: Meta de premiaÃ§Ã£o "${metaTitulo}" em serventias notariais. 
+As questÃµes devem ser sobre boas prÃ¡ticas notariais, LGPD em cartÃ³rios, gestÃ£o de qualidade e conformidade com provimentos do CNJ.
 
 REGRAS:
-1. Cada questão tem exatamente 4 alternativas (A, B, C, D)
+1. Cada questÃ£o tem exatamente 4 alternativas (A, B, C, D)
 2. Apenas 1 alternativa correta
-3. As questões devem exigir raciocínio complexo, análise crítica e síntese — não memorização simples
+3. As questÃµes devem exigir raciocÃ­nio complexo, anÃ¡lise crÃ­tica e sÃ­ntese â€” nÃ£o memorizaÃ§Ã£o simples
 4. Justifique brevemente a resposta correta
 
-Retorne APENAS um array JSON válido, sem markdown:
+Retorne APENAS um array JSON vÃ¡lido, sem markdown:
 [{
   "id": 1,
-  "enunciado": "texto da questão",
+  "enunciado": "texto da questÃ£o",
   "alternativas": [
     {"letra": "A", "texto": "..."},
     {"letra": "B", "texto": "..."},
@@ -742,7 +742,7 @@ Retorne APENAS um array JSON válido, sem markdown:
   ],
   "correta": "A",
   "bloom": "avaliacao|criacao",
-  "justificativa": "Explicação breve da resposta correta"
+  "justificativa": "ExplicaÃ§Ã£o breve da resposta correta"
 }]`;
 
       const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -758,7 +758,7 @@ Retorne APENAS um array JSON válido, sem markdown:
       const data = await response.json();
       const raw = data.content?.[0]?.text || '';
       const match = raw.match(/\[[\s\S]*\]/);
-      if (!match) throw new Error('Resposta inválida da IA');
+      if (!match) throw new Error('Resposta invÃ¡lida da IA');
       const questoes: DesempateQuestao[] = JSON.parse(match[0]);
 
       await addDoc(collection(db, 'metasDesempate'), {
@@ -767,7 +767,7 @@ Retorne APENAS um array JSON válido, sem markdown:
         tenantId, createdAt: serverTimestamp()
       });
 
-      showToast(`Desempate criado com ${questoes.length} questões Bloom Alto!`, 'success');
+      showToast(`Desempate criado com ${questoes.length} questÃµes Bloom Alto!`, 'success');
     } catch (e: any) {
       showToast(e?.message || 'Erro ao gerar desempate.', 'error');
     } finally {
@@ -812,7 +812,7 @@ Retorne APENAS um array JSON válido, sem markdown:
   return (
     <div className="p-8 space-y-6 bg-[#0D1B3E] min-h-screen animate-in fade-in">
 
-      {/* Desempate ativo — modal */}
+      {/* Desempate ativo â€” modal */}
       {desempateAtivo && (
         <DesempatePlayer
           sessao={desempateAtivo}
@@ -838,10 +838,10 @@ Retorne APENAS um array JSON válido, sem markdown:
       <header className="flex items-start justify-between">
         <div>
           <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">
-            Metas de <span className="text-amber-500">Premiação</span>
+            Metas de <span className="text-amber-500">PremiaÃ§Ã£o</span>
           </h2>
           <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">
-            Objetivos · Rankings · Desempate Bloom Alto
+            Objetivos Â· Rankings Â· Desempate Bloom Alto
           </p>
         </div>
         {isGestor && !showForm && (
@@ -868,7 +868,7 @@ Retorne APENAS um array JSON válido, sem markdown:
         ))}
       </div>
 
-      {/* Formulário */}
+      {/* FormulÃ¡rio */}
       {showForm && (
         <FormMeta
           initial={editingMeta ?? undefined}
@@ -883,9 +883,9 @@ Retorne APENAS um array JSON válido, sem markdown:
         <div>
           <p className="text-purple-400 font-black text-xs uppercase tracking-widest">Desempate por Bloom Alto</p>
           <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
-            Em caso de empate na posição premiada, o gestor pode iniciar um quiz de desempate com questões de 
-            <strong className="text-[#0A1628]"> Nível 5 (Avaliar)</strong> e <strong className="text-[#0A1628]">Nível 6 (Criar)</strong> da Taxonomia de Bloom — 
-            exigindo raciocínio crítico e elaboração de soluções, não apenas memorização.
+            Em caso de empate na posiÃ§Ã£o premiada, o gestor pode iniciar um quiz de desempate com questÃµes de 
+            <strong className="text-[#0A1628]"> NÃ­vel 5 (Avaliar)</strong> e <strong className="text-[#0A1628]">NÃ­vel 6 (Criar)</strong> da Taxonomia de Bloom â€” 
+            exigindo raciocÃ­nio crÃ­tico e elaboraÃ§Ã£o de soluÃ§Ãµes, nÃ£o apenas memorizaÃ§Ã£o.
           </p>
         </div>
       </div>
@@ -896,7 +896,7 @@ Retorne APENAS um array JSON válido, sem markdown:
           <i className="fa-solid fa-trophy text-5xl text-slate-700 mb-4 block"></i>
           <p className="text-slate-600 text-xs font-bold uppercase tracking-widest">Nenhuma meta criada ainda</p>
           {isGestor && (
-            <p className="text-slate-700 text-xs mt-1">Clique em "Nova Meta" para criar a primeira meta de premiação</p>
+            <p className="text-slate-700 text-xs mt-1">Clique em "Nova Meta" para criar a primeira meta de premiaÃ§Ã£o</p>
           )}
         </div>
       ) : (
@@ -975,7 +975,7 @@ Retorne APENAS um array JSON válido, sem markdown:
         </div>
       )}
 
-      {/* Overlay de geração de desempate */}
+      {/* Overlay de geraÃ§Ã£o de desempate */}
       {gerandoDesempate && (
         <div className="fixed inset-0 bg-black/70 z-40 flex items-center justify-center">
           <div className="bg-white border border-amber-500/30 rounded-2xl p-8 text-center space-y-4 max-w-sm">
@@ -983,7 +983,7 @@ Retorne APENAS um array JSON válido, sem markdown:
               <i className="fa-solid fa-brain text-amber-400 text-2xl"></i>
             </div>
             <p className="text-[#0A1628] font-black text-sm uppercase tracking-widest">Gerando Quiz de Desempate</p>
-            <p className="text-slate-500 text-xs">Criando questões Bloom Nível 5-6 com IA...</p>
+            <p className="text-slate-500 text-xs">Criando questÃµes Bloom NÃ­vel 5-6 com IA...</p>
             <div className="flex gap-1 justify-center">
               {[0, 1, 2].map(i => (
                 <span key={i} className="w-2 h-2 rounded-full bg-amber-500 animate-bounce" style={{ animationDelay: `${i * 0.15}s` }}></span>

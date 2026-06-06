@@ -1,4 +1,4 @@
-
+﻿
 import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useAudit } from '../../hooks/useAudit';
@@ -46,7 +46,7 @@ const ChatView: React.FC = () => {
       }
     } catch (error: any) {
       console.error("Erro no Chat:", error);
-      setChatHistory(prev => [...prev, { role: 'assistant', content: "⚠️ Erro: Falha na conexão com a base legal." }]);
+      setChatHistory(prev => [...prev, { role: 'assistant', content: "âš ï¸ Erro: Falha na conexÃ£o com a base legal." }]);
     } finally {
       setIsTyping(false);
     }
@@ -58,7 +58,7 @@ const ChatView: React.FC = () => {
       <div className="p-6 border-b border-slate-200 bg-slate-900/40 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-[#0A1628] text-xl">
-            ✨
+            âœ¨
           </div>
           <div>
             <h2 className="text-sm font-black text-[#0A1628] uppercase tracking-widest">IA Notarial</h2>
@@ -74,9 +74,9 @@ const ChatView: React.FC = () => {
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-grid-white/[0.02]">
         {chatHistory.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center p-10 opacity-50">
-            <div className="text-5xl mb-4">💬</div>
+            <div className="text-5xl mb-4">ðŸ’¬</div>
             <h3 className="text-[#0A1628] font-bold uppercase tracking-widest">Inicie uma consulta</h3>
-            <p className="text-slate-500 text-xs mt-2 max-w-xs leading-relaxed font-medium">Pergunte sobre provimentos, normas ou processos internos do cartório.</p>
+            <p className="text-slate-500 text-xs mt-2 max-w-xs leading-relaxed font-medium">Pergunte sobre provimentos, normas ou processos internos do cartÃ³rio.</p>
           </div>
         ) : (
           chatHistory.map((msg, i) => (
@@ -110,7 +110,7 @@ const ChatView: React.FC = () => {
         <input 
           value={input} 
           onChange={e => setInput(e.target.value)}
-          placeholder="Digite sua dúvida jurídica..."
+          placeholder="Digite sua dÃºvida jurÃ­dica..."
           className="flex-1 bg-[#0D1B3E] border border-slate-200 rounded-xl px-5 py-4 text-sm text-[#0A1628] focus:border-blue-500 outline-none transition-all placeholder:text-slate-700"
         />
         <button 
@@ -118,7 +118,7 @@ const ChatView: React.FC = () => {
           disabled={!input.trim() || isTyping}
           className="bg-blue-600 hover:bg-blue-500 disabled:opacity-20 px-6 rounded-xl text-[#0A1628] transition-all flex items-center justify-center shadow-lg shadow-blue-900/20"
         >
-          {isTyping ? '...' : '➤'}
+          {isTyping ? '...' : 'âž¤'}
         </button>
       </form>
     </div>

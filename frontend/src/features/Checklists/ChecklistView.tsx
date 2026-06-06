@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+﻿import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { useAudit } from '../../hooks/useAudit';
@@ -25,18 +25,18 @@ const ChecklistView: React.FC = () => {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [mode, setMode] = useState<'roteiro' | 'executar'>('roteiro');
 
-  // Execução
+  // ExecuÃ§Ã£o
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
   const [executionNotes, setExecutionNotes] = useState<Record<string, string>>({});
 
-  // Análise RAG
+  // AnÃ¡lise RAG
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState('');
   const [uploadedDocText, setUploadedDocText] = useState('');
   const [uploadedDocName, setUploadedDocName] = useState('');
   const docFileRef = useRef<HTMLInputElement>(null);
 
-  // Criação
+  // CriaÃ§Ã£o
   const [formName, setFormName] = useState('');
   const [formItems, setFormItems] = useState<string[]>(['']);
   const [isProcessingFile, setIsProcessingFile] = useState(false);
@@ -74,15 +74,15 @@ const ChecklistView: React.FC = () => {
     try {
       const extracted = await extractTextFromFile(file);
       const response = await GeminiService.chat(
-        `Você é especialista em direito notarial. Extraia uma lista numerada de requisitos obrigatórios e etapas de verificação deste documento para uso em checklist de conformidade notarial. Liste apenas os itens, um por linha, sem texto adicional:\n\n${extracted.rawText?.substring(0, 4000)}`,
-        'Extração de checklist notarial'
+        `VocÃª Ã© especialista em direito notarial. Extraia uma lista numerada de requisitos obrigatÃ³rios e etapas de verificaÃ§Ã£o deste documento para uso em checklist de conformidade notarial. Liste apenas os itens, um por linha, sem texto adicional:\n\n${extracted.rawText?.substring(0, 4000)}`,
+        'ExtraÃ§Ã£o de checklist notarial'
       );
       const text = typeof response === 'string' ? response : (response as any).text;
       if (text) {
-        const lines = text.split('\n').map((l: string) => l.replace(/^[\d\-•*\.]+\s*/, '').trim()).filter((l: string) => l.length > 5);
+        const lines = text.split('\n').map((l: string) => l.replace(/^[\d\-â€¢*\.]+\s*/, '').trim()).filter((l: string) => l.length > 5);
         setFormItems(prev => [...prev.filter(i => i.trim()), ...lines]);
         if (!formName) setFormName(file.name.split('.')[0].toUpperCase());
-        showToast(`${lines.length} itens extraídos!`, 'success');
+        showToast(`${lines.length} itens extraÃ­dos!`, 'success');
       }
     } catch { showToast('Erro ao processar arquivo.', 'error'); }
     finally { setIsProcessingFile(false); if (fileInputRef.current) fileInputRef.current.value = ''; }
@@ -90,7 +90,7 @@ const ChecklistView: React.FC = () => {
 
   const handleSave = async () => {
     const validItems = formItems.filter(i => i.trim().length > 0);
-    if (!formName.trim()) return showToast('Nome do protocolo obrigatório', 'warning');
+    if (!formName.trim()) return showToast('Nome do protocolo obrigatÃ³rio', 'warning');
     if (validItems.length === 0) return showToast('Adicione ao menos um item', 'warning');
     setIsSaving(true);
     try {
@@ -114,8 +114,8 @@ const ChecklistView: React.FC = () => {
       try {
         await deleteDoc(doc(db, 'checklists', checklistId));
         if (activeChecklistId === checklistId) setActiveChecklistId(null);
-        if (logAction) logAction('DELETE_CHECKLIST', `Excluído: ${title}`, 'SYSTEM');
-        showToast('Protocolo excluído.', 'success');
+        if (logAction) logAction('DELETE_CHECKLIST', `ExcluÃ­do: ${title}`, 'SYSTEM');
+        showToast('Protocolo excluÃ­do.', 'success');
       } catch { showToast('Erro ao excluir.', 'error'); }
       setDeleteConfirmId(null);
     } else {
@@ -132,12 +132,12 @@ const ChecklistView: React.FC = () => {
       const extracted = await extractTextFromFile(file);
       setUploadedDocText(extracted.rawText || '');
       setUploadedDocName(file.name);
-      showToast('Documento pronto para análise!', 'success');
+      showToast('Documento pronto para anÃ¡lise!', 'success');
     } catch { showToast('Erro ao carregar documento.', 'error'); }
     finally { if (docFileRef.current) docFileRef.current.value = ''; }
   };
 
-  // ===== ANÁLISE RAG REAL =====
+  // ===== ANÃLISE RAG REAL =====
   const handleAnalyzeDoc = async () => {
     if (!activeChecklist) return;
     if (!uploadedDocText) return showToast('Suba um documento para analisar.', 'warning');
@@ -158,53 +158,53 @@ const ChecklistView: React.FC = () => {
         const kbDocs = kbSnap.docs.map(d => d.data());
         if (kbDocs.length > 0) {
           kbContext = kbDocs.map((d: any, i: number) =>
-            `[BASE LEGAL ${i + 1} — ${d.fileName}]\n${d.content?.substring(0, 3000)}`
+            `[BASE LEGAL ${i + 1} â€” ${d.fileName}]\n${d.content?.substring(0, 3000)}`
           ).join('\n\n---\n\n');
         }
-      } catch { /* sem base legal, continua só com checklist */ }
+      } catch { /* sem base legal, continua sÃ³ com checklist */ }
 
       // 2. Montar checklist como contexto
       const checklistContext = activeChecklist.items.map((item, i) =>
         `${i + 1}. ${item.text}`
       ).join('\n');
 
-      // 3. Prompt RAG estrito — proibido usar conhecimento externo
-      const prompt = `Você é um auditor notarial especialista. Sua análise DEVE ser baseada EXCLUSIVAMENTE nos documentos fornecidos abaixo. NÃO utilize conhecimento externo, leis ou normas que não estejam presentes no contexto fornecido. Se uma informação não constar no contexto, diga explicitamente que não há base legal disponível para aquele ponto.
+      // 3. Prompt RAG estrito â€” proibido usar conhecimento externo
+      const prompt = `VocÃª Ã© um auditor notarial especialista. Sua anÃ¡lise DEVE ser baseada EXCLUSIVAMENTE nos documentos fornecidos abaixo. NÃƒO utilize conhecimento externo, leis ou normas que nÃ£o estejam presentes no contexto fornecido. Se uma informaÃ§Ã£o nÃ£o constar no contexto, diga explicitamente que nÃ£o hÃ¡ base legal disponÃ­vel para aquele ponto.
 
-══════════════════════════════════
-CHECKLIST DE VERIFICAÇÃO — "${activeChecklist.title}"
-══════════════════════════════════
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+CHECKLIST DE VERIFICAÃ‡ÃƒO â€” "${activeChecklist.title}"
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 ${checklistContext}
 
-${kbContext ? `══════════════════════════════════
+${kbContext ? `â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 BASE LEGAL INDEXADA (use exclusivamente estes documentos)
-══════════════════════════════════
-${kbContext}` : '⚠️ ATENÇÃO: Nenhuma base legal foi indexada. A análise será feita somente com base no checklist acima.'}
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+${kbContext}` : 'âš ï¸ ATENÃ‡ÃƒO: Nenhuma base legal foi indexada. A anÃ¡lise serÃ¡ feita somente com base no checklist acima.'}
 
-══════════════════════════════════
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 DOCUMENTO A SER ANALISADO
-══════════════════════════════════
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 ${uploadedDocText.substring(0, 5000)}
 
-══════════════════════════════════
-INSTRUÇÕES DE ANÁLISE
-══════════════════════════════════
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+INSTRUÃ‡Ã•ES DE ANÃLISE
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 Para cada item do checklist acima:
 1. Verifique se o documento atende ao requisito
-2. Indique ✅ CONFORME ou ❌ PENDENTE/IRREGULAR
-3. Cite trecho do documento ou da base legal que embasa sua conclusão
-4. Se não houver base para concluir, diga: "Sem base legal disponível para este item"
+2. Indique âœ… CONFORME ou âŒ PENDENTE/IRREGULAR
+3. Cite trecho do documento ou da base legal que embasa sua conclusÃ£o
+4. Se nÃ£o houver base para concluir, diga: "Sem base legal disponÃ­vel para este item"
 
-Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente um resumo executivo com o percentual de conformidade.`;
+Produza um parecer tÃ©cnico detalhado, minucioso e formal. Ao final, apresente um resumo executivo com o percentual de conformidade.`;
 
       const response = await GeminiService.chat(prompt, 'Auditoria RAG notarial');
       const text = typeof response === 'string' ? response : (response as any).text;
       setAnalysisResult(text || 'Sem resposta da IA.');
       if (logAction) logAction('CHECKLIST_AUDIT_RAG', `Auditoria RAG: ${activeChecklist.title} / Doc: ${uploadedDocName}`, 'SYSTEM');
-      showToast('Análise RAG concluída!', 'success');
+      showToast('AnÃ¡lise RAG concluÃ­da!', 'success');
     } catch (err) {
       console.error(err);
-      showToast('Erro na análise.', 'error');
+      showToast('Erro na anÃ¡lise.', 'error');
     } finally {
       setIsAnalyzing(false);
     }
@@ -297,18 +297,18 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
                 {/* Progresso */}
                 <div className="bg-white border border-slate-200 rounded-2xl p-5">
                   <div className="flex justify-between items-center mb-3">
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Progresso da Execução</span>
-                    <span className="text-xs font-black text-[#0A1628]">{checkedCount}/{totalItems} — {progress}%</span>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Progresso da ExecuÃ§Ã£o</span>
+                    <span className="text-xs font-black text-[#0A1628]">{checkedCount}/{totalItems} â€” {progress}%</span>
                   </div>
                   <div className="w-full bg-slate-800 rounded-full h-2">
                     <div className={`h-2 rounded-full transition-all duration-500 ${progress === 100 ? 'bg-emerald-500' : 'bg-blue-500'}`} style={{ width: `${progress}%` }} />
                   </div>
                   {progress === 100 && (
-                    <p className="text-[10px] text-emerald-500 font-black uppercase mt-2 text-center">✅ Protocolo concluído!</p>
+                    <p className="text-[10px] text-emerald-500 font-black uppercase mt-2 text-center">âœ… Protocolo concluÃ­do!</p>
                   )}
                 </div>
 
-                {/* Itens marcáveis */}
+                {/* Itens marcÃ¡veis */}
                 <div className="space-y-3">
                   {activeChecklist.items?.map((item, idx) => (
                     <div key={item.id} className={`border rounded-2xl p-5 transition-all ${checkedItems[item.id] ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-white border-slate-200'}`}>
@@ -326,7 +326,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
                           <textarea
                             value={executionNotes[item.id] || ''}
                             onChange={e => setExecutionNotes(prev => ({ ...prev, [item.id]: e.target.value }))}
-                            placeholder="Observação (opcional)..."
+                            placeholder="ObservaÃ§Ã£o (opcional)..."
                             rows={1}
                             className="mt-2 w-full bg-slate-950 border border-slate-200 rounded-lg p-2 text-xs text-slate-500 outline-none focus:border-blue-500 resize-none"
                           />
@@ -336,14 +336,14 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
                   ))}
                 </div>
 
-                {/* Painel de Análise RAG */}
+                {/* Painel de AnÃ¡lise RAG */}
                 <div className="bg-white border border-blue-500/20 rounded-[32px] p-8 space-y-5">
                   <div>
                     <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest">
-                      <i className="fa-solid fa-robot mr-2"></i>Análise RAG — Verificar Documento
+                      <i className="fa-solid fa-robot mr-2"></i>AnÃ¡lise RAG â€” Verificar Documento
                     </p>
                     <p className="text-xs text-slate-500 mt-1">
-                      A IA analisará o documento contra este protocolo e a base legal indexada. Nenhuma informação externa será utilizada.
+                      A IA analisarÃ¡ o documento contra este protocolo e a base legal indexada. Nenhuma informaÃ§Ã£o externa serÃ¡ utilizada.
                     </p>
                   </div>
 
@@ -369,7 +369,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
                     <div className="bg-slate-950 border border-slate-200 rounded-2xl p-6">
                       <div className="flex justify-between items-center mb-4">
                         <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest">
-                          <i className="fa-solid fa-file-invoice mr-2"></i>Parecer Técnico — Baseado na Base Legal Indexada
+                          <i className="fa-solid fa-file-invoice mr-2"></i>Parecer TÃ©cnico â€” Baseado na Base Legal Indexada
                         </p>
                         <button
                           onClick={() => navigator.clipboard.writeText(analysisResult).then(() => showToast('Copiado!', 'success'))}
@@ -388,7 +388,7 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
         )}
       </main>
 
-      {/* Modal de criação */}
+      {/* Modal de criaÃ§Ã£o */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/90 backdrop-blur-sm">
           <div className="bg-[#0D1B3E] border border-slate-200 rounded-[40px] w-full max-w-2xl overflow-hidden shadow-2xl">

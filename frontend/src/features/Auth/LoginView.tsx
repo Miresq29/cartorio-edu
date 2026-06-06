@@ -1,4 +1,4 @@
-
+﻿
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
@@ -45,7 +45,7 @@ const LoginView: React.FC = () => {
     setResetLoading(true);
     try {
       await sendPasswordResetEmail(auth, email.trim());
-      showToast(`Se este e-mail estiver cadastrado, voce receberá o link de redefinição em breve.`, "success");
+      showToast(`Se este e-mail estiver cadastrado, voce receberÃ¡ o link de redefiniÃ§Ã£o em breve.`, "success");
     } catch (error: any) {
       console.warn("Reset password error:", error.code, error.message);
       const msgs: Record<string, string> = {
@@ -56,7 +56,7 @@ const LoginView: React.FC = () => {
         "auth/missing-email":         "Digite seu e-mail no campo acima.",
         "auth/invalid-api-key":       "Configuracao do sistema invalida. Contate o suporte.",
       };
-      showToast(msgs[error.code] || `Se este e-mail estiver cadastrado, voce receberá o link em breve.`, "success");
+      showToast(msgs[error.code] || `Se este e-mail estiver cadastrado, voce receberÃ¡ o link em breve.`, "success");
     } finally {
       setResetLoading(false);
     }
@@ -144,7 +144,7 @@ const LoginView: React.FC = () => {
         </div>
 
         <p className="text-center mt-6 text-text-disabled text-[10px] uppercase tracking-widest">
-          © {new Date().getFullYear()} MJ Consultoria — Todos os direitos reservados
+          Â© {new Date().getFullYear()} MJ Consultoria â€” Todos os direitos reservados
         </p>
       </div>
     </div>

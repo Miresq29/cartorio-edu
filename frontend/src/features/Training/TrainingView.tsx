@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { db } from '../../services/firebase';
@@ -17,17 +17,17 @@ const TABS: { id: Tab; icon: string; label: string }[] = [
   { id: 'ia',            icon: 'fa-wand-magic-sparkles', label: 'IA de Treinamento' },
   { id: 'resumos',       icon: 'fa-file-lines',          label: 'Resumos'           },
   { id: 'participantes', icon: 'fa-users',               label: 'Participantes'     },
-  { id: 'questionarios', icon: 'fa-circle-question',     label: 'Questionários'     },
-  { id: 'relatorios',    icon: 'fa-file-chart-column',   label: 'Relatórios'        },
-  { id: 'dashboard',     icon: 'fa-chart-pie',           label: 'Dashboard Gestão'  },
+  { id: 'questionarios', icon: 'fa-circle-question',     label: 'QuestionÃ¡rios'     },
+  { id: 'relatorios',    icon: 'fa-file-chart-column',   label: 'RelatÃ³rios'        },
+  { id: 'dashboard',     icon: 'fa-chart-pie',           label: 'Dashboard GestÃ£o'  },
 ];
 
 type SummaryType = 'executivo' | 'tecnico' | 'didatico' | 'operacional';
 
 const SUMMARY_TYPES: { id: SummaryType; label: string; desc: string; color: string }[] = [
-  { id: 'executivo',   label: 'Executivo',   desc: 'Para gestores — pontos-chave e impactos',        color: 'blue'    },
-  { id: 'tecnico',     label: 'Técnico',     desc: 'Fundamentos legais e análise normativa',          color: 'purple'  },
-  { id: 'didatico',    label: 'Didático',    desc: 'Para treinamento — exemplos práticos',            color: 'emerald' },
+  { id: 'executivo',   label: 'Executivo',   desc: 'Para gestores â€” pontos-chave e impactos',        color: 'blue'    },
+  { id: 'tecnico',     label: 'TÃ©cnico',     desc: 'Fundamentos legais e anÃ¡lise normativa',          color: 'purple'  },
+  { id: 'didatico',    label: 'DidÃ¡tico',    desc: 'Para treinamento â€” exemplos prÃ¡ticos',            color: 'emerald' },
   { id: 'operacional', label: 'Operacional', desc: 'Procedimentos e passo a passo do dia a dia',     color: 'amber'   },
 ];
 
@@ -91,8 +91,8 @@ const TrainingView: React.FC = () => {
 
   const buildContext = () => {
     const cl = checklists.map(c => `PROTOCOLO: ${c.title}\nITENS: ${c.items?.map((i: any) => i.text).join('; ')}`).join('\n\n');
-    const kl = knowledgeDocs.slice(0, 8).map(d => `DOCUMENTO: ${d.fileName || d.title}\nCONTEÚDO: ${d.content?.substring(0, 800)}`).join('\n\n');
-    return `Você é um especialista em treinamento notarial da MJ Consultoria.\nBASE LEGAL:\n${kl || 'Nenhum documento.'}\nPROTOCOLOS:\n${cl || 'Nenhum protocolo.'}\nUnidade: ${state.user?.tenantId || 'MJ Consultoria'} | Operador: ${state.user?.name || 'Usuário'}`;
+    const kl = knowledgeDocs.slice(0, 8).map(d => `DOCUMENTO: ${d.fileName || d.title}\nCONTEÃšDO: ${d.content?.substring(0, 800)}`).join('\n\n');
+    return `VocÃª Ã© um especialista em treinamento notarial da MJ Consultoria.\nBASE LEGAL:\n${kl || 'Nenhum documento.'}\nPROTOCOLOS:\n${cl || 'Nenhum protocolo.'}\nUnidade: ${state.user?.tenantId || 'MJ Consultoria'} | Operador: ${state.user?.name || 'UsuÃ¡rio'}`;
   };
 
   const handleSend = async () => {
@@ -117,11 +117,11 @@ const TrainingView: React.FC = () => {
       const options = await GeminiService.generateTrainingOptions(buildContext(), customRequest || undefined);
       if (options && options.length > 0) {
         setTrainingOptions(options);
-        showToast('3 opções de roteiro geradas! Escolha uma para expandir.', 'success');
+        showToast('3 opÃ§Ãµes de roteiro geradas! Escolha uma para expandir.', 'success');
       } else {
-        showToast('Não foi possível gerar opções. Tente novamente.', 'error');
+        showToast('NÃ£o foi possÃ­vel gerar opÃ§Ãµes. Tente novamente.', 'error');
       }
-    } catch (e: any) { showToast(e?.message || 'Erro ao gerar opções de treinamento.', 'error'); } finally { setIsLoading(false); }
+    } catch (e: any) { showToast(e?.message || 'Erro ao gerar opÃ§Ãµes de treinamento.', 'error'); } finally { setIsLoading(false); }
   };
 
   const selectOption = async (option: TrainingOption) => {
@@ -132,22 +132,22 @@ const TrainingView: React.FC = () => {
 
   const formatSelectedOption = (opt: TrainingOption): string => {
     const modulos = opt.modulos?.map((m, i) =>
-      `  ${i + 1}. ${m.nome} (${m.duracao})${m.obrigatorio ? ' ★' : ''}\n     Objetivo: ${m.objetivo}`
-    ).join('\n') || 'Módulos não especificados';
+      `  ${i + 1}. ${m.nome} (${m.duracao})${m.obrigatorio ? ' â˜…' : ''}\n     Objetivo: ${m.objetivo}`
+    ).join('\n') || 'MÃ³dulos nÃ£o especificados';
 
     return `ROTEIRO: ${opt.titulo.toUpperCase()}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
 Abordagem: ${opt.descricao}
-Duração total: ${opt.duracao}
-Público-alvo: ${opt.publico}
+DuraÃ§Ã£o total: ${opt.duracao}
+PÃºblico-alvo: ${opt.publico}
 
-MÓDULOS:
+MÃ“DULOS:
 ${modulos}
 
 JUSTIFICATIVA:
 ${opt.justificativa}
 
-★ = Módulo obrigatório
+â˜… = MÃ³dulo obrigatÃ³rio
 `;
   };
 
@@ -170,16 +170,16 @@ ${opt.justificativa}
       <div className="flex justify-between items-start gap-4">
         <div>
           <h3 className="text-[#0A1628] font-black uppercase italic text-sm">IA de Treinamento MJ</h3>
-          <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Gere 3 opções de roteiro e escolha a melhor para sua equipe</p>
+          <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Gere 3 opÃ§Ãµes de roteiro e escolha a melhor para sua equipe</p>
         </div>
         <button onClick={generateOptions} disabled={isLoading}
           className="bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50 flex-shrink-0">
           <i className="fa-solid fa-wand-magic-sparkles mr-2"></i>
-          {isLoading ? 'Gerando...' : 'Gerar 3 Opções'}
+          {isLoading ? 'Gerando...' : 'Gerar 3 OpÃ§Ãµes'}
         </button>
       </div>
 
-      {/* Campo para pedido específico */}
+      {/* Campo para pedido especÃ­fico */}
       <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-4">
         <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-2">
           Personalizar pedido (opcional)
@@ -187,7 +187,7 @@ ${opt.justificativa}
         <input
           value={customRequest}
           onChange={e => setCustomRequest(e.target.value)}
-          placeholder="Ex: foco em escrituras públicas, para atendentes novos, duração máxima 2 horas..."
+          placeholder="Ex: foco em escrituras pÃºblicas, para atendentes novos, duraÃ§Ã£o mÃ¡xima 2 horas..."
           className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500"
         />
       </div>
@@ -199,22 +199,22 @@ ${opt.justificativa}
           {checklists.slice(0, 3).map((c, i) => (
             <div key={i} className="flex items-center gap-3 p-2 bg-slate-900/50 rounded-xl">
               <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <span className="text-xs text-slate-700"><span className="font-bold text-[#0A1628]">{c.title}</span> — {c.items?.length || 0} requisitos</span>
+              <span className="text-xs text-slate-700"><span className="font-bold text-[#0A1628]">{c.title}</span> â€” {c.items?.length || 0} requisitos</span>
             </div>
           ))}
           {knowledgeDocs.slice(0, 3).map((d, i) => (
             <div key={i} className="flex items-center gap-3 p-2 bg-slate-900/50 rounded-xl">
               <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-              <span className="text-xs text-slate-700"><span className="font-bold text-[#0A1628]">{d.fileName || d.title}</span> — documento indexado</span>
+              <span className="text-xs text-slate-700"><span className="font-bold text-[#0A1628]">{d.fileName || d.title}</span> â€” documento indexado</span>
             </div>
           ))}
         </div>
       )}
 
-      {/* Cards de opções */}
+      {/* Cards de opÃ§Ãµes */}
       {trainingOptions.length > 0 && (
         <div className="space-y-3">
-          <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Escolha uma opção para expandir o roteiro completo:</p>
+          <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Escolha uma opÃ§Ã£o para expandir o roteiro completo:</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {trainingOptions.map((opt, i) => {
               const color = TIPO_COLOR[opt.tipo] || 'blue';
@@ -240,11 +240,11 @@ ${opt.justificativa}
                       <i className="fa-solid fa-users mr-1"></i>{opt.publico}
                     </span>
                     <span className="text-[9px] bg-slate-800 text-slate-500 px-2 py-1 rounded-lg font-bold">
-                      <i className="fa-solid fa-list-check mr-1"></i>{opt.modulos?.length || 0} módulos
+                      <i className="fa-solid fa-list-check mr-1"></i>{opt.modulos?.length || 0} mÃ³dulos
                     </span>
                   </div>
                   <p className={`text-[9px] font-black text-${color}-400 uppercase tracking-widest group-hover:underline`}>
-                    Selecionar este roteiro →
+                    Selecionar este roteiro â†’
                   </p>
                 </button>
               );
@@ -260,7 +260,7 @@ ${opt.justificativa}
             <div className="h-full flex flex-col items-center justify-center text-center opacity-30">
               <i className="fa-solid fa-graduation-cap text-5xl text-slate-600 mb-4"></i>
               <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">
-                Clique em "Gerar 3 Opções" ou faça uma pergunta
+                Clique em "Gerar 3 OpÃ§Ãµes" ou faÃ§a uma pergunta
               </p>
             </div>
           )}
@@ -277,7 +277,7 @@ ${opt.justificativa}
             <div className="flex justify-start">
               <div className="bg-slate-800 border border-slate-200 px-5 py-4 rounded-2xl">
                 <i className="fa-solid fa-circle-notch animate-spin text-blue-500"></i>
-                <span className="text-xs text-slate-500 ml-2">IA gerando opções de roteiro...</span>
+                <span className="text-xs text-slate-500 ml-2">IA gerando opÃ§Ãµes de roteiro...</span>
               </div>
             </div>
           )}
@@ -285,7 +285,7 @@ ${opt.justificativa}
             <div className="flex gap-2 flex-wrap">
               <button onClick={generateOptions} disabled={isLoading}
                 className="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-700 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
-                <i className="fa-solid fa-rotate mr-1"></i>Gerar novas opções
+                <i className="fa-solid fa-rotate mr-1"></i>Gerar novas opÃ§Ãµes
               </button>
               <button onClick={() => { navigator.clipboard.writeText(messages[messages.length - 1]?.text || ''); showToast('Roteiro copiado!', 'success'); }}
                 className="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-700 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
@@ -298,7 +298,7 @@ ${opt.justificativa}
         <div className="p-4 border-t border-slate-200 flex gap-3">
           <input value={input} onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
-            placeholder="Ex: Adapte o roteiro para apenas atendentes de balcão..."
+            placeholder="Ex: Adapte o roteiro para apenas atendentes de balcÃ£o..."
             className="flex-1 bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
           <button type="button" onClick={handleSend} disabled={isLoading || !input.trim()}
             title="Enviar mensagem"
@@ -318,13 +318,13 @@ ${opt.justificativa}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Coluna esquerda: seleção */}
+        {/* Coluna esquerda: seleÃ§Ã£o */}
         <div className="space-y-4">
-          {/* Seleção de documento */}
+          {/* SeleÃ§Ã£o de documento */}
           <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-4 space-y-3">
             <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">1. Selecione o documento</h4>
             {knowledgeDocs.length === 0 ? (
-              <p className="text-xs text-slate-500 italic">Nenhum documento na base legal. Adicione documentos na seção "Base Legal".</p>
+              <p className="text-xs text-slate-500 italic">Nenhum documento na base legal. Adicione documentos na seÃ§Ã£o "Base Legal".</p>
             ) : (
               <div className="space-y-2 max-h-52 overflow-y-auto custom-scrollbar">
                 {knowledgeDocs.map((doc, i) => (
@@ -342,7 +342,7 @@ ${opt.justificativa}
             )}
           </div>
 
-          {/* Seleção de tipo */}
+          {/* SeleÃ§Ã£o de tipo */}
           <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-4 space-y-3">
             <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">2. Tipo de resumo</h4>
             <div className="grid grid-cols-2 gap-2">
@@ -423,7 +423,7 @@ ${opt.justificativa}
         <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">
           Centro de <span className="text-blue-500">Treinamento</span>
         </h2>
-        <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">MJ Consultoria // Capacitação Notarial IA</p>
+        <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">MJ Consultoria // CapacitaÃ§Ã£o Notarial IA</p>
       </header>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { db } from '../../services/firebase';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { useApp } from '../../context/AppContext';
 
-// ─── Types ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface QuizResult {
   id: string;
@@ -68,19 +68,19 @@ interface QuestaoMetric {
 type DashTab = 'visao-geral' | 'cobertura' | 'dificuldade' | 'ranking';
 
 const DASH_TABS = [
-  { id: 'visao-geral' as DashTab, icon: 'fa-chart-pie',       label: 'Visão Geral'   },
+  { id: 'visao-geral' as DashTab, icon: 'fa-chart-pie',       label: 'VisÃ£o Geral'   },
   { id: 'cobertura'  as DashTab, icon: 'fa-users-line',       label: 'Cobertura'     },
   { id: 'dificuldade' as DashTab, icon: 'fa-triangle-exclamation', label: 'Dificuldade'  },
   { id: 'ranking'    as DashTab, icon: 'fa-ranking-star',     label: 'Ranking'       },
 ];
 
-// ─── Certificate Generator ──────────────────────────────────────────────────
+// â”€â”€â”€ Certificate Generator â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const printTrilhaCertificate = (userName: string, cargo: string, trilhaTitulo: string, nota?: number) => {
   const win = window.open('', '_blank');
   if (!win) return;
   win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
-  <title>Certificado — ${userName}</title>
+  <title>Certificado â€” ${userName}</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:Georgia,serif;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f8fafc}
@@ -109,27 +109,27 @@ const printTrilhaCertificate = (userName: string, cargo: string, trilhaTitulo: s
     <div class="corner tl"></div><div class="corner tr"></div>
     <div class="corner bl"></div><div class="corner br"></div>
     <div class="org">MJ Consultoria</div>
-    <div class="subtitle">Gestão do Conhecimento Notarial</div>
-    <div class="cert-title">Certificado de Conclusão de Trilha</div>
+    <div class="subtitle">GestÃ£o do Conhecimento Notarial</div>
+    <div class="cert-title">Certificado de ConclusÃ£o de Trilha</div>
     <div class="label">Certificamos que</div>
     <div class="name">${userName}</div>
     ${cargo ? `<div class="role">${cargo}</div>` : '<div style="margin-bottom:28px"></div>'}
-    <div class="trail-label">concluiu com êxito a Trilha de Aprendizagem</div>
+    <div class="trail-label">concluiu com Ãªxito a Trilha de Aprendizagem</div>
     <div class="trail">${trilhaTitulo}</div>
     <div class="date">em ${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}</div>
-    ${nota !== undefined ? `<div class="badge">Nota média: <strong>${nota}%</strong> — ✓ Aprovado</div>` : ''}
+    ${nota !== undefined ? `<div class="badge">Nota mÃ©dia: <strong>${nota}%</strong> â€” âœ“ Aprovado</div>` : ''}
     <div class="sigs">
-      <div class="sig">Responsável pela Trilha</div>
+      <div class="sig">ResponsÃ¡vel pela Trilha</div>
       <div class="sig">MJ Consultoria</div>
     </div>
-    <div class="footer">Documento gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}</div>
+    <div class="footer">Documento gerado em ${new Date().toLocaleDateString('pt-BR')} Ã s ${new Date().toLocaleTimeString('pt-BR')}</div>
   </div>
   <script>window.onload=()=>{window.print();window.onafterprint=()=>window.close()}</script>
   </body></html>`);
   win.document.close();
 };
 
-// ─── Main Component ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const TrainingDashboard: React.FC = () => {
   const { state } = useApp();
@@ -157,7 +157,7 @@ const TrainingDashboard: React.FC = () => {
     return () => unsubs.forEach(u => u());
   }, []);
 
-  // ── KPIs ────────────────────────────────────────────────────────────────
+  // â”€â”€ KPIs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const tenantId = state.user?.tenantId || '';
   const isSuperAdmin = state.user?.role === 'SUPERADMIN';
@@ -182,21 +182,21 @@ const TrainingDashboard: React.FC = () => {
     ? Math.round(quizResults.reduce((a, r) => a + r.nota, 0) / quizResults.length)
     : 0;
 
-  // ── Cobertura por trilha ─────────────────────────────────────────────────
+  // â”€â”€ Cobertura por trilha â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const coberturaData = useMemo(() => {
     return trilhasDoTenant.map(trilha => {
-      // Usuários que deveriam fazer (baseado nos perfis)
+      // UsuÃ¡rios que deveriam fazer (baseado nos perfis)
       const perfisAtivos = trilha.perfis || [];
-      const elegíveis = users.filter(u => perfisAtivos.includes(u.role) || perfisAtivos.length === 0).length;
+      const elegÃ­veis = users.filter(u => perfisAtivos.includes(u.role) || perfisAtivos.length === 0).length;
       const iniciaram = progressoDoTenant.filter(p => p.trilhaId === trilha.id).length;
       const concluiram = progressoDoTenant.filter(p => p.trilhaId === trilha.id && p.concluida).length;
-      const pct = elegíveis > 0 ? Math.round((concluiram / elegíveis) * 100) : 0;
-      return { trilha, elegíveis, iniciaram, concluiram, pct };
+      const pct = elegÃ­veis > 0 ? Math.round((concluiram / elegÃ­veis) * 100) : 0;
+      return { trilha, elegÃ­veis, iniciaram, concluiram, pct };
     });
   }, [trilhasDoTenant, users, progressoDoTenant]);
 
-  // ── Dificuldade por questão ──────────────────────────────────────────────
+  // â”€â”€ Dificuldade por questÃ£o â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const questaoMetrics = useMemo((): QuestaoMetric[] => {
     const metrics: QuestaoMetric[] = [];
@@ -226,7 +226,7 @@ const TrainingDashboard: React.FC = () => {
     return metrics.sort((a, b) => b.taxaErro - a.taxaErro);
   }, [quizzes, quizResults]);
 
-  // ── Ranking de colaboradores ─────────────────────────────────────────────
+  // â”€â”€ Ranking de colaboradores â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const ranking = useMemo(() => {
     const byUser: Record<string, { nome: string; cargo: string; quizzes: number; aprovados: number; notas: number[] }> = {};
@@ -249,7 +249,7 @@ const TrainingDashboard: React.FC = () => {
       .sort((a, b) => b.media - a.media);
   }, [quizResults, progressoDoTenant]);
 
-  // ── Difficulty color helper ──────────────────────────────────────────────
+  // â”€â”€ Difficulty color helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const diffColor = (taxa: number) => {
     if (taxa >= 70) return { bar: 'bg-red-500', text: 'text-red-400', badge: 'bg-red-500/10 border-red-500/30' };
@@ -257,9 +257,9 @@ const TrainingDashboard: React.FC = () => {
     return { bar: 'bg-emerald-500', text: 'text-emerald-400', badge: 'bg-emerald-500/10 border-emerald-500/30' };
   };
 
-  // ─────────────────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // RENDER
-  // ─────────────────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const renderVisaoGeral = () => (
     <div className="space-y-6">
@@ -269,8 +269,8 @@ const TrainingDashboard: React.FC = () => {
         {[
           { label: 'Colaboradores Ativos', value: users.length,           icon: 'fa-users',         color: 'blue'    },
           { label: 'Com Trilha Iniciada',  value: usuariosComTrilha,       icon: 'fa-road',          color: 'purple'  },
-          { label: 'Trilhas Concluídas',   value: trilhasConcluidas,       icon: 'fa-circle-check',  color: 'emerald' },
-          { label: 'Média Geral Provas',   value: `${mediaGeral}%`,        icon: 'fa-chart-line',    color: 'amber'   },
+          { label: 'Trilhas ConcluÃ­das',   value: trilhasConcluidas,       icon: 'fa-circle-check',  color: 'emerald' },
+          { label: 'MÃ©dia Geral Provas',   value: `${mediaGeral}%`,        icon: 'fa-chart-line',    color: 'amber'   },
         ].map((kpi, i) => (
           <div key={i} className="bg-white border border-slate-200 rounded-[24px] p-6 space-y-3">
             <i className={`fa-solid ${kpi.icon} text-${kpi.color}-500 text-xl`}></i>
@@ -280,13 +280,13 @@ const TrainingDashboard: React.FC = () => {
         ))}
       </div>
 
-      {/* Cobertura geral rápida */}
+      {/* Cobertura geral rÃ¡pida */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-        {/* Funcionários x Trilhas */}
+        {/* FuncionÃ¡rios x Trilhas */}
         <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-5 space-y-4">
           <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
-            Funcionários × Trilhas
+            FuncionÃ¡rios Ã— Trilhas
           </h4>
           {trilhasDoTenant.length === 0 ? (
             <p className="text-xs text-slate-600 italic">Nenhuma trilha ativa cadastrada.</p>
@@ -299,7 +299,7 @@ const TrainingDashboard: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-slate-700 truncate max-w-[60%]">{trilha.titulo}</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-[9px] text-slate-500">{cobertura.concluiram}/{cobertura.elegíveis}</span>
+                      <span className="text-[9px] text-slate-500">{cobertura.concluiram}/{cobertura.elegÃ­veis}</span>
                       <span className={`text-[9px] font-black ${cobertura.pct >= 80 ? 'text-emerald-400' : cobertura.pct >= 50 ? 'text-amber-400' : 'text-red-400'}`}>
                         {cobertura.pct}%
                       </span>
@@ -317,10 +317,10 @@ const TrainingDashboard: React.FC = () => {
           )}
         </div>
 
-        {/* Top Questões Difíceis */}
+        {/* Top QuestÃµes DifÃ­ceis */}
         <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-5 space-y-3">
           <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
-            Top 5 Questões Mais Difíceis
+            Top 5 QuestÃµes Mais DifÃ­ceis
           </h4>
           {questaoMetrics.length === 0 ? (
             <p className="text-xs text-slate-600 italic">Nenhuma tentativa registrada ainda.</p>
@@ -332,7 +332,7 @@ const TrainingDashboard: React.FC = () => {
                   <span className={`text-lg font-black ${dc.text} flex-shrink-0 w-6 text-center`}>{i + 1}</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs text-slate-700 truncate">{m.texto}</p>
-                    <p className="text-[9px] text-slate-500 mt-0.5">{m.treinamento} · {m.totalTentativas} tentativas</p>
+                    <p className="text-[9px] text-slate-500 mt-0.5">{m.treinamento} Â· {m.totalTentativas} tentativas</p>
                   </div>
                   <span className={`text-[9px] font-black px-2 py-1 rounded-lg border flex-shrink-0 ${dc.badge} ${dc.text}`}>
                     {m.taxaErro}% erros
@@ -344,16 +344,16 @@ const TrainingDashboard: React.FC = () => {
           {questaoMetrics.length > 5 && (
             <button type="button" onClick={() => setActiveTab('dificuldade')}
               className="text-[9px] text-blue-400 hover:text-blue-300 font-black uppercase tracking-widest transition-colors">
-              Ver todas →
+              Ver todas â†’
             </button>
           )}
         </div>
       </div>
 
-      {/* Taxa de aprovação por treinamento */}
+      {/* Taxa de aprovaÃ§Ã£o por treinamento */}
       <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-5 space-y-4">
         <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
-          Taxa de Aprovação por Treinamento
+          Taxa de AprovaÃ§Ã£o por Treinamento
         </h4>
         {(() => {
           const treinamentosUnicos = [...new Set(quizResults.map(r => r.treinamento))];
@@ -370,11 +370,11 @@ const TrainingDashboard: React.FC = () => {
                     <p className="text-xs font-black text-[#0A1628] truncate">{t}</p>
                     <div className="flex gap-3">
                       <div>
-                        <p className="text-[8px] text-slate-500 uppercase tracking-widest">Aprovação</p>
+                        <p className="text-[8px] text-slate-500 uppercase tracking-widest">AprovaÃ§Ã£o</p>
                         <p className={`text-lg font-black ${taxa >= 70 ? 'text-emerald-400' : taxa >= 50 ? 'text-amber-400' : 'text-red-400'}`}>{taxa}%</p>
                       </div>
                       <div>
-                        <p className="text-[8px] text-slate-500 uppercase tracking-widest">Média</p>
+                        <p className="text-[8px] text-slate-500 uppercase tracking-widest">MÃ©dia</p>
                         <p className="text-lg font-black text-[#0A1628]">{media}%</p>
                       </div>
                       <div>
@@ -400,7 +400,7 @@ const TrainingDashboard: React.FC = () => {
       <div>
         <h3 className="text-[#0A1628] font-black uppercase italic text-sm">Cobertura de Trilhas</h3>
         <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">
-          Funcionários elegíveis × Concluintes por trilha
+          FuncionÃ¡rios elegÃ­veis Ã— Concluintes por trilha
         </p>
       </div>
 
@@ -411,7 +411,7 @@ const TrainingDashboard: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          {coberturaData.map(({ trilha, elegíveis, iniciaram, concluiram, pct }) => (
+          {coberturaData.map(({ trilha, elegÃ­veis, iniciaram, concluiram, pct }) => (
             <div key={trilha.id} className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-5 space-y-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -438,9 +438,9 @@ const TrainingDashboard: React.FC = () => {
               {/* Stats */}
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { label: 'Elegíveis', value: elegíveis, color: 'blue', icon: 'fa-users' },
+                  { label: 'ElegÃ­veis', value: elegÃ­veis, color: 'blue', icon: 'fa-users' },
                   { label: 'Iniciaram', value: iniciaram, color: 'amber', icon: 'fa-play' },
-                  { label: 'Concluíram', value: concluiram, color: 'emerald', icon: 'fa-circle-check' },
+                  { label: 'ConcluÃ­ram', value: concluiram, color: 'emerald', icon: 'fa-circle-check' },
                 ].map((s, i) => (
                   <div key={i} className="bg-slate-900/50 rounded-xl p-3 text-center">
                     <i className={`fa-solid ${s.icon} text-${s.color}-400 text-sm mb-1 block`}></i>
@@ -450,7 +450,7 @@ const TrainingDashboard: React.FC = () => {
                 ))}
               </div>
 
-              {/* Usuários que concluíram */}
+              {/* UsuÃ¡rios que concluÃ­ram */}
               {progressoDoTenant.filter(p => p.trilhaId === trilha.id && p.concluida).length > 0 && (
                 <div className="space-y-2">
                   <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Concluintes</p>
@@ -494,7 +494,7 @@ const TrainingDashboard: React.FC = () => {
       <div>
         <h3 className="text-[#0A1628] font-black uppercase italic text-sm">Assuntos com Maior Dificuldade</h3>
         <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">
-          Questões com maior taxa de erro nas avaliações
+          QuestÃµes com maior taxa de erro nas avaliaÃ§Ãµes
         </p>
       </div>
 
@@ -502,15 +502,15 @@ const TrainingDashboard: React.FC = () => {
         <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-10 text-center">
           <i className="fa-solid fa-triangle-exclamation text-4xl text-slate-700 mb-3 block"></i>
           <p className="text-slate-600 text-xs font-bold uppercase tracking-widest">Nenhuma tentativa registrada ainda</p>
-          <p className="text-slate-700 text-xs mt-1">As métricas aparecerão após os colaboradores realizarem as avaliações</p>
+          <p className="text-slate-700 text-xs mt-1">As mÃ©tricas aparecerÃ£o apÃ³s os colaboradores realizarem as avaliaÃ§Ãµes</p>
         </div>
       ) : (
         <>
           {/* Legenda */}
           <div className="flex flex-wrap gap-3">
             {[
-              { color: 'bg-red-500',     label: 'Alta dificuldade ≥ 70% erros',   text: 'text-red-400'     },
-              { color: 'bg-amber-500',   label: 'Média dificuldade 40-69% erros', text: 'text-amber-400'   },
+              { color: 'bg-red-500',     label: 'Alta dificuldade â‰¥ 70% erros',   text: 'text-red-400'     },
+              { color: 'bg-amber-500',   label: 'MÃ©dia dificuldade 40-69% erros', text: 'text-amber-400'   },
               { color: 'bg-emerald-500', label: 'Baixa dificuldade < 40% erros',  text: 'text-emerald-400' },
             ].map((l, i) => (
               <div key={i} className="flex items-center gap-2">
@@ -565,13 +565,13 @@ const TrainingDashboard: React.FC = () => {
     <div className="space-y-6">
       <div>
         <h3 className="text-[#0A1628] font-black uppercase italic text-sm">Ranking de Desempenho</h3>
-        <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Colaboradores ordenados por nota média</p>
+        <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Colaboradores ordenados por nota mÃ©dia</p>
       </div>
 
       {ranking.length === 0 ? (
         <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-10 text-center">
           <i className="fa-solid fa-ranking-star text-4xl text-slate-700 mb-3 block"></i>
-          <p className="text-slate-600 text-xs font-bold uppercase tracking-widest">Nenhum resultado de avaliação ainda</p>
+          <p className="text-slate-600 text-xs font-bold uppercase tracking-widest">Nenhum resultado de avaliaÃ§Ã£o ainda</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -581,7 +581,7 @@ const TrainingDashboard: React.FC = () => {
             const scoreColor = user.media >= 80 ? 'text-emerald-400' : user.media >= 70 ? 'text-amber-400' : 'text-red-400';
             return (
               <div key={user.nome} className="bg-[#0D1B3E] border border-slate-200 hover:border-slate-200 rounded-2xl p-4 flex items-center gap-4 transition-all group">
-                {/* Posição */}
+                {/* PosiÃ§Ã£o */}
                 <div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
                   <i className={`fa-solid ${medalIcon} text-xl ${medalColor}`}></i>
                 </div>
@@ -603,23 +603,23 @@ const TrainingDashboard: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-4 mt-1 flex-wrap">
                     <span className="text-[9px] text-slate-500">
-                      <i className="fa-solid fa-clipboard-question mr-1"></i>{user.quizzes} avaliações
+                      <i className="fa-solid fa-clipboard-question mr-1"></i>{user.quizzes} avaliaÃ§Ãµes
                     </span>
                     <span className="text-[9px] text-slate-500">
                       <i className="fa-solid fa-circle-check text-emerald-500 mr-1"></i>{user.aprovados} aprovadas
                     </span>
                     {user.trilhasConcluidas > 0 && (
                       <span className="text-[9px] text-emerald-400">
-                        <i className="fa-solid fa-road mr-1"></i>{user.trilhasConcluidas} trilha{user.trilhasConcluidas > 1 ? 's' : ''} concluída{user.trilhasConcluidas > 1 ? 's' : ''}
+                        <i className="fa-solid fa-road mr-1"></i>{user.trilhasConcluidas} trilha{user.trilhasConcluidas > 1 ? 's' : ''} concluÃ­da{user.trilhasConcluidas > 1 ? 's' : ''}
                       </span>
                     )}
                   </div>
                 </div>
 
-                {/* Nota média */}
+                {/* Nota mÃ©dia */}
                 <div className="text-right flex-shrink-0">
                   <p className={`text-2xl font-black ${scoreColor}`}>{user.media}%</p>
-                  <p className="text-[8px] text-slate-500 uppercase tracking-widest">nota média</p>
+                  <p className="text-[8px] text-slate-500 uppercase tracking-widest">nota mÃ©dia</p>
                 </div>
 
                 {/* Certificado */}
@@ -649,9 +649,9 @@ const TrainingDashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-[#0A1628] font-black uppercase italic text-sm">Dashboard de Gestão</h3>
+        <h3 className="text-[#0A1628] font-black uppercase italic text-sm">Dashboard de GestÃ£o</h3>
         <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">
-          Métricas de desempenho, cobertura de trilhas e dificuldade
+          MÃ©tricas de desempenho, cobertura de trilhas e dificuldade
         </p>
       </div>
 

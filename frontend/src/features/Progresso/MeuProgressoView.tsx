@@ -1,5 +1,5 @@
-// frontend/src/features/Progresso/MeuProgressoView.tsx
-// Meu Progresso — Trilhas, Badges, Certificados, Histórico
+﻿// frontend/src/features/Progresso/MeuProgressoView.tsx
+// Meu Progresso â€” Trilhas, Badges, Certificados, HistÃ³rico
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
@@ -13,12 +13,12 @@ interface Certificado { id: string; colaboradorNome: string; trilhaTitulo: strin
 
 function pct(a: number, b: number) { return b === 0 ? 0 : Math.round((a / b) * 100); }
 function formatDate(ts: any) {
-  if (!ts) return '–';
+  if (!ts) return 'â€“';
   const d = ts?.toDate ? ts.toDate() : new Date(ts);
   return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
-// ── BADGE DEFINITIONS ────────────────────────────────────────────────────────
+// â”€â”€ BADGE DEFINITIONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface BadgeDef {
   id: string; nome: string; desc: string; icon: string;
@@ -35,26 +35,26 @@ interface BadgeData {
 const BADGES: BadgeDef[] = [
   // Primeiros passos
   { id: 'primeiro_teste',   nome: 'Primeiro Passo',      desc: 'Realizou o primeiro teste',              icon: 'fa-shoe-prints',       color: '#92400e', bg: '#fef3c7', border: '#fbbf24', nivel: 'bronze',  check: (d) => d.quizResults.length >= 1 },
-  { id: 'aprovado',         nome: 'Aprovado',             desc: 'Passou em um teste com nota ≥ 75%',      icon: 'fa-circle-check',      color: '#065f46', bg: '#d1fae5', border: '#34d399', nivel: 'bronze',  check: (d) => d.quizResults.some(r => r.aprovado) },
-  { id: 'modulo_concluido', nome: 'Módulo Concluído',     desc: 'Concluiu o primeiro módulo',             icon: 'fa-book-open-reader',  color: '#1e40af', bg: '#dbeafe', border: '#60a5fa', nivel: 'bronze',  check: (d) => d.progresso.filter(p => p.concluido).length >= 1 },
+  { id: 'aprovado',         nome: 'Aprovado',             desc: 'Passou em um teste com nota â‰¥ 75%',      icon: 'fa-circle-check',      color: '#065f46', bg: '#d1fae5', border: '#34d399', nivel: 'bronze',  check: (d) => d.quizResults.some(r => r.aprovado) },
+  { id: 'modulo_concluido', nome: 'MÃ³dulo ConcluÃ­do',     desc: 'Concluiu o primeiro mÃ³dulo',             icon: 'fa-book-open-reader',  color: '#1e40af', bg: '#dbeafe', border: '#60a5fa', nivel: 'bronze',  check: (d) => d.progresso.filter(p => p.concluido).length >= 1 },
   // Desempenho
-  { id: 'nota_90',          nome: 'Excelência',           desc: 'Obteve nota ≥ 90% em algum teste',       icon: 'fa-star',              color: '#b45309', bg: '#fef9c3', border: '#fbbf24', nivel: 'prata',   check: (d) => d.quizResults.some(r => r.nota >= 90) },
-  { id: 'nota_100',         nome: 'Perfeição',            desc: 'Obteve nota 100% em algum teste',        icon: 'fa-crown',             color: '#7c3aed', bg: '#ede9fe', border: '#a78bfa', nivel: 'ouro',    check: (d) => d.quizResults.some(r => r.nota >= 100) },
+  { id: 'nota_90',          nome: 'ExcelÃªncia',           desc: 'Obteve nota â‰¥ 90% em algum teste',       icon: 'fa-star',              color: '#b45309', bg: '#fef9c3', border: '#fbbf24', nivel: 'prata',   check: (d) => d.quizResults.some(r => r.nota >= 90) },
+  { id: 'nota_100',         nome: 'PerfeiÃ§Ã£o',            desc: 'Obteve nota 100% em algum teste',        icon: 'fa-crown',             color: '#7c3aed', bg: '#ede9fe', border: '#a78bfa', nivel: 'ouro',    check: (d) => d.quizResults.some(r => r.nota >= 100) },
   { id: 'sem_erros',        nome: 'Zero Erro',            desc: '5 testes consecutivos aprovados',        icon: 'fa-shield-halved',     color: '#065f46', bg: '#d1fae5', border: '#10b981', nivel: 'prata',   check: (d) => { let seq = 0; for (const r of [...d.quizResults].reverse()) { if (r.aprovado) seq++; else break; } return seq >= 5; } },
   // IA
   { id: 'teste_ia',         nome: 'IA Explorer',          desc: 'Realizou teste gerado por IA',           icon: 'fa-robot',             color: '#4338ca', bg: '#eef2ff', border: '#818cf8', nivel: 'prata',   check: (d) => d.quizResults.some(r => r.ia) },
   { id: 'mestre_ia',        nome: 'Mestre IA',            desc: '10 testes com IA aprovados',             icon: 'fa-brain',             color: '#7c3aed', bg: '#f5f3ff', border: '#a78bfa', nivel: 'ouro',    check: (d) => d.quizResults.filter(r => r.ia && r.aprovado).length >= 10 },
   // Trilhas
-  { id: 'trilha_lgpd',      nome: 'Guardião LGPD',        desc: 'Concluiu a trilha LGPD',                 icon: 'fa-lock',              color: '#0f766e', bg: '#ccfbf1', border: '#2dd4bf', nivel: 'ouro',    check: (d) => d.progresso.some(p => p.concluido && p.trilhaTitulo?.toLowerCase().includes('lgpd')) },
+  { id: 'trilha_lgpd',      nome: 'GuardiÃ£o LGPD',        desc: 'Concluiu a trilha LGPD',                 icon: 'fa-lock',              color: '#0f766e', bg: '#ccfbf1', border: '#2dd4bf', nivel: 'ouro',    check: (d) => d.progresso.some(p => p.concluido && p.trilhaTitulo?.toLowerCase().includes('lgpd')) },
   { id: 'trilha_p213',      nome: 'Cyber Shield',         desc: 'Concluiu a trilha Provimento 213',       icon: 'fa-shield-virus',      color: '#1d4ed8', bg: '#dbeafe', border: '#3b82f6', nivel: 'ouro',    check: (d) => d.progresso.some(p => p.concluido && p.trilhaTitulo?.toLowerCase().includes('213')) },
   { id: 'trilha_p161',      nome: 'Vigilante PLD',        desc: 'Concluiu a trilha Provimento 161',       icon: 'fa-eye',               color: '#b45309', bg: '#fef3c7', border: '#f59e0b', nivel: 'ouro',    check: (d) => d.progresso.some(p => p.concluido && p.trilhaTitulo?.toLowerCase().includes('161')) },
-  { id: 'todas_trilhas',    nome: 'Mestre Notarial',      desc: 'Concluiu todas as trilhas disponíveis',  icon: 'fa-graduation-cap',    color: '#7c3aed', bg: '#f5f3ff', border: '#7c3aed', nivel: 'platina', check: (d) => { const total = d.trilhas.length; const done = new Set(d.progresso.filter(p => p.concluido).map(p => p.trilhaId)).size; return total > 0 && done >= total; } },
+  { id: 'todas_trilhas',    nome: 'Mestre Notarial',      desc: 'Concluiu todas as trilhas disponÃ­veis',  icon: 'fa-graduation-cap',    color: '#7c3aed', bg: '#f5f3ff', border: '#7c3aed', nivel: 'platina', check: (d) => { const total = d.trilhas.length; const done = new Set(d.progresso.filter(p => p.concluido).map(p => p.trilhaId)).size; return total > 0 && done >= total; } },
   // Certificados
   { id: 'primeiro_cert',    nome: 'Certificado',          desc: 'Emitiu o primeiro certificado',          icon: 'fa-certificate',       color: '#b45309', bg: '#fefce8', border: '#eab308', nivel: 'prata',   check: (d) => d.certificados.length >= 1 },
   { id: 'tres_certs',       nome: 'Colecionador',         desc: 'Emitiu 3 certificados',                  icon: 'fa-medal',             color: '#0369a1', bg: '#e0f2fe', border: '#38bdf8', nivel: 'ouro',    check: (d) => d.certificados.length >= 3 },
   // Engajamento
   { id: 'dez_testes',       nome: 'Dedicado',             desc: 'Realizou 10 testes',                     icon: 'fa-fire',              color: '#dc2626', bg: '#fee2e2', border: '#f87171', nivel: 'prata',   check: (d) => d.quizResults.length >= 10 },
-  { id: 'trinta_testes',    nome: 'Imparável',            desc: 'Realizou 30 testes',                     icon: 'fa-bolt',              color: '#d97706', bg: '#fef3c7', border: '#fbbf24', nivel: 'platina', check: (d) => d.quizResults.length >= 30 },
+  { id: 'trinta_testes',    nome: 'ImparÃ¡vel',            desc: 'Realizou 30 testes',                     icon: 'fa-bolt',              color: '#d97706', bg: '#fef3c7', border: '#fbbf24', nivel: 'platina', check: (d) => d.quizResults.length >= 30 },
 ];
 
 const NIVEL_CONFIG = {
@@ -64,7 +64,7 @@ const NIVEL_CONFIG = {
   platina: { label: 'Platina', color: '#7c3aed', bg: '#f5f3ff', icon: 'fa-circle' },
 };
 
-// ── BADGE CARD ────────────────────────────────────────────────────────────────
+// â”€â”€ BADGE CARD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const BadgeCard: React.FC<{ badge: BadgeDef; earned: boolean }> = ({ badge, earned }) => {
   const nc = NIVEL_CONFIG[badge.nivel];
@@ -88,7 +88,7 @@ const BadgeCard: React.FC<{ badge: BadgeDef; earned: boolean }> = ({ badge, earn
   );
 };
 
-// ── MAIN ─────────────────────────────────────────────────────────────────────
+// â”€â”€ MAIN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type Tab = 'resumo' | 'badges' | 'historico' | 'certificados';
 
@@ -155,7 +155,7 @@ const MeuProgressoView: React.FC = () => {
           </div>
           <div>
             <h2 className="text-2xl font-black text-[#0A1628]">{userName}</h2>
-            <p className="text-sm text-slate-500">{user.cargo || 'Colaborador'} · {earnedBadges.length}/{totalBadges} badges conquistados</p>
+            <p className="text-sm text-slate-500">{user.cargo || 'Colaborador'} Â· {earnedBadges.length}/{totalBadges} badges conquistados</p>
           </div>
           <div className="ml-auto hidden md:flex items-center gap-2 bg-white border border-slate-200 px-3 py-2 rounded-xl">
             <i className="fa-solid fa-trophy text-[#C9A84C] text-xs"></i>
@@ -166,9 +166,9 @@ const MeuProgressoView: React.FC = () => {
         {/* KPIs */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'Módulos',      value: `${doneMods}/${totalMods}`, sub: `${globalPct}% concluído`, icon: 'fa-book-open',    color: '#4F46E5' },
-            { label: 'Aprovações',   value: aprovados,                  sub: `de ${myRes.length} testes`, icon: 'fa-circle-check', color: '#059669' },
-            { label: 'Média Geral',  value: `${mediaGeral}%`,           sub: 'nos testes',              icon: 'fa-chart-bar',    color: '#D97706' },
+            { label: 'MÃ³dulos',      value: `${doneMods}/${totalMods}`, sub: `${globalPct}% concluÃ­do`, icon: 'fa-book-open',    color: '#4F46E5' },
+            { label: 'AprovaÃ§Ãµes',   value: aprovados,                  sub: `de ${myRes.length} testes`, icon: 'fa-circle-check', color: '#059669' },
+            { label: 'MÃ©dia Geral',  value: `${mediaGeral}%`,           sub: 'nos testes',              icon: 'fa-chart-bar',    color: '#D97706' },
             { label: 'Certificados', value: myCerts.length,             sub: 'emitidos',                icon: 'fa-certificate',  color: '#7C3AED' },
           ].map((k, i) => (
             <div key={i} className="bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
@@ -192,7 +192,7 @@ const MeuProgressoView: React.FC = () => {
             <div className="h-2.5 rounded-full bg-[#C9A84C] transition-all duration-700" style={{ width: `${globalPct}%` }}></div>
           </div>
           <div className="flex items-center gap-4 mt-3">
-            <span className="text-[11px] text-slate-500">Aprovação mínima: <strong className="text-slate-600">75%</strong></span>
+            <span className="text-[11px] text-slate-500">AprovaÃ§Ã£o mÃ­nima: <strong className="text-slate-600">75%</strong></span>
             <span className="text-[11px] text-slate-500">Badges: <strong className="text-slate-600">{earnedBadges.length}/{totalBadges}</strong></span>
             <span className="text-[11px] text-slate-500">Certificados: <strong className="text-slate-600">{myCerts.length}</strong></span>
           </div>
@@ -204,7 +204,7 @@ const MeuProgressoView: React.FC = () => {
             {[
               { id: 'resumo',       label: 'Trilhas',      icon: 'fa-road'          },
               { id: 'badges',       label: 'Badges',       icon: 'fa-medal'         },
-              { id: 'historico',    label: 'Histórico',    icon: 'fa-clock-rotate-left' },
+              { id: 'historico',    label: 'HistÃ³rico',    icon: 'fa-clock-rotate-left' },
               { id: 'certificados', label: 'Certificados', icon: 'fa-certificate'   },
             ].map(t => (
               <button key={t.id} onClick={() => setTab(t.id as Tab)}
@@ -218,13 +218,13 @@ const MeuProgressoView: React.FC = () => {
             ))}
           </div>
 
-          {/* ── TRILHAS ──────────────────────────────────────────────── */}
+          {/* â”€â”€ TRILHAS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           {tab === 'resumo' && (
             <div className="p-5">
               {trilhas.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-slate-500">
                   <i className="fa-solid fa-road text-4xl mb-3 opacity-30"></i>
-                  <p className="text-sm">Nenhuma trilha disponível ainda.</p>
+                  <p className="text-sm">Nenhuma trilha disponÃ­vel ainda.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -241,15 +241,15 @@ const MeuProgressoView: React.FC = () => {
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: cor + '20', color: cor }}>
-                              {t.icone || '📚'}
+                              {t.icone || 'ðŸ“š'}
                             </div>
                             <div>
                               <p className="text-sm font-black text-[#0A1628] leading-tight">{t.titulo}</p>
-                              <p className="text-[10px] text-slate-500">{done}/{mods} módulos</p>
+                              <p className="text-[10px] text-slate-500">{done}/{mods} mÃ³dulos</p>
                             </div>
                           </div>
                           {p === 100
-                            ? <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200">✓ Concluída</span>
+                            ? <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200">âœ“ ConcluÃ­da</span>
                             : <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-white text-[#C9A84C]">{p}%</span>
                           }
                         </div>
@@ -257,7 +257,7 @@ const MeuProgressoView: React.FC = () => {
                           <div className="h-1.5 rounded-full transition-all" style={{ width: `${p}%`, background: p === 100 ? '#059669' : cor }}></div>
                         </div>
                         {media !== null && (
-                          <p className="text-[10px] text-slate-500 mt-1">Média nos testes: <strong style={{ color: media >= 75 ? '#059669' : '#dc2626' }}>{media}%</strong></p>
+                          <p className="text-[10px] text-slate-500 mt-1">MÃ©dia nos testes: <strong style={{ color: media >= 75 ? '#059669' : '#dc2626' }}>{media}%</strong></p>
                         )}
                       </div>
                     );
@@ -267,7 +267,7 @@ const MeuProgressoView: React.FC = () => {
             </div>
           )}
 
-          {/* ── BADGES ────────────────────────────────────────────────── */}
+          {/* â”€â”€ BADGES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           {tab === 'badges' && (
             <div className="p-5 space-y-6">
               <div className="flex items-center justify-between">
@@ -282,7 +282,7 @@ const MeuProgressoView: React.FC = () => {
                 <div key={nivel}>
                   <p className="text-[10px] font-black uppercase tracking-widest mb-3"
                     style={{ color: NIVEL_CONFIG[nivel as keyof typeof NIVEL_CONFIG].color }}>
-                    {NIVEL_CONFIG[nivel as keyof typeof NIVEL_CONFIG].label} — {badges.filter(b => b.check(badgeData)).length}/{badges.length}
+                    {NIVEL_CONFIG[nivel as keyof typeof NIVEL_CONFIG].label} â€” {badges.filter(b => b.check(badgeData)).length}/{badges.length}
                   </p>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                     {badges.map(b => <BadgeCard key={b.id} badge={b} earned={b.check(badgeData)} />)}
@@ -292,7 +292,7 @@ const MeuProgressoView: React.FC = () => {
             </div>
           )}
 
-          {/* ── HISTÓRICO ─────────────────────────────────────────────── */}
+          {/* â”€â”€ HISTÃ“RICO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           {tab === 'historico' && (
             <div className="p-5">
               {myRes.length === 0 ? (
@@ -306,10 +306,10 @@ const MeuProgressoView: React.FC = () => {
                     <div key={i} className="border border-slate-200 rounded-[12px] p-4 flex items-center gap-3 bg-white">
                       <i className={'fa-solid text-lg flex-shrink-0 ' + (r.aprovado ? 'fa-circle-check text-emerald-500' : 'fa-circle-xmark text-red-400')}></i>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold text-[#0A1628] truncate">{r.trailTitle}{r.moduleTitle ? ' · ' + r.moduleTitle : ''}</p>
+                        <p className="text-xs font-bold text-[#0A1628] truncate">{r.trailTitle}{r.moduleTitle ? ' Â· ' + r.moduleTitle : ''}</p>
                         <div className="flex items-center gap-2 mt-0.5">
                           <p className="text-[10px] text-slate-500">{formatDate(r.createdAt)}</p>
-                          {r.ia && <span className="text-[9px] font-black bg-white text-[#C9A84C] px-1.5 py-0.5 rounded-lg">✨ IA</span>}
+                          {r.ia && <span className="text-[9px] font-black bg-white text-[#C9A84C] px-1.5 py-0.5 rounded-lg">âœ¨ IA</span>}
                           <span className={'text-[9px] font-black px-1.5 py-0.5 rounded-lg ' + (r.aprovado ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500')}>
                             {r.aprovado ? 'Aprovado' : 'Reprovado'}
                           </span>
@@ -323,7 +323,7 @@ const MeuProgressoView: React.FC = () => {
             </div>
           )}
 
-          {/* ── CERTIFICADOS ──────────────────────────────────────────── */}
+          {/* â”€â”€ CERTIFICADOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           {tab === 'certificados' && (
             <div className="p-5">
               {myCerts.length === 0 ? (
@@ -348,7 +348,7 @@ const MeuProgressoView: React.FC = () => {
                       </div>
                       {c.codigoVerificacao && (
                         <p className="text-[9px] text-slate-500 font-mono bg-white/60 px-2 py-1 rounded-lg">
-                          Cód: {c.codigoVerificacao}
+                          CÃ³d: {c.codigoVerificacao}
                         </p>
                       )}
                     </div>

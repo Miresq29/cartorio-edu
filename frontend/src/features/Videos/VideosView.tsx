@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { db } from '../../services/firebase';
@@ -21,7 +21,7 @@ interface Video {
 const CATEGORIAS = [
   { id: 'onboarding',   label: 'Onboarding',    color: 'emerald', icon: 'fa-door-open'       },
   { id: 'normativo',    label: 'Normativo',      color: 'blue',    icon: 'fa-scale-balanced'  },
-  { id: 'tecnico',      label: 'Técnico',        color: 'purple',  icon: 'fa-screwdriver-wrench' },
+  { id: 'tecnico',      label: 'TÃ©cnico',        color: 'purple',  icon: 'fa-screwdriver-wrench' },
   { id: 'operacional',  label: 'Operacional',    color: 'amber',   icon: 'fa-gears'           },
   { id: 'comportamental', label: 'Comportamental', color: 'pink',  icon: 'fa-handshake'       },
 ];
@@ -89,7 +89,7 @@ const VideosView: React.FC = () => {
 
   const salvarVideo = async () => {
     const yid = extractYouTubeId(form.youtubeUrl);
-    if (!yid) { showToast('Link do YouTube inválido.', 'error'); return; }
+    if (!yid) { showToast('Link do YouTube invÃ¡lido.', 'error'); return; }
     setLoading(true);
     try {
       await addDoc(collection(db, 'videos'), {
@@ -97,16 +97,16 @@ const VideosView: React.FC = () => {
         tenantId: state.user?.tenantId || '', publicadoPor: state.user?.id || '',
         createdAt: serverTimestamp(),
       });
-      showToast('Vídeo adicionado!', 'success');
+      showToast('VÃ­deo adicionado!', 'success');
       setForm({ titulo: '', descricao: '', youtubeUrl: '', categoria: 'onboarding', trilhaTitulo: '', duracaoMin: 5 });
       setShowForm(false);
-    } catch { showToast('Erro ao salvar vídeo.', 'error'); } finally { setLoading(false); }
+    } catch { showToast('Erro ao salvar vÃ­deo.', 'error'); } finally { setLoading(false); }
   };
 
   const excluirVideo = async (id: string) => {
-    if (!confirm('Excluir este vídeo?')) return;
+    if (!confirm('Excluir este vÃ­deo?')) return;
     await updateDoc(doc(db, 'videos', id), { ativo: false });
-    showToast('Vídeo removido.', 'success');
+    showToast('VÃ­deo removido.', 'success');
   };
 
   const getCatInfo = (id: string) => CATEGORIAS.find(c => c.id === id) || CATEGORIAS[0];
@@ -116,27 +116,27 @@ const VideosView: React.FC = () => {
       <header className="flex items-start justify-between">
         <div>
           <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">
-            Vídeos de <span className="text-red-500">Treinamento</span>
+            VÃ­deos de <span className="text-red-500">Treinamento</span>
           </h2>
-          <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">Biblioteca de conteúdo em vídeo</p>
+          <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">Biblioteca de conteÃºdo em vÃ­deo</p>
         </div>
         {isGestor && (
           <button onClick={() => setShowForm(!showForm)}
             className="bg-red-600 hover:bg-red-500 text-[#0A1628] px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
-            <i className="fa-solid fa-plus"></i> Adicionar Vídeo
+            <i className="fa-solid fa-plus"></i> Adicionar VÃ­deo
           </button>
         )}
       </header>
 
-      {/* Formulário */}
+      {/* FormulÃ¡rio */}
       {showForm && isGestor && (
         <div className="bg-white border border-slate-200 rounded-[24px] p-6 space-y-4">
-          <h3 className="text-[#0A1628] font-black uppercase text-sm">Novo Vídeo de Treinamento</h3>
+          <h3 className="text-[#0A1628] font-black uppercase text-sm">Novo VÃ­deo de Treinamento</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Título *</label>
+              <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">TÃ­tulo *</label>
               <input value={form.titulo} onChange={e => setForm(p => ({ ...p, titulo: e.target.value }))}
-                placeholder="Ex: Introdução ao Registro de Imóveis"
+                placeholder="Ex: IntroduÃ§Ã£o ao Registro de ImÃ³veis"
                 className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-red-500" />
             </div>
             <div>
@@ -159,21 +159,21 @@ const VideosView: React.FC = () => {
                 className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-red-500" />
             </div>
             <div>
-              <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Duração (minutos)</label>
+              <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">DuraÃ§Ã£o (minutos)</label>
               <input type="number" min={1} max={60} value={form.duracaoMin} onChange={e => setForm(p => ({ ...p, duracaoMin: +e.target.value }))}
                 className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-red-500" />
             </div>
             <div>
-              <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Descrição</label>
+              <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">DescriÃ§Ã£o</label>
               <input value={form.descricao} onChange={e => setForm(p => ({ ...p, descricao: e.target.value }))}
-                placeholder="Breve descrição do conteúdo"
+                placeholder="Breve descriÃ§Ã£o do conteÃºdo"
                 className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-red-500" />
             </div>
           </div>
           <div className="flex gap-3">
             <button onClick={salvarVideo} disabled={loading || !form.titulo || !form.youtubeUrl}
               className="bg-red-600 hover:bg-red-500 disabled:opacity-50 text-[#0A1628] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
-              {loading ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Salvando...</> : <><i className="fa-solid fa-check mr-2"></i>Salvar Vídeo</>}
+              {loading ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Salvando...</> : <><i className="fa-solid fa-check mr-2"></i>Salvar VÃ­deo</>}
             </button>
             <button onClick={() => setShowForm(false)} className="bg-slate-800 hover:bg-slate-700 text-slate-700 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
               Cancelar
@@ -184,7 +184,7 @@ const VideosView: React.FC = () => {
 
       {/* Filtros */}
       <div className="flex flex-wrap gap-3 items-center">
-        <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar vídeo..."
+        <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar vÃ­deo..."
           className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-red-500 w-64" />
         <button onClick={() => setFiltroCategoria('')}
           className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${!filtroCategoria ? 'bg-red-600 text-[#0A1628]' : 'bg-slate-900 text-slate-500 hover:bg-slate-800'}`}>
@@ -196,15 +196,15 @@ const VideosView: React.FC = () => {
             <i className={`fa-solid ${c.icon} mr-1.5`}></i>{c.label}
           </button>
         ))}
-        <span className="ml-auto text-[10px] text-slate-500 font-black uppercase tracking-widest">{videosFiltrados.length} vídeo(s)</span>
+        <span className="ml-auto text-[10px] text-slate-500 font-black uppercase tracking-widest">{videosFiltrados.length} vÃ­deo(s)</span>
       </div>
 
-      {/* Grid de vídeos */}
+      {/* Grid de vÃ­deos */}
       {videosFiltrados.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 opacity-30">
           <i className="fa-brands fa-youtube text-5xl text-slate-600 mb-4"></i>
-          <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Nenhum vídeo encontrado</p>
-          {isGestor && <p className="text-slate-600 text-[10px] mt-1">Clique em "Adicionar Vídeo" para começar</p>}
+          <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Nenhum vÃ­deo encontrado</p>
+          {isGestor && <p className="text-slate-600 text-[10px] mt-1">Clique em "Adicionar VÃ­deo" para comeÃ§ar</p>}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">

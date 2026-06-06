@@ -1,6 +1,6 @@
-// frontend/src/features/Backup/BackupView.tsx
-// Backup por cartório — exporta apenas os dados do próprio tenantId em JSON
-// Cada cartório vê e faz backup SOMENTE dos seus próprios dados
+﻿// frontend/src/features/Backup/BackupView.tsx
+// Backup por cartÃ³rio â€” exporta apenas os dados do prÃ³prio tenantId em JSON
+// Cada cartÃ³rio vÃª e faz backup SOMENTE dos seus prÃ³prios dados
 
 import React, { useState } from 'react';
 import {
@@ -10,7 +10,7 @@ import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 
-// ─── Coleções que fazem parte do backup por tenant ────────────────────────────
+// â”€â”€â”€ ColeÃ§Ãµes que fazem parte do backup por tenant â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const COLECOES_TENANT = [
   { id: 'users',                   label: 'Colaboradores',        icon: 'fa-users'             },
@@ -19,10 +19,10 @@ const COLECOES_TENANT = [
   { id: 'treinamentosQuizResults', label: 'Resultados de Quizzes',icon: 'fa-clipboard-check'   },
   { id: 'examesResultados',        label: 'Resultados de Exames', icon: 'fa-file-pen'          },
   { id: 'certificados',            label: 'Certificados',         icon: 'fa-certificate'       },
-  { id: 'metas',                   label: 'Metas & Premiação',    icon: 'fa-trophy'            },
+  { id: 'metas',                   label: 'Metas & PremiaÃ§Ã£o',    icon: 'fa-trophy'            },
   { id: 'metasDesempate',          label: 'Desempates',           icon: 'fa-gavel'             },
-  { id: 'repositorio',             label: 'Repositório',          icon: 'fa-photo-film'        },
-  { id: 'repositorioProgresso',    label: 'Progresso Repositório',icon: 'fa-eye'               },
+  { id: 'repositorio',             label: 'RepositÃ³rio',          icon: 'fa-photo-film'        },
+  { id: 'repositorioProgresso',    label: 'Progresso RepositÃ³rio',icon: 'fa-eye'               },
   { id: 'comunicados',             label: 'Comunicados',          icon: 'fa-bell'              },
   { id: 'auditLogs',               label: 'Trilha de Auditoria',  icon: 'fa-clock-rotate-left' },
   { id: 'checklists',              label: 'Checklists',           icon: 'fa-list-check'        },
@@ -36,7 +36,7 @@ interface BackupStatus {
   erro?: string;
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -56,7 +56,7 @@ function downloadJSON(data: any, filename: string) {
   return json.length;
 }
 
-// ─── Main View ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Main View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const BackupView: React.FC = () => {
   const { state } = useApp();
@@ -93,7 +93,7 @@ const BackupView: React.FC = () => {
       setProgresso(prev => [...prev, { colecao: col.id, registros: 0, status: 'pendente' }]);
 
       try {
-        // Busca filtrada por tenantId — NUNCA acessa dados de outros cartórios
+        // Busca filtrada por tenantId â€” NUNCA acessa dados de outros cartÃ³rios
         const q = query(
           collection(db, col.id),
           where('tenantId', '==', tenantId)
@@ -157,10 +157,10 @@ const BackupView: React.FC = () => {
 
     setRodando(false);
     setConcluido(true);
-    showToast(`Backup concluído — ${filename}`, 'success');
+    showToast(`Backup concluÃ­do â€” ${filename}`, 'success');
   };
 
-  // Backup somente de uma coleção específica
+  // Backup somente de uma coleÃ§Ã£o especÃ­fica
   const backupColecao = async (colId: string, colLabel: string) => {
     try {
       const q = query(collection(db, colId), where('tenantId', '==', tenantId));
@@ -196,12 +196,12 @@ const BackupView: React.FC = () => {
           <div>
             <h2 className="text-2xl font-black text-[#0A1628]">Backup de Dados</h2>
             <p className="text-sm text-slate-500 mt-0.5">
-              Exportação segura dos dados do cartório <strong className="text-slate-700">{tenantId}</strong>
+              ExportaÃ§Ã£o segura dos dados do cartÃ³rio <strong className="text-slate-700">{tenantId}</strong>
             </p>
           </div>
           {ultimoBackup && (
             <div className="text-right">
-              <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black">Último backup</p>
+              <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black">Ãšltimo backup</p>
               <p className="text-xs text-slate-600 font-bold">{ultimoBackup}</p>
             </div>
           )}
@@ -211,23 +211,23 @@ const BackupView: React.FC = () => {
         <div className="bg-emerald-50 border border-emerald-200 rounded-[14px] p-4 flex items-start gap-3">
           <i className="fa-solid fa-shield-halved text-emerald-500 text-lg mt-0.5 flex-shrink-0"></i>
           <div>
-            <p className="text-sm font-black text-emerald-700">Backup isolado por cartório</p>
+            <p className="text-sm font-black text-emerald-700">Backup isolado por cartÃ³rio</p>
             <p className="text-xs text-emerald-600 mt-0.5 leading-relaxed">
-              Este backup exporta <strong>exclusivamente</strong> os dados do cartório <strong>{tenantId}</strong>.
-              Nenhum dado de outros cartórios é acessado ou incluído — o isolamento é garantido pelo filtro
+              Este backup exporta <strong>exclusivamente</strong> os dados do cartÃ³rio <strong>{tenantId}</strong>.
+              Nenhum dado de outros cartÃ³rios Ã© acessado ou incluÃ­do â€” o isolamento Ã© garantido pelo filtro
               de <code className="bg-emerald-100 px-1 rounded">tenantId</code> em todas as consultas.
             </p>
           </div>
         </div>
 
-        {/* Botão principal */}
+        {/* BotÃ£o principal */}
         {isGestor && (
           <div className="bg-white border border-slate-200 rounded-[16px] p-6 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-black text-[#0A1628]">Backup Completo</h3>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Exporta todas as {COLECOES_TENANT.length} coleções em um único arquivo JSON
+                  Exporta todas as {COLECOES_TENANT.length} coleÃ§Ãµes em um Ãºnico arquivo JSON
                 </p>
               </div>
               <button
@@ -267,9 +267,9 @@ const BackupView: React.FC = () => {
                   <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center gap-3">
                     <i className="fa-solid fa-circle-check text-emerald-500 text-lg"></i>
                     <div>
-                      <p className="text-sm font-black text-emerald-700">Backup concluído com sucesso!</p>
+                      <p className="text-sm font-black text-emerald-700">Backup concluÃ­do com sucesso!</p>
                       <p className="text-xs text-emerald-600">
-                        {totalRegistros} registros · {formatBytes(tamanhoTotal)} · {new Date().toLocaleString('pt-BR')}
+                        {totalRegistros} registros Â· {formatBytes(tamanhoTotal)} Â· {new Date().toLocaleString('pt-BR')}
                       </p>
                     </div>
                   </div>
@@ -279,11 +279,11 @@ const BackupView: React.FC = () => {
           </div>
         )}
 
-        {/* Backup por coleção */}
+        {/* Backup por coleÃ§Ã£o */}
         <div className="bg-white border border-slate-200 rounded-[16px] shadow-sm overflow-hidden">
           <div className="p-5 border-b border-slate-100">
-            <h3 className="text-sm font-black text-[#0A1628]">Backup por Coleção</h3>
-            <p className="text-xs text-slate-500 mt-0.5">Exporte uma coleção específica de forma individual</p>
+            <h3 className="text-sm font-black text-[#0A1628]">Backup por ColeÃ§Ã£o</h3>
+            <p className="text-xs text-slate-500 mt-0.5">Exporte uma coleÃ§Ã£o especÃ­fica de forma individual</p>
           </div>
           <div className="divide-y divide-slate-100">
             {COLECOES_TENANT.map(col => {
@@ -327,14 +327,14 @@ const BackupView: React.FC = () => {
           </div>
         </div>
 
-        {/* Nota de segurança */}
+        {/* Nota de seguranÃ§a */}
         <div className="bg-blue-50 border border-blue-200 rounded-[14px] p-4 flex items-start gap-3">
           <i className="fa-solid fa-circle-info text-blue-500 text-base mt-0.5 flex-shrink-0"></i>
           <div className="space-y-1">
             <p className="text-xs font-black text-blue-700 uppercase tracking-widest">Sobre os backups</p>
             <p className="text-xs text-blue-600 leading-relaxed">
-              Os arquivos JSON exportados contêm todos os dados do cartório e devem ser armazenados com segurança.
-              Recomendamos salvar em local seguro e criptografado. O backup automático é executado 2x ao dia via GitHub Actions.
+              Os arquivos JSON exportados contÃªm todos os dados do cartÃ³rio e devem ser armazenados com seguranÃ§a.
+              Recomendamos salvar em local seguro e criptografado. O backup automÃ¡tico Ã© executado 2x ao dia via GitHub Actions.
               Para restaurar dados entre em contato com a MJ Consultoria.
             </p>
           </div>

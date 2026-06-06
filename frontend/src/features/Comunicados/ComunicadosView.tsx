@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { db } from '../../services/firebase';
@@ -61,7 +61,7 @@ const ComunicadosView: React.FC = () => {
   };
 
   const salvar = async () => {
-    if (!form.titulo.trim() || !form.corpo.trim()) { showToast('Título e corpo são obrigatórios.', 'error'); return; }
+    if (!form.titulo.trim() || !form.corpo.trim()) { showToast('TÃ­tulo e corpo sÃ£o obrigatÃ³rios.', 'error'); return; }
     setLoading(true);
     try {
       await addDoc(collection(db, 'comunicados'), {
@@ -90,7 +90,7 @@ const ComunicadosView: React.FC = () => {
           <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">
             Mural de <span className="text-amber-500">Comunicados</span>
           </h2>
-          <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">Avisos e informações da empresa</p>
+          <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">Avisos e informaÃ§Ãµes da empresa</p>
         </div>
         <div className="flex gap-2">
           {isGestor && (
@@ -98,7 +98,7 @@ const ComunicadosView: React.FC = () => {
               <button onClick={() => setModo(modo === 'mural' ? 'gestao' : 'mural')}
                 className="bg-slate-800 hover:bg-slate-700 text-slate-700 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
                 <i className={`fa-solid ${modo === 'mural' ? 'fa-cog' : 'fa-eye'} mr-2`}></i>
-                {modo === 'mural' ? 'Gestão' : 'Mural'}
+                {modo === 'mural' ? 'GestÃ£o' : 'Mural'}
               </button>
               <button onClick={() => setShowForm(!showForm)}
                 className="bg-amber-600 hover:bg-amber-500 text-[#0A1628] px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
@@ -113,7 +113,7 @@ const ComunicadosView: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: 'Total',     value: comunicados.length,            icon: 'fa-bell',            color: 'blue'    },
-          { label: 'Não lidos', value: naoLidos,                      icon: 'fa-envelope',        color: 'amber'   },
+          { label: 'NÃ£o lidos', value: naoLidos,                      icon: 'fa-envelope',        color: 'amber'   },
           { label: 'Urgentes',  value: comunicados.filter(c => c.prioridade === 'urgente').length, icon: 'fa-circle-exclamation', color: 'red' },
           { label: 'Fixados',   value: comunicados.filter(c => c.fixado).length,                  icon: 'fa-thumbtack', color: 'purple' },
         ].map((k, i) => (
@@ -125,15 +125,15 @@ const ComunicadosView: React.FC = () => {
         ))}
       </div>
 
-      {/* Formulário */}
+      {/* FormulÃ¡rio */}
       {showForm && isGestor && (
         <div className="bg-white border border-amber-500/30 rounded-[24px] p-6 space-y-4">
           <h3 className="text-[#0A1628] font-black uppercase text-sm">Novo Comunicado</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Título *</label>
+              <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">TÃ­tulo *</label>
               <input value={form.titulo} onChange={e => setForm(p => ({ ...p, titulo: e.target.value }))}
-                placeholder="Ex: Reunião de equipe - Semana de 14/04"
+                placeholder="Ex: ReuniÃ£o de equipe - Semana de 14/04"
                 className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-amber-500" />
             </div>
             <div className="md:col-span-2">
@@ -209,7 +209,7 @@ const ComunicadosView: React.FC = () => {
                     </span>
                   </div>
                   <p className="text-[10px] text-slate-500 mt-0.5">
-                    {c.publicadoPorNome} · {c.criadoEm?.toDate?.()?.toLocaleDateString('pt-BR') || 'agora'}
+                    {c.publicadoPorNome} Â· {c.criadoEm?.toDate?.()?.toLocaleDateString('pt-BR') || 'agora'}
                     {c.prazo && <span className="ml-2 text-amber-400"><i className="fa-solid fa-clock mr-1"></i>Prazo: {new Date(c.prazo + 'T12:00').toLocaleDateString('pt-BR')}</span>}
                   </p>
                 </div>

@@ -1,5 +1,5 @@
-// frontend/src/features/Users/UsersView.tsx
-// Gestão de Colaboradores + Matriz de Permissões por Perfil
+﻿// frontend/src/features/Users/UsersView.tsx
+// GestÃ£o de Colaboradores + Matriz de PermissÃµes por Perfil
 
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
@@ -11,7 +11,7 @@ import {
   doc, updateDoc, deleteDoc, serverTimestamp
 } from 'firebase/firestore';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type Role = 'SUPERADMIN' | 'gestor' | 'admin' | 'colaborador';
 
@@ -26,21 +26,21 @@ interface UserData {
   createdAt?: any;
 }
 
-// ─── Permissões por módulo e perfil ──────────────────────────────────────────
+// â”€â”€â”€ PermissÃµes por mÃ³dulo e perfil â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const MODULOS = [
   { id: 'dashboard',    label: 'Dashboard',          icon: 'fa-border-all'       },
   { id: 'trilhas',      label: 'Trilhas',            icon: 'fa-road'             },
-  { id: 'repositorio',  label: 'Repositório',        icon: 'fa-photo-film'       },
+  { id: 'repositorio',  label: 'RepositÃ³rio',        icon: 'fa-photo-film'       },
   { id: 'treinamento',  label: 'Treinamento AI',     icon: 'fa-graduation-cap'   },
   { id: 'exames',       label: 'Exames',             icon: 'fa-file-pen'         },
-  { id: 'metas',        label: 'Metas & Premiação',  icon: 'fa-trophy'           },
+  { id: 'metas',        label: 'Metas & PremiaÃ§Ã£o',  icon: 'fa-trophy'           },
   { id: 'certificados', label: 'Certificados',       icon: 'fa-certificate'      },
   { id: 'progresso',    label: 'Meu Progresso',      icon: 'fa-chart-line'       },
-  { id: 'relatorios',   label: 'Relatórios',         icon: 'fa-chart-column'     },
+  { id: 'relatorios',   label: 'RelatÃ³rios',         icon: 'fa-chart-column'     },
   { id: 'auditoria',    label: 'Auditoria',          icon: 'fa-clock-rotate-left'},
   { id: 'usuarios',     label: 'Colaboradores',      icon: 'fa-users-gear'       },
-  { id: 'seguranca',    label: 'Segurança',          icon: 'fa-lock'             },
+  { id: 'seguranca',    label: 'SeguranÃ§a',          icon: 'fa-lock'             },
 ];
 
 type Nivel = 'completo' | 'leitura' | 'proprio' | '-';
@@ -63,31 +63,31 @@ const PERMISSOES: Record<string, Record<Role, Nivel>> = {
 const NIVEL_CONFIG: Record<Nivel, { label: string; color: string; bg: string; icon: string }> = {
   completo: { label: 'Completo',   color: '#059669', bg: '#d1fae5', icon: 'fa-circle-check'  },
   leitura:  { label: 'Leitura',    color: '#4F46E5', bg: '#eef2ff', icon: 'fa-eye'            },
-  proprio:  { label: 'Próprio',    color: '#D97706', bg: '#fef3c7', icon: 'fa-user'           },
+  proprio:  { label: 'PrÃ³prio',    color: '#D97706', bg: '#fef3c7', icon: 'fa-user'           },
   '-':      { label: 'Sem acesso', color: '#94a3b8', bg: '#f1f5f9', icon: 'fa-minus'          },
 };
 
 const ROLES: { id: Role; label: string; color: string; desc: string }[] = [
-  { id: 'SUPERADMIN', label: 'Super Admin',  color: '#059669', desc: 'Acesso total a todos os cartórios' },
-  { id: 'gestor',     label: 'Gestor',       color: '#4F46E5', desc: 'Gestão completa do cartório'       },
-  { id: 'admin',      label: 'Admin',        color: '#D97706', desc: 'Administração de colaboradores'    },
-  { id: 'colaborador',label: 'Colaborador',  color: '#64748b', desc: 'Acesso aos próprios dados'         },
+  { id: 'SUPERADMIN', label: 'Super Admin',  color: '#059669', desc: 'Acesso total a todos os cartÃ³rios' },
+  { id: 'gestor',     label: 'Gestor',       color: '#4F46E5', desc: 'GestÃ£o completa do cartÃ³rio'       },
+  { id: 'admin',      label: 'Admin',        color: '#D97706', desc: 'AdministraÃ§Ã£o de colaboradores'    },
+  { id: 'colaborador',label: 'Colaborador',  color: '#64748b', desc: 'Acesso aos prÃ³prios dados'         },
 ];
 
 const CARGOS = [
-  'Tabelião', 'Oficial de Registro', 'Escrevente Autorizado',
-  'Escrevente', 'Auxiliar Administrativo', 'Responsável PLD', 'Outro',
+  'TabeliÃ£o', 'Oficial de Registro', 'Escrevente Autorizado',
+  'Escrevente', 'Auxiliar Administrativo', 'ResponsÃ¡vel PLD', 'Outro',
 ];
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function formatDate(ts: any): string {
-  if (!ts) return '–';
+  if (!ts) return 'â€“';
   const d = ts?.toDate ? ts.toDate() : new Date(ts);
   return d.toLocaleDateString('pt-BR');
 }
 
-// ─── Main View ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Main View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type Tab = 'colaboradores' | 'permissoes';
 
@@ -150,12 +150,12 @@ const UsersView: React.FC = () => {
           createdAt: serverTimestamp(),
         });
         if (!result.success) throw new Error(result.message || 'Erro ao criar conta.');
-        alert(`Colaborador ${form.name} adicionado!\n\nSenha temporária: ${tempPassword}\n\nComunique ao colaborador — ele deverá alterá-la no primeiro acesso.`);
+        alert(`Colaborador ${form.name} adicionado!\n\nSenha temporÃ¡ria: ${tempPassword}\n\nComunique ao colaborador â€” ele deverÃ¡ alterÃ¡-la no primeiro acesso.`);
       }
       setShowForm(false);
     } catch (err: any) {
       const msg = err.message?.includes('email-already-in-use')
-        ? 'Este e-mail já possui conta no sistema.'
+        ? 'Este e-mail jÃ¡ possui conta no sistema.'
         : err.message || 'Erro ao salvar.';
       showToast(msg, 'error');
     }
@@ -191,7 +191,7 @@ const UsersView: React.FC = () => {
           <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
             <div className="bg-white rounded-2xl p-6 max-w-sm w-full mx-4 shadow-xl">
               <h3 className="text-lg font-black text-[#0A1628] mb-2">Remover colaborador?</h3>
-              <p className="text-sm text-slate-500 mb-5">Esta ação não pode ser desfeita.</p>
+              <p className="text-sm text-slate-500 mb-5">Esta aÃ§Ã£o nÃ£o pode ser desfeita.</p>
               <div className="flex gap-3">
                 <button onClick={() => setDeleteId(null)}
                   className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-bold hover:bg-[#0D1B3E] transition-all">
@@ -209,8 +209,8 @@ const UsersView: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-black text-[#0A1628]">Colaboradores & Permissões</h2>
-            <p className="text-sm text-slate-500 mt-0.5">Gerencie usuários e controle de acesso</p>
+            <h2 className="text-2xl font-black text-[#0A1628]">Colaboradores & PermissÃµes</h2>
+            <p className="text-sm text-slate-500 mt-0.5">Gerencie usuÃ¡rios e controle de acesso</p>
           </div>
           {isGestor && (
             <button onClick={() => abrirForm()}
@@ -256,11 +256,11 @@ const UsersView: React.FC = () => {
             ))}
           </div>
 
-          {/* ── COLABORADORES ─────────────────────────────────────────────── */}
+          {/* â”€â”€ COLABORADORES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           {tab === 'colaboradores' && (
             <div className="p-5 space-y-4">
 
-              {/* Formulário inline */}
+              {/* FormulÃ¡rio inline */}
               {showForm && (
                 <div className="bg-[#0D1B3E] border border-slate-200 rounded-[14px] p-5 space-y-4">
                   <h4 className="text-sm font-black text-indigo-700 uppercase tracking-widest">
@@ -284,7 +284,7 @@ const UsersView: React.FC = () => {
                       <select value={form.role} onChange={e => setF('role', e.target.value)}
                         className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-[#C9A84C]">
                         {ROLES.filter(r => r.id !== 'SUPERADMIN').map(r => (
-                          <option key={r.id} value={r.id}>{r.label} — {r.desc}</option>
+                          <option key={r.id} value={r.id}>{r.label} â€” {r.desc}</option>
                         ))}
                       </select>
                     </div>
@@ -301,10 +301,10 @@ const UsersView: React.FC = () => {
                       </select>
                     </div>
                   </div>
-                  {/* Info de permissões do perfil selecionado */}
+                  {/* Info de permissÃµes do perfil selecionado */}
                   <div className="bg-white border border-indigo-100 rounded-xl p-3">
                     <p className="text-[10px] font-black text-[#C9A84C] uppercase tracking-widest mb-2">
-                      Permissões do perfil: {roleLabel(form.role as Role)}
+                      PermissÃµes do perfil: {roleLabel(form.role as Role)}
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {MODULOS.map(m => {
@@ -349,7 +349,7 @@ const UsersView: React.FC = () => {
                   <table className="w-full text-xs">
                     <thead>
                       <tr className="bg-[#0D1B3E] border-b border-slate-200">
-                        {['Colaborador', 'E-mail', 'Cargo', 'Perfil', 'Status', 'Desde', 'Ações'].map(h => (
+                        {['Colaborador', 'E-mail', 'Cargo', 'Perfil', 'Status', 'Desde', 'AÃ§Ãµes'].map(h => (
                           <th key={h} className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
                         ))}
                       </tr>
@@ -361,8 +361,8 @@ const UsersView: React.FC = () => {
                       {filtrados.map(u => (
                         <tr key={u.id} className={`border-b border-slate-100 hover:bg-[#0D1B3E] transition-all ${u.ativo === false ? 'opacity-50' : ''}`}>
                           <td className="p-3 font-bold text-[#0A1628]">{u.name}</td>
-                          <td className="p-3 text-slate-500">{u.email || '–'}</td>
-                          <td className="p-3 text-slate-500">{u.cargo || '–'}</td>
+                          <td className="p-3 text-slate-500">{u.email || 'â€“'}</td>
+                          <td className="p-3 text-slate-500">{u.cargo || 'â€“'}</td>
                           <td className="p-3">
                             <span className="text-[10px] font-black px-2.5 py-1 rounded-lg"
                               style={{ background: roleColor(u.role) + '15', color: roleColor(u.role) }}>
@@ -413,11 +413,11 @@ const UsersView: React.FC = () => {
             </div>
           )}
 
-          {/* ── MATRIZ DE PERMISSÕES ──────────────────────────────────────── */}
+          {/* â”€â”€ MATRIZ DE PERMISSÃ•ES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           {tab === 'permissoes' && (
             <div className="p-5 space-y-5">
               <p className="text-xs text-slate-500">
-                Matriz de controle de acesso por perfil. As permissões são aplicadas automaticamente ao perfil atribuído ao colaborador.
+                Matriz de controle de acesso por perfil. As permissÃµes sÃ£o aplicadas automaticamente ao perfil atribuÃ­do ao colaborador.
               </p>
 
               {/* Legenda */}
@@ -430,12 +430,12 @@ const UsersView: React.FC = () => {
                 ))}
               </div>
 
-              {/* Tabela de permissões */}
+              {/* Tabela de permissÃµes */}
               <div className="overflow-x-auto border border-slate-200 rounded-[14px]">
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="bg-[#0D1B3E] border-b border-slate-200">
-                      <th className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest w-48">Módulo</th>
+                      <th className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest w-48">MÃ³dulo</th>
                       {ROLES.map(r => (
                         <th key={r.id} className="p-3 text-center">
                           <div className="text-[10px] font-black uppercase tracking-widest" style={{ color: r.color }}>{r.label}</div>

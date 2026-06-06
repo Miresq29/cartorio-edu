@@ -1,4 +1,4 @@
-
+﻿
 import React, { createContext, useContext, useState, useCallback } from 'react';
 
 type ToastType = 'success' | 'error' | 'info' | 'warning';
@@ -23,7 +23,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const id = crypto.randomUUID();
     setToasts((prev) => [...prev, { id, message, type }]);
     
-    // Auto-remove após 4 segundos
+    // Auto-remove apÃ³s 4 segundos
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 4000);
