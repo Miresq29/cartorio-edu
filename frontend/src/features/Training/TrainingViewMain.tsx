@@ -17,9 +17,9 @@ const TABS: { id: Tab; icon: string; label: string }[] = [
   { id: 'ia',            icon: 'fa-wand-magic-sparkles', label: 'IA de Treinamento' },
   { id: 'resumos',       icon: 'fa-file-lines',          label: 'Resumos'           },
   { id: 'participantes', icon: 'fa-users',               label: 'Participantes'     },
-  { id: 'questionarios', icon: 'fa-circle-question',     label: 'QuestionÃ¡rios'     },
-  { id: 'relatorios',    icon: 'fa-file-chart-column',   label: 'RelatÃ³rios'        },
-  { id: 'dashboard',     icon: 'fa-chart-pie',           label: 'Dashboard GestÃ£o'  },
+  { id: 'questionarios', icon: 'fa-circle-question',     label: 'Questionários'     },
+  { id: 'relatorios',    icon: 'fa-file-chart-column',   label: 'Relatórios'        },
+  { id: 'dashboard',     icon: 'fa-chart-pie',           label: 'Dashboard Gestão'  },
 ];
 
 type SummaryType = 'executivo' | 'tecnico' | 'didatico' | 'operacional';
