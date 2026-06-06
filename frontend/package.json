@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.2.0",
-    "axios": "^1.6.0",    "clsx": "^2.1.1",
+    "axios": "^1.6.0",
+    "mammoth": "^1.6.0",
+    "pdfjs-dist": "^3.11.174",    "clsx": "^2.1.1",
     "firebase": "^10.7.0",
     "framer-motion": "^10.16.4",
     "lucide-react": "^0.263.1",
