@@ -10,109 +10,113 @@ interface Section {
 
 const SECTIONS: Section[] = [
   {
-    id: 'dashboard', icon: 'fa-border-all', title: 'Dashboard', subtitle: 'Visão geral da sua unidade',
+    id: 'dashboard', icon: 'fa-border-all', title: 'Dashboard', subtitle: 'Painel operacional da sua serventia',
     steps: [
-      { title: 'Acessando o Dashboard', desc: 'Clique em "Dashboard" no menu lateral, na seção PRINCIPAL. Esta tela é exclusiva da sua serventia e exibe dados em tempo real apenas do seu cartório.' },
-      { title: 'KPIs em tempo real', desc: 'Os 4 cards no topo mostram: Documentos na Base, Protocolos Ativos, Treinamentos Concluídos e Ações Registradas. Todos atualizam automaticamente.' },
-      { title: 'Acervo da Serventia', desc: 'O painel esquerdo lista os documentos mais recentes inseridos na sua Base Legal. Clique em "Base Legal" para gerenciar esses documentos.' },
-      { title: 'Atividade Recente', desc: 'O painel direito mostra as últimas ações realizadas na plataforma, com ícone por tipo de evento, usuário responsável e horário.' },
+      { title: 'Acessando o Dashboard', desc: 'Clique em "Dashboard" no menu lateral, na seção GESTÃO. Esta tela exibe dados em tempo real exclusivos da sua serventia.' },
+      { title: 'KPIs em tempo real', desc: 'Os cards no topo mostram métricas como Documentos na Base, Protocolos Ativos, Treinamentos Concluídos e Ações Registradas. Todos atualizam automaticamente.' },
+      { title: 'Atividade Recente', desc: 'O painel de atividade mostra as últimas ações realizadas na plataforma — tipo de evento, usuário responsável e horário.' },
+      { title: 'Filtros de período', desc: 'Use os botões de período (7, 30, 90 dias) para filtrar o histórico de dados exibido nos gráficos e cards.' },
     ]
   },
   {
-    id: 'chat', icon: 'fa-comment-dots', title: 'Consulta RAG', subtitle: 'Consultas inteligentes na base legal',
+    id: 'collaborators', icon: 'fa-users-gear', title: 'Colaboradores', subtitle: 'Gerenciar usuários e permissões',
     steps: [
-      { title: 'O que é a Consulta RAG?', desc: 'RAG significa "Retrieval-Augmented Generation". A IA responde suas perguntas baseando-se exclusivamente nos documentos que você indexou na Base Legal — não usa informações externas.' },
-      { title: 'Como fazer uma consulta', desc: 'Digite sua dúvida jurídica ou operacional no campo de texto e pressione Enter. Exemplos: "Quais são os requisitos para lavratura de escritura de compra e venda?" ou "Como proceder em caso de retificação de registro?"' },
-      { title: 'Interpretando a resposta', desc: 'A IA sempre indicará a fonte da informação (qual documento da sua base foi consultado). Se a informação não estiver na sua base, ela informará que não há documentos suficientes.' },
-      { title: 'Boas práticas', desc: 'Quanto mais documentos indexados na Base Legal, mais precisa será a resposta. Mantenha sempre a base atualizada com os provimentos, normas e protocolos vigentes.' },
+      { title: 'Criando um colaborador', desc: 'Clique em "+ Novo Colaborador", preencha nome, e-mail e selecione o perfil de acesso. O colaborador deverá trocar a senha no primeiro login.' },
+      { title: 'Perfis disponíveis', desc: 'Super Admin: acesso total. Gestor: acesso completo à serventia. Admin: gerenciar colaboradores. Colaborador: acesso aos próprios dados e treinamentos.' },
+      { title: 'Editando e desativando', desc: 'Clique no ícone de edição para alterar dados ou perfil. Ao desligar um colaborador, desative imediatamente para revogar o acesso à plataforma.' },
+      { title: 'Matriz de Acesso', desc: 'Na aba "Matriz de Acesso", visualize um mapa completo de quais recursos cada perfil pode acessar.' },
     ]
   },
   {
-    id: 'compliance', icon: 'fa-shield-halved', title: 'Conformidade', subtitle: 'Auditoria de documentos contra protocolos CNJ',
+    id: 'reports', icon: 'fa-chart-column', title: 'Relatórios', subtitle: 'Métricas de treinamento e engajamento',
     steps: [
-      { title: 'Para que serve', desc: 'Este módulo permite auditar minutas, documentos e escrituras contra os protocolos e a base legal da sua serventia, verificando item por item a conformidade.' },
-      { title: 'Subindo um documento', desc: 'Clique na área de upload e selecione o arquivo (PDF, Word, imagem). A IA extrairá automaticamente o texto do documento.' },
-      { title: 'Escolhendo a referência', desc: 'Selecione "Protocolo" para comparar contra um checklist cadastrado, ou "Base Legal" para comparar contra documentos normativos indexados.' },
-      { title: 'Iniciando a auditoria', desc: 'Clique em "Iniciar Auditoria RAG". A IA analisará cada requisito individualmente e retornará: Conforme ou Pendente, com comentário técnico e sugestão de correção.' },
-      { title: 'Relatório de conformidade', desc: 'Ao final, você verá o índice de conformidade (%), a lista detalhada de cada item e o resumo executivo. Use "Imprimir Relatório" para salvar em PDF.' },
+      { title: 'Visão Geral', desc: 'A primeira aba exibe a atividade mensal e distribuição de notas da equipe. Acompanhe tendências de desempenho ao longo do tempo.' },
+      { title: 'Por Colaborador', desc: 'Veja quantos treinamentos, exames e certificados cada colaborador concluiu. Identifique usuários engajados e os que precisam de atenção.' },
+      { title: 'Por Trilha', desc: 'Acompanhe a taxa de conclusão e aprovação por trilha de aprendizado. Útil para avaliar quais conteúdos têm maior aderência.' },
+      { title: 'Exportação', desc: 'Use "Imprimir" para gerar relatório em PDF ou "Exportar Excel" para análise em planilha. Filtre por período usando o seletor no topo.' },
     ]
   },
   {
-    id: 'checklists', icon: 'fa-list-check', title: 'Checklists', subtitle: 'Protocolos e roteiros de verificação',
+    id: 'audit', icon: 'fa-clock-rotate-left', title: 'Auditoria', subtitle: 'Histórico completo de acessos e alterações',
     steps: [
-      { title: 'Criando um protocolo', desc: 'Clique em "Novo Checklist", dê um nome ao protocolo (ex: "Escritura de Compra e Venda") e adicione os itens de verificação um a um.' },
-      { title: 'Adicionando itens', desc: 'Cada item deve ser uma verificação específica e mensurável, como "Documento de identidade com foto apresentado" ou "CPF do vendedor conferido".' },
-      { title: 'Usando o checklist', desc: 'Os checklists criados ficam disponíveis no módulo de Conformidade para auditoria de documentos. Mantenha os protocolos atualizados conforme os provimentos vigentes.' },
-      { title: 'Gerenciando protocolos', desc: 'Você pode editar ou excluir protocolos existentes. Recomenda-se criar um protocolo separado para cada tipo de ato notarial ou registral.' },
-    ]
-  },
-  {
-    id: 'analytics', icon: 'fa-brain', title: 'IA Analítica', subtitle: 'Alertas, anomalias e gestão operacional',
-    steps: [
-      { title: 'Painel de Gestão', desc: 'A primeira aba mostra KPIs em tempo real: eventos hoje, documentos sem classificação, exclusões e usuários ativos. Alertas automáticos são disparados quando anomalias são detectadas.' },
-      { title: 'Executando uma Análise IA', desc: 'Clique em "Iniciar Análise". A IA cruza todos os dados e gera um relatório executivo com alertas e recomendações operacionais.' },
-      { title: 'Interpretando os alertas', desc: 'Alertas em vermelho são críticos e exigem ação imediata. Alertas em âmbar são de atenção. Verde indica operação normal.' },
-      { title: 'Chat de Gestão', desc: 'Na aba "Consultar IA", faça perguntas específicas como "Quais são os principais riscos operacionais hoje?" A IA responde com base nos dados reais da plataforma.' },
-    ]
-  },
-  {
-    id: 'knowledge', icon: 'fa-scale-balanced', title: 'Base Legal', subtitle: 'Documentos indexados para consulta IA',
-    steps: [
-      { title: 'O que indexar', desc: 'Adicione aqui todos os documentos normativos: provimentos do CNJ, leis estaduais, normas da corregedoria, portarias, circulares e qualquer documento de referência para as atividades da serventia.' },
-      { title: 'Inserindo documentos', desc: 'Clique em "Adicionar Documento", selecione o arquivo (PDF ou Word) e aguarde a extração do texto pela IA. O documento ficará disponível para consultas RAG e auditorias.' },
-      { title: 'Organizando a base', desc: 'Mantenha a base atualizada removendo documentos revogados e adicionando versões atualizadas. Uma base bem organizada garante respostas mais precisas da IA.' },
-      { title: 'Impacto nos outros módulos', desc: 'Quanto mais documentos indexados, melhor: a Consulta RAG fica mais precisa, a Conformidade tem mais referências e a IA Analítica tem mais contexto.' },
-    ]
-  },
-  {
-    id: 'reports', icon: 'fa-chart-column', title: 'Relatórios', subtitle: 'Uso por colaborador, documentos e treinamentos',
-    steps: [
-      { title: 'Aba Uso por Colaborador', desc: 'Visualize quantos acessos, documentos e consultas cada colaborador realizou no período selecionado. Útil para avaliar engajamento e identificar usuários inativos.' },
-      { title: 'Aba Documentos Consultados', desc: 'Veja quais documentos da base foram mais acessados. Ajuda a identificar quais normas são mais consultadas e quais precisam de atualização.' },
-      { title: 'Aba Treinamentos por Período', desc: 'Acompanhe a taxa de conclusão e aprovação nos treinamentos. Veja a média de notas e identifique quais colaboradores precisam de reforço.' },
-      { title: 'Filtro e exportação', desc: 'Use os botões 7, 15, 30 ou 90 dias para filtrar. Exporte em CSV (para Excel) ou PDF (relatório formatado) usando os botões de exportação.' },
-    ]
-  },
-  {
-    id: 'audit', icon: 'fa-clock-rotate-left', title: 'Auditoria', subtitle: 'Histórico completo de ações e acessos',
-    steps: [
-      { title: 'Aba Todos os Logs', desc: 'Visualize todas as ações registradas na plataforma em ordem cronológica. Use os filtros por tipo de evento, usuário e data para encontrar registros específicos.' },
-      { title: 'Aba Documentos', desc: 'Filtra apenas eventos relacionados a documentos: inserções, exclusões e consultas. Útil para rastrear movimentações de documentos específicos.' },
-      { title: 'Aba Usuários e Acesso', desc: 'Mostra eventos de login, logout, criação de usuários e alterações de permissão. Use para verificar acessos suspeitos ou fora do horário.' },
-      { title: 'Exportação e retenção', desc: 'Exporte os logs em CSV ou PDF para inspeções da corregedoria. Os logs são retidos por no mínimo 5 anos conforme Provimento CNJ 149 e 213/2026.' },
-    ]
-  },
-  {
-    id: 'training', icon: 'fa-graduation-cap', title: 'Treinamento AI', subtitle: 'Capacitação com IA, quizzes e certificados',
-    steps: [
-      { title: 'Aba IA de Treinamento', desc: 'Converse com a IA para criar roteiros de treinamento personalizados baseados nos protocolos e documentos da sua base. Clique em "Sugerir Treinamento" para uma sugestão automática.' },
-      { title: 'Aba Participantes', desc: 'Cadastre os colaboradores que participarão dos treinamentos, registre a conclusão e acompanhe o status de cada um.' },
-      { title: 'Gerando questionários com IA', desc: 'Na aba Questionários, selecione um treinamento, escolha o número de questões (3, 5, 7 ou 10) e clique em "Gerar com IA". As questões são criadas com base nos protocolos cadastrados.' },
-      { title: 'Aplicando um questionário', desc: 'Clique em "Iniciar Quiz" e responda as questões. Ao finalizar, o gabarito comentado mostrará as respostas corretas e explicações para cada erro.' },
-      { title: 'Certificados e Relatórios', desc: 'Na aba Relatórios, visualize o desempenho de cada participante. Use "Emitir Certificado" para gerar e imprimir o certificado de conclusão.' },
-    ]
-  },
-  {
-    id: 'users', icon: 'fa-users-gear', title: 'Usuários', subtitle: 'Gerenciar colaboradores e permissões',
-    steps: [
-      { title: 'Criando um usuário', desc: 'Clique em "Novo Usuário", preencha nome, e-mail e selecione o perfil de acesso. O usuário será obrigado a trocar a senha no primeiro login.' },
-      { title: 'Perfis disponíveis', desc: 'Gestor: acesso completo. Expert: conformidade e base legal. Auditor: somente leitura de logs. Atendente: consultas básicas. Viewer: somente visualização.' },
-      { title: 'Editando e desativando', desc: 'Clique no usuário para editar seu perfil ou status. Ao desligar um colaborador, desative o usuário imediatamente para revogar o acesso.' },
+      { title: 'Log de Atividades', desc: 'Visualize todas as ações registradas na plataforma em ordem cronológica. Filtre por tipo de evento, usuário e data.' },
+      { title: 'Tipos de Evento', desc: 'Os eventos incluem: login/logout, criação e edição de usuários, acesso a módulos, geração de certificados, exportações e alterações de configuração.' },
+      { title: 'Retenção de logs', desc: 'Os logs são retidos por no mínimo 5 anos conforme Provimento CNJ nº 149 e nº 213/2026, garantindo conformidade para inspeções da corregedoria.' },
+      { title: 'Exportação', desc: 'Exporte os registros em CSV ou PDF para auditorias externas ou inspeções regulatórias.' },
     ]
   },
   {
     id: 'security', icon: 'fa-lock', title: 'Segurança', subtitle: 'Senhas, bloqueios e políticas de acesso',
     steps: [
-      { title: 'Política de senhas', desc: 'Configure os requisitos de senha: comprimento mínimo, exigência de caracteres especiais e validade. Recomendamos senhas com no mínimo 10 caracteres e troca a cada 90 dias.' },
-      { title: 'Bloqueio de contas', desc: 'Defina o número de tentativas antes do bloqueio automático (padrão: 5). Usuários bloqueados precisam ser desbloqueados manualmente pelo administrador.' },
-      { title: 'Monitoramento', desc: 'Verifique regularmente a aba de Auditoria para identificar acessos fora do horário comercial ou tentativas de login malsucedidas.' },
+      { title: 'Política de senhas', desc: 'Configure comprimento mínimo, exigência de caracteres especiais e validade. Recomendamos no mínimo 10 caracteres com troca a cada 90 dias.' },
+      { title: 'Bloqueio automático', desc: 'Defina o número máximo de tentativas antes do bloqueio automático (padrão: 5). Usuários bloqueados precisam ser reativados pelo gestor.' },
+      { title: 'Monitoramento de acessos', desc: 'Verifique regularmente a Auditoria para identificar acessos fora do horário comercial ou tentativas de login suspeitas.' },
     ]
   },
   {
-    id: 'support', icon: 'fa-headset', title: 'Suporte Técnico', subtitle: 'Chamados e contato com a MJ Consultoria',
+    id: 'trails', icon: 'fa-road', title: 'Trilhas', subtitle: 'Trilhas de aprendizagem por perfil',
     steps: [
-      { title: 'Abrindo um chamado', desc: 'Descreva o problema ou dúvida no campo de texto e clique em Enviar. A equipe MJ Consultoria responderá em até 1 dia útil.' },
-      { title: 'Informações para o chamado', desc: 'Inclua o máximo de detalhes: qual módulo estava usando, qual ação tentou realizar, mensagem de erro exibida e capturas de tela se possível.' },
+      { title: 'O que são Trilhas?', desc: 'Trilhas são sequências de conteúdos organizados por perfil profissional (atendente, escrevente, oficial substituto). Cada trilha guia o colaborador do básico ao avançado.' },
+      { title: 'Navegando em uma trilha', desc: 'Selecione uma trilha para ver os módulos disponíveis. Complete os módulos em sequência para liberar o próximo nível.' },
+      { title: 'Progresso', desc: 'O progresso de cada trilha é salvo automaticamente. Acompanhe o avanço em "Meu Progresso" no menu CAPACITAÇÃO.' },
+    ]
+  },
+  {
+    id: 'repositorio', icon: 'fa-photo-film', title: 'Repositório', subtitle: 'Vídeos, áudios e PDFs de capacitação',
+    steps: [
+      { title: 'Tipos de conteúdo', desc: 'O repositório centraliza todos os materiais de capacitação: vídeos, arquivos de áudio, PDFs, apresentações e documentos normativos.' },
+      { title: 'Buscando conteúdo', desc: 'Use a busca para localizar materiais por palavra-chave, tipo de arquivo ou categoria. Filtre por relevância ou data de publicação.' },
+      { title: 'Materiais obrigatórios', desc: 'Conteúdos marcados como obrigatórios aparecem destacados. O gestor pode definir quais materiais são de leitura/visualização obrigatória.' },
+    ]
+  },
+  {
+    id: 'training', icon: 'fa-graduation-cap', title: 'Treinamento AI', subtitle: 'Capacitação com IA, roteiros e quizzes',
+    steps: [
+      { title: 'IA de Treinamento', desc: 'Gere 3 opções de roteiro de treinamento com IA baseadas nos protocolos e documentos da sua serventia. Personalize o pedido para focar em um tema específico.' },
+      { title: 'Resumos Inteligentes', desc: 'Selecione um documento e o tipo de resumo (Executivo, Técnico, Didático ou Operacional) para que a IA gere um resumo otimizado para cada audiência.' },
+      { title: 'Participantes', desc: 'Registre quais colaboradores participaram de cada treinamento, controle a presença e acompanhe o status de conclusão.' },
+      { title: 'Questionários com IA', desc: 'Gere automaticamente questões de múltipla escolha baseadas no conteúdo dos treinamentos. Escolha entre 3, 5, 7 ou 10 questões por avaliação.' },
+      { title: 'Dashboard de Gestão', desc: 'A aba "Dashboard Gestão" consolida o desempenho de todos os participantes com gráficos de aprovação, média de notas e evolução ao longo do tempo.' },
+    ]
+  },
+  {
+    id: 'exames', icon: 'fa-file-pen', title: 'Exames', subtitle: 'Avaliações com IA e Taxonomia de Bloom',
+    steps: [
+      { title: 'O que são os Exames?', desc: 'Exames são avaliações formais geradas pela IA com base na Taxonomia de Bloom — garantindo questões que vão do conhecimento básico à análise e avaliação crítica.' },
+      { title: 'Realizando um exame', desc: 'Selecione o exame disponível e responda as questões no tempo determinado. As respostas são corrigidas automaticamente com gabarito comentado.' },
+      { title: 'Resultado e aprovação', desc: 'A nota mínima de aprovação é 75%. Exames reprovados podem ser refeitos após o período de quarentena definido pelo gestor.' },
+      { title: 'Histórico de provas', desc: 'Consulte o histórico de todos os exames realizados, com data, nota e resultado. Gestores podem visualizar o desempenho de toda a equipe.' },
+    ]
+  },
+  {
+    id: 'metas', icon: 'fa-trophy', title: 'Metas & Premiação', subtitle: 'Rankings, metas e desempate por Bloom Alto',
+    steps: [
+      { title: 'Sistema de Metas', desc: 'O módulo de Metas define objetivos de desempenho por colaborador ou equipe — número de treinamentos, taxa de aprovação em exames e conclusão de trilhas.' },
+      { title: 'Ranking', desc: 'O ranking consolida os colaboradores com melhor desempenho. Em caso de empate, o sistema utiliza o critério de Bloom Alto (questões de análise e avaliação) para o desempate.' },
+      { title: 'Premiação', desc: 'Configure prêmios e reconhecimentos para os colaboradores que atingirem as metas. O histórico de premiações fica registrado no perfil do colaborador.' },
+    ]
+  },
+  {
+    id: 'progresso', icon: 'fa-chart-line', title: 'Meu Progresso', subtitle: 'Trilhas, exames e certificados pessoais',
+    steps: [
+      { title: 'Visão pessoal', desc: 'Esta tela mostra exclusivamente o progresso do colaborador logado — trilhas iniciadas, exames realizados, certificados emitidos e pontuação acumulada.' },
+      { title: 'Trilhas em andamento', desc: 'Veja o percentual de conclusão de cada trilha que você iniciou. Clique para retomar de onde parou.' },
+      { title: 'Histórico de notas', desc: 'Acompanhe a evolução das suas notas ao longo do tempo. O gráfico mostra a tendência de desempenho por módulo.' },
+    ]
+  },
+  {
+    id: 'certificado', icon: 'fa-certificate', title: 'Certificados', subtitle: 'Emitir e baixar certificados PDF',
+    steps: [
+      { title: 'Elegibilidade', desc: 'Certificados são emitidos automaticamente quando o colaborador conclui uma trilha ou é aprovado em um exame com nota mínima de 75%.' },
+      { title: 'Emitindo o certificado', desc: 'Na tela de Certificados, localize o certificado disponível e clique em "Emitir". O PDF é gerado com dados da serventia, nome, data e carga horária.' },
+      { title: 'Validade e autenticidade', desc: 'Cada certificado possui um código único de verificação. O gestor pode validar a autenticidade de qualquer certificado emitido pela plataforma.' },
+    ]
+  },
+  {
+    id: 'support', icon: 'fa-headset', title: 'Suporte Técnico', subtitle: 'Contato direto com a MJ Consultoria',
+    steps: [
+      { title: 'Abrindo um chamado', desc: 'Descreva o problema ou dúvida e clique em Enviar. A equipe MJ Consultoria responderá em até 1 dia útil.' },
+      { title: 'Informações úteis', desc: 'Inclua detalhes: qual módulo estava usando, a ação realizada, mensagem de erro exibida e capturas de tela quando possível.' },
       { title: 'Urgências', desc: 'Para problemas críticos que impeçam o funcionamento da serventia, indique "URGENTE" no início da mensagem para priorização do atendimento.' },
     ]
   },
@@ -153,41 +157,41 @@ const TutorialView: React.FC = () => {
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Manual do Usuário — CartórioRAG PRO v3.0</title>
+<title>Manual do Usuário — MJ Consultoria</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family: Arial, sans-serif; color:#1e293b; background:white; padding:40px; font-size:12px; }
-.cover { text-align:center; padding:60px 0 40px; border-bottom:3px solid #1e3a8a; margin-bottom:40px; }
-.cover-logo { font-size:44px; font-weight:900; color:#1e3a8a; letter-spacing:-2px; }
-.cover-logo span { color:#3b82f6; }
+.cover { text-align:center; padding:60px 0 40px; border-bottom:3px solid #c9a84c; margin-bottom:40px; }
+.cover-logo { font-size:44px; font-weight:900; color:#0f172a; letter-spacing:-2px; }
+.cover-logo span { color:#c9a84c; }
 .cover-title { font-size:26px; font-weight:900; color:#1e293b; margin-top:16px; text-transform:uppercase; letter-spacing:2px; }
-.cover-sub { font-size:12px; color:#64748b; margin-top:8px; text-transform:uppercase; letter-spacing:3px; }
-.cover-date { font-size:11px; color:#94a3b8; margin-top:24px; }
-.toc { margin-bottom:40px; padding:24px; background:#f8fafc; border-radius:12px; border:1px solid #e2e8f0; }
-.toc-title { font-size:13px; font-weight:900; color:#1e3a8a; text-transform:uppercase; letter-spacing:2px; margin-bottom:16px; }
+.cover-sub { font-size:12px; color:#8a6e2f; margin-top:8px; text-transform:uppercase; letter-spacing:3px; }
+.cover-date { font-size:11px; color:#a8882f; margin-top:24px; }
+.toc { margin-bottom:40px; padding:24px; background:#fdfbf5; border-radius:12px; border:1px solid #e8d9a0; }
+.toc-title { font-size:13px; font-weight:900; color:#7a5c1e; text-transform:uppercase; letter-spacing:2px; margin-bottom:16px; }
 .toc-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
-.toc-item { font-size:11px; color:#475569; padding:3px 0; }
-.toc-item b { color:#1e3a8a; margin-right:6px; }
+.toc-item { font-size:11px; color:#7a5c1e; padding:3px 0; }
+.toc-item b { color:#c9a84c; margin-right:6px; }
 .section { margin-bottom:32px; page-break-inside:avoid; }
-.section-header { background:#1e3a8a; color:white; padding:14px 20px; border-radius:10px 10px 0 0; display:flex; align-items:center; gap:16px; }
-.section-num { font-size:22px; font-weight:900; opacity:0.4; }
+.section-header { background:#0f172a; color:white; padding:14px 20px; border-radius:10px 10px 0 0; display:flex; align-items:center; gap:16px; border-left:4px solid #c9a84c; }
+.section-num { font-size:22px; font-weight:900; color:#c9a84c; }
 .section-title { font-size:16px; font-weight:900; text-transform:uppercase; letter-spacing:1px; }
-.section-subtitle { font-size:10px; opacity:0.7; margin-top:2px; text-transform:uppercase; letter-spacing:1px; }
-.step { display:flex; gap:14px; padding:14px 20px; background:#f8fafc; border:1px solid #e2e8f0; border-top:none; }
+.section-subtitle { font-size:10px; color:#c9a84c; margin-top:2px; text-transform:uppercase; letter-spacing:1px; }
+.step { display:flex; gap:14px; padding:14px 20px; background:#fdfbf5; border:1px solid #e8d9a0; border-top:none; }
 .step:last-child { border-radius:0 0 10px 10px; }
-.step-number { min-width:26px; height:26px; background:#1e3a8a; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:900; flex-shrink:0; margin-top:2px; }
-.step-title { font-size:12px; font-weight:700; color:#1e293b; margin-bottom:5px; }
-.step-desc { font-size:11px; color:#475569; line-height:1.7; }
-.footer { text-align:center; margin-top:60px; padding-top:20px; border-top:1px solid #e2e8f0; font-size:10px; color:#94a3b8; }
+.step-number { min-width:26px; height:26px; background:#c9a84c; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:900; flex-shrink:0; margin-top:2px; }
+.step-title { font-size:12px; font-weight:700; color:#7a5c1e; margin-bottom:5px; }
+.step-desc { font-size:11px; color:#4a3a1a; line-height:1.7; }
+.footer { text-align:center; margin-top:60px; padding-top:20px; border-top:1px solid #e8d9a0; font-size:10px; color:#a8882f; }
 @media print { body { padding:20px; } .section { page-break-inside:avoid; } }
 </style>
 </head>
 <body>
 <div class="cover">
-  <div class="cover-logo">Cartório<span>RAG</span></div>
+  <div class="cover-logo">MJ <span>Consultoria</span></div>
   <div class="cover-title">Manual do Usuário</div>
-  <div class="cover-sub">Guia Completo da Plataforma — PRO v3.0</div>
-  <div class="cover-date">MJ Consultoria &nbsp;·&nbsp; Fevereiro/2026</div>
+  <div class="cover-sub">Plataforma de Treinamento Corporativo</div>
+  <div class="cover-date">MJ Consultoria &nbsp;·&nbsp; ${new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</div>
 </div>
 <div class="toc">
   <div class="toc-title">Índice</div>
@@ -197,8 +201,8 @@ body { font-family: Arial, sans-serif; color:#1e293b; background:white; padding:
 </div>
 ${allContent}
 <div class="footer">
-  CartórioRAG PRO v3.0 · Manual do Usuário · MJ Consultoria · Gerado em ${new Date().toLocaleDateString('pt-BR')}<br>
-  Em conformidade com LGPD Lei nº 13.709/2018, Provimento CNJ nº 149 e Provimento CNJ nº 213/2026
+  MJ Consultoria · Plataforma de Treinamento Corporativo · Gerado em ${new Date().toLocaleDateString('pt-BR')}<br>
+  Em conformidade com LGPD Lei nº 13.709/2018 · Provimento CNJ nº 149 · Provimento CNJ nº 213/2026
 </div>
 </body>
 </html>`);
@@ -208,57 +212,60 @@ ${allContent}
   };
 
   return (
-    <div className="p-8 space-y-6 min-h-screen" style={{ background: '#05080f' }}>
+    <div className="p-8 space-y-6 min-h-screen bg-slate-50">
 
       {/* Header */}
       <div className="flex items-end justify-between">
         <div>
           <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">
-            Tutorial da <span className="text-blue-500">Plataforma</span>
+            Tutorial da <span className="text-[#c9a84c]">Plataforma</span>
           </h2>
-          <p className="text-slate-500 text-xs font-black uppercase tracking-widest mt-1">CartórioRAG PRO v3.0 — Guia Completo do Usuário</p>
+          <p className="text-[#8a6e2f] text-xs font-black uppercase tracking-widest mt-1">
+            MJ Consultoria — Guia Completo do Usuário
+          </p>
         </div>
         <button
           onClick={exportPDF}
-          className="bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-5 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-lg"
+          className="bg-[#c9a84c] hover:brightness-110 text-[#0f172a] px-5 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-lg"
         >
           <i className="fa-solid fa-file-pdf"></i> Baixar PDF
         </button>
       </div>
 
       {/* Info */}
-      <div className="bg-blue-500/5 border border-blue-500/20 rounded-2xl p-5 flex items-start gap-3">
-        <i className="fa-solid fa-circle-info text-blue-400 text-lg mt-0.5 flex-shrink-0"></i>
-        <p className="text-sm text-slate-600 leading-relaxed">
-          Bem-vindo ao CartórioRAG PRO. Selecione um módulo no menu para ver as instruções detalhadas,
-          ou clique em <strong className="text-blue-400">Baixar PDF</strong> para salvar o manual completo com capa e índice.
+      <div className="bg-[#c9a84c]/8 border border-[#c9a84c]/25 rounded-2xl p-5 flex items-start gap-3">
+        <i className="fa-solid fa-circle-info text-[#c9a84c] text-lg mt-0.5 flex-shrink-0"></i>
+        <p className="text-sm text-[#7a5c1e] leading-relaxed">
+          Bem-vindo à Plataforma MJ Consultoria. Selecione um módulo para ver as instruções detalhadas,
+          ou clique em <strong className="text-[#c9a84c]">Baixar PDF</strong> para salvar o manual completo.
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
         {/* Menu lateral */}
-        <div className="rounded-3xl border border-slate-800 p-4 space-y-1 h-fit" style={{ background: '#0a111f' }}>
-          <p className="text-xs font-black text-slate-600 uppercase tracking-widest px-3 py-2">Módulos</p>
+        <div className="bg-[#0f172a] rounded-3xl border border-[#c9a84c]/20 p-4 space-y-1 h-fit">
+          <p className="text-xs font-black text-[#c9a84c]/60 uppercase tracking-widest px-3 py-2">Módulos</p>
           {SECTIONS.map(s => {
             const isActive = activeSection === s.id;
             return (
               <button
                 key={s.id}
                 onClick={() => setActiveSection(s.id)}
-                className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all text-left ${
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left ${
                   isActive
-                    ? 'bg-blue-600 shadow-lg shadow-blue-900/20'
-                    : 'hover:bg-slate-800/60'
+                    ? 'bg-[#c9a84c] shadow-lg'
+                    : 'hover:bg-white/5'
                 }`}
               >
-                <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-white/20' : 'bg-slate-800'}`}>
-                  <i className={`fa-solid ${s.icon} text-xs ${isActive ? 'text-[#0A1628]' : 'text-slate-500'}`}></i>
+                <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                  isActive ? 'bg-black/15' : 'bg-white/5'
+                }`}>
+                  <i className={`fa-solid ${s.icon} text-xs ${isActive ? 'text-[#0f172a]' : 'text-[#c9a84c]/60'}`}></i>
                 </div>
-                <div className="min-w-0">
-                  <p className={`text-xs font-black truncate ${isActive ? 'text-[#0A1628]' : 'text-slate-500'}`}>{s.title}</p>
-                  <p className={`text-xs truncate leading-tight ${isActive ? 'text-blue-200' : 'text-slate-600'}`} style={{ fontSize: '9px' }}>{s.subtitle}</p>
-                </div>
+                <p className={`text-xs font-bold truncate ${isActive ? 'text-[#0f172a]' : 'text-[#c9a84c]/80'}`}>
+                  {s.title}
+                </p>
               </button>
             );
           })}
@@ -268,14 +275,16 @@ ${allContent}
         <div className="lg:col-span-3 space-y-4">
 
           {/* Header da seção */}
-          <div className="bg-blue-600 rounded-2xl p-6 flex items-center gap-4 shadow-lg shadow-blue-900/20">
-            <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center flex-shrink-0">
-              <i className={`fa-solid ${current.icon} text-[#0A1628] text-2xl`}></i>
+          <div className="bg-[#0f172a] rounded-2xl p-6 flex items-center gap-4 shadow-lg border border-[#c9a84c]/20">
+            <div className="w-14 h-14 rounded-2xl bg-[#c9a84c]/15 flex items-center justify-center flex-shrink-0">
+              <i className={`fa-solid ${current.icon} text-[#c9a84c] text-2xl`}></i>
             </div>
             <div>
-              <p className="text-blue-200 text-xs font-black uppercase tracking-widest">Módulo {String(currentIdx + 1).padStart(2, '0')} de {SECTIONS.length}</p>
-              <h3 className="text-xl font-black text-[#0A1628] uppercase italic mt-1">{current.title}</h3>
-              <p className="text-blue-200 text-sm mt-1">{current.subtitle}</p>
+              <p className="text-[#c9a84c]/60 text-xs font-black uppercase tracking-widest">
+                Módulo {String(currentIdx + 1).padStart(2, '0')} de {SECTIONS.length}
+              </p>
+              <h3 className="text-xl font-black text-white uppercase italic mt-1">{current.title}</h3>
+              <p className="text-[#c9a84c] text-sm mt-1">{current.subtitle}</p>
             </div>
           </div>
 
@@ -284,15 +293,14 @@ ${allContent}
             {current.steps.map((step, i) => (
               <div
                 key={i}
-                className="border border-slate-800 rounded-2xl p-5 flex gap-4 hover:border-slate-700 transition-all"
-                style={{ background: '#0a111f' }}
+                className="bg-white border border-[#c9a84c]/20 rounded-2xl p-5 flex gap-4 hover:border-[#c9a84c]/40 hover:shadow-sm transition-all"
               >
-                <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-lg shadow-blue-900/30">
-                  <span className="text-xs font-black text-[#0A1628]">{i + 1}</span>
+                <div className="w-8 h-8 rounded-xl bg-[#c9a84c] flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
+                  <span className="text-xs font-black text-[#0f172a]">{i + 1}</span>
                 </div>
                 <div>
-                  <p className="text-sm font-black text-blue-400 mb-2">{step.title}</p>
-                  <p className="text-sm text-slate-500 leading-relaxed">{step.desc}</p>
+                  <p className="text-sm font-black text-[#7a5c1e] mb-1.5">{step.title}</p>
+                  <p className="text-sm text-[#8a6e2f] leading-relaxed">{step.desc}</p>
                 </div>
               </div>
             ))}
@@ -303,7 +311,7 @@ ${allContent}
             {currentIdx > 0 ? (
               <button
                 onClick={() => setActiveSection(SECTIONS[currentIdx - 1].id)}
-                className="flex items-center gap-2 px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-600 rounded-xl text-xs font-black uppercase transition-all"
+                className="flex items-center gap-2 px-5 py-2.5 bg-white border border-[#c9a84c]/30 hover:border-[#c9a84c]/60 text-[#7a5c1e] rounded-xl text-xs font-black uppercase transition-all"
               >
                 <i className="fa-solid fa-arrow-left"></i> Anterior
               </button>
@@ -312,14 +320,14 @@ ${allContent}
             {currentIdx < SECTIONS.length - 1 ? (
               <button
                 onClick={() => setActiveSection(SECTIONS[currentIdx + 1].id)}
-                className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-[#0A1628] rounded-xl text-xs font-black uppercase transition-all"
+                className="flex items-center gap-2 px-5 py-2.5 bg-[#c9a84c] hover:brightness-110 text-[#0f172a] rounded-xl text-xs font-black uppercase transition-all"
               >
                 Próximo <i className="fa-solid fa-arrow-right"></i>
               </button>
             ) : (
               <button
                 onClick={exportPDF}
-                className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-[#0A1628] rounded-xl text-xs font-black uppercase transition-all"
+                className="flex items-center gap-2 px-5 py-2.5 bg-[#c9a84c] hover:brightness-110 text-[#0f172a] rounded-xl text-xs font-black uppercase transition-all"
               >
                 <i className="fa-solid fa-file-pdf"></i> Baixar Manual PDF
               </button>

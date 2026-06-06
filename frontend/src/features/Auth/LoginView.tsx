@@ -63,26 +63,35 @@ const LoginView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0D1B3E] flex items-center justify-center p-6 relative overflow-hidden">
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-900/10 blur-[120px] rounded-full"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-900/10 blur-[120px] rounded-full"></div>
+    <div className="min-h-screen bg-bg-base flex items-center justify-center p-6 relative overflow-hidden">
+      {/* Ambient glow */}
+      <div className="absolute top-[-15%] left-[-10%] w-[50%] h-[50%] bg-brand-blue/5 blur-[140px] rounded-full pointer-events-none"></div>
+      <div className="absolute bottom-[-15%] right-[-10%] w-[50%] h-[50%] bg-brand-blue/5 blur-[140px] rounded-full pointer-events-none"></div>
 
-      <div className="w-full max-w-[440px] z-10">
-        <div className="bg-white border border-slate-200 rounded-[40px] p-10 shadow-2xl backdrop-blur-sm">
+      <div className="w-full max-w-[420px] z-10">
+        {/* Card */}
+        <div className="bg-bg-surface border border-border rounded-3xl p-10 shadow-card-hover">
+          {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">
-              MJ <span className="text-blue-500">Consultoria</span>
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-blue/15 mb-4">
+              <i className="fa-solid fa-graduation-cap text-2xl text-brand-blue"></i>
+            </div>
+            <h1 className="text-3xl font-black text-text-primary italic uppercase tracking-tighter">
+              MJ <span className="text-brand-blue">Consultoria</span>
             </h1>
-            <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.3em] mt-2">Plataforma de Treinamento Corporativo</p>
+            <p className="text-text-muted text-[10px] font-bold uppercase tracking-[0.25em] mt-2">
+              Plataforma de Treinamento Corporativo
+            </p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4">
+            {/* E-mail field */}
             <div className="relative">
-              <Mail className="absolute left-4 top-4 text-slate-500 w-5 h-5" />
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted w-4 h-4 pointer-events-none" />
               <input
                 type="email"
                 placeholder="E-mail funcional"
-                className="w-full bg-[#0D1B3E] border border-slate-200 rounded-2xl p-4 pl-12 text-[#0A1628] outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all placeholder:text-slate-700"
+                className="w-full bg-bg-elevated border border-border rounded-2xl py-3.5 pl-11 pr-4 text-text-primary placeholder:text-text-muted outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue transition-all text-sm"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
@@ -90,12 +99,13 @@ const LoginView: React.FC = () => {
               />
             </div>
 
+            {/* Password field */}
             <div className="relative">
-              <Lock className="absolute left-4 top-4 text-slate-500 w-5 h-5" />
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted w-4 h-4 pointer-events-none" />
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="Senha"
-                className="w-full bg-[#0D1B3E] border border-slate-200 rounded-2xl p-4 pl-12 pr-12 text-[#0A1628] outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all placeholder:text-slate-700"
+                className="w-full bg-bg-elevated border border-border rounded-2xl py-3.5 pl-11 pr-12 text-text-primary placeholder:text-text-muted outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue transition-all text-sm"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
@@ -103,36 +113,38 @@ const LoginView: React.FC = () => {
               />
               <button
                 type="button"
-                className="absolute right-4 top-4 text-slate-500 hover:text-[#0A1628] transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors"
                 onClick={() => setShowPassword(!showPassword)}
               >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
 
+            {/* Forgot password */}
             <div className="flex justify-end">
               <button
                 type="button"
                 onClick={handleResetPassword}
                 disabled={resetLoading}
-                className="text-[10px] text-blue-400 hover:text-blue-300 font-bold uppercase tracking-widest transition-colors disabled:opacity-50"
+                className="text-[11px] text-brand-blue hover:text-blue-300 font-bold uppercase tracking-widest transition-colors disabled:opacity-50"
               >
                 {resetLoading ? "Enviando..." : "Esqueceu a senha?"}
               </button>
             </div>
 
+            {/* Submit */}
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full font-black py-4 rounded-2xl uppercase text-[11px] tracking-widest transition-all duration-300 bg-blue-600 text-[#0A1628] hover:bg-blue-500 shadow-lg shadow-blue-900/20 active:scale-[0.98] disabled:opacity-50"
+              className="w-full font-black py-3.5 rounded-2xl uppercase text-[11px] tracking-widest transition-all duration-200 bg-brand-blue text-white hover:brightness-110 shadow-glow-blue active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? "Autenticando..." : "Entrar no Sistema"}
             </button>
           </form>
         </div>
 
-        <p className="text-center mt-8 text-slate-600 text-[10px] uppercase tracking-widest">
-          © {new Date().getFullYear()} MJ Consultoria - Todos os direitos reservados
+        <p className="text-center mt-6 text-text-disabled text-[10px] uppercase tracking-widest">
+          © {new Date().getFullYear()} MJ Consultoria — Todos os direitos reservados
         </p>
       </div>
     </div>
