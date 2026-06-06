@@ -8,7 +8,6 @@ const LoginView          = lazy(() => import('./features/Auth/LoginView'));
 const ChangePasswordView = lazy(() => import('./features/Auth/ChangePasswordView'));
 const DashboardView      = lazy(() => import('./features/Dashboard/DashboardView'));
 const DashboardMasterView= lazy(() => import('./features/Dashboard/DashboardMasterView'));
-const ChatView           = lazy(() => import('./features/RAG/ChatView'));
 const KnowledgeBase      = lazy(() => import('./features/Base/KnowledgeBase'));
 const ExpertReviewView   = lazy(() => import('./features/Expert/ExpertReviewView'));
 const ChecklistView      = lazy(() => import('./features/Checklists/ChecklistView'));
@@ -62,7 +61,6 @@ const MainLayout: React.FC = () => {
     switch (state.activeTab) {
       case 'dashboard':  return <DashboardMasterView />;
       case 'unit':       return <DashboardView />;
-      case 'chat':       return <ChatView />;
       case 'checklists': return <ChecklistView />;
       case 'knowledge':  return <KnowledgeBase />;
       case 'security':   return <SecurityView />;
