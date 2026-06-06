@@ -284,7 +284,7 @@ const TrainingDashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
         {/* Funcionários x Trilhas */}
-        <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-5 space-y-4">
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4">
           <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
             Funcionários × Trilhas
           </h4>
@@ -305,7 +305,7 @@ const TrainingDashboard: React.FC = () => {
                       </span>
                     </div>
                   </div>
-                  <div className="w-full bg-slate-800 rounded-full h-1.5">
+                  <div className="w-full bg-slate-200 rounded-full h-1.5">
                     <div
                       className={`h-1.5 rounded-full transition-all ${cobertura.pct >= 80 ? 'bg-emerald-500' : cobertura.pct >= 50 ? 'bg-amber-500' : 'bg-red-500'}`}
                       style={{ width: `${cobertura.pct}%` }}
@@ -318,7 +318,7 @@ const TrainingDashboard: React.FC = () => {
         </div>
 
         {/* Top Questões Difíceis */}
-        <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-5 space-y-3">
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-3">
           <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
             Top 5 Questões Mais Difíceis
           </h4>
@@ -351,7 +351,7 @@ const TrainingDashboard: React.FC = () => {
       </div>
 
       {/* Taxa de aprovação por treinamento */}
-      <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-5 space-y-4">
+      <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4">
         <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
           Taxa de Aprovação por Treinamento
         </h4>
@@ -366,7 +366,7 @@ const TrainingDashboard: React.FC = () => {
                 const taxa = Math.round((aprov / resultados.length) * 100);
                 const media = Math.round(resultados.reduce((a, r) => a + r.nota, 0) / resultados.length);
                 return (
-                  <div key={t} className="bg-slate-900/50 border border-slate-200 rounded-xl p-4 space-y-2">
+                  <div key={t} className="bg-slate-50/50 border border-slate-200 rounded-xl p-4 space-y-2">
                     <p className="text-xs font-black text-[#0A1628] truncate">{t}</p>
                     <div className="flex gap-3">
                       <div>
@@ -382,7 +382,7 @@ const TrainingDashboard: React.FC = () => {
                         <p className="text-lg font-black text-slate-700">{resultados.length}</p>
                       </div>
                     </div>
-                    <div className="w-full bg-slate-800 rounded-full h-1">
+                    <div className="w-full bg-slate-200 rounded-full h-1">
                       <div className={`h-1 rounded-full ${taxa >= 70 ? 'bg-emerald-500' : taxa >= 50 ? 'bg-amber-500' : 'bg-red-500'}`} style={{ width: `${taxa}%` }}></div>
                     </div>
                   </div>
@@ -405,20 +405,20 @@ const TrainingDashboard: React.FC = () => {
       </div>
 
       {coberturaData.length === 0 ? (
-        <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-10 text-center">
+        <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center">
           <i className="fa-solid fa-road text-4xl text-slate-700 mb-3 block"></i>
           <p className="text-slate-600 text-xs font-bold uppercase tracking-widest">Nenhuma trilha ativa</p>
         </div>
       ) : (
         <div className="space-y-4">
           {coberturaData.map(({ trilha, elegíveis, iniciaram, concluiram, pct }) => (
-            <div key={trilha.id} className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-5 space-y-4">
+            <div key={trilha.id} className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-sm font-black text-[#0A1628]">{trilha.titulo}</p>
                   <div className="flex flex-wrap gap-1.5 mt-1.5">
                     {(trilha.perfis || []).map(p => (
-                      <span key={p} className="text-[8px] font-black uppercase tracking-widest bg-slate-800 text-slate-500 px-2 py-0.5 rounded-md">{p}</span>
+                      <span key={p} className="text-[8px] font-black uppercase tracking-widest bg-slate-200 text-slate-500 px-2 py-0.5 rounded-md">{p}</span>
                     ))}
                   </div>
                 </div>
@@ -428,7 +428,7 @@ const TrainingDashboard: React.FC = () => {
               </div>
 
               {/* Barra de progresso */}
-              <div className="w-full bg-slate-800 rounded-full h-2">
+              <div className="w-full bg-slate-200 rounded-full h-2">
                 <div
                   className={`h-2 rounded-full transition-all ${pct >= 80 ? 'bg-emerald-500' : pct >= 50 ? 'bg-amber-500' : 'bg-red-500'}`}
                   style={{ width: `${Math.min(100, pct)}%` }}
@@ -442,7 +442,7 @@ const TrainingDashboard: React.FC = () => {
                   { label: 'Iniciaram', value: iniciaram, color: 'amber', icon: 'fa-play' },
                   { label: 'Concluíram', value: concluiram, color: 'emerald', icon: 'fa-circle-check' },
                 ].map((s, i) => (
-                  <div key={i} className="bg-slate-900/50 rounded-xl p-3 text-center">
+                  <div key={i} className="bg-slate-50/50 rounded-xl p-3 text-center">
                     <i className={`fa-solid ${s.icon} text-${s.color}-400 text-sm mb-1 block`}></i>
                     <p className="text-xl font-black text-[#0A1628]">{s.value}</p>
                     <p className="text-[8px] text-slate-500 uppercase tracking-widest">{s.label}</p>
@@ -499,7 +499,7 @@ const TrainingDashboard: React.FC = () => {
       </div>
 
       {questaoMetrics.length === 0 ? (
-        <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-10 text-center">
+        <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center">
           <i className="fa-solid fa-triangle-exclamation text-4xl text-slate-700 mb-3 block"></i>
           <p className="text-slate-600 text-xs font-bold uppercase tracking-widest">Nenhuma tentativa registrada ainda</p>
           <p className="text-slate-700 text-xs mt-1">As métricas aparecerão após os colaboradores realizarem as avaliações</p>
@@ -524,7 +524,7 @@ const TrainingDashboard: React.FC = () => {
             {questaoMetrics.map((m, i) => {
               const dc = diffColor(m.taxaErro);
               return (
-                <div key={i} className={`bg-[#0D1B3E] border rounded-2xl p-5 space-y-3 ${dc.badge}`}>
+                <div key={i} className={`bg-white border rounded-2xl p-5 space-y-3 ${dc.badge}`}>
                   <div className="flex items-start gap-4">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${m.taxaErro >= 70 ? 'bg-red-500/20' : m.taxaErro >= 40 ? 'bg-amber-500/20' : 'bg-emerald-500/20'}`}>
                       <span className={`text-lg font-black ${dc.text}`}>{i + 1}</span>
@@ -549,7 +549,7 @@ const TrainingDashboard: React.FC = () => {
                       <p className="text-[9px] text-slate-500 mt-0.5">{m.erros} de {m.totalTentativas}</p>
                     </div>
                   </div>
-                  <div className="w-full bg-slate-800 rounded-full h-2">
+                  <div className="w-full bg-slate-200 rounded-full h-2">
                     <div className={`h-2 rounded-full transition-all ${m.taxaErro >= 70 ? 'bg-red-500' : m.taxaErro >= 40 ? 'bg-amber-500' : 'bg-emerald-500'}`} style={{ width: `${m.taxaErro}%` }}></div>
                   </div>
                 </div>
@@ -569,7 +569,7 @@ const TrainingDashboard: React.FC = () => {
       </div>
 
       {ranking.length === 0 ? (
-        <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-10 text-center">
+        <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center">
           <i className="fa-solid fa-ranking-star text-4xl text-slate-700 mb-3 block"></i>
           <p className="text-slate-600 text-xs font-bold uppercase tracking-widest">Nenhum resultado de avaliação ainda</p>
         </div>
@@ -580,14 +580,14 @@ const TrainingDashboard: React.FC = () => {
             const medalIcon = i === 0 ? 'fa-trophy' : i === 1 ? 'fa-medal' : i === 2 ? 'fa-medal' : 'fa-hashtag';
             const scoreColor = user.media >= 80 ? 'text-emerald-400' : user.media >= 70 ? 'text-amber-400' : 'text-red-400';
             return (
-              <div key={user.nome} className="bg-[#0D1B3E] border border-slate-200 hover:border-slate-200 rounded-2xl p-4 flex items-center gap-4 transition-all group">
+              <div key={user.nome} className="bg-white border border-slate-200 hover:border-slate-200 rounded-2xl p-4 flex items-center gap-4 transition-all group">
                 {/* Posição */}
                 <div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
                   <i className={`fa-solid ${medalIcon} text-xl ${medalColor}`}></i>
                 </div>
 
                 {/* Avatar */}
-                <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center flex-shrink-0">
                   <span className="text-sm font-black text-[#0A1628]">{user.nome.charAt(0).toUpperCase()}</span>
                 </div>
 
@@ -596,7 +596,7 @@ const TrainingDashboard: React.FC = () => {
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-sm font-black text-[#0A1628]">{user.nome}</span>
                     {user.cargo && (
-                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 bg-slate-900 px-2 py-0.5 rounded-md">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md">
                         {user.cargo}
                       </span>
                     )}
@@ -656,7 +656,7 @@ const TrainingDashboard: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-slate-900/50 p-1 rounded-2xl border border-slate-200 w-fit overflow-x-auto">
+      <div className="flex gap-1 bg-slate-50/50 p-1 rounded-2xl border border-slate-200 w-fit overflow-x-auto">
         {DASH_TABS.map(tab => (
           <button type="button" key={tab.id} onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${
