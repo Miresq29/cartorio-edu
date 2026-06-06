@@ -67,6 +67,7 @@ const formatCountdown = (liberadoEm: Date): string => {
 
 const TrainingQuiz: React.FC<Props> = ({ checklists }) => {
   const { state } = useApp();
+  const tenantId = state.user?.tenantId || '';
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [results, setResults] = useState<QuizResult[]>([]);
   const [mode, setMode] = useState<'list' | 'create' | 'take' | 'result' | 'blocked'>('list');
