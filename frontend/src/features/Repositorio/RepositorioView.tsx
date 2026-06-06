@@ -449,7 +449,7 @@ const FormMidia: React.FC<{
           Cancelar
         </button>
         <button onClick={handleSalvar} disabled={saving || !form.titulo || !form.link}
-          className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-[#0A1628] px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+          className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
           {saving
             ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Salvando...</>
             : <><i className="fa-solid fa-floppy-disk mr-2"></i>Adicionar ao Repositório</>
@@ -560,7 +560,7 @@ const RepositorioView: React.FC = () => {
         </div>
         {isGestor && !showForm && (
           <button onClick={() => setShowForm(true)}
-            className="bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
+            className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
             <i className="fa-solid fa-plus"></i>Adicionar
           </button>
         )}
@@ -597,14 +597,14 @@ const RepositorioView: React.FC = () => {
         <div className="flex gap-2">
           <button onClick={() => setFiltroTipo('')}
             className={`px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
-              !filtroTipo ? 'bg-blue-600 text-[#0A1628]' : 'bg-slate-900 text-slate-500 hover:bg-slate-800 border border-slate-200'
+              !filtroTipo ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200'
             }`}>Todos</button>
           {(Object.entries(TIPO_CONFIG) as [MidiaTipo, typeof TIPO_CONFIG[MidiaTipo]][]).map(([key, cfg]) => (
             <button key={key} onClick={() => setFiltroTipo(filtroTipo === key ? '' : key)}
               className={`px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 ${
                 filtroTipo === key
                   ? `bg-${cfg.color}-600 text-[#0A1628]`
-                  : 'bg-slate-900 text-slate-500 hover:bg-slate-800 border border-slate-200'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200'
               }`}>
               <i className={`${cfg.icon} text-[10px]`}></i>{cfg.label}
             </button>

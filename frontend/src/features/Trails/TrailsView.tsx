@@ -104,7 +104,7 @@ const ModuloForm: React.FC<{
             color: modulo.tipo === 'obrigatorio' ? 'white' : '#64748b',
           }}
         >
-          {modulo.tipo === 'obrigatorio' ? 'â˜… ObrigatÃ³rio' : 'â—‡ Opcional'}
+          {modulo.tipo === 'obrigatorio' ? 'â˜… obrigatório' : 'â—‡ Opcional'}
         </button>
         <button onClick={onRemove} style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer', fontSize: 16 }}>
           <i className="fa-solid fa-trash-can"></i>
@@ -215,7 +215,7 @@ const TrilhaCard: React.FC<{
       <div style={{ display: 'flex', gap: 16, marginBottom: progresso ? 16 : 0 }}>
         <span style={{ fontSize: 11, color: '#475569' }}>
           <i className="fa-solid fa-circle-dot" style={{ color: '#dc2626', marginRight: 4 }}></i>
-          {obrigatorios} obrigatÃ³rio{obrigatorios !== 1 ? 's' : ''}
+          {obrigatorios} obrigatório{obrigatorios !== 1 ? 's' : ''}
         </span>
         {opcionais > 0 && (
           <span style={{ fontSize: 11, color: '#475569' }}>
@@ -389,7 +389,7 @@ Nota mÃ­nima para aprovaÃ§Ã£o: ${modulo.notaMinima}/10`
         <div style={{ padding: '0 28px 28px' }}>
           <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 16, padding: 20, marginBottom: 16 }}>
             <p style={{ fontSize: 10, fontWeight: 900, color: '#475569', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 10 }}>
-              {modulo.tipo === 'obrigatorio' ? 'â˜… MÃ³dulo ObrigatÃ³rio' : 'â—‡ MÃ³dulo Opcional'}
+              {modulo.tipo === 'obrigatorio' ? 'â˜… MÃ³dulo obrigatório' : 'â—‡ MÃ³dulo Opcional'}
             </p>
             <p style={{ fontSize: 13, color: '#334155', lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{modulo.conteudo || modulo.descricao}</p>
           </div>
@@ -424,7 +424,7 @@ Nota mÃ­nima para aprovaÃ§Ã£o: ${modulo.notaMinima}/10`
               {progModulo.assistido && (!modulo.temQuiz || progModulo.aprovado) && (
                 <div style={{ flex: 1, background: '#052e16', border: '1px solid #10b98140', borderRadius: 12, padding: 14, textAlign: 'center' }}>
                   <i className="fa-solid fa-circle-check" style={{ color: '#10b981', marginRight: 8 }}></i>
-                  <span style={{ color: '#10b981', fontWeight: 900, fontSize: 12 }}>MÃ³dulo ConcluÃ­do</span>
+                  <span style={{ color: '#10b981', fontWeight: 900, fontSize: 12 }}>MÃ³dulo concluído</span>
                 </div>
               )}
             </div>
@@ -767,7 +767,7 @@ const TrailsView: React.FC = () => {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                 <div>
                   <p style={{ fontSize: 13, fontWeight: 900, color: '#0f172a', textTransform: 'uppercase', letterSpacing: 1 }}>MÃ³dulos</p>
-                  <p style={{ fontSize: 10, color: '#475569', marginTop: 2 }}>â˜… ObrigatÃ³rio = conta para conclusÃ£o Â· â—‡ Opcional = complementar</p>
+                  <p style={{ fontSize: 10, color: '#475569', marginTop: 2 }}>â˜… obrigatório = conta para conclusÃ£o Â· â—‡ Opcional = complementar</p>
                 </div>
                 <button onClick={addModulo} style={{ background: '#2563eb', border: 'none', color: '#0f172a', padding: '8px 16px', borderRadius: 10, cursor: 'pointer', fontSize: 11, fontWeight: 900, textTransform: 'uppercase' }}>
                   <i className="fa-solid fa-plus" style={{ marginRight: 6 }}></i>MÃ³dulo
@@ -824,7 +824,7 @@ const TrailsView: React.FC = () => {
                       </div>
                       <div style={{ textAlign: 'right' }}>
                         <p style={{ fontSize: 22, fontWeight: 900, color: '#10b981' }}>{progs.filter(p => p.concluida).length}</p>
-                        <p style={{ fontSize: 10, color: '#475569', textTransform: 'uppercase' }}>de {progs.length} concluÃ­dos</p>
+                        <p style={{ fontSize: 10, color: '#475569', textTransform: 'uppercase' }}>de {progs.length} concluídos</p>
                       </div>
                     </div>
                     {progs.length > 0 && (
