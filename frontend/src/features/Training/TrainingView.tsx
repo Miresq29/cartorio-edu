@@ -72,6 +72,7 @@ const TrainingView: React.FC = () => {
   const [summaryType, setSummaryType] = useState<SummaryType>('executivo');
   const [summary, setSummary] = useState('');
   const [summaryLoading, setSummaryLoading] = useState(false);
+  const tenantId = state.user?.tenantId || '';
 
   useEffect(() => {
     const q1 = query(collection(db, 'checklists'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'));
