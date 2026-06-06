@@ -1,0 +1,2498 @@
+﻿import React, { useState, useEffect } from 'react';
+import { db } from '../../services/firebase';
+import {
+  collection, onSnapshot, query, orderBy,
+  addDoc, serverTimestamp, deleteDoc, doc
+} from 'firebase/firestore';
+
+interface Participant {
+  id: string;
+  nomeColaborador: string;
+  cargo: string;
+  treinamento: string;
+  dataConclusao: string;
+  status: 'concluÃ­do' | 'pendente' | 'vencido';
+  observacao?: string;
+  createdAt?: any;
+}
+
+interface Checklist {
+  id: string;
+  title: string;
+  items?: any[];
+}
+
+const STATUS_CONFIG = {
+  'concluÃ­do': { color: 'emerald', icon: 'fa-circle-check', label: 'ConcluÃ­do' },
+  'pendente':  { color: 'amber',   icon: 'fa-clock',        label: 'Pendente'  },
+  'vencido':   { color: 'red',     icon: 'fa-circle-xmark', label: 'Vencido'   },
+};
+
+const TrainingParticipants: React.FC = () => {
+  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [checklists, setChecklists] = useState<Checklist[]>([]);
+  const [showForm, setShowForm] = useState(false);
+  const [filterStatus, setFilterStatus] = useState<string>('todos');
+  const [filterTreinamento, setFilterTreinamento] = useState<string>('todos');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [form, setForm] = useState({
+    nomeColaborador: '',
+    cargo: '',
+    treinamento: '',
+    dataConclusao: '',
+    status: 'concluÃ­do' as Participant['status'],
+    observacao: '',
+  });
+
+  // Carrega participantes do Firestore
+  useEffect(() => {
+    const q = query(collection(db, 'treinamentosParticipantes'), orderBy('createdAt', 'desc'));
+    const unsub = onSnapshot(q, snap =>
+      setParticipants(snap.docs.map(d => ({ id: d.id, ...d.data() } as Participant)))
+    );
+    return () => unsub();
+  }, []);
+
+  // Carrega checklists (treinamentos mapeados)
+  useEffect(() => {
+    const q = query(collection(db, 'checklists'), orderBy('createdAt', 'desc'));
+    const unsub = onSnapshot(q, snap =>
+      setChecklists(snap.docs.map(d => ({ id: d.id, ...d.data() } as Checklist)))
+    );
+    return () => unsub();
+  }, []);
+
+  const handleSubmit = async () => {
+    if (!form.nomeColaborador || !form.treinamento || !form.dataConclusao) return;
+    setIsLoading(true);
+    try {
+      await addDoc(collection(db, 'treinamentosParticipantes'), {
+        ...form,
+        createdAt: serverTimestamp(),
+      });
+      setForm({ nomeColaborador: '', cargo: '', treinamento: '', dataConclusao: '', status: 'concluÃ­do', observacao: '' });
+      setShowForm(false);
+    } catch (e) {
+      console.error('Erro ao salvar participante', e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Remover este registro?')) return;
+    await deleteDoc(doc(db, 'treinamentosParticipantes', id));
+  };
+
+  // Filtragem
+  const filtered = participants.filter(p => {
+    const matchStatus = filterStatus === 'todos' || p.status === filterStatus;
+    const matchTreinamento = filterTreinamento === 'todos' || p.treinamento === filterTreinamento;
+    return matchStatus && matchTreinamento;
+  });
+
+  // Stats
+  const total = participants.length;
+  const concluidos = participants.filter(p => p.status === 'concluÃ­do').length;
+  const pendentes = participants.filter(p => p.status === 'pendente').length;
+  const vencidos = participants.filter(p => p.status === 'vencido').length;
+
+  // Treinamentos Ãºnicos registrados
+  const treinamentosUnicos = [...new Set(participants.map(p => p.treinamento))];
+
+  return (
+    <div className="space-y-6">
+
+      {/* Header da seÃ§Ã£o */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-[#0A1628] font-black uppercase italic text-sm tracking-wider">
+            HistÃ³rico de <span className="text-blue-500">Participantes</span>
+          </h3>
+          <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">
+            Registro de colaboradores por treinamento
+          </p>
+        </div>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2"
+        >
+          <i className={`fa-solid ${showForm ? 'fa-xmark' : 'fa-plus'}`}></i>
+          {showForm ? 'Cancelar' : 'Registrar Participante'}
+        </button>
+      </div>
+
+      {/* Cards de stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {[
+          { label: 'Total Registros', value: total, icon: 'fa-users', color: 'blue' },
+          { label: 'ConcluÃ­dos', value: concluidos, icon: 'fa-circle-check', color: 'emerald' },
+          { label: 'Pendentes', value: pendentes, icon: 'fa-clock', color: 'amber' },
+          { label: 'Vencidos', value: vencidos, icon: 'fa-circle-xmark', color: 'red' },
+        ].map((stat, i) => (
+          <div key={i} className="bg-white border border-slate-200 rounded-2xl p-4 space-y-2">
+            <i className={`fa-solid ${stat.icon} text-${stat.color}-500 text-lg`}></i>
+            <p className="text-2xl font-black text-[#0A1628]">{stat.value}</p>
+            <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">{stat.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* FormulÃ¡rio de registro */}
+      {showForm && (
+        <div className="bg-white border border-blue-500/30 rounded-2xl p-6 space-y-4">
+          <h4 className="text-xs font-black text-blue-400 uppercase tracking-widest">Novo Registro</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <div className="space-y-1">
+              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Nome do Colaborador *</label>
+              <input
+                value={form.nomeColaborador}
+                onChange={e => setForm(f => ({ ...f, nomeColaborador: e.target.value }))}
+                placeholder="Ex: JoÃ£o Silva"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500 transition-colors"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Cargo / FunÃ§Ã£o</label>
+              <input
+                value={form.cargo}
+                onChange={e => setForm(f => ({ ...f, cargo: e.target.value }))}
+                placeholder="Ex: Escrevente TÃ©cnico"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500 transition-colors"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Treinamento *</label>
+              <select
+                value={form.treinamento}
+                onChange={e => setForm(f => ({ ...f, treinamento: e.target.value }))}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500 transition-colors"
+              >
+                <option value="">Selecione um treinamento...</option>
+                {checklists.map(c => (
+                  <option key={c.id} value={c.title}>{c.title}</option>
+                ))}
+                <option value="outro">Outro (digitar)</option>
+              </select>
+            </div>
+
+            {form.treinamento === 'outro' && (
+              <div className="space-y-1">
+                <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Nome do Treinamento *</label>
+                <input
+                  onChange={e => setForm(f => ({ ...f, treinamento: e.target.value }))}
+                  placeholder="Digite o nome do treinamento"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500 transition-colors"
+                />
+              </div>
+            )}
+
+            <div className="space-y-1">
+              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Data de ConclusÃ£o *</label>
+              <input
+                type="date"
+                value={form.dataConclusao}
+                onChange={e => setForm(f => ({ ...f, dataConclusao: e.target.value }))}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500 transition-colors"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Status</label>
+              <select
+                value={form.status}
+                onChange={e => setForm(f => ({ ...f, status: e.target.value as Participant['status'] }))}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500 transition-colors"
+              >
+                <option value="concluÃ­do">âœ… ConcluÃ­do</option>
+                <option value="pendente">â³ Pendente</option>
+                <option value="vencido">âŒ Vencido</option>
+              </select>
+            </div>
+
+            <div className="space-y-1 md:col-span-2">
+              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">ObservaÃ§Ã£o</label>
+              <input
+                value={form.observacao}
+                onChange={e => setForm(f => ({ ...f, observacao: e.target.value }))}
+                placeholder="ObservaÃ§Ãµes adicionais..."
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500 transition-colors"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-2">
+            <button
+              onClick={() => setShowForm(false)}
+              className="px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-[#0A1628] border border-slate-200 hover:border-slate-600 transition-all"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={isLoading || !form.nomeColaborador || !form.treinamento || !form.dataConclusao}
+              className="bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50 flex items-center gap-2"
+            >
+              {isLoading ? <i className="fa-solid fa-circle-notch animate-spin"></i> : <i className="fa-solid fa-floppy-disk"></i>}
+              Salvar Registro
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Filtros */}
+      <div className="flex flex-wrap gap-3">
+        <div className="flex gap-2">
+          {['todos', 'concluÃ­do', 'pendente', 'vencido'].map(s => (
+            <button
+              key={s}
+              onClick={() => setFilterStatus(s)}
+              className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${
+                filterStatus === s
+                  ? 'bg-blue-600 text-[#0A1628]'
+                  : 'bg-slate-50 text-slate-500 hover:text-[#0A1628] border border-slate-200'
+              }`}
+            >
+              {s === 'todos' ? 'Todos' : STATUS_CONFIG[s as keyof typeof STATUS_CONFIG]?.label}
+            </button>
+          ))}
+        </div>
+
+        {treinamentosUnicos.length > 0 && (
+          <select
+            value={filterTreinamento}
+            onChange={e => setFilterTreinamento(e.target.value)}
+            className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-[10px] text-slate-500 outline-none focus:border-blue-500"
+          >
+            <option value="todos">Todos os Treinamentos</option>
+            {treinamentosUnicos.map(t => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
+        )}
+      </div>
+
+      {/* Lista de participantes */}
+      <div className="space-y-2">
+        {filtered.length === 0 ? (
+          <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center">
+            <i className="fa-solid fa-users text-4xl text-slate-700 mb-3 block"></i>
+            <p className="text-slate-600 text-xs font-bold uppercase tracking-widest">
+              {participants.length === 0
+                ? 'Nenhum participante registrado ainda'
+                : 'Nenhum resultado para os filtros selecionados'}
+            </p>
+          </div>
+        ) : (
+          filtered.map(p => {
+            const sc = STATUS_CONFIG[p.status as keyof typeof STATUS_CONFIG]
+              ?? { color: 'slate', icon: 'fa-circle-question', label: p.status || 'Desconhecido' };
+            return (
+              <div
+                key={p.id}
+                className="bg-white border border-slate-200 hover:border-slate-200 rounded-2xl p-4 flex items-center gap-4 transition-all group"
+              >
+                {/* Avatar */}
+                <div className="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center flex-shrink-0">
+                  <span className="text-sm font-black text-[#0A1628]">
+                    {p.nomeColaborador.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-black text-[#0A1628]">{p.nomeColaborador}</span>
+                    {p.cargo && (
+                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md">
+                        {p.cargo}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3 mt-1 flex-wrap">
+                    <span className="text-xs text-slate-500">
+                      <i className="fa-solid fa-graduation-cap text-blue-500 mr-1.5"></i>
+                      {p.treinamento}
+                    </span>
+                    <span className="text-xs text-slate-500">
+                      <i className="fa-solid fa-calendar mr-1.5"></i>
+                      {new Date(p.dataConclusao + 'T00:00:00').toLocaleDateString('pt-BR')}
+                    </span>
+                    {p.observacao && (
+                      <span className="text-xs text-slate-600 italic truncate max-w-[200px]">
+                        {p.observacao}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Status badge */}
+                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-${sc.color}-500/10 border border-${sc.color}-500/20 flex-shrink-0`}>
+                  <i className={`fa-solid ${sc.icon} text-${sc.color}-400 text-xs`}></i>
+                  <span className={`text-[9px] font-black uppercase tracking-widest text-${sc.color}-400`}>
+                    {sc.label}
+                  </span>
+                </div>
+
+                {/* Deletar */}
+                <button
+                  onClick={() => handleDelete(p.id)}
+                  className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-400 transition-all p-1"
+                >
+                  <i className="fa-solid fa-trash text-xs"></i>
+                </button>
+              </div>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default TrainingParticipants;
+import React, { useState, useEffect } from 'react';
+import { db } from '../../services/firebase';
+import {
+  collection, onSnapshot, query, orderBy, where,
+  addDoc, deleteDoc, doc, serverTimestamp
+} from 'firebase/firestore';
+import { useApp } from '../../context/AppContext';
+
+interface Question {
+  id: string;
+  texto: string;
+  opcoes: string[];
+  correta: number;
+  explicacao: string;
+}
+
+interface Quiz {
+  id: string;
+  treinamento: string;
+  titulo: string;
+  questoes: Question[];
+  geradoPorIA: boolean;
+  createdAt?: any;
+}
+
+interface QuizResult {
+  id: string;
+  quizId: string;
+  quizTitulo: string;
+  treinamento: string;
+  colaborador: string;
+  cargo: string;
+  nota: number;
+  total: number;
+  aprovado: boolean;
+  respostas: number[];
+  createdAt?: any;
+}
+
+interface Props {
+  checklists: any[];
+}
+
+const DIAS_BLOQUEIO = 3;
+
+const calcLiberadoEm = (results: QuizResult[], quizId: string, colaborador: string): Date | null => {
+  const falhas = results
+    .filter(r => r.quizId === quizId && r.colaborador === colaborador && !r.aprovado)
+    .map(r => ({ ...r, ts: r.createdAt?.toDate?.() as Date | null }))
+    .filter(r => r.ts)
+    .sort((a, b) => b.ts!.getTime() - a.ts!.getTime());
+
+  if (falhas.length === 0) return null;
+  const liberadoEm = new Date(falhas[0].ts!.getTime() + DIAS_BLOQUEIO * 24 * 60 * 60 * 1000);
+  return liberadoEm > new Date() ? liberadoEm : null;
+};
+
+const formatCountdown = (liberadoEm: Date): string => {
+  const diff = liberadoEm.getTime() - Date.now();
+  if (diff <= 0) return 'Liberado';
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  if (days > 0) return `${days}d ${hours}h`;
+  return `${hours}h ${mins}min`;
+};
+
+const TrainingQuiz: React.FC<Props> = ({ checklists }) => {
+  const { state } = useApp();
+  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [results, setResults] = useState<QuizResult[]>([]);
+  const [mode, setMode] = useState<'list' | 'create' | 'take' | 'result' | 'blocked'>('list');
+  const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
+  const [currentQ, setCurrentQ] = useState(0);
+  const [respostas, setRespostas] = useState<number[]>([]);
+  const [respondente, setRespondente] = useState({ nome: '', cargo: '' });
+  const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState('');
+  const [identStarted, setIdentStarted] = useState(false);
+  const [bloqueadoAte, setBloqueadoAte] = useState<Date | null>(null);
+
+  // Form manual
+  const [form, setForm] = useState({ treinamento: '', titulo: '' });
+  const [questoes, setQuestoes] = useState<Omit<Question, 'id'>[]>([
+    { texto: '', opcoes: ['', '', '', ''], correta: 0, explicacao: '' }
+  ]);
+
+  // Form IA
+  const [aiForm, setAiForm] = useState({ treinamento: '', quantidade: '5' });
+  const [createMode, setCreateMode] = useState<'ia' | 'manual'>('ia');
+
+  useEffect(() => {
+    const q = query(collection(db, 'treinamentosQuizzes'), orderBy('createdAt', 'desc'));
+    const unsub = onSnapshot(q, snap => setQuizzes(snap.docs.map(d => ({ id: d.id, ...d.data() } as Quiz))));
+    return () => unsub();
+  }, []);
+
+  useEffect(() => {
+    const q = query(collection(db, 'treinamentosQuizResults'), orderBy('createdAt', 'desc'));
+    const unsub = onSnapshot(q, snap => setResults(snap.docs.map(d => ({ id: d.id, ...d.data() } as QuizResult))));
+    return () => unsub();
+  }, []);
+
+  // ---- GERAR QUIZ VIA IA ----
+  const generateQuizWithAI = async () => {
+    if (!aiForm.treinamento) return;
+    setIsGenerating(true);
+    setGenerateError('');
+
+    const treinamento = checklists.find(c => c.title === aiForm.treinamento);
+    const context = treinamento
+      ? `Treinamento: ${treinamento.title}\nItens: ${treinamento.items?.map((i: any) => i.text).join('; ')}`
+      : `Treinamento: ${aiForm.treinamento}`;
+
+    const prompt = `VocÃª Ã© um especialista em treinamento notarial da MJ Consultoria.
+Com base no seguinte treinamento, crie ${aiForm.quantidade} questÃµes de mÃºltipla escolha para avaliar o conhecimento dos colaboradores.
+
+${context}
+
+RESPONDA APENAS COM UM JSON VÃLIDO, sem texto antes ou depois, sem markdown, sem \`\`\`:
+{
+  "titulo": "AvaliaÃ§Ã£o de [nome do treinamento]",
+  "questoes": [
+    {
+      "texto": "Texto da pergunta",
+      "opcoes": ["OpÃ§Ã£o A", "OpÃ§Ã£o B", "OpÃ§Ã£o C", "OpÃ§Ã£o D"],
+      "correta": 0,
+      "explicacao": "ExplicaÃ§Ã£o detalhada do porquÃª esta Ã© a resposta correta e por que as outras estÃ£o erradas"
+    }
+  ]
+}
+
+Regras:
+- "correta" Ã© o Ã­ndice (0 a 3) da opÃ§Ã£o correta
+- As perguntas devem ser prÃ¡ticas e relevantes para o dia a dia do cartÃ³rio
+- A explicaÃ§Ã£o deve ser clara e didÃ¡tica, com no mÃ­nimo 2 linhas
+- Retorne exatamente ${aiForm.quantidade} questÃµes`;
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 4000,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+
+      const data = await response.json();
+      const raw = data.content?.[0]?.text || '';
+
+      // Parse JSON da resposta
+      const jsonMatch = raw.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error('Resposta invÃ¡lida da IA');
+
+      const parsed = JSON.parse(jsonMatch[0]);
+      const questoesComId = parsed.questoes.map((q: any, i: number) => ({ ...q, id: `q${i + 1}` }));
+
+      await addDoc(collection(db, 'treinamentosQuizzes'), {
+        treinamento: aiForm.treinamento,
+        titulo: parsed.titulo,
+        questoes: questoesComId,
+        geradoPorIA: true,
+        createdAt: serverTimestamp(),
+      });
+
+      setAiForm({ treinamento: '', quantidade: '5' });
+      setMode('list');
+    } catch (e: any) {
+      setGenerateError('Erro ao gerar questionÃ¡rio. Tente novamente.');
+      console.error(e);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // ---- CRIAR QUIZ MANUAL ----
+  const handleCreateQuiz = async () => {
+    if (!form.treinamento || !form.titulo) return;
+    const questoesComId = questoes.map((q, i) => ({ ...q, id: `q${i + 1}` }));
+    await addDoc(collection(db, 'treinamentosQuizzes'), {
+      ...form, questoes: questoesComId, geradoPorIA: false, createdAt: serverTimestamp(),
+    });
+    setForm({ treinamento: '', titulo: '' });
+    setQuestoes([{ texto: '', opcoes: ['', '', '', ''], correta: 0, explicacao: '' }]);
+    setMode('list');
+  };
+
+  const addQuestao = () => setQuestoes(prev => [...prev, { texto: '', opcoes: ['', '', '', ''], correta: 0, explicacao: '' }]);
+  const removeQuestao = (i: number) => setQuestoes(prev => prev.filter((_, idx) => idx !== i));
+  const updateQuestao = (i: number, field: string, value: any) =>
+    setQuestoes(prev => prev.map((q, idx) => idx === i ? { ...q, [field]: value } : q));
+  const updateOpcao = (qi: number, oi: number, value: string) =>
+    setQuestoes(prev => prev.map((q, idx) => {
+      if (idx !== qi) return q;
+      const opcoes = [...q.opcoes]; opcoes[oi] = value; return { ...q, opcoes };
+    }));
+
+  // ---- RESPONDER QUIZ ----
+  const startQuiz = (quiz: Quiz) => {
+    const nomeAtual = state.user?.name || '';
+    // Verifica bloqueio de 3 dias para o usuÃ¡rio logado
+    if (nomeAtual) {
+      const liberado = calcLiberadoEm(results, quiz.id, nomeAtual);
+      if (liberado) {
+        setSelectedQuiz(quiz);
+        setBloqueadoAte(liberado);
+        setMode('blocked');
+        return;
+      }
+    }
+    setSelectedQuiz(quiz); setCurrentQ(0); setRespostas([]);
+    setRespondente({ nome: nomeAtual, cargo: state.user?.role || '' });
+    setIdentStarted(false);
+    setMode('take');
+  };
+
+  const handleAnswer = (opcaoIdx: number) => {
+    const novasRespostas = [...respostas, opcaoIdx];
+    setRespostas(novasRespostas);
+    if (currentQ + 1 < (selectedQuiz?.questoes.length || 0)) {
+      setCurrentQ(prev => prev + 1);
+    } else {
+      finishQuiz(novasRespostas);
+    }
+  };
+
+  const finishQuiz = async (resps: number[]) => {
+    if (!selectedQuiz) return;
+    const corretas = resps.filter((r, i) => r === selectedQuiz.questoes[i].correta).length;
+    const nota = Math.round((corretas / selectedQuiz.questoes.length) * 100);
+    const result: Omit<QuizResult, 'id'> = {
+      quizId: selectedQuiz.id, quizTitulo: selectedQuiz.titulo,
+      treinamento: selectedQuiz.treinamento, colaborador: respondente.nome,
+      cargo: respondente.cargo, nota, total: selectedQuiz.questoes.length,
+      aprovado: nota >= 70, respostas: resps, createdAt: serverTimestamp(),
+    };
+    const docRef = await addDoc(collection(db, 'treinamentosQuizResults'), result);
+    setQuizResult({ ...result, id: docRef.id });
+    setMode('result');
+  };
+
+  const deleteQuiz = async (id: string) => {
+    if (!window.confirm('Excluir este questionÃ¡rio?')) return;
+    await deleteDoc(doc(db, 'treinamentosQuizzes', id));
+  };
+
+  // ---- TELA DE RESULTADO COM EXPLICAÃ‡Ã•ES ----
+  if (mode === 'result' && quizResult && selectedQuiz) {
+    const corretas = quizResult.respostas.filter((r, i) => r === selectedQuiz.questoes[i].correta).length;
+    return (
+      <div className="space-y-6">
+        {/* Placar */}
+        <div className={`rounded-2xl p-8 text-center border ${quizResult.aprovado ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
+          <i className={`fa-solid text-6xl mb-4 block ${quizResult.aprovado ? 'fa-circle-check text-emerald-400' : 'fa-circle-xmark text-red-400'}`}></i>
+          <h3 className={`text-2xl font-black uppercase italic ${quizResult.aprovado ? 'text-emerald-400' : 'text-red-400'}`}>
+            {quizResult.aprovado ? 'Aprovado!' : 'Reprovado'}
+          </h3>
+          <p className="text-[#0A1628] text-5xl font-black mt-2">{quizResult.nota}%</p>
+          <p className="text-slate-500 text-sm mt-1">{quizResult.colaborador} â€” {quizResult.treinamento}</p>
+          <p className="text-slate-500 text-xs mt-1">{corretas} de {selectedQuiz.questoes.length} corretas Â· MÃ­nimo: 70%</p>
+        </div>
+
+        {/* Gabarito com explicaÃ§Ãµes */}
+        <div className="space-y-3">
+          <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest">Gabarito Comentado</h4>
+          {selectedQuiz.questoes.map((q, i) => {
+            const acertou = quizResult.respostas[i] === q.correta;
+            return (
+              <div key={i} className={`p-5 rounded-2xl border space-y-3 ${acertou ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-red-500/5 border-red-500/20'}`}>
+                <div className="flex items-start gap-3">
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${acertou ? 'bg-emerald-500' : 'bg-red-500'}`}>
+                    <i className={`fa-solid text-[#0A1628] text-xs ${acertou ? 'fa-check' : 'fa-xmark'}`}></i>
+                  </div>
+                  <p className="text-sm text-[#0A1628] font-bold">{i + 1}. {q.texto}</p>
+                </div>
+
+                <div className="ml-9 space-y-1">
+                  {q.opcoes.map((opcao, oi) => {
+                    const isSua = quizResult.respostas[i] === oi;
+                    const isCorreta = q.correta === oi;
+                    return (
+                      <div key={oi} className={`px-3 py-2 rounded-lg text-xs flex items-center gap-2 ${
+                        isCorreta ? 'bg-emerald-500/20 text-emerald-300 font-bold' :
+                        isSua && !isCorreta ? 'bg-red-500/20 text-red-300 line-through' :
+                        'text-slate-500'
+                      }`}>
+                        <span className="font-black">{String.fromCharCode(65 + oi)}.</span>
+                        {opcao}
+                        {isCorreta && <i className="fa-solid fa-check ml-auto text-emerald-400"></i>}
+                        {isSua && !isCorreta && <i className="fa-solid fa-xmark ml-auto text-red-400"></i>}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* ExplicaÃ§Ã£o sempre visÃ­vel, destacada quando errou */}
+                {q.explicacao && (
+                  <div className={`ml-9 p-3 rounded-xl text-xs leading-relaxed ${
+                    acertou
+                      ? 'bg-slate-200/50 text-slate-500 border border-slate-200'
+                      : 'bg-amber-500/10 text-amber-300 border border-amber-500/20'
+                  }`}>
+                    <i className={`fa-solid fa-circle-info mr-2 ${acertou ? 'text-slate-500' : 'text-amber-400'}`}></i>
+                    {q.explicacao}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="flex gap-3">
+          <button onClick={() => setMode('list')}
+            className="flex-1 bg-slate-200 hover:bg-slate-700 text-[#0A1628] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+            <i className="fa-solid fa-arrow-left mr-2"></i>Voltar
+          </button>
+          <button onClick={() => window.print()}
+            className="flex-1 bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+            <i className="fa-solid fa-print mr-2"></i>Imprimir Resultado
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ---- TELA BLOQUEADA (aguardar 3 dias) ----
+  if (mode === 'blocked' && selectedQuiz && bloqueadoAte) {
+    return (
+      <div className="space-y-6 max-w-lg mx-auto">
+        <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-8 text-center space-y-4">
+          <i className="fa-solid fa-lock text-5xl text-red-400 block"></i>
+          <div>
+            <h3 className="text-red-400 font-black uppercase italic text-lg">AvaliaÃ§Ã£o Bloqueada</h3>
+            <p className="text-sm text-slate-500 mt-2">
+              VocÃª nÃ£o atingiu a nota mÃ­nima de <span className="font-black text-[#0A1628]">70%</span> na tentativa anterior.
+            </p>
+            <p className="text-xs text-slate-500 mt-1">{selectedQuiz.titulo}</p>
+          </div>
+          <div className="bg-white border border-red-500/20 rounded-xl p-5 space-y-1">
+            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Nova tentativa disponÃ­vel em</p>
+            <p className="text-4xl font-black text-red-400">{formatCountdown(bloqueadoAte)}</p>
+            <p className="text-[9px] text-slate-600">
+              Liberado em {bloqueadoAte.toLocaleDateString('pt-BR')} Ã s {bloqueadoAte.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+            </p>
+          </div>
+          <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 text-left">
+            <p className="text-[9px] font-black text-amber-400 uppercase tracking-widest mb-1">
+              <i className="fa-solid fa-lightbulb mr-1"></i>Dica de Estudo
+            </p>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Use o tempo de espera para revisar o conteÃºdo do treinamento <span className="font-bold text-[#0A1628]">{selectedQuiz.treinamento}</span> na base legal e nos checklists.
+            </p>
+          </div>
+          <button type="button" onClick={() => { setMode('list'); setBloqueadoAte(null); }}
+            className="w-full bg-slate-200 hover:bg-slate-700 text-[#0A1628] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+            <i className="fa-solid fa-arrow-left mr-2"></i>Voltar para AvaliaÃ§Ãµes
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ---- TELA DE RESPONDER ----
+  if (mode === 'take' && selectedQuiz) {
+    if (!identStarted) {
+      return (
+        <div className="space-y-6 max-w-lg mx-auto">
+          <div>
+            <h3 className="text-[#0A1628] font-black uppercase italic text-sm">{selectedQuiz.titulo}</h3>
+            <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">
+              {selectedQuiz.treinamento} Â· {selectedQuiz.questoes.length} questÃµes Â· AprovaÃ§Ã£o: 70%
+            </p>
+            {selectedQuiz.geradoPorIA && (
+              <span className="inline-flex items-center gap-1 mt-2 text-[9px] font-black uppercase tracking-widest text-blue-400 bg-blue-500/10 px-2 py-1 rounded-lg">
+                <i className="fa-solid fa-wand-magic-sparkles"></i> Gerado por IA
+              </span>
+            )}
+          </div>
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Seu Nome *</label>
+              <input value={respondente.nome} onChange={e => setRespondente(r => ({ ...r, nome: e.target.value }))}
+                placeholder="Nome completo"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Cargo / FunÃ§Ã£o</label>
+              <input value={respondente.cargo} onChange={e => setRespondente(r => ({ ...r, cargo: e.target.value }))}
+                placeholder="Ex: Escrevente TÃ©cnico"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <button onClick={() => setMode('list')} className="px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 border border-slate-200 hover:border-slate-600 transition-all">
+              Cancelar
+            </button>
+            <button onClick={() => {
+                // Verifica bloqueio ao iniciar (para nomes digitados manualmente)
+                if (selectedQuiz && respondente.nome) {
+                  const liberado = calcLiberadoEm(results, selectedQuiz.id, respondente.nome);
+                  if (liberado) {
+                    setBloqueadoAte(liberado);
+                    setMode('blocked');
+                    return;
+                  }
+                }
+                setIdentStarted(true);
+              }}
+              disabled={!respondente.nome}
+              className="flex-1 bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50">
+              <i className="fa-solid fa-play mr-2"></i>Iniciar AvaliaÃ§Ã£o
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    const questao = selectedQuiz.questoes[currentQ];
+    return (
+      <div className="space-y-6 max-w-lg mx-auto">
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <span className="text-xs text-slate-500 font-bold">{respondente.nome}</span>
+            <span className="text-xs text-slate-500">{currentQ + 1} / {selectedQuiz.questoes.length}</span>
+          </div>
+          <div className="w-full bg-slate-200 rounded-full h-1.5">
+            <div className="bg-blue-500 h-1.5 rounded-full transition-all" style={{ width: `${(currentQ / selectedQuiz.questoes.length) * 100}%` }}></div>
+          </div>
+        </div>
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
+          <p className="text-[#0A1628] font-bold text-sm leading-relaxed">{currentQ + 1}. {questao.texto}</p>
+          <div className="space-y-2">
+            {questao.opcoes.map((opcao, i) => (
+              <button key={i} onClick={() => handleAnswer(i)}
+                className="w-full text-left p-4 rounded-xl bg-slate-50 border border-slate-200 hover:border-blue-500 hover:bg-blue-500/10 text-slate-700 text-sm transition-all">
+                <span className="font-black text-blue-400 mr-3">{String.fromCharCode(65 + i)}.</span>{opcao}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ---- TELA DE CRIAÃ‡ÃƒO ----
+  if (mode === 'create') {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <button onClick={() => setMode('list')} className="text-slate-500 hover:text-[#0A1628] transition-colors">
+            <i className="fa-solid fa-arrow-left"></i>
+          </button>
+          <div>
+            <h3 className="text-[#0A1628] font-black uppercase italic text-sm">Novo QuestionÃ¡rio</h3>
+          </div>
+        </div>
+
+        {/* Toggle IA / Manual */}
+        <div className="flex gap-2 bg-slate-50 p-1 rounded-xl w-fit">
+          {(['ia', 'manual'] as const).map(m => (
+            <button key={m} onClick={() => setCreateMode(m)}
+              className={`px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                createMode === m ? 'bg-blue-600 text-[#0A1628]' : 'text-slate-500 hover:text-[#0A1628]'
+              }`}>
+              <i className={`fa-solid mr-2 ${m === 'ia' ? 'fa-wand-magic-sparkles' : 'fa-pen'}`}></i>
+              {m === 'ia' ? 'Gerar com IA' : 'Criar Manual'}
+            </button>
+          ))}
+        </div>
+
+        {/* MODO IA */}
+        {createMode === 'ia' && (
+          <div className="space-y-5 max-w-lg">
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4">
+              <p className="text-xs text-blue-300">
+                <i className="fa-solid fa-wand-magic-sparkles mr-2"></i>
+                A IA criarÃ¡ questÃµes baseadas no conteÃºdo do treinamento selecionado, incluindo explicaÃ§Ãµes para cada resposta.
+              </p>
+            </div>
+            <div className="space-y-1">
+              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Treinamento *</label>
+              <select value={aiForm.treinamento} onChange={e => setAiForm(f => ({ ...f, treinamento: e.target.value }))}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500">
+                <option value="">Selecione o treinamento...</option>
+                {checklists.map(c => <option key={c.id} value={c.title}>{c.title}</option>)}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Quantidade de QuestÃµes</label>
+              <select value={aiForm.quantidade} onChange={e => setAiForm(f => ({ ...f, quantidade: e.target.value }))}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500">
+                {['3', '5', '7', '10'].map(n => <option key={n} value={n}>{n} questÃµes</option>)}
+              </select>
+            </div>
+            {generateError && <p className="text-red-400 text-xs">{generateError}</p>}
+            <button onClick={generateQuizWithAI} disabled={isGenerating || !aiForm.treinamento}
+              className="w-full bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+              {isGenerating
+                ? <><i className="fa-solid fa-circle-notch animate-spin"></i>Gerando com IA...</>
+                : <><i className="fa-solid fa-wand-magic-sparkles"></i>Gerar QuestionÃ¡rio</>
+              }
+            </button>
+          </div>
+        )}
+
+        {/* MODO MANUAL */}
+        {createMode === 'manual' && (
+          <div className="space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Treinamento *</label>
+                <select value={form.treinamento} onChange={e => setForm(f => ({ ...f, treinamento: e.target.value }))}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500">
+                  <option value="">Selecione...</option>
+                  {checklists.map(c => <option key={c.id} value={c.title}>{c.title}</option>)}
+                  <option value="outro">Outro</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">TÃ­tulo *</label>
+                <input value={form.titulo} onChange={e => setForm(f => ({ ...f, titulo: e.target.value }))}
+                  placeholder="Ex: AvaliaÃ§Ã£o NR-35"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+              </div>
+            </div>
+
+            {questoes.map((q, qi) => (
+              <div key={qi} className="bg-white border border-slate-200 rounded-2xl p-5 space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest">QuestÃ£o {qi + 1}</span>
+                  {questoes.length > 1 && (
+                    <button onClick={() => removeQuestao(qi)} className="text-slate-600 hover:text-red-400 transition-colors">
+                      <i className="fa-solid fa-trash text-xs"></i>
+                    </button>
+                  )}
+                </div>
+                <input value={q.texto} onChange={e => updateQuestao(qi, 'texto', e.target.value)}
+                  placeholder="Digite a pergunta..."
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+                <div className="space-y-2">
+                  {q.opcoes.map((opcao, oi) => (
+                    <div key={oi} className="flex items-center gap-2">
+                      <button onClick={() => updateQuestao(qi, 'correta', oi)}
+                        className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${
+                          q.correta === oi ? 'border-emerald-500 bg-emerald-500' : 'border-slate-200 hover:border-slate-500'
+                        }`}>
+                        {q.correta === oi && <i className="fa-solid fa-check text-[#0A1628] text-xs"></i>}
+                      </button>
+                      <input value={opcao} onChange={e => updateOpcao(qi, oi, e.target.value)}
+                        placeholder={`OpÃ§Ã£o ${String.fromCharCode(65 + oi)}`}
+                        className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+                    </div>
+                  ))}
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">ExplicaÃ§Ã£o da resposta correta</label>
+                  <textarea value={q.explicacao} onChange={e => updateQuestao(qi, 'explicacao', e.target.value)}
+                    placeholder="Explique por que esta Ã© a resposta correta..."
+                    rows={2}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500 resize-none" />
+                </div>
+              </div>
+            ))}
+
+            <div className="flex gap-3">
+              <button onClick={addQuestao}
+                className="px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 border border-slate-200 hover:border-slate-600 hover:text-[#0A1628] transition-all">
+                <i className="fa-solid fa-plus mr-2"></i>QuestÃ£o
+              </button>
+              <button onClick={handleCreateQuiz} disabled={!form.treinamento || !form.titulo}
+                className="flex-1 bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50">
+                <i className="fa-solid fa-floppy-disk mr-2"></i>Salvar
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ---- LISTA DE QUIZZES ----
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-[#0A1628] font-black uppercase italic text-sm">
+            QuestionÃ¡rios de <span className="text-blue-500">AvaliaÃ§Ã£o</span>
+          </h3>
+          <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Criados pela IA ou manualmente</p>
+        </div>
+        <button onClick={() => setMode('create')}
+          className="bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
+          <i className="fa-solid fa-plus"></i>Novo QuestionÃ¡rio
+        </button>
+      </div>
+
+      {quizzes.length === 0 ? (
+        <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center">
+          <i className="fa-solid fa-circle-question text-4xl text-slate-700 mb-3 block"></i>
+          <p className="text-slate-600 text-xs font-bold uppercase tracking-widest">Nenhum questionÃ¡rio criado ainda</p>
+          <p className="text-slate-700 text-xs mt-1">Clique em "Novo QuestionÃ¡rio" e deixe a IA criar para vocÃª</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {quizzes.map(quiz => {
+            const qtdResultados = results.filter(r => r.quizId === quiz.id).length;
+            const aprovados = results.filter(r => r.quizId === quiz.id && r.aprovado).length;
+            const nomeUsuario = state.user?.name || '';
+            const bloqueado = nomeUsuario ? calcLiberadoEm(results, quiz.id, nomeUsuario) : null;
+            return (
+              <div key={quiz.id} className={`bg-white border rounded-2xl p-5 transition-all group ${bloqueado ? 'border-red-500/30' : 'border-slate-200 hover:border-slate-200'}`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[#0A1628] font-black text-sm">{quiz.titulo}</span>
+                      <span className="text-[9px] font-black uppercase tracking-widest text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md">
+                        {quiz.questoes.length} questÃµes
+                      </span>
+                      {quiz.geradoPorIA && (
+                        <span className="text-[9px] font-black uppercase tracking-widest text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-md">
+                          <i className="fa-solid fa-wand-magic-sparkles mr-1"></i>IA
+                        </span>
+                      )}
+                      {bloqueado && (
+                        <span className="text-[9px] font-black uppercase tracking-widest text-red-400 bg-red-500/10 border border-red-500/20 px-2 py-0.5 rounded-md">
+                          <i className="fa-solid fa-lock mr-1"></i>Bloqueado Â· {formatCountdown(bloqueado)}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-4 mt-1">
+                      <span className="text-xs text-slate-500">
+                        <i className="fa-solid fa-graduation-cap text-blue-500 mr-1.5"></i>{quiz.treinamento}
+                      </span>
+                      <span className="text-xs text-slate-600">
+                        {qtdResultados} realizaÃ§Ãµes Â· {aprovados} aprovaÃ§Ãµes
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                    <button type="button" onClick={() => startQuiz(quiz)}
+                      className={`text-[#0A1628] px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${bloqueado ? 'bg-red-600 hover:bg-red-500' : 'bg-blue-600 hover:bg-blue-500'}`}>
+                      <i className={`fa-solid ${bloqueado ? 'fa-lock' : 'fa-play'} mr-1`}></i>
+                      {bloqueado ? 'Ver bloqueio' : 'Responder'}
+                    </button>
+                    <button type="button" title="Excluir questionÃ¡rio" onClick={() => deleteQuiz(quiz.id)} className="text-slate-600 hover:text-red-400 transition-colors p-2">
+                      <i className="fa-solid fa-trash text-xs"></i>
+                    </button>
+                  </div>
+                  <i className="fa-solid fa-chevron-right text-slate-700 text-xs ml-3 group-hover:opacity-0 transition-all"></i>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default TrainingQuiz;
+import React, { useState, useEffect } from 'react';
+import { db } from '../../services/firebase';
+import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+
+interface Participant {
+  id: string;
+  nomeColaborador: string;
+  cargo: string;
+  treinamento: string;
+  dataConclusao: string;
+  status: 'concluÃ­do' | 'pendente' | 'vencido';
+  observacao?: string;
+}
+
+interface QuizResult {
+  id: string;
+  quizTitulo: string;
+  treinamento: string;
+  colaborador: string;
+  cargo: string;
+  nota: number;
+  total: number;
+  aprovado: boolean;
+  createdAt?: any;
+}
+
+const TrainingReport: React.FC = () => {
+  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
+  const [filterColaborador, setFilterColaborador] = useState('');
+  const [filterTreinamento, setFilterTreinamento] = useState('todos');
+  const [filterStatus, setFilterStatus] = useState('todos');
+  const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
+
+  useEffect(() => {
+    const q = query(collection(db, 'treinamentosParticipantes'), orderBy('createdAt', 'desc'));
+    const unsub = onSnapshot(q, snap => setParticipants(snap.docs.map(d => ({ id: d.id, ...d.data() } as Participant))));
+    return () => unsub();
+  }, []);
+
+  useEffect(() => {
+    const q = query(collection(db, 'treinamentosQuizResults'), orderBy('createdAt', 'desc'));
+    const unsub = onSnapshot(q, snap => setQuizResults(snap.docs.map(d => ({ id: d.id, ...d.data() } as QuizResult))));
+    return () => unsub();
+  }, []);
+
+  const treinamentosUnicos = [...new Set(participants.map(p => p.treinamento))];
+
+  const filtered = participants.filter(p => {
+    const matchNome = !filterColaborador || p.nomeColaborador.toLowerCase().includes(filterColaborador.toLowerCase());
+    const matchTreinamento = filterTreinamento === 'todos' || p.treinamento === filterTreinamento;
+    const matchStatus = filterStatus === 'todos' || p.status === filterStatus;
+    return matchNome && matchTreinamento && matchStatus;
+  });
+
+  const getQuiz = (nome: string, treinamento: string) =>
+    quizResults.find(r => r.colaborador === nome && r.treinamento === treinamento);
+
+  // Stats
+  const total = participants.length;
+  const concluidos = participants.filter(p => p.status === 'concluÃ­do').length;
+  const taxaAprovacao = quizResults.length > 0
+    ? Math.round((quizResults.filter(r => r.aprovado).length / quizResults.length) * 100) : 0;
+  const mediaNotas = quizResults.length > 0
+    ? Math.round(quizResults.reduce((acc, r) => acc + r.nota, 0) / quizResults.length) : 0;
+
+  // ---- EXPORTAR CSV ----
+  const exportCSV = () => {
+    const headers = ['Colaborador', 'Cargo', 'Treinamento', 'Data ConclusÃ£o', 'Status', 'Nota Prova', 'Aprovado na Prova'];
+    const rows = filtered.map(p => {
+      const quiz = getQuiz(p.nomeColaborador, p.treinamento);
+      return [
+        p.nomeColaborador,
+        p.cargo || '',
+        p.treinamento,
+        new Date(p.dataConclusao + 'T00:00:00').toLocaleDateString('pt-BR'),
+        p.status,
+        quiz ? `${quiz.nota}%` : 'Sem avaliaÃ§Ã£o',
+        quiz ? (quiz.aprovado ? 'Sim' : 'NÃ£o') : '-',
+      ];
+    });
+
+    const csvContent = [headers, ...rows]
+      .map(row => row.map(cell => `"${cell}"`).join(';'))
+      .join('\n');
+
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `relatorio_treinamentos_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // ---- EXPORTAR PDF (via print) ----
+  const exportPDF = () => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const rows = filtered.map(p => {
+      const quiz = getQuiz(p.nomeColaborador, p.treinamento);
+      const statusColor = p.status === 'concluÃ­do' ? '#10b981' : p.status === 'pendente' ? '#f59e0b' : '#ef4444';
+      return `
+        <tr>
+          <td>${p.nomeColaborador}</td>
+          <td>${p.cargo || '-'}</td>
+          <td>${p.treinamento}</td>
+          <td>${new Date(p.dataConclusao + 'T00:00:00').toLocaleDateString('pt-BR')}</td>
+          <td style="color:${statusColor};font-weight:bold">${p.status.toUpperCase()}</td>
+          <td>${quiz ? `${quiz.nota}%` : '-'}</td>
+          <td style="color:${quiz?.aprovado ? '#10b981' : quiz ? '#ef4444' : '#6b7280'};font-weight:bold">
+            ${quiz ? (quiz.aprovado ? 'âœ“ SIM' : 'âœ— NÃƒO') : '-'}
+          </td>
+        </tr>`;
+    }).join('');
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>RelatÃ³rio de Treinamentos â€” MJ Consultoria</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: Arial, sans-serif; color: #111; padding: 40px; font-size: 12px; }
+          .header { text-align: center; margin-bottom: 32px; border-bottom: 3px solid #1e3a8a; padding-bottom: 16px; }
+          .header h1 { font-size: 22px; color: #1e3a8a; letter-spacing: 2px; text-transform: uppercase; }
+          .header p { color: #6b7280; font-size: 10px; margin-top: 4px; letter-spacing: 3px; text-transform: uppercase; }
+          .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+          .stat { border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; text-align: center; }
+          .stat-value { font-size: 24px; font-weight: bold; color: #1e3a8a; }
+          .stat-label { font-size: 9px; color: #9ca3af; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+          th { background: #1e3a8a; color: white; padding: 10px 8px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+          td { padding: 8px; border-bottom: 1px solid #e5e7eb; font-size: 11px; }
+          tr:nth-child(even) td { background: #f9fafb; }
+          .footer { margin-top: 32px; text-align: center; font-size: 9px; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 12px; }
+          @media print { body { padding: 20px; } }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>MJ Consultoria</h1>
+          <p>RelatÃ³rio de Treinamentos â€” GestÃ£o do Conhecimento</p>
+        </div>
+        <div class="stats">
+          <div class="stat"><div class="stat-value">${total}</div><div class="stat-label">Total Registros</div></div>
+          <div class="stat"><div class="stat-value">${concluidos}</div><div class="stat-label">ConcluÃ­dos</div></div>
+          <div class="stat"><div class="stat-value">${taxaAprovacao}%</div><div class="stat-label">Taxa AprovaÃ§Ã£o</div></div>
+          <div class="stat"><div class="stat-value">${mediaNotas}%</div><div class="stat-label">MÃ©dia nas Provas</div></div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Colaborador</th><th>Cargo</th><th>Treinamento</th>
+              <th>Data</th><th>Status</th><th>Nota</th><th>Aprovado</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+        <div class="footer">
+          Gerado em ${new Date().toLocaleDateString('pt-BR')} Ã s ${new Date().toLocaleTimeString('pt-BR')} Â· MJ Consultoria Â· ${filtered.length} registros
+        </div>
+        <script>window.onload = () => { window.print(); window.onafterprint = () => window.close(); }</script>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
+  // ---- CERTIFICADO ----
+  const printCertificate = (p: Participant) => {
+    setSelectedParticipant(p);
+    const quiz = getQuiz(p.nomeColaborador, p.treinamento);
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Certificado â€” ${p.nomeColaborador}</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: Georgia, serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8fafc; }
+          .cert { border: 8px double #1e3a8a; padding: 60px; text-align: center; max-width: 700px; background: white; }
+          .org { font-size: 13px; letter-spacing: 5px; text-transform: uppercase; color: #1e3a8a; margin-bottom: 6px; font-family: Arial; }
+          .subtitle { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #9ca3af; margin-bottom: 40px; font-family: Arial; }
+          .cert-title { font-size: 15px; letter-spacing: 6px; text-transform: uppercase; color: #374151; margin-bottom: 24px; font-family: Arial; }
+          .label { font-size: 11px; color: #9ca3af; margin-bottom: 12px; font-family: Arial; }
+          .name { font-size: 32px; font-weight: bold; color: #111; border-bottom: 2px solid #1e3a8a; padding-bottom: 8px; margin-bottom: 6px; display: inline-block; min-width: 300px; }
+          .role { font-size: 12px; color: #9ca3af; margin-bottom: 28px; font-family: Arial; }
+          .training-label { font-size: 11px; color: #9ca3af; margin-bottom: 8px; font-family: Arial; }
+          .training { font-size: 22px; font-weight: bold; color: #1e3a8a; margin-bottom: 8px; }
+          .date { font-size: 11px; color: #9ca3af; margin-bottom: 32px; font-family: Arial; }
+          .quiz-badge { background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 10px 20px; display: inline-block; margin-bottom: 40px; font-family: Arial; font-size: 11px; color: #16a34a; }
+          .signatures { display: flex; justify-content: space-around; margin-top: 40px; border-top: 1px solid #e5e7eb; padding-top: 28px; }
+          .sig-line { border-top: 1px solid #374151; width: 180px; padding-top: 8px; font-size: 10px; color: #9ca3af; font-family: Arial; }
+          .footer { font-size: 9px; color: #d1d5db; margin-top: 24px; font-family: Arial; }
+          @media print { body { background: white; } }
+        </style>
+      </head>
+      <body>
+        <div class="cert">
+          <div class="org">MJ Consultoria</div>
+          <div class="subtitle">GestÃ£o do Conhecimento Notarial</div>
+          <div class="cert-title">Certificado de ConclusÃ£o</div>
+          <div class="label">Certificamos que</div>
+          <div class="name">${p.nomeColaborador}</div>
+          ${p.cargo ? `<div class="role">${p.cargo}</div>` : '<div style="margin-bottom:28px"></div>'}
+          <div class="training-label">concluiu com Ãªxito o treinamento</div>
+          <div class="training">${p.treinamento}</div>
+          <div class="date">em ${new Date(p.dataConclusao + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}</div>
+          ${quiz ? `<div class="quiz-badge">AvaliaÃ§Ã£o de conhecimento: <strong>${quiz.nota}%</strong> â€” ${quiz.aprovado ? 'âœ“ Aprovado' : 'âœ— Reprovado'}</div>` : ''}
+          <div class="signatures">
+            <div class="sig-line">ResponsÃ¡vel pelo Treinamento</div>
+            <div class="sig-line">MJ Consultoria</div>
+          </div>
+          <div class="footer">Documento gerado em ${new Date().toLocaleDateString('pt-BR')} Â· ID: ${p.id}</div>
+        </div>
+        <script>window.onload = () => { window.print(); window.onafterprint = () => window.close(); }</script>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
+  return (
+    <div className="space-y-6">
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {[
+          { label: 'Total Registros',   value: total,               icon: 'fa-users',        color: 'blue'    },
+          { label: 'ConcluÃ­dos',        value: concluidos,          icon: 'fa-circle-check',  color: 'emerald' },
+          { label: 'Taxa de AprovaÃ§Ã£o', value: `${taxaAprovacao}%`, icon: 'fa-trophy',        color: 'amber'   },
+          { label: 'MÃ©dia nas Provas',  value: `${mediaNotas}%`,    icon: 'fa-chart-line',    color: 'purple'  },
+        ].map((stat, i) => (
+          <div key={i} className="bg-white border border-slate-200 rounded-2xl p-4 space-y-2">
+            <i className={`fa-solid ${stat.icon} text-${stat.color}-500 text-lg`}></i>
+            <p className="text-2xl font-black text-[#0A1628]">{stat.value}</p>
+            <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">{stat.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Filtros + Exportar */}
+      <div className="flex flex-wrap gap-3 items-center justify-between">
+        <div className="flex flex-wrap gap-2">
+          <input value={filterColaborador} onChange={e => setFilterColaborador(e.target.value)}
+            placeholder="Buscar colaborador..."
+            className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm text-[#0A1628] outline-none focus:border-blue-500 min-w-[180px]" />
+          <select value={filterTreinamento} onChange={e => setFilterTreinamento(e.target.value)}
+            className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm text-[#0A1628] outline-none focus:border-blue-500">
+            <option value="todos">Todos os Treinamentos</option>
+            {treinamentosUnicos.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
+            className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm text-[#0A1628] outline-none focus:border-blue-500">
+            <option value="todos">Todos os Status</option>
+            <option value="concluÃ­do">ConcluÃ­do</option>
+            <option value="pendente">Pendente</option>
+            <option value="vencido">Vencido</option>
+          </select>
+        </div>
+
+        {/* BotÃµes de exportaÃ§Ã£o */}
+        <div className="flex gap-2">
+          <button onClick={exportCSV}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest bg-emerald-600 hover:bg-emerald-500 text-[#0A1628] transition-all">
+            <i className="fa-solid fa-file-csv"></i>CSV
+          </button>
+          <button onClick={exportPDF}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest bg-red-600 hover:bg-red-500 text-[#0A1628] transition-all">
+            <i className="fa-solid fa-file-pdf"></i>PDF
+          </button>
+        </div>
+      </div>
+
+      {/* Lista */}
+      <div className="space-y-2">
+        <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest">{filtered.length} registros encontrados</p>
+
+        {filtered.length === 0 ? (
+          <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center">
+            <i className="fa-solid fa-file-chart-column text-4xl text-slate-700 mb-3 block"></i>
+            <p className="text-slate-600 text-xs font-bold uppercase tracking-widest">Nenhum registro encontrado</p>
+          </div>
+        ) : (
+          filtered.map(p => {
+            const quiz = getQuiz(p.nomeColaborador, p.treinamento);
+            const statusColor = p.status === 'concluÃ­do' ? 'emerald' : p.status === 'pendente' ? 'amber' : 'red';
+            return (
+              <div key={p.id} className="bg-white border border-slate-200 hover:border-slate-200 rounded-2xl p-4 flex items-center gap-4 transition-all group">
+                <div className="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center flex-shrink-0">
+                  <span className="text-sm font-black text-[#0A1628]">{p.nomeColaborador.charAt(0).toUpperCase()}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-black text-[#0A1628]">{p.nomeColaborador}</span>
+                    {p.cargo && <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md">{p.cargo}</span>}
+                  </div>
+                  <div className="flex items-center gap-3 mt-1 flex-wrap">
+                    <span className="text-xs text-slate-500">
+                      <i className="fa-solid fa-graduation-cap text-blue-500 mr-1.5"></i>{p.treinamento}
+                    </span>
+                    <span className="text-xs text-slate-500">
+                      <i className="fa-solid fa-calendar mr-1.5"></i>
+                      {new Date(p.dataConclusao + 'T00:00:00').toLocaleDateString('pt-BR')}
+                    </span>
+                    {quiz && (
+                      <span className={`text-xs font-bold ${quiz.aprovado ? 'text-emerald-400' : 'text-red-400'}`}>
+                        <i className="fa-solid fa-clipboard-question mr-1"></i>
+                        Prova: {quiz.nota}% â€” {quiz.aprovado ? 'Aprovado' : 'Reprovado'}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className={`px-3 py-1.5 rounded-lg bg-${statusColor}-500/10 border border-${statusColor}-500/20 flex-shrink-0`}>
+                  <span className={`text-[9px] font-black uppercase tracking-widest text-${statusColor}-400`}>{p.status}</span>
+                </div>
+                {p.status === 'concluÃ­do' && (
+                  <button onClick={() => printCertificate(p)}
+                    className="opacity-0 group-hover:opacity-100 bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5">
+                    <i className="fa-solid fa-certificate text-xs"></i>Certificado
+                  </button>
+                )}
+              </div>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default TrainingReport;
+import React, { useState, useEffect, useRef } from 'react';
+import { useApp } from '../../context/AppContext';
+import { useToast } from '../../context/ToastContext';
+import { db } from '../../services/firebase';
+import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { GeminiService } from '../../services/geminiService';
+import TrainingParticipants from './TrainingParticipants';
+import TrainingQuiz from './TrainingQuiz';
+import TrainingReport from './TrainingReport';
+import TrainingDashboard from './TrainingDashboard';
+
+interface TrainingMessage { role: 'user' | 'ai'; text: string; }
+
+type Tab = 'ia' | 'resumos' | 'participantes' | 'questionarios' | 'relatorios' | 'dashboard';
+
+const TABS: { id: Tab; icon: string; label: string }[] = [
+  { id: 'ia',            icon: 'fa-wand-magic-sparkles', label: 'IA de Treinamento' },
+  { id: 'resumos',       icon: 'fa-file-lines',          label: 'Resumos'           },
+  { id: 'participantes', icon: 'fa-users',               label: 'Participantes'     },
+  { id: 'questionarios', icon: 'fa-circle-question',     label: 'QuestionÃ¡rios'     },
+  { id: 'relatorios',    icon: 'fa-file-chart-column',   label: 'RelatÃ³rios'        },
+  { id: 'dashboard',     icon: 'fa-chart-pie',           label: 'Dashboard GestÃ£o'  },
+];
+
+type SummaryType = 'executivo' | 'tecnico' | 'didatico' | 'operacional';
+
+const SUMMARY_TYPES: { id: SummaryType; label: string; desc: string; color: string }[] = [
+  { id: 'executivo',   label: 'Executivo',   desc: 'Para gestores â€” pontos-chave e impactos',       color: 'blue'    },
+  { id: 'tecnico',     label: 'TÃ©cnico',     desc: 'Fundamentos legais e anÃ¡lise normativa',         color: 'purple'  },
+  { id: 'didatico',    label: 'DidÃ¡tico',    desc: 'Para treinamento â€” exemplos prÃ¡ticos',           color: 'emerald' },
+  { id: 'operacional', label: 'Operacional', desc: 'Procedimentos e passo a passo do dia a dia',    color: 'amber'   },
+];
+
+interface TrainingOption {
+  titulo: string;
+  tipo: 'essencial' | 'completo' | 'relampago';
+  descricao: string;
+  duracao: string;
+  publico: string;
+  modulos: { nome: string; objetivo: string; duracao: string; obrigatorio: boolean }[];
+  justificativa: string;
+}
+
+const TIPO_COLOR: Record<string, string> = {
+  essencial: 'blue',
+  completo:  'emerald',
+  relampago: 'amber',
+};
+
+const TIPO_ICON: Record<string, string> = {
+  essencial: 'fa-seedling',
+  completo:  'fa-layer-group',
+  relampago: 'fa-bolt',
+};
+
+const TrainingView: React.FC = () => {
+  const { state } = useApp();
+  const { showToast } = useToast();
+  const [activeTab, setActiveTab] = useState<Tab>('ia');
+  const [checklists, setChecklists] = useState<any[]>([]);
+  const [knowledgeDocs, setKnowledgeDocs] = useState<any[]>([]);
+
+  const [messages, setMessages] = useState<TrainingMessage[]>([]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [trainingOptions, setTrainingOptions] = useState<TrainingOption[]>([]);
+  const [selectedOption, setSelectedOption] = useState<TrainingOption | null>(null);
+  const [customRequest, setCustomRequest] = useState('');
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  const [selectedDoc, setSelectedDoc] = useState<any | null>(null);
+  const [summaryType, setSummaryType] = useState<SummaryType>('executivo');
+  const [summary, setSummary] = useState('');
+  const [summaryLoading, setSummaryLoading] = useState(false);
+
+  useEffect(() => {
+    const q1 = query(collection(db, 'checklists'), orderBy('createdAt', 'desc'));
+    const u1 = onSnapshot(q1, s => setChecklists(s.docs.map(d => ({ id: d.id, ...d.data() }))));
+    const q2 = query(collection(db, 'knowledgeBase'), orderBy('createdAt', 'desc'));
+    const u2 = onSnapshot(q2, s => setKnowledgeDocs(s.docs.map(d => ({ id: d.id, ...d.data() }))));
+    return () => { u1(); u2(); };
+  }, []);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const totalItems = checklists.reduce((acc, c) => acc + (c.items?.length || 0), 0);
+
+  const buildContext = () => {
+    const cl = checklists.map(c => `PROTOCOLO: ${c.title}\nITENS: ${c.items?.map((i: any) => i.text).join('; ')}`).join('\n\n');
+    const kl = knowledgeDocs.slice(0, 8).map(d => `DOCUMENTO: ${d.fileName || d.title}\nCONTEÃšDO: ${d.content?.substring(0, 800)}`).join('\n\n');
+    return `VocÃª Ã© um especialista em treinamento notarial da MJ Consultoria.\nBASE LEGAL:\n${kl || 'Nenhum documento.'}\nPROTOCOLOS:\n${cl || 'Nenhum protocolo.'}\nUnidade: ${state.user?.tenantId || 'MJ Consultoria'} | Operador: ${state.user?.name || 'UsuÃ¡rio'}`;
+  };
+
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
+    const msg = input.trim(); setInput('');
+    setMessages(p => [...p, { role: 'user', text: msg }]);
+    setIsLoading(true);
+    setTrainingOptions([]);
+    setSelectedOption(null);
+    try {
+      const r = await GeminiService.chat(`${buildContext()}\n\nPergunta: ${msg}`, '', state.token || '');
+      setMessages(p => [...p, { role: 'ai', text: typeof r === 'string' ? r : (r as any).text || 'Sem resposta.' }]);
+    } catch (e: any) { showToast(e?.message || 'Erro ao consultar IA.', 'error'); } finally { setIsLoading(false); }
+  };
+
+  const generateOptions = async () => {
+    setIsLoading(true);
+    setTrainingOptions([]);
+    setSelectedOption(null);
+    setMessages([]);
+    try {
+      const options = await GeminiService.generateTrainingOptions(buildContext(), customRequest || undefined);
+      if (options && options.length > 0) {
+        setTrainingOptions(options);
+        showToast('3 opÃ§Ãµes de roteiro geradas! Escolha uma para expandir.', 'success');
+      } else {
+        showToast('NÃ£o foi possÃ­vel gerar opÃ§Ãµes. Tente novamente.', 'error');
+      }
+    } catch (e: any) { showToast(e?.message || 'Erro ao gerar opÃ§Ãµes de treinamento.', 'error'); } finally { setIsLoading(false); }
+  };
+
+  const selectOption = async (option: TrainingOption) => {
+    setSelectedOption(option);
+    setTrainingOptions([]);
+    setMessages([{ role: 'ai', text: formatSelectedOption(option) }]);
+  };
+
+  const formatSelectedOption = (opt: TrainingOption): string => {
+    const modulos = opt.modulos?.map((m, i) =>
+      `  ${i + 1}. ${m.nome} (${m.duracao})${m.obrigatorio ? ' â˜…' : ''}\n     Objetivo: ${m.objetivo}`
+    ).join('\n') || 'MÃ³dulos nÃ£o especificados';
+
+    return `ROTEIRO: ${opt.titulo.toUpperCase()}
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+Abordagem: ${opt.descricao}
+DuraÃ§Ã£o total: ${opt.duracao}
+PÃºblico-alvo: ${opt.publico}
+
+MÃ“DULOS:
+${modulos}
+
+JUSTIFICATIVA:
+${opt.justificativa}
+
+â˜… = MÃ³dulo obrigatÃ³rio
+`;
+  };
+
+  const generateSummary = async () => {
+    if (!selectedDoc) { showToast('Selecione um documento da base legal.', 'error'); return; }
+    setSummaryLoading(true);
+    setSummary('');
+    try {
+      const result = await GeminiService.generateSummary(
+        selectedDoc.content || selectedDoc.rawText || '',
+        selectedDoc.fileName || selectedDoc.title || 'Documento',
+        summaryType
+      );
+      setSummary(result);
+    } catch (e: any) { showToast(e?.message || 'Erro ao gerar resumo.', 'error'); } finally { setSummaryLoading(false); }
+  };
+
+  const renderIATab = () => (
+    <div className="space-y-4">
+      <div className="flex justify-between items-start gap-4">
+        <div>
+          <h3 className="text-[#0A1628] font-black uppercase italic text-sm">IA de Treinamento MJ</h3>
+          <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Gere 3 opÃ§Ãµes de roteiro e escolha a melhor para sua equipe</p>
+        </div>
+        <button onClick={generateOptions} disabled={isLoading}
+          className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50 flex-shrink-0">
+          <i className="fa-solid fa-wand-magic-sparkles mr-2"></i>
+          {isLoading ? 'Gerando...' : 'Gerar 3 OpÃ§Ãµes'}
+        </button>
+      </div>
+
+      {/* Campo para pedido especÃ­fico */}
+      <div className="bg-white border border-slate-300 rounded-2xl p-4">
+        <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-2">
+          Personalizar pedido (opcional)
+        </label>
+        <input
+          value={customRequest}
+          onChange={e => setCustomRequest(e.target.value)}
+          placeholder="Ex: foco em escrituras pÃºblicas, para atendentes novos, duraÃ§Ã£o mÃ¡xima 2 horas..."
+          className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500"
+        />
+      </div>
+
+      {/* Base ativa */}
+      {(checklists.length > 0 || knowledgeDocs.length > 0) && (
+        <div className="bg-white border border-slate-300 rounded-2xl p-4 space-y-2">
+          <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">Base Ativa</h4>
+          {checklists.slice(0, 3).map((c, i) => (
+            <div key={i} className="flex items-center gap-3 p-2 bg-slate-100 rounded-xl">
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <span className="text-xs text-slate-700"><span className="font-bold text-[#0A1628]">{c.title}</span> â€” {c.items?.length || 0} requisitos</span>
+            </div>
+          ))}
+          {knowledgeDocs.slice(0, 3).map((d, i) => (
+            <div key={i} className="flex items-center gap-3 p-2 bg-slate-100 rounded-xl">
+              <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+              <span className="text-xs text-slate-700"><span className="font-bold text-[#0A1628]">{d.fileName || d.title}</span> â€” documento indexado</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Cards de opÃ§Ãµes */}
+      {trainingOptions.length > 0 && (
+        <div className="space-y-3">
+          <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Escolha uma opÃ§Ã£o para expandir o roteiro completo:</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {trainingOptions.map((opt, i) => {
+              const color = TIPO_COLOR[opt.tipo] || 'blue';
+              const icon  = TIPO_ICON[opt.tipo]  || 'fa-graduation-cap';
+              return (
+                <button key={i} onClick={() => selectOption(opt)}
+                  className={`text-left bg-white border border-${color}-500/30 hover:border-${color}-500 rounded-2xl p-5 space-y-3 transition-all hover:bg-${color}-50 group shadow-sm`}>
+                  <div className="flex items-center gap-3">
+                    <div className={`w-9 h-9 rounded-xl bg-${color}-100 flex items-center justify-center`}>
+                      <i className={`fa-solid ${icon} text-${color}-600 text-sm`}></i>
+                    </div>
+                    <div>
+                      <p className={`text-[9px] font-black uppercase tracking-widest text-${color}-600`}>{opt.tipo}</p>
+                      <p className="text-sm font-black text-[#0A1628] leading-tight">{opt.titulo}</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-600 leading-relaxed">{opt.descricao}</p>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="text-[9px] bg-slate-100 text-slate-600 px-2 py-1 rounded-lg font-bold border border-slate-200">
+                      <i className="fa-solid fa-clock mr-1"></i>{opt.duracao}
+                    </span>
+                    <span className="text-[9px] bg-slate-100 text-slate-600 px-2 py-1 rounded-lg font-bold border border-slate-200">
+                      <i className="fa-solid fa-users mr-1"></i>{opt.publico}
+                    </span>
+                    <span className="text-[9px] bg-slate-100 text-slate-600 px-2 py-1 rounded-lg font-bold border border-slate-200">
+                      <i className="fa-solid fa-list-check mr-1"></i>{opt.modulos?.length || 0} mÃ³dulos
+                    </span>
+                  </div>
+                  <p className={`text-[9px] font-black text-${color}-600 uppercase tracking-widest group-hover:underline`}>
+                    Selecionar este roteiro â†’
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Chat de resultado */}
+      <div className="bg-white border border-slate-300 rounded-2xl overflow-hidden shadow-sm">
+        <div className="h-80 overflow-y-auto p-6 space-y-4 custom-scrollbar bg-slate-50">
+          {messages.length === 0 && trainingOptions.length === 0 && (
+            <div className="h-full flex flex-col items-center justify-center text-center opacity-40">
+              <i className="fa-solid fa-graduation-cap text-5xl text-slate-400 mb-4"></i>
+              <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">
+                Clique em "Gerar 3 OpÃ§Ãµes" ou faÃ§a uma pergunta
+              </p>
+            </div>
+          )}
+          {messages.map((m, i) => (
+            <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[85%] px-5 py-4 rounded-2xl text-sm leading-relaxed ${
+                m.role === 'user'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-[#0A1628] border border-slate-200 shadow-sm'
+              }`}>
+                <p className="whitespace-pre-wrap font-mono text-xs">{m.text}</p>
+              </div>
+            </div>
+          ))}
+          {isLoading && (
+            <div className="flex justify-start">
+              <div className="bg-white border border-slate-200 px-5 py-4 rounded-2xl shadow-sm">
+                <i className="fa-solid fa-circle-notch animate-spin text-blue-500"></i>
+                <span className="text-xs text-slate-500 ml-2">IA gerando opÃ§Ãµes de roteiro...</span>
+              </div>
+            </div>
+          )}
+          {selectedOption && messages.length > 0 && (
+            <div className="flex gap-2 flex-wrap">
+              <button onClick={generateOptions} disabled={isLoading}
+                className="text-[9px] bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
+                <i className="fa-solid fa-rotate mr-1"></i>Gerar novas opÃ§Ãµes
+              </button>
+              <button onClick={() => { navigator.clipboard.writeText(messages[messages.length - 1]?.text || ''); showToast('Roteiro copiado!', 'success'); }}
+                className="text-[9px] bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
+                <i className="fa-solid fa-copy mr-1"></i>Copiar roteiro
+              </button>
+            </div>
+          )}
+          <div ref={chatEndRef} />
+        </div>
+        <div className="p-4 border-t border-slate-200 flex gap-3 bg-white">
+          <input value={input} onChange={e => setInput(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
+            placeholder="Ex: Adapte o roteiro para apenas atendentes de balcÃ£o..."
+            className="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+          <button type="button" onClick={handleSend} disabled={isLoading || !input.trim()}
+            title="Enviar mensagem"
+            className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-black text-sm transition-all disabled:opacity-50">
+            <i className="fa-solid fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderResumosTab = () => (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-[#0A1628] font-black uppercase italic text-sm">Resumos Inteligentes</h3>
+        <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Escolha um documento e o tipo de resumo desejado</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <div className="bg-white border border-slate-300 rounded-2xl p-4 space-y-3">
+            <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">1. Selecione o documento</h4>
+            {knowledgeDocs.length === 0 ? (
+              <p className="text-xs text-slate-500 italic">Nenhum documento na base legal. Adicione documentos na seÃ§Ã£o "Base Legal".</p>
+            ) : (
+              <div className="space-y-2 max-h-52 overflow-y-auto custom-scrollbar">
+                {knowledgeDocs.map((doc, i) => (
+                  <button key={i} onClick={() => setSelectedDoc(doc)}
+                    className={`w-full text-left p-3 rounded-xl transition-all border ${
+                      selectedDoc?.id === doc.id
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-slate-200 hover:border-slate-400 bg-slate-50'
+                    }`}>
+                    <p className="text-xs font-bold text-[#0A1628] truncate">{doc.fileName || doc.title}</p>
+                    <p className="text-[9px] text-slate-500 mt-0.5">{doc.content?.length || 0} caracteres indexados</p>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="bg-white border border-slate-300 rounded-2xl p-4 space-y-3">
+            <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">2. Tipo de resumo</h4>
+            <div className="grid grid-cols-2 gap-2">
+              {SUMMARY_TYPES.map(st => (
+                <button key={st.id} onClick={() => setSummaryType(st.id)}
+                  className={`p-3 rounded-xl text-left transition-all border ${
+                    summaryType === st.id
+                      ? `border-${st.color}-500 bg-${st.color}-50`
+                      : 'border-slate-200 hover:border-slate-400 bg-slate-50'
+                  }`}>
+                  <p className={`text-xs font-black ${summaryType === st.id ? `text-${st.color}-600` : 'text-[#0A1628]'}`}>{st.label}</p>
+                  <p className="text-[9px] text-slate-500 mt-0.5 leading-tight">{st.desc}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <button onClick={generateSummary} disabled={summaryLoading || !selectedDoc}
+            className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+            {summaryLoading
+              ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Gerando resumo...</>
+              : <><i className="fa-solid fa-file-lines mr-2"></i>Gerar Resumo</>
+            }
+          </button>
+        </div>
+
+        <div className="bg-white border border-slate-300 rounded-2xl p-5 min-h-[350px] flex flex-col shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Resultado</h4>
+            {summary && (
+              <button onClick={() => { navigator.clipboard.writeText(summary); showToast('Resumo copiado!', 'success'); }}
+                className="text-[9px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-black uppercase tracking-widest transition-all border border-slate-200">
+                <i className="fa-solid fa-copy mr-1"></i>Copiar
+              </button>
+            )}
+          </div>
+          {summaryLoading ? (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center space-y-3">
+                <i className="fa-solid fa-circle-notch animate-spin text-emerald-500 text-2xl"></i>
+                <p className="text-xs text-slate-500">Analisando documento...</p>
+              </div>
+            </div>
+          ) : summary ? (
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
+              <p className="text-xs text-slate-700 whitespace-pre-wrap leading-relaxed">{summary}</p>
+            </div>
+          ) : (
+            <div className="flex-1 flex items-center justify-center opacity-40">
+              <div className="text-center space-y-2">
+                <i className="fa-solid fa-file-lines text-4xl text-slate-400"></i>
+                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Selecione um documento e gere o resumo</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderTab = () => {
+    switch (activeTab) {
+      case 'ia':            return renderIATab();
+      case 'resumos':       return renderResumosTab();
+      case 'participantes': return <TrainingParticipants />;
+      case 'questionarios': return <TrainingQuiz checklists={checklists} />;
+      case 'relatorios':    return <TrainingReport />;
+      case 'dashboard':     return <TrainingDashboard />;
+      default:              return null;
+    }
+  };
+
+  return (
+    <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
+
+      <header>
+        <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">
+          Centro de <span className="text-blue-500">Treinamento</span>
+        </h2>
+        <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">MJ Consultoria // CapacitaÃ§Ã£o Notarial IA</p>
+      </header>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          { label: 'Protocolos Ativos',  value: checklists.length,   icon: 'fa-clipboard-check', color: 'blue'    },
+          { label: 'Itens de Checklist', value: totalItems,           icon: 'fa-list-check',      color: 'emerald' },
+          { label: 'Docs na Base Legal', value: knowledgeDocs.length, icon: 'fa-scale-balanced',  color: 'amber'   },
+          { label: 'Cobertura Estimada', value: `${Math.min(100, checklists.length * 12 + knowledgeDocs.length * 8)}%`, icon: 'fa-chart-pie', color: 'purple' },
+        ].map((s, i) => (
+          <div key={i} className="bg-white border border-slate-200 rounded-[24px] p-6 space-y-3 shadow-sm">
+            <i className={`fa-solid ${s.icon} text-${s.color}-500 text-xl`}></i>
+            <p className="text-3xl font-black text-[#0A1628]">{s.value}</p>
+            <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="bg-white border border-slate-200 rounded-[32px] overflow-hidden shadow-sm">
+        <div className="flex border-b border-slate-200 overflow-x-auto">
+          {TABS.map(tab => (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-6 py-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all border-b-2 ${
+                activeTab === tab.id
+                  ? 'text-blue-600 border-blue-500 bg-blue-50'
+                  : 'text-slate-500 border-transparent hover:text-slate-700 hover:bg-slate-100'
+              }`}>
+              <i className={`fa-solid ${tab.icon} text-xs`}></i>{tab.label}
+            </button>
+          ))}
+        </div>
+        <div className="p-6">
+          {renderTab()}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default TrainingView;
+import React, { useState, useEffect, useMemo } from 'react';
+import { db } from '../../services/firebase';
+import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { useApp } from '../../context/AppContext';
+
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+interface QuizResult {
+  id: string;
+  quizId: string;
+  quizTitulo: string;
+  treinamento: string;
+  colaborador: string;
+  cargo: string;
+  nota: number;
+  total: number;
+  aprovado: boolean;
+  respostas: number[];
+  createdAt?: any;
+}
+
+interface Quiz {
+  id: string;
+  titulo: string;
+  treinamento: string;
+  questoes: { id: string; texto: string; opcoes: string[]; correta: number }[];
+}
+
+interface TrilhaProgresso {
+  id: string;
+  userId: string;
+  userName: string;
+  trilhaId: string;
+  trilhaTitulo: string;
+  percentualObrigatorios: number;
+  concluida: boolean;
+  tenantId: string;
+}
+
+interface Trilha {
+  id: string;
+  titulo: string;
+  perfis: string[];
+  modulos: { id: string; titulo: string; tipo: string }[];
+  ativa: boolean;
+  tenantId: string;
+}
+
+interface AppUser {
+  id: string;
+  name: string;
+  role: string;
+  tenantId: string;
+  active: boolean;
+}
+
+interface QuestaoMetric {
+  quizId: string;
+  quizTitulo: string;
+  treinamento: string;
+  questaoIdx: number;
+  texto: string;
+  totalTentativas: number;
+  erros: number;
+  taxaErro: number;
+}
+
+type DashTab = 'visao-geral' | 'cobertura' | 'dificuldade' | 'ranking';
+
+const DASH_TABS = [
+  { id: 'visao-geral' as DashTab, icon: 'fa-chart-pie',       label: 'VisÃ£o Geral'   },
+  { id: 'cobertura'  as DashTab, icon: 'fa-users-line',       label: 'Cobertura'     },
+  { id: 'dificuldade' as DashTab, icon: 'fa-triangle-exclamation', label: 'Dificuldade'  },
+  { id: 'ranking'    as DashTab, icon: 'fa-ranking-star',     label: 'Ranking'       },
+];
+
+// â”€â”€â”€ Certificate Generator â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+const printTrilhaCertificate = (userName: string, cargo: string, trilhaTitulo: string, nota?: number) => {
+  const win = window.open('', '_blank');
+  if (!win) return;
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
+  <title>Certificado â€” ${userName}</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:Georgia,serif;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f8fafc}
+    .cert{border:8px double #1e3a8a;padding:60px;text-align:center;max-width:720px;background:white;position:relative}
+    .corner{position:absolute;width:40px;height:40px;border-color:#1e3a8a;border-style:solid}
+    .tl{top:12px;left:12px;border-width:3px 0 0 3px}
+    .tr{top:12px;right:12px;border-width:3px 3px 0 0}
+    .bl{bottom:12px;left:12px;border-width:0 0 3px 3px}
+    .br{bottom:12px;right:12px;border-width:0 3px 3px 0}
+    .org{font-size:13px;letter-spacing:5px;text-transform:uppercase;color:#1e3a8a;font-family:Arial;margin-bottom:4px}
+    .subtitle{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#9ca3af;margin-bottom:36px;font-family:Arial}
+    .cert-title{font-size:14px;letter-spacing:6px;text-transform:uppercase;color:#374151;margin-bottom:24px;font-family:Arial}
+    .label{font-size:11px;color:#9ca3af;margin-bottom:12px;font-family:Arial}
+    .name{font-size:34px;font-weight:bold;color:#111;border-bottom:2px solid #1e3a8a;padding-bottom:8px;margin-bottom:6px;display:inline-block;min-width:320px}
+    .role{font-size:12px;color:#9ca3af;margin-bottom:28px;font-family:Arial}
+    .trail-label{font-size:11px;color:#9ca3af;margin-bottom:8px;font-family:Arial}
+    .trail{font-size:24px;font-weight:bold;color:#1e3a8a;margin-bottom:8px}
+    .date{font-size:11px;color:#9ca3af;margin-bottom:36px;font-family:Arial}
+    .badge{background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:10px 24px;display:inline-block;margin-bottom:44px;font-family:Arial;font-size:11px;color:#16a34a}
+    .sigs{display:flex;justify-content:space-around;margin-top:36px;border-top:1px solid #e5e7eb;padding-top:28px}
+    .sig{border-top:1px solid #374151;width:180px;padding-top:8px;font-size:10px;color:#9ca3af;font-family:Arial;text-align:center}
+    .footer{font-size:9px;color:#d1d5db;margin-top:24px;font-family:Arial}
+    @media print{body{background:white}}
+  </style></head><body>
+  <div class="cert">
+    <div class="corner tl"></div><div class="corner tr"></div>
+    <div class="corner bl"></div><div class="corner br"></div>
+    <div class="org">MJ Consultoria</div>
+    <div class="subtitle">GestÃ£o do Conhecimento Notarial</div>
+    <div class="cert-title">Certificado de ConclusÃ£o de Trilha</div>
+    <div class="label">Certificamos que</div>
+    <div class="name">${userName}</div>
+    ${cargo ? `<div class="role">${cargo}</div>` : '<div style="margin-bottom:28px"></div>'}
+    <div class="trail-label">concluiu com Ãªxito a Trilha de Aprendizagem</div>
+    <div class="trail">${trilhaTitulo}</div>
+    <div class="date">em ${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}</div>
+    ${nota !== undefined ? `<div class="badge">Nota mÃ©dia: <strong>${nota}%</strong> â€” âœ“ Aprovado</div>` : ''}
+    <div class="sigs">
+      <div class="sig">ResponsÃ¡vel pela Trilha</div>
+      <div class="sig">MJ Consultoria</div>
+    </div>
+    <div class="footer">Documento gerado em ${new Date().toLocaleDateString('pt-BR')} Ã s ${new Date().toLocaleTimeString('pt-BR')}</div>
+  </div>
+  <script>window.onload=()=>{window.print();window.onafterprint=()=>window.close()}</script>
+  </body></html>`);
+  win.document.close();
+};
+
+// â”€â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+const TrainingDashboard: React.FC = () => {
+  const { state } = useApp();
+
+  const [activeTab, setActiveTab] = useState<DashTab>('visao-geral');
+  const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
+  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [trilhasProgresso, setTrilhasProgresso] = useState<TrilhaProgresso[]>([]);
+  const [trilhas, setTrilhas] = useState<Trilha[]>([]);
+  const [appUsers, setAppUsers] = useState<AppUser[]>([]);
+
+  useEffect(() => {
+    const unsubs = [
+      onSnapshot(query(collection(db, 'treinamentosQuizResults'), orderBy('createdAt', 'desc')),
+        s => setQuizResults(s.docs.map(d => ({ id: d.id, ...d.data() } as QuizResult)))),
+      onSnapshot(query(collection(db, 'treinamentosQuizzes'), orderBy('createdAt', 'desc')),
+        s => setQuizzes(s.docs.map(d => ({ id: d.id, ...d.data() } as Quiz)))),
+      onSnapshot(query(collection(db, 'trilhasProgresso')),
+        s => setTrilhasProgresso(s.docs.map(d => ({ id: d.id, ...d.data() } as TrilhaProgresso)))),
+      onSnapshot(query(collection(db, 'trilhas')),
+        s => setTrilhas(s.docs.map(d => ({ id: d.id, ...d.data() } as Trilha)))),
+      onSnapshot(query(collection(db, 'users')),
+        s => setAppUsers(s.docs.map(d => ({ id: d.id, ...d.data() } as AppUser)))),
+    ];
+    return () => unsubs.forEach(u => u());
+  }, []);
+
+  // â”€â”€ KPIs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  const tenantId = state.user?.tenantId || '';
+  const isSuperAdmin = state.user?.role === 'SUPERADMIN';
+
+  const users = isSuperAdmin
+    ? appUsers.filter(u => u.active)
+    : appUsers.filter(u => u.active && (u.tenantId === tenantId || !u.tenantId));
+
+  const progressoDoTenant = isSuperAdmin
+    ? trilhasProgresso
+    : trilhasProgresso.filter(p => p.tenantId === tenantId);
+
+  const trilhasDoTenant = isSuperAdmin
+    ? trilhas.filter(t => t.ativa)
+    : trilhas.filter(t => t.ativa && t.tenantId === tenantId);
+
+  const usuariosComTrilha = new Set(progressoDoTenant.map(p => p.userId)).size;
+  const trilhasConcluidas = progressoDoTenant.filter(p => p.concluida).length;
+  const totalQuizResults = quizResults.length;
+  const aprovados = quizResults.filter(r => r.aprovado).length;
+  const mediaGeral = quizResults.length > 0
+    ? Math.round(quizResults.reduce((a, r) => a + r.nota, 0) / quizResults.length)
+    : 0;
+
+  // â”€â”€ Cobertura por trilha â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  const coberturaData = useMemo(() => {
+    return trilhasDoTenant.map(trilha => {
+      // UsuÃ¡rios que deveriam fazer (baseado nos perfis)
+      const perfisAtivos = trilha.perfis || [];
+      const elegÃ­veis = users.filter(u => perfisAtivos.includes(u.role) || perfisAtivos.length === 0).length;
+      const iniciaram = progressoDoTenant.filter(p => p.trilhaId === trilha.id).length;
+      const concluiram = progressoDoTenant.filter(p => p.trilhaId === trilha.id && p.concluida).length;
+      const pct = elegÃ­veis > 0 ? Math.round((concluiram / elegÃ­veis) * 100) : 0;
+      return { trilha, elegÃ­veis, iniciaram, concluiram, pct };
+    });
+  }, [trilhasDoTenant, users, progressoDoTenant]);
+
+  // â”€â”€ Dificuldade por questÃ£o â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  const questaoMetrics = useMemo((): QuestaoMetric[] => {
+    const metrics: QuestaoMetric[] = [];
+
+    quizzes.forEach(quiz => {
+      const resultadosDoQuiz = quizResults.filter(r => r.quizId === quiz.id);
+      if (resultadosDoQuiz.length === 0) return;
+
+      quiz.questoes?.forEach((q, idx) => {
+        const tentativas = resultadosDoQuiz.filter(r => r.respostas && r.respostas[idx] !== undefined).length;
+        if (tentativas === 0) return;
+        const erros = resultadosDoQuiz.filter(r => r.respostas && r.respostas[idx] !== q.correta).length;
+        const taxaErro = Math.round((erros / tentativas) * 100);
+        metrics.push({
+          quizId: quiz.id,
+          quizTitulo: quiz.titulo,
+          treinamento: quiz.treinamento,
+          questaoIdx: idx,
+          texto: q.texto,
+          totalTentativas: tentativas,
+          erros,
+          taxaErro,
+        });
+      });
+    });
+
+    return metrics.sort((a, b) => b.taxaErro - a.taxaErro);
+  }, [quizzes, quizResults]);
+
+  // â”€â”€ Ranking de colaboradores â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  const ranking = useMemo(() => {
+    const byUser: Record<string, { nome: string; cargo: string; quizzes: number; aprovados: number; notas: number[] }> = {};
+
+    quizResults.forEach(r => {
+      if (!byUser[r.colaborador]) {
+        byUser[r.colaborador] = { nome: r.colaborador, cargo: r.cargo || '', quizzes: 0, aprovados: 0, notas: [] };
+      }
+      byUser[r.colaborador].quizzes++;
+      if (r.aprovado) byUser[r.colaborador].aprovados++;
+      byUser[r.colaborador].notas.push(r.nota);
+    });
+
+    return Object.values(byUser)
+      .map(u => ({
+        ...u,
+        media: u.notas.length > 0 ? Math.round(u.notas.reduce((a, b) => a + b, 0) / u.notas.length) : 0,
+        trilhasConcluidas: progressoDoTenant.filter(p => p.userName === u.nome && p.concluida).length,
+      }))
+      .sort((a, b) => b.media - a.media);
+  }, [quizResults, progressoDoTenant]);
+
+  // â”€â”€ Difficulty color helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  const diffColor = (taxa: number) => {
+    if (taxa >= 70) return { bar: 'bg-red-500', text: 'text-red-400', badge: 'bg-red-500/10 border-red-500/30' };
+    if (taxa >= 40) return { bar: 'bg-amber-500', text: 'text-amber-400', badge: 'bg-amber-500/10 border-amber-500/30' };
+    return { bar: 'bg-emerald-500', text: 'text-emerald-400', badge: 'bg-emerald-500/10 border-emerald-500/30' };
+  };
+
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // RENDER
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  const renderVisaoGeral = () => (
+    <div className="space-y-6">
+
+      {/* KPI Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          { label: 'Colaboradores Ativos', value: users.length,           icon: 'fa-users',         color: 'blue'    },
+          { label: 'Com Trilha Iniciada',  value: usuariosComTrilha,       icon: 'fa-road',          color: 'purple'  },
+          { label: 'Trilhas ConcluÃ­das',   value: trilhasConcluidas,       icon: 'fa-circle-check',  color: 'emerald' },
+          { label: 'MÃ©dia Geral Provas',   value: `${mediaGeral}%`,        icon: 'fa-chart-line',    color: 'amber'   },
+        ].map((kpi, i) => (
+          <div key={i} className="bg-white border border-slate-200 rounded-[24px] p-6 space-y-3">
+            <i className={`fa-solid ${kpi.icon} text-${kpi.color}-500 text-xl`}></i>
+            <p className="text-3xl font-black text-[#0A1628]">{kpi.value}</p>
+            <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">{kpi.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Cobertura geral rÃ¡pida */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        {/* FuncionÃ¡rios x Trilhas */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4">
+          <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
+            FuncionÃ¡rios Ã— Trilhas
+          </h4>
+          {trilhasDoTenant.length === 0 ? (
+            <p className="text-xs text-slate-600 italic">Nenhuma trilha ativa cadastrada.</p>
+          ) : (
+            trilhasDoTenant.slice(0, 5).map(trilha => {
+              const cobertura = coberturaData.find(c => c.trilha.id === trilha.id);
+              if (!cobertura) return null;
+              return (
+                <div key={trilha.id} className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-slate-700 truncate max-w-[60%]">{trilha.titulo}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] text-slate-500">{cobertura.concluiram}/{cobertura.elegÃ­veis}</span>
+                      <span className={`text-[9px] font-black ${cobertura.pct >= 80 ? 'text-emerald-400' : cobertura.pct >= 50 ? 'text-amber-400' : 'text-red-400'}`}>
+                        {cobertura.pct}%
+                      </span>
+                    </div>
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-1.5">
+                    <div
+                      className={`h-1.5 rounded-full transition-all ${cobertura.pct >= 80 ? 'bg-emerald-500' : cobertura.pct >= 50 ? 'bg-amber-500' : 'bg-red-500'}`}
+                      style={{ width: `${cobertura.pct}%` }}
+                    ></div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Top QuestÃµes DifÃ­ceis */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-3">
+          <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
+            Top 5 QuestÃµes Mais DifÃ­ceis
+          </h4>
+          {questaoMetrics.length === 0 ? (
+            <p className="text-xs text-slate-600 italic">Nenhuma tentativa registrada ainda.</p>
+          ) : (
+            questaoMetrics.slice(0, 5).map((m, i) => {
+              const dc = diffColor(m.taxaErro);
+              return (
+                <div key={i} className="flex items-start gap-3">
+                  <span className={`text-lg font-black ${dc.text} flex-shrink-0 w-6 text-center`}>{i + 1}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-slate-700 truncate">{m.texto}</p>
+                    <p className="text-[9px] text-slate-500 mt-0.5">{m.treinamento} Â· {m.totalTentativas} tentativas</p>
+                  </div>
+                  <span className={`text-[9px] font-black px-2 py-1 rounded-lg border flex-shrink-0 ${dc.badge} ${dc.text}`}>
+                    {m.taxaErro}% erros
+                  </span>
+                </div>
+              );
+            })
+          )}
+          {questaoMetrics.length > 5 && (
+            <button type="button" onClick={() => setActiveTab('dificuldade')}
+              className="text-[9px] text-blue-400 hover:text-blue-300 font-black uppercase tracking-widest transition-colors">
+              Ver todas â†’
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Taxa de aprovaÃ§Ã£o por treinamento */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4">
+        <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
+          Taxa de AprovaÃ§Ã£o por Treinamento
+        </h4>
+        {(() => {
+          const treinamentosUnicos = [...new Set(quizResults.map(r => r.treinamento))];
+          if (treinamentosUnicos.length === 0) return <p className="text-xs text-slate-600 italic">Nenhum resultado ainda.</p>;
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {treinamentosUnicos.map(t => {
+                const resultados = quizResults.filter(r => r.treinamento === t);
+                const aprov = resultados.filter(r => r.aprovado).length;
+                const taxa = Math.round((aprov / resultados.length) * 100);
+                const media = Math.round(resultados.reduce((a, r) => a + r.nota, 0) / resultados.length);
+                return (
+                  <div key={t} className="bg-slate-50/50 border border-slate-200 rounded-xl p-4 space-y-2">
+                    <p className="text-xs font-black text-[#0A1628] truncate">{t}</p>
+                    <div className="flex gap-3">
+                      <div>
+                        <p className="text-[8px] text-slate-500 uppercase tracking-widest">AprovaÃ§Ã£o</p>
+                        <p className={`text-lg font-black ${taxa >= 70 ? 'text-emerald-400' : taxa >= 50 ? 'text-amber-400' : 'text-red-400'}`}>{taxa}%</p>
+                      </div>
+                      <div>
+                        <p className="text-[8px] text-slate-500 uppercase tracking-widest">MÃ©dia</p>
+                        <p className="text-lg font-black text-[#0A1628]">{media}%</p>
+                      </div>
+                      <div>
+                        <p className="text-[8px] text-slate-500 uppercase tracking-widest">Provas</p>
+                        <p className="text-lg font-black text-slate-700">{resultados.length}</p>
+                      </div>
+                    </div>
+                    <div className="w-full bg-slate-200 rounded-full h-1">
+                      <div className={`h-1 rounded-full ${taxa >= 70 ? 'bg-emerald-500' : taxa >= 50 ? 'bg-amber-500' : 'bg-red-500'}`} style={{ width: `${taxa}%` }}></div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
+      </div>
+    </div>
+  );
+
+  const renderCobertura = () => (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-[#0A1628] font-black uppercase italic text-sm">Cobertura de Trilhas</h3>
+        <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">
+          FuncionÃ¡rios elegÃ­veis Ã— Concluintes por trilha
+        </p>
+      </div>
+
+      {coberturaData.length === 0 ? (
+        <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center">
+          <i className="fa-solid fa-road text-4xl text-slate-700 mb-3 block"></i>
+          <p className="text-slate-600 text-xs font-bold uppercase tracking-widest">Nenhuma trilha ativa</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {coberturaData.map(({ trilha, elegÃ­veis, iniciaram, concluiram, pct }) => (
+            <div key={trilha.id} className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-sm font-black text-[#0A1628]">{trilha.titulo}</p>
+                  <div className="flex flex-wrap gap-1.5 mt-1.5">
+                    {(trilha.perfis || []).map(p => (
+                      <span key={p} className="text-[8px] font-black uppercase tracking-widest bg-slate-200 text-slate-500 px-2 py-0.5 rounded-md">{p}</span>
+                    ))}
+                  </div>
+                </div>
+                <span className={`text-2xl font-black flex-shrink-0 ${pct >= 80 ? 'text-emerald-400' : pct >= 50 ? 'text-amber-400' : 'text-red-400'}`}>
+                  {pct}%
+                </span>
+              </div>
+
+              {/* Barra de progresso */}
+              <div className="w-full bg-slate-200 rounded-full h-2">
+                <div
+                  className={`h-2 rounded-full transition-all ${pct >= 80 ? 'bg-emerald-500' : pct >= 50 ? 'bg-amber-500' : 'bg-red-500'}`}
+                  style={{ width: `${Math.min(100, pct)}%` }}
+                ></div>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { label: 'ElegÃ­veis', value: elegÃ­veis, color: 'blue', icon: 'fa-users' },
+                  { label: 'Iniciaram', value: iniciaram, color: 'amber', icon: 'fa-play' },
+                  { label: 'ConcluÃ­ram', value: concluiram, color: 'emerald', icon: 'fa-circle-check' },
+                ].map((s, i) => (
+                  <div key={i} className="bg-slate-50/50 rounded-xl p-3 text-center">
+                    <i className={`fa-solid ${s.icon} text-${s.color}-400 text-sm mb-1 block`}></i>
+                    <p className="text-xl font-black text-[#0A1628]">{s.value}</p>
+                    <p className="text-[8px] text-slate-500 uppercase tracking-widest">{s.label}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* UsuÃ¡rios que concluÃ­ram */}
+              {progressoDoTenant.filter(p => p.trilhaId === trilha.id && p.concluida).length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Concluintes</p>
+                  <div className="flex flex-wrap gap-2">
+                    {progressoDoTenant
+                      .filter(p => p.trilhaId === trilha.id && p.concluida)
+                      .map((p, i) => {
+                        const userInfo = appUsers.find(u => u.id === p.userId);
+                        return (
+                          <div key={i} className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-3 py-2">
+                            <div className="w-6 h-6 rounded-lg bg-emerald-500/20 flex items-center justify-center text-[9px] font-black text-emerald-400">
+                              {p.userName?.charAt(0)?.toUpperCase() || '?'}
+                            </div>
+                            <div>
+                              <p className="text-xs font-bold text-[#0A1628]">{p.userName}</p>
+                              {userInfo?.role && <p className="text-[8px] text-slate-500">{userInfo.role}</p>}
+                            </div>
+                            <button
+                              type="button"
+                              title="Emitir certificado"
+                              onClick={() => printTrilhaCertificate(p.userName, userInfo?.role || '', trilha.titulo)}
+                              className="ml-1 text-[8px] font-black uppercase bg-emerald-600 hover:bg-emerald-500 text-[#0A1628] px-2 py-1 rounded-lg transition-all"
+                            >
+                              <i className="fa-solid fa-certificate mr-1"></i>Cert.
+                            </button>
+                          </div>
+                        );
+                      })}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  const renderDificuldade = () => (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-[#0A1628] font-black uppercase italic text-sm">Assuntos com Maior Dificuldade</h3>
+        <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">
+          QuestÃµes com maior taxa de erro nas avaliaÃ§Ãµes
+        </p>
+      </div>
+
+      {questaoMetrics.length === 0 ? (
+        <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center">
+          <i className="fa-solid fa-triangle-exclamation text-4xl text-slate-700 mb-3 block"></i>
+          <p className="text-slate-600 text-xs font-bold uppercase tracking-widest">Nenhuma tentativa registrada ainda</p>
+          <p className="text-slate-700 text-xs mt-1">As mÃ©tricas aparecerÃ£o apÃ³s os colaboradores realizarem as avaliaÃ§Ãµes</p>
+        </div>
+      ) : (
+        <>
+          {/* Legenda */}
+          <div className="flex flex-wrap gap-3">
+            {[
+              { color: 'bg-red-500',     label: 'Alta dificuldade â‰¥ 70% erros',   text: 'text-red-400'     },
+              { color: 'bg-amber-500',   label: 'MÃ©dia dificuldade 40-69% erros', text: 'text-amber-400'   },
+              { color: 'bg-emerald-500', label: 'Baixa dificuldade < 40% erros',  text: 'text-emerald-400' },
+            ].map((l, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <div className={`w-3 h-3 rounded-full ${l.color}`}></div>
+                <span className={`text-[9px] font-bold ${l.text}`}>{l.label}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="space-y-3">
+            {questaoMetrics.map((m, i) => {
+              const dc = diffColor(m.taxaErro);
+              return (
+                <div key={i} className={`bg-white border rounded-2xl p-5 space-y-3 ${dc.badge}`}>
+                  <div className="flex items-start gap-4">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${m.taxaErro >= 70 ? 'bg-red-500/20' : m.taxaErro >= 40 ? 'bg-amber-500/20' : 'bg-emerald-500/20'}`}>
+                      <span className={`text-lg font-black ${dc.text}`}>{i + 1}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-[#0A1628] leading-relaxed">{m.texto}</p>
+                      <div className="flex flex-wrap items-center gap-3 mt-1.5">
+                        <span className="text-[9px] text-slate-500">
+                          <i className="fa-solid fa-graduation-cap text-blue-500 mr-1"></i>{m.treinamento}
+                        </span>
+                        <span className="text-[9px] text-slate-500">
+                          <i className="fa-solid fa-clipboard-question mr-1"></i>{m.quizTitulo}
+                        </span>
+                        <span className="text-[9px] text-slate-500">
+                          <i className="fa-solid fa-users mr-1"></i>{m.totalTentativas} tentativas
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className={`text-2xl font-black ${dc.text}`}>{m.taxaErro}%</p>
+                      <p className="text-[8px] text-slate-500 uppercase tracking-widest">taxa de erro</p>
+                      <p className="text-[9px] text-slate-500 mt-0.5">{m.erros} de {m.totalTentativas}</p>
+                    </div>
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-2">
+                    <div className={`h-2 rounded-full transition-all ${m.taxaErro >= 70 ? 'bg-red-500' : m.taxaErro >= 40 ? 'bg-amber-500' : 'bg-emerald-500'}`} style={{ width: `${m.taxaErro}%` }}></div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  );
+
+  const renderRanking = () => (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-[#0A1628] font-black uppercase italic text-sm">Ranking de Desempenho</h3>
+        <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Colaboradores ordenados por nota mÃ©dia</p>
+      </div>
+
+      {ranking.length === 0 ? (
+        <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center">
+          <i className="fa-solid fa-ranking-star text-4xl text-slate-700 mb-3 block"></i>
+          <p className="text-slate-600 text-xs font-bold uppercase tracking-widest">Nenhum resultado de avaliaÃ§Ã£o ainda</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {ranking.map((user, i) => {
+            const medalColor = i === 0 ? 'text-amber-400' : i === 1 ? 'text-slate-700' : i === 2 ? 'text-amber-700' : 'text-slate-600';
+            const medalIcon = i === 0 ? 'fa-trophy' : i === 1 ? 'fa-medal' : i === 2 ? 'fa-medal' : 'fa-hashtag';
+            const scoreColor = user.media >= 80 ? 'text-emerald-400' : user.media >= 70 ? 'text-amber-400' : 'text-red-400';
+            return (
+              <div key={user.nome} className="bg-white border border-slate-200 hover:border-slate-200 rounded-2xl p-4 flex items-center gap-4 transition-all group">
+                {/* PosiÃ§Ã£o */}
+                <div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
+                  <i className={`fa-solid ${medalIcon} text-xl ${medalColor}`}></i>
+                </div>
+
+                {/* Avatar */}
+                <div className="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center flex-shrink-0">
+                  <span className="text-sm font-black text-[#0A1628]">{user.nome.charAt(0).toUpperCase()}</span>
+                </div>
+
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-black text-[#0A1628]">{user.nome}</span>
+                    {user.cargo && (
+                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md">
+                        {user.cargo}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-4 mt-1 flex-wrap">
+                    <span className="text-[9px] text-slate-500">
+                      <i className="fa-solid fa-clipboard-question mr-1"></i>{user.quizzes} avaliaÃ§Ãµes
+                    </span>
+                    <span className="text-[9px] text-slate-500">
+                      <i className="fa-solid fa-circle-check text-emerald-500 mr-1"></i>{user.aprovados} aprovadas
+                    </span>
+                    {user.trilhasConcluidas > 0 && (
+                      <span className="text-[9px] text-emerald-400">
+                        <i className="fa-solid fa-road mr-1"></i>{user.trilhasConcluidas} trilha{user.trilhasConcluidas > 1 ? 's' : ''} concluÃ­da{user.trilhasConcluidas > 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Nota mÃ©dia */}
+                <div className="text-right flex-shrink-0">
+                  <p className={`text-2xl font-black ${scoreColor}`}>{user.media}%</p>
+                  <p className="text-[8px] text-slate-500 uppercase tracking-widest">nota mÃ©dia</p>
+                </div>
+
+                {/* Certificado */}
+                {user.trilhasConcluidas > 0 && (
+                  <button
+                    type="button"
+                    title="Emitir certificado"
+                    onClick={() => {
+                      const trilhaConcluida = progressoDoTenant.find(p => p.userName === user.nome && p.concluida);
+                      if (trilhaConcluida) {
+                        printTrilhaCertificate(user.nome, user.cargo, trilhaConcluida.trilhaTitulo, user.media);
+                      }
+                    }}
+                    className="opacity-0 group-hover:opacity-100 bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5"
+                  >
+                    <i className="fa-solid fa-certificate text-xs"></i>Cert.
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-[#0A1628] font-black uppercase italic text-sm">Dashboard de GestÃ£o</h3>
+        <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">
+          MÃ©tricas de desempenho, cobertura de trilhas e dificuldade
+        </p>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-1 bg-slate-50/50 p-1 rounded-2xl border border-slate-200 w-fit overflow-x-auto">
+        {DASH_TABS.map(tab => (
+          <button type="button" key={tab.id} onClick={() => setActiveTab(tab.id)}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${
+              activeTab === tab.id ? 'bg-blue-600 text-[#0A1628] shadow-lg shadow-blue-900/30' : 'text-slate-500 hover:text-slate-700'
+            }`}>
+            <i className={`fa-solid ${tab.icon} text-xs`}></i>{tab.label}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'visao-geral'  && renderVisaoGeral()}
+      {activeTab === 'cobertura'    && renderCobertura()}
+      {activeTab === 'dificuldade'  && renderDificuldade()}
+      {activeTab === 'ranking'      && renderRanking()}
+    </div>
+  );
+};
+
+export default TrainingDashboard;
