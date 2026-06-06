@@ -48,6 +48,7 @@ const Sidebar: React.FC = () => {
         { tab: 'trails',      icon: 'fa-road',       label: 'Trilhas',     desc: 'Trilhas de aprendizagem por perfil', color: 'text-teal-400'  },
         { tab: 'repositorio', icon: 'fa-photo-film', label: 'Repositorio', desc: 'Videos, audios e PDFs',             color: 'text-sky-400'   },
       ]
+        { tab: 'knowledge',   icon: 'fa-scale-balanced', label: 'Base Legal',  desc: 'Documentos normativos indexados', color: 'text-amber-400' },
     },
     {
       label: 'CAPACITACAO', icon: 'fa-graduation-cap',
