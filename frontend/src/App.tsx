@@ -10,7 +10,6 @@ const DashboardView      = lazy(() => import('./features/Dashboard/DashboardView
 const DashboardMasterView= lazy(() => import('./features/Dashboard/DashboardMasterView'));
 const ChatView           = lazy(() => import('./features/RAG/ChatView'));
 const KnowledgeBase      = lazy(() => import('./features/Base/KnowledgeBase'));
-const ComplianceReviewer = lazy(() => import('./features/Compliance/ComplianceReviewer'));
 const ExpertReviewView   = lazy(() => import('./features/Expert/ExpertReviewView'));
 const ChecklistView      = lazy(() => import('./features/Checklists/ChecklistView'));
 const SecurityView       = lazy(() => import('./features/Security/SecurityView'));
@@ -64,7 +63,6 @@ const MainLayout: React.FC = () => {
       case 'dashboard':  return <DashboardMasterView />;
       case 'unit':       return <DashboardView />;
       case 'chat':       return <ChatView />;
-      case 'compliance': return <ComplianceReviewer />;
       case 'checklists': return <ChecklistView />;
       case 'knowledge':  return <KnowledgeBase />;
       case 'security':   return <SecurityView />;
