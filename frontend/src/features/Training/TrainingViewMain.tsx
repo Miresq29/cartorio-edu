@@ -26,8 +26,8 @@ type SummaryType = 'executivo' | 'tecnico' | 'didatico' | 'operacional';
 
 const SUMMARY_TYPES: { id: SummaryType; label: string; desc: string; color: string }[] = [
   { id: 'executivo',   label: 'Executivo',   desc: 'Para gestores â€” pontos-chave e impactos',       color: 'blue'    },
-  { id: 'tecnico',     label: 'TÃ©cnico',     desc: 'Fundamentos legais e anÃ¡lise normativa',         color: 'purple'  },
-  { id: 'didatico',    label: 'DidÃ¡tico',    desc: 'Para treinamento â€” exemplos prÃ¡ticos',           color: 'emerald' },
+  { id: 'tecnico',     label: 'Técnico',     desc: 'Fundamentos legais e análise normativa',         color: 'purple'  },
+  { id: 'didatico',    label: 'Didático',    desc: 'Para treinamento â€” exemplos práticos',           color: 'emerald' },
   { id: 'operacional', label: 'Operacional', desc: 'Procedimentos e passo a passo do dia a dia',    color: 'amber'   },
 ];
 
