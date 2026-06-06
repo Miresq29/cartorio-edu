@@ -74,7 +74,6 @@ const TrainingView: React.FC = () => {
   const [summaryLoading, setSummaryLoading] = useState(false);
 
   useEffect(() => {
-    const tenantId = state.user?.tenantId || '';
     const q1 = query(collection(db, 'checklists'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'));
     const u1 = onSnapshot(q1, s => setChecklists(s.docs.map(d => ({ id: d.id, ...d.data() }))));
     const q2 = query(collection(db, 'knowledgeBase'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'));
