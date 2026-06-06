@@ -1,4 +1,4 @@
-import { Document as AppDocument } from "../types";
+﻿import { Document as AppDocument } from "../types";
 
 const GEMINI_API_KEY =
   import.meta.env.VITE_GEMINI_API_KEY ||
@@ -20,7 +20,7 @@ export const fileToBase64 = (file: File): Promise<string> => {
 };
 
 const extractTextWithGemini = async (base64: string, mimeType: string, fileName: string): Promise<string> => {
-  if (!GEMINI_API_KEY) throw new Error('VITE_GEMINI_API_KEY não configurada.');
+  if (!GEMINI_API_KEY) throw new Error('VITE_GEMINI_API_KEY nÃ£o configurada.');
 
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
@@ -37,13 +37,13 @@ const extractTextWithGemini = async (base64: string, mimeType: string, fileName:
               }
             },
             {
-              text: `Extraia TODO o texto deste documento "${fileName}" de forma fiel e completa, preservando a estrutura original. Retorne apenas o texto extraído, sem comentários adicionais.`
+              text: `Extraia TODO o texto deste documento "${fileName}" de forma fiel e completa, preservando a estrutura original. Retorne apenas o texto extraÃ­do, sem comentÃ¡rios adicionais.`
             }
           ]
         }],
         generationConfig: {
           temperature: 0,
-          maxOutputTokens: 8192,
+          maxOutputTokens: 4000,
         }
       })
     }
@@ -76,7 +76,7 @@ export const extractTextFromFile = async (
       rawText = await extractTextWithGemini(base64, mimeType, file.name);
 
       if (!rawText.trim()) {
-        throw new Error('Não foi possível extrair texto do arquivo. Verifique se o documento contém texto legível.');
+        throw new Error('NÃ£o foi possÃ­vel extrair texto do arquivo. Verifique se o documento contÃ©m texto legÃ­vel.');
       }
     } else {
       rawText = await file.text();
@@ -92,7 +92,7 @@ export const extractTextFromFile = async (
       status: 'analyzed'
     };
   } catch (err: any) {
-    console.error('Erro na extração:', err);
-    throw new Error(err.message || 'Não foi possível processar o arquivo.');
+    console.error('Erro na extraÃ§Ã£o:', err);
+    throw new Error(err.message || 'NÃ£o foi possÃ­vel processar o arquivo.');
   }
 };

@@ -2,167 +2,119 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function isAuthenticated() {
-      return request.auth != null;
-    }
-
-    function getUserData() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
-    }
-
-    function userExists() {
-      return exists(/databases/$(database)/documents/users/$(request.auth.uid));
-    }
-
-    function isActive() {
-      return isAuthenticated() && userExists() && getUserData().get('active', false) == true;
-    }
-
-    function isSuperAdmin() {
-      return isActive() && getUserData().get('role', '') == 'SUPERADMIN';
-    }
-
-    function isGestor() {
-      return isActive() && getUserData().get('role', '') in ['SUPERADMIN', 'gestor', 'admin'];
-    }
+    function isAuthenticated() { return request.auth != null; }
+    function getUserData() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+    function userExists() { return exists(/databases/$(database)/documents/users/$(request.auth.uid)); }
+    function isActive() { return isAuthenticated() && userExists() && getUserData().get('active', false) == true; }
+    function isSuperAdmin() { return isActive() && getUserData().get('role', '') == 'SUPERADMIN'; }
+    function isGestor() { return isActive() && getUserData().get('role', '') in ['SUPERADMIN', 'gestor', 'admin']; }
 
     match /users/{userId} {
       allow read: if isAuthenticated();
       allow write: if isSuperAdmin();
     }
-
-    match /loginAttempts/{docId} {
-      allow read, write: if true;
-    }
-
+    match /loginAttempts/{docId} { allow read, write: if true; }
     match /auditLogs/{docId} {
       allow read: if isGestor();
       allow create: if true;
     }
-
     match /treinamentos/{docId} {
       allow read: if isActive();
       allow create, update, delete: if isGestor();
     }
-
     match /treinamentosQuizzes/{docId} {
       allow read: if isActive();
       allow create, update, delete: if isGestor();
     }
-
     match /treinamentosQuizResults/{docId} {
       allow read: if isActive();
       allow create, update: if isActive();
       allow delete: if isGestor();
     }
-
     match /trilhas/{docId} {
       allow read: if isActive();
       allow create, update, delete: if isGestor();
     }
-
     match /trilhasProgresso/{docId} {
       allow read: if isActive();
       allow create, update: if isActive();
       allow delete: if isGestor();
     }
-
     match /treinamentosParticipantes/{docId} {
       allow read: if isActive();
       allow create, update: if isActive();
       allow delete: if isGestor();
     }
-
     match /knowledgeBase/{docId} {
       allow read: if isActive();
-      allow create, update: if isGestor();
-      allow delete: if isGestor();
+      allow create, update, delete: if isGestor();
     }
-
     match /checklists/{docId} {
       allow read: if isActive();
-      allow create, update: if isGestor();
-      allow delete: if isGestor();
+      allow create, update, delete: if isGestor();
     }
-
     match /cartorios/{docId} {
       allow read: if isActive();
       allow write: if isSuperAdmin();
     }
-
     match /videos/{docId} {
       allow read: if isActive();
       allow create, update, delete: if isGestor();
     }
-
     match /videosProgresso/{docId} {
       allow read: if isActive();
       allow create, update: if isActive();
       allow delete: if isGestor();
     }
-
     match /comunicados/{docId} {
       allow read: if isActive();
       allow create, update, delete: if isGestor();
     }
-
     match /comunicadosLeituras/{docId} {
       allow read: if isActive();
       allow create, update: if isActive();
       allow delete: if isGestor();
     }
-
     match /materiaisbanner/{docId} {
       allow read: if isActive();
       allow create, update: if isGestor();
       allow delete: if isGestor();
     }
-
     match /examesResultados/{docId} {
       allow read: if isActive();
       allow create: if isActive();
       allow update, delete: if isGestor();
     }
-
-
     match /tenants/{docId} {
       allow read: if isAuthenticated();
       allow write: if isSuperAdmin();
     }
-
     match /metas/{docId} {
       allow read: if isActive();
       allow write: if isGestor();
     }
-
     match /metasDesempate/{docId} {
       allow read: if isActive();
       allow write: if isGestor();
     }
-
     match /repositorio/{docId} {
       allow read: if isActive();
       allow write: if isGestor();
     }
-
     match /repositorioProgresso/{docId} {
       allow read: if isActive();
       allow create, update: if isActive();
       allow delete: if isGestor();
     }
-
     match /certificados/{docId} {
       allow read: if isActive();
       allow create, update: if isActive();
       allow delete: if isGestor();
     }
-
     match /backup/{docId} {
       allow read, write: if isGestor();
     }
-    // Deny-all fallback
-    match /{document=**} {
-      allow read, write: if false;
-    }
+
+    match /{document=**} { allow read, write: if false; }
   }
 }
