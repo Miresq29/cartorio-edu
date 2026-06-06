@@ -92,9 +92,9 @@ export const extractTextFromFile = async (
       // Tenta extração nativa primeiro
       rawText = await extractTextFromPDF(file);
 
-      // Se o PDF estiver escaneado (sem texto), usa Tesseract OCR
       if (!rawText || rawText.replace(/\s/g, '').length < 50) {
-        rawText = await extractTextWithTesseract(file);
+        throw new Error('PDF escaneado detectado. Converta para PDF com texto antes de indexar.');
+      }
       }
     } else if (isDOCX) {
       rawText = await extractTextFromDOCX(file);
