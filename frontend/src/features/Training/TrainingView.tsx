@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { db } from '../../services/firebase';
-import { collection, onSnapshot, query, orderBy, where } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { GeminiService } from '../../services/geminiService';
 import TrainingParticipants from './TrainingParticipants';
 import TrainingQuiz from './TrainingQuiz';
@@ -72,12 +72,12 @@ const TrainingView: React.FC = () => {
   const [summaryType, setSummaryType] = useState<SummaryType>('executivo');
   const [summary, setSummary] = useState('');
   const [summaryLoading, setSummaryLoading] = useState(false);
-  const tenantId = state.user?.tenantId || ''; // v2
+  
 
   useEffect(() => {
-    const q1 = query(collection(db, 'checklists'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'));
+    const q1 = query(collection(db, 'checklists'), orderBy('createdAt', 'desc'));
     const u1 = onSnapshot(q1, s => setChecklists(s.docs.map(d => ({ id: d.id, ...d.data() }))));
-    const q2 = query(collection(db, 'knowledgeBase'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'));
+    const q2 = query(collection(db, 'knowledgeBase'), orderBy('createdAt', 'desc'));
     const u2 = onSnapshot(q2, s => setKnowledgeDocs(s.docs.map(d => ({ id: d.id, ...d.data() }))));
     return () => { u1(); u2(); };
   }, []);
