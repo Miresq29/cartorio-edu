@@ -92,7 +92,7 @@ const ModuloForm: React.FC<{
   <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: 20, marginBottom: 12 }}>
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
       <span style={{ fontSize: 11, fontWeight: 900, color: '#475569', textTransform: 'uppercase', letterSpacing: 2 }}>
-        MÃ³dulo {index + 1}
+        Módulo {index + 1}
       </span>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <button
@@ -115,20 +115,20 @@ const ModuloForm: React.FC<{
       <input
         value={modulo.titulo}
         onChange={e => onChange({ ...modulo, titulo: e.target.value })}
-        placeholder="TÃ­tulo do mÃ³dulo"
+        placeholder="Título do módulo"
         style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '10px 14px', color: '#475569', fontSize: 13 }}
       />
       <textarea
         value={modulo.descricao}
         onChange={e => onChange({ ...modulo, descricao: e.target.value })}
-        placeholder="DescriÃ§Ã£o do mÃ³dulo â€” o que o colaborador vai aprender"
+        placeholder="Descrição do módulo â€” o que o colaborador vai aprender"
         rows={2}
         style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '10px 14px', color: '#0f172a', fontSize: 13, resize: 'vertical' }}
       />
       <textarea
         value={modulo.conteudo}
         onChange={e => onChange({ ...modulo, conteudo: e.target.value })}
-        placeholder="ConteÃºdo do mÃ³dulo (texto, links, ou referÃªncias de documentos da Base Legal)"
+        placeholder="Conteúdo do módulo (texto, links, ou referÃªncias de documentos da Base Legal)"
         rows={3}
         style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '10px 14px', color: '#0f172a', fontSize: 13, resize: 'vertical' }}
       />
@@ -139,11 +139,11 @@ const ModuloForm: React.FC<{
             checked={modulo.temQuiz}
             onChange={e => onChange({ ...modulo, temQuiz: e.target.checked })}
           />
-          Tem quiz de avaliaÃ§Ã£o
+          Tem quiz de avaliação
         </label>
         {modulo.temQuiz && (
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#475569', fontSize: 13 }}>
-            Nota mÃ­nima:
+            Nota mínima:
             <select
               value={modulo.notaMinima}
               onChange={e => onChange({ ...modulo, notaMinima: Number(e.target.value) })}
@@ -211,7 +211,7 @@ const TrilhaCard: React.FC<{
         })}
       </div>
 
-      {/* MÃ³dulos info */}
+      {/* Módulos info */}
       <div style={{ display: 'flex', gap: 16, marginBottom: progresso ? 16 : 0 }}>
         <span style={{ fontSize: 11, color: '#475569' }}>
           <i className="fa-solid fa-circle-dot" style={{ color: '#dc2626', marginRight: 4 }}></i>
@@ -238,7 +238,7 @@ const TrilhaCard: React.FC<{
           {progresso.concluida && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
               <i className="fa-solid fa-trophy" style={{ color: '#f59e0b', fontSize: 14 }}></i>
-              <span style={{ fontSize: 11, fontWeight: 900, color: '#f59e0b' }}>Trilha concluÃ­da!</span>
+              <span style={{ fontSize: 11, fontWeight: 900, color: '#f59e0b' }}>Trilha concluída!</span>
             </div>
           )}
         </div>
@@ -253,7 +253,7 @@ const TrilhaCard: React.FC<{
   );
 };
 
-// â”€â”€â”€ MÃ³dulo Player â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€â”€ Módulo Player â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const ModuloPlayer: React.FC<{
   trilha: Trilha;
@@ -294,17 +294,17 @@ const ModuloPlayer: React.FC<{
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
           max_tokens: 1000,
-          system: `VocÃª Ã© um gerador de quiz para treinamento notarial. 
-Retorne APENAS um JSON vÃ¡lido, sem texto adicional, sem markdown, sem explicaÃ§Ãµes.
+          system: `VocÃª é um gerador de quiz para treinamento notarial. 
+Retorne APENAS um JSON válido, sem texto adicional, sem markdown, sem explicações.
 Formato exato:
 {"questoes":[{"pergunta":"...","opcoes":["A","B","C","D"],"correta":0,"explicacao":"..."}]}
-correta Ã© o Ã­ndice (0-3) da opÃ§Ã£o correta.`,
+correta é o índice (0-3) da opção correta.`,
           messages: [{
             role: 'user',
-            content: `Gere 4 questÃµes de mÃºltipla escolha sobre este conteÃºdo:
-MÃ³dulo: ${modulo.titulo}
-ConteÃºdo: ${modulo.conteudo || modulo.descricao}
-Nota mÃ­nima para aprovaÃ§Ã£o: ${modulo.notaMinima}/10`
+            content: `Gere 4 questÃµes de múltipla escolha sobre este conteúdo:
+Módulo: ${modulo.titulo}
+Conteúdo: ${modulo.conteudo || modulo.descricao}
+Nota mínima para aprovação: ${modulo.notaMinima}/10`
           }]
         })
       });
@@ -353,7 +353,7 @@ Nota mÃ­nima para aprovaÃ§Ã£o: ${modulo.notaMinima}/10`
         <div style={{ padding: '24px 28px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <p style={{ fontSize: 10, fontWeight: 900, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 6 }}>
-              {trilha.titulo} Â· MÃ³dulo {moduloIdx + 1} de {trilha.modulos.length}
+              {trilha.titulo} Â· Módulo {moduloIdx + 1} de {trilha.modulos.length}
             </p>
             <h3 style={{ fontSize: 20, fontWeight: 900, color: '#0f172a' }}>{modulo.titulo}</h3>
             <p style={{ fontSize: 12, color: '#475569', marginTop: 4 }}>{modulo.descricao}</p>
@@ -363,7 +363,7 @@ Nota mÃ­nima para aprovaÃ§Ã£o: ${modulo.notaMinima}/10`
           </button>
         </div>
 
-        {/* NavegaÃ§Ã£o de mÃ³dulos */}
+        {/* Navegação de módulos */}
         <div style={{ padding: '16px 28px', display: 'flex', gap: 8, overflowX: 'auto' }}>
           {trilha.modulos.map((m, i) => {
             const p = progresso.modulos[m.id];
@@ -385,16 +385,16 @@ Nota mÃ­nima para aprovaÃ§Ã£o: ${modulo.notaMinima}/10`
           })}
         </div>
 
-        {/* ConteÃºdo */}
+        {/* Conteúdo */}
         <div style={{ padding: '0 28px 28px' }}>
           <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 16, padding: 20, marginBottom: 16 }}>
             <p style={{ fontSize: 10, fontWeight: 900, color: '#475569', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 10 }}>
-              {modulo.tipo === 'obrigatorio' ? 'â˜… MÃ³dulo obrigatório' : 'â—‡ MÃ³dulo Opcional'}
+              {modulo.tipo === 'obrigatorio' ? 'â˜… Módulo obrigatório' : 'â—‡ Módulo Opcional'}
             </p>
             <p style={{ fontSize: 13, color: '#334155', lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{modulo.conteudo || modulo.descricao}</p>
           </div>
 
-          {/* Status do mÃ³dulo */}
+          {/* Status do módulo */}
           {progModulo.nota !== null && (
             <div style={{ background: progModulo.aprovado ? '#052e16' : '#450a0a', border: `1px solid ${progModulo.aprovado ? '#10b981' : '#dc2626'}40`, borderRadius: 12, padding: 12, marginBottom: 16, display: 'flex', gap: 10, alignItems: 'center' }}>
               <i className={`fa-solid ${progModulo.aprovado ? 'fa-circle-check' : 'fa-circle-xmark'}`} style={{ color: progModulo.aprovado ? '#10b981' : '#dc2626', fontSize: 18 }}></i>
@@ -402,12 +402,12 @@ Nota mÃ­nima para aprovaÃ§Ã£o: ${modulo.notaMinima}/10`
                 <p style={{ fontSize: 12, fontWeight: 900, color: progModulo.aprovado ? '#10b981' : '#dc2626' }}>
                   {progModulo.aprovado ? 'Aprovado' : 'Reprovado'} â€” Nota: {progModulo.nota}/10
                 </p>
-                <p style={{ fontSize: 11, color: '#475569' }}>Tentativas: {progModulo.tentativas} Â· Nota mÃ­nima: {modulo.notaMinima}</p>
+                <p style={{ fontSize: 11, color: '#475569' }}>Tentativas: {progModulo.tentativas} Â· Nota mínima: {modulo.notaMinima}</p>
               </div>
             </div>
           )}
 
-          {/* AÃ§Ãµes */}
+          {/* Ações */}
           {!showQuiz && !quizEnviado && (
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               {!progModulo.assistido && (
@@ -424,7 +424,7 @@ Nota mÃ­nima para aprovaÃ§Ã£o: ${modulo.notaMinima}/10`
               {progModulo.assistido && (!modulo.temQuiz || progModulo.aprovado) && (
                 <div style={{ flex: 1, background: '#052e16', border: '1px solid #10b98140', borderRadius: 12, padding: 14, textAlign: 'center' }}>
                   <i className="fa-solid fa-circle-check" style={{ color: '#10b981', marginRight: 8 }}></i>
-                  <span style={{ color: '#10b981', fontWeight: 900, fontSize: 12 }}>MÃ³dulo concluído</span>
+                  <span style={{ color: '#10b981', fontWeight: 900, fontSize: 12 }}>Módulo concluído</span>
                 </div>
               )}
             </div>
@@ -434,7 +434,7 @@ Nota mÃ­nima para aprovaÃ§Ã£o: ${modulo.notaMinima}/10`
           {showQuiz && !quizEnviado && (
             <div style={{ marginTop: 8 }}>
               <p style={{ fontSize: 13, fontWeight: 900, color: '#8b5cf6', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 16 }}>
-                <i className="fa-solid fa-brain" style={{ marginRight: 8 }}></i>Quiz de AvaliaÃ§Ã£o
+                <i className="fa-solid fa-brain" style={{ marginRight: 8 }}></i>Quiz de Avaliação
               </p>
               {gerandoQuiz ? (
                 <div style={{ textAlign: 'center', padding: 40, color: '#475569' }}>
@@ -488,10 +488,10 @@ Nota mÃ­nima para aprovaÃ§Ã£o: ${modulo.notaMinima}/10`
               <div style={{ background: p?.aprovado ? '#052e16' : '#450a0a', border: `1px solid ${p?.aprovado ? '#10b981' : '#dc2626'}30`, borderRadius: 16, padding: 24, textAlign: 'center' }}>
                 <div style={{ fontSize: 40, marginBottom: 8 }}>{p?.aprovado ? 'ðŸŽ‰' : 'ðŸ“š'}</div>
                 <p style={{ fontSize: 18, fontWeight: 900, color: p?.aprovado ? '#10b981' : '#dc2626', marginBottom: 4 }}>
-                  {p?.aprovado ? 'Aprovado!' : 'NÃ£o aprovado'}
+                  {p?.aprovado ? 'Aprovado!' : 'Não aprovado'}
                 </p>
                 <p style={{ fontSize: 14, color: '#475569', marginBottom: 16 }}>
-                  Sua nota: <strong style={{ color: '#0f172a' }}>{p?.nota}/10</strong> Â· MÃ­nima: {modulo.notaMinima}
+                  Sua nota: <strong style={{ color: '#0f172a' }}>{p?.nota}/10</strong> Â· Mínima: {modulo.notaMinima}
                 </p>
                 {!p?.aprovado && (
                   <button onClick={() => { setShowQuiz(false); setQuizEnviado(false); setRespostas({}); setQuizQuestoes([]); }} style={{ background: '#7c3aed', border: 'none', color: '#0f172a', padding: '10px 24px', borderRadius: 12, cursor: 'pointer', fontWeight: 900, fontSize: 12, textTransform: 'uppercase' }}>
@@ -500,7 +500,7 @@ Nota mÃ­nima para aprovaÃ§Ã£o: ${modulo.notaMinima}/10`
                 )}
                 {p?.aprovado && (
                   <button onClick={() => { if (moduloIdx < trilha.modulos.length - 1) { setModuloIdx(moduloIdx + 1); setShowQuiz(false); setQuizEnviado(false); setRespostas({}); setQuizQuestoes([]); } else { onClose(); } }} style={{ background: '#10b981', border: 'none', color: '#0f172a', padding: '10px 24px', borderRadius: 12, cursor: 'pointer', fontWeight: 900, fontSize: 12, textTransform: 'uppercase' }}>
-                    {moduloIdx < trilha.modulos.length - 1 ? 'PrÃ³ximo MÃ³dulo â†’' : 'Concluir Trilha ðŸ†'}
+                    {moduloIdx < trilha.modulos.length - 1 ? 'Próximo Módulo â†’' : 'Concluir Trilha ðŸ†'}
                   </button>
                 )}
               </div>
@@ -638,7 +638,7 @@ const TrailsView: React.FC = () => {
           Trilhas de <span style={{ color: '#3b82f6' }}>Treinamento</span>
         </h2>
         <p style={{ fontSize: 11, color: '#475569', fontWeight: 900, textTransform: 'uppercase', letterSpacing: 3, marginTop: 4 }}>
-          CapacitaÃ§Ã£o por perfil de usuÃ¡rio Â· CartÃ³rioRAG PRO
+          Capacitação por perfil de usuário Â· CartórioRAG PRO
         </p>
       </div>
 
@@ -668,8 +668,8 @@ const TrailsView: React.FC = () => {
           {minhasTrilhas.length === 0 ? (
             <div style={{ textAlign: 'center', padding: 60, color: '#475569' }}>
               <i className="fa-solid fa-road" style={{ fontSize: 40, marginBottom: 16, display: 'block' }}></i>
-              <p style={{ fontWeight: 900, fontSize: 16, marginBottom: 8 }}>Nenhuma trilha disponÃ­vel</p>
-              <p style={{ fontSize: 13 }}>Seu gestor ainda nÃ£o criou trilhas para o perfil {PERFIL_LABEL[user.role]}.</p>
+              <p style={{ fontWeight: 900, fontSize: 16, marginBottom: 8 }}>Nenhuma trilha disponível</p>
+              <p style={{ fontSize: 13 }}>Seu gestor ainda não criou trilhas para o perfil {PERFIL_LABEL[user.role]}.</p>
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
@@ -708,7 +708,7 @@ const TrailsView: React.FC = () => {
                         <i className="fa-solid fa-users" style={{ marginRight: 6 }}></i>{stats.total} participante{stats.total !== 1 ? 's' : ''}
                       </span>
                       <span style={{ fontSize: 11, color: '#10b981', fontWeight: 900 }}>
-                        {stats.concluidos} concluÃ­d{stats.concluidos !== 1 ? 'os' : 'o'}
+                        {stats.concluidos} concluíd{stats.concluidos !== 1 ? 'os' : 'o'}
                       </span>
                     </div>
                   </div>
@@ -729,15 +729,15 @@ const TrailsView: React.FC = () => {
 
             <div style={{ display: 'grid', gap: 14, marginBottom: 24 }}>
               <div>
-                <label style={{ fontSize: 10, fontWeight: 900, color: '#475569', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6 }}>TÃ­tulo da Trilha</label>
+                <label style={{ fontSize: 10, fontWeight: 900, color: '#475569', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6 }}>Título da Trilha</label>
                 <input value={form.titulo} onChange={e => setForm(f => ({ ...f, titulo: e.target.value }))}
                   placeholder="Ex: Trilha do Atendente Â· Onboarding Notarial"
                   style={{ width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 16px', color: '#0f172a', fontSize: 14 }} />
               </div>
               <div>
-                <label style={{ fontSize: 10, fontWeight: 900, color: '#475569', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6 }}>DescriÃ§Ã£o</label>
+                <label style={{ fontSize: 10, fontWeight: 900, color: '#475569', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6 }}>Descrição</label>
                 <textarea value={form.descricao} onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))}
-                  placeholder="Descreva o objetivo e o pÃºblico desta trilha"
+                  placeholder="Descreva o objetivo e o público desta trilha"
                   rows={2}
                   style={{ width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 16px', color: '#0f172a', fontSize: 14, resize: 'vertical' }} />
               </div>
@@ -757,26 +757,26 @@ const TrailsView: React.FC = () => {
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', color: '#475569', fontSize: 13 }}>
                   <input type="checkbox" checked={form.ativa} onChange={e => setForm(f => ({ ...f, ativa: e.target.checked }))} />
-                  Trilha ativa (visÃ­vel para os colaboradores)
+                  Trilha ativa (visível para os colaboradores)
                 </label>
               </div>
             </div>
 
-            {/* MÃ³dulos */}
+            {/* Módulos */}
             <div style={{ borderTop: '1px solid #1e293b', paddingTop: 24 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                 <div>
-                  <p style={{ fontSize: 13, fontWeight: 900, color: '#0f172a', textTransform: 'uppercase', letterSpacing: 1 }}>MÃ³dulos</p>
-                  <p style={{ fontSize: 10, color: '#475569', marginTop: 2 }}>â˜… obrigatório = conta para conclusÃ£o Â· â—‡ Opcional = complementar</p>
+                  <p style={{ fontSize: 13, fontWeight: 900, color: '#0f172a', textTransform: 'uppercase', letterSpacing: 1 }}>Módulos</p>
+                  <p style={{ fontSize: 10, color: '#475569', marginTop: 2 }}>â˜… obrigatório = conta para conclusão Â· â—‡ Opcional = complementar</p>
                 </div>
                 <button onClick={addModulo} style={{ background: '#2563eb', border: 'none', color: '#0f172a', padding: '8px 16px', borderRadius: 10, cursor: 'pointer', fontSize: 11, fontWeight: 900, textTransform: 'uppercase' }}>
-                  <i className="fa-solid fa-plus" style={{ marginRight: 6 }}></i>MÃ³dulo
+                  <i className="fa-solid fa-plus" style={{ marginRight: 6 }}></i>Módulo
                 </button>
               </div>
 
               {form.modulos.length === 0 && (
                 <div style={{ textAlign: 'center', padding: 30, color: '#475569', border: '1px dashed #1e293b', borderRadius: 16 }}>
-                  <p style={{ fontSize: 13 }}>Adicione pelo menos um mÃ³dulo para criar a trilha</p>
+                  <p style={{ fontSize: 13 }}>Adicione pelo menos um módulo para criar a trilha</p>
                 </div>
               )}
 
@@ -797,7 +797,7 @@ const TrailsView: React.FC = () => {
               <button onClick={salvarTrilha} disabled={saving || !form.titulo || form.modulos.length === 0 || form.perfis.length === 0}
                 style={{ padding: '12px 32px', borderRadius: 12, border: 'none', background: saving || !form.titulo || form.modulos.length === 0 || form.perfis.length === 0 ? '#1e293b' : '#10b981', color: '#0f172a', cursor: 'pointer', fontWeight: 900, fontSize: 12, textTransform: 'uppercase' }}>
                 <i className="fa-solid fa-floppy-disk" style={{ marginRight: 8 }}></i>
-                {saving ? 'Salvando...' : editando ? 'Salvar AlteraÃ§Ãµes' : 'Criar Trilha'}
+                {saving ? 'Salvando...' : editando ? 'Salvar Alterações' : 'Criar Trilha'}
               </button>
             </div>
           </div>
@@ -820,7 +820,7 @@ const TrailsView: React.FC = () => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                       <div>
                         <p style={{ fontSize: 15, fontWeight: 900, color: '#0f172a' }}>{t.titulo}</p>
-                        <p style={{ fontSize: 11, color: '#475569', marginTop: 2 }}>{t.modulos.length} mÃ³dulos Â· {t.perfis.map(p => PERFIL_LABEL[p]).join(', ')}</p>
+                        <p style={{ fontSize: 11, color: '#475569', marginTop: 2 }}>{t.modulos.length} módulos Â· {t.perfis.map(p => PERFIL_LABEL[p]).join(', ')}</p>
                       </div>
                       <div style={{ textAlign: 'right' }}>
                         <p style={{ fontSize: 22, fontWeight: 900, color: '#10b981' }}>{progs.filter(p => p.concluida).length}</p>
@@ -859,7 +859,7 @@ const TrailsView: React.FC = () => {
         </div>
       )}
 
-      {/* Player de mÃ³dulo */}
+      {/* Player de módulo */}
       {trilhaAtiva && (
         <ModuloPlayer
           trilha={trilhaAtiva.trilha}

@@ -66,12 +66,12 @@ const KnowledgeBase: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
-    // âœ… CORREÃ‡ÃƒO: ValidaÃ§Ã£o de nome duplicado
+    // âœ… CORREÇÃƒO: Validação de nome duplicado
     const isDuplicate = docs.some(
       d => d.fileName?.toLowerCase() === file.name.toLowerCase() && d.tenantId === user.tenantId
     );
     if (isDuplicate) {
-      showToast(`JÃ¡ existe um documento com o nome "${file.name}" na base legal. Renomeie o arquivo antes de enviar.`, 'error');
+      showToast(`Já existe um documento com o nome "${file.name}" na base legal. Renomeie o arquivo antes de enviar.`, 'error');
       e.target.value = '';
       return;
     }
@@ -84,7 +84,7 @@ const KnowledgeBase: React.FC = () => {
       const content = extracted.rawText || '';
 
       if (!content.trim()) {
-        showToast('NÃ£o foi possÃ­vel extrair texto do arquivo.', 'error');
+        showToast('Não foi possível extrair texto do arquivo.', 'error');
         return;
       }
 

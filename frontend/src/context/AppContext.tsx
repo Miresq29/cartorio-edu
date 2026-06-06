@@ -27,7 +27,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     loading: true,
   });
 
-  // Monitora o estado de autenticaÃ§Ã£o em tempo real
+  // Monitora o estado de autenticação em tempo real
   useEffect(() => {
     const unsubscribe = AuthService.onAuthUpdate((user, token) => {
       setState(prev => ({ ...prev, user, token, loading: false }));

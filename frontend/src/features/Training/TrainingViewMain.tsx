@@ -128,11 +128,11 @@ const TrainingView: React.FC = () => {
       const options = await GeminiService.generateTrainingOptions(buildContext(), customRequest || undefined);
       if (options && options.length > 0) {
         setTrainingOptions(options);
-        showToast('3 opÃ§Ãµes de roteiro geradas! Escolha uma para expandir.', 'success');
+        showToast('3 opções de roteiro geradas! Escolha uma para expandir.', 'success');
       } else {
-        showToast('NÃ£o foi possÃ­vel gerar opÃ§Ãµes. Tente novamente.', 'error');
+        showToast('Não foi possível gerar opções. Tente novamente.', 'error');
       }
-    } catch (e: any) { showToast(e?.message || 'Erro ao gerar opÃ§Ãµes de treinamento.', 'error'); } finally { setIsLoading(false); }
+    } catch (e: any) { showToast(e?.message || 'Erro ao gerar opções de treinamento.', 'error'); } finally { setIsLoading(false); }
   };
 
   const selectOption = async (option: TrainingOption) => {
@@ -144,13 +144,13 @@ const TrainingView: React.FC = () => {
   const formatSelectedOption = (opt: TrainingOption): string => {
     const modulos = opt.modulos?.map((m, i) =>
       `  ${i + 1}. ${m.nome} (${m.duracao})${m.obrigatorio ? ' â˜…' : ''}\n     Objetivo: ${m.objetivo}`
-    ).join('\n') || 'MÃ³dulos nÃ£o especificados';
+    ).join('\n') || 'Módulos não especificados';
 
     return `ROTEIRO: ${opt.titulo.toUpperCase()}
 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 Abordagem: ${opt.descricao}
 Duração total: ${opt.duracao}
-PÃºblico-alvo: ${opt.publico}
+Público-alvo: ${opt.publico}
 
 MÃ“DULOS:
 ${modulos}
@@ -158,7 +158,7 @@ ${modulos}
 JUSTIFICATIVA:
 ${opt.justificativa}
 
-â˜… = MÃ³dulo obrigatÃ³rio
+â˜… = Módulo obrigatório
 `;
   };
 
@@ -222,7 +222,7 @@ ${opt.justificativa}
         </div>
       )}
 
-      {/* Cards de opÃ§Ãµes */}
+      {/* Cards de opções */}
       {trainingOptions.length > 0 && (
         <div className="space-y-3">
           <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Escolha uma opção para expandir o roteiro completo:</p>
