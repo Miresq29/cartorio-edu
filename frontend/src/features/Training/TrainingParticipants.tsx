@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { db } from '../../services/firebase';
 import {
-  collection, onSnapshot, query, orderBy, where,
+  collection, onSnapshot, query, orderBy, where, where,
   addDoc, serverTimestamp, deleteDoc, doc
 } from 'firebase/firestore';
 
