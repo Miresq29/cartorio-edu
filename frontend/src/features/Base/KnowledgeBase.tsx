@@ -162,7 +162,7 @@ const KnowledgeBase: React.FC = () => {
           </div>
         )}
         {filteredDocs.map((document) => (
-          <div key={document.id} className="bg-[#0D1B3E] border border-slate-200 rounded-[32px] p-8 flex flex-col justify-between shadow-lg hover:border-blue-500/30 transition-all group">
+          <div key={document.id} className="bg-white border border-slate-200 rounded-[32px] p-8 flex flex-col justify-between shadow-sm hover:border-blue-500/30 transition-all group">
             <div>
               <div className="flex justify-between items-start mb-4">
                 <div className="w-12 h-12 bg-blue-600/10 rounded-2xl flex items-center justify-center">
@@ -174,7 +174,7 @@ const KnowledgeBase: React.FC = () => {
                   </button>
                 )}
               </div>
-              <h4 className="text-[#0A1628] font-bold italic leading-tight line-clamp-2">{document.fileName || document.title}</h4>
+              <h4 className="text-slate-800 font-bold italic leading-tight line-clamp-2">{document.fileName || document.title}</h4>
               <div className="flex items-center gap-3 mt-3">
                 <span className="text-[9px] bg-emerald-500/10 text-emerald-500 font-black uppercase px-2 py-1 rounded">Indexado</span>
                 <span className="text-[9px] text-slate-600 font-bold">{wordCount(document.content).toLocaleString()} palavras</span>
@@ -190,8 +190,8 @@ const KnowledgeBase: React.FC = () => {
 
       {viewingDoc && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/90 backdrop-blur-sm">
-          <div className="bg-[#0D1B3E] border border-slate-200 w-full max-w-5xl max-h-[90vh] rounded-[40px] flex flex-col overflow-hidden shadow-2xl">
-            <header className="p-8 border-b border-slate-200 flex justify-between items-center bg-slate-900/20 flex-shrink-0">
+          <div className="bg-white border border-slate-200 w-full max-w-5xl max-h-[90vh] rounded-[40px] flex flex-col overflow-hidden shadow-2xl">
+            <header className="p-8 border-b border-slate-200 flex justify-between items-center bg-slate-50 flex-shrink-0">
               <div>
                 <h3 className="text-[#0A1628] font-black uppercase italic tracking-tight">{viewingDoc.fileName || viewingDoc.title}</h3>
                 <p className="text-[9px] text-slate-500 font-bold uppercase mt-1">{wordCount(viewingDoc.content).toLocaleString()} palavras // ConteÃºdo integral</p>
