@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useApp } from '../../context/AppContext';
 import { db } from '../../services/firebase';
 import {
-  collection, onSnapshot, query, orderBy,
+  collection, onSnapshot, query, orderBy, where,
   addDoc, serverTimestamp, deleteDoc, doc
 } from 'firebase/firestore';
 
@@ -29,6 +30,8 @@ const STATUS_CONFIG = {
 };
 
 const TrainingParticipants: React.FC = () => {
+  const { state } = useApp();
+  const tenantId = state.user?.tenantId || '';
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [checklists, setChecklists] = useState<Checklist[]>([]);
   const [showForm, setShowForm] = useState(false);
@@ -47,7 +50,7 @@ const TrainingParticipants: React.FC = () => {
 
   // Carrega participantes do Firestore
   useEffect(() => {
-    const q = query(collection(db, 'treinamentosParticipantes'), orderBy('createdAt', 'desc'));
+    const q = query(collection(db, 'treinamentosParticipantes'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'));
     const unsub = onSnapshot(q, snap =>
       setParticipants(snap.docs.map(d => ({ id: d.id, ...d.data() } as Participant)))
     );
@@ -56,7 +59,7 @@ const TrainingParticipants: React.FC = () => {
 
   // Carrega checklists (treinamentos mapeados)
   useEffect(() => {
-    const q = query(collection(db, 'checklists'), orderBy('createdAt', 'desc'));
+    const q = query(collection(db, 'checklists'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'));
     const unsub = onSnapshot(q, snap =>
       setChecklists(snap.docs.map(d => ({ id: d.id, ...d.data() } as Checklist)))
     );
@@ -69,6 +72,7 @@ const TrainingParticipants: React.FC = () => {
     try {
       await addDoc(collection(db, 'treinamentosParticipantes'), {
         ...form,
+        tenantId,
         createdAt: serverTimestamp(),
       });
       setForm({ nomeColaborador: '', cargo: '', treinamento: '', dataConclusao: '', status: 'concluído', observacao: '' });

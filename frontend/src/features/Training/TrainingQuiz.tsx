@@ -91,13 +91,13 @@ const TrainingQuiz: React.FC<Props> = ({ checklists }) => {
   const [createMode, setCreateMode] = useState<'ia' | 'manual'>('ia');
 
   useEffect(() => {
-    const q = query(collection(db, 'treinamentosQuizzes'), orderBy('createdAt', 'desc'));
+    const q = query(collection(db, 'treinamentosQuizzes'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'));
     const unsub = onSnapshot(q, snap => setQuizzes(snap.docs.map(d => ({ id: d.id, ...d.data() } as Quiz))));
     return () => unsub();
   }, []);
 
   useEffect(() => {
-    const q = query(collection(db, 'treinamentosQuizResults'), orderBy('createdAt', 'desc'));
+    const q = query(collection(db, 'treinamentosQuizResults'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'));
     const unsub = onSnapshot(q, snap => setResults(snap.docs.map(d => ({ id: d.id, ...d.data() } as QuizResult))));
     return () => unsub();
   }, []);
