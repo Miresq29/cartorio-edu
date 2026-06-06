@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { GeminiService } from '../../services/geminiService';
@@ -21,29 +21,29 @@ interface ToneConfig {
 }
 
 const PLATFORMS: PlatformConfig[] = [
-  { id: 'linkedin',  label: 'LinkedIn',   icon: 'fa-linkedin',    color: 'blue',   charLimit: 'atÃ© 1300 chars' },
-  { id: 'instagram', label: 'Instagram',  icon: 'fa-instagram',   color: 'pink',   charLimit: 'atÃ© 300 chars'  },
+  { id: 'linkedin',  label: 'LinkedIn',   icon: 'fa-linkedin',    color: 'blue',   charLimit: 'até 1300 chars' },
+  { id: 'instagram', label: 'Instagram',  icon: 'fa-instagram',   color: 'pink',   charLimit: 'até 300 chars'  },
   { id: 'whatsapp',  label: 'WhatsApp',   icon: 'fa-whatsapp',    color: 'emerald', charLimit: 'mensagem curta' },
   { id: 'email',     label: 'E-mail',     icon: 'fa-envelope',    color: 'amber',  charLimit: 'assunto + corpo' },
 ];
 
 const TONES: ToneConfig[] = [
-  { id: 'formal',       label: 'Formal',       desc: 'Linguagem institucional e tÃ©cnica'           },
+  { id: 'formal',       label: 'Formal',       desc: 'Linguagem institucional e técnica'           },
   { id: 'informativo',  label: 'Informativo',   desc: 'Claro, direto e objetivo'                   },
-  { id: 'motivacional', label: 'Motivacional',  desc: 'Engajador, inspira aÃ§Ã£o'                    },
-  { id: 'educativo',    label: 'Educativo',     desc: 'Ensina, esclarece dÃºvidas comuns'           },
+  { id: 'motivacional', label: 'Motivacional',  desc: 'Engajador, inspira ação'                    },
+  { id: 'educativo',    label: 'Educativo',     desc: 'Ensina, esclarece dúvidas comuns'           },
   { id: 'comemorativo', label: 'Comemorativo',  desc: 'Celebra conquistas e datas especiais'       },
 ];
 
 const TOPIC_SUGGESTIONS = [
   'Novo provimento CNJ em vigor',
-  'Prazo para registro de imÃ³veis',
-  'AutenticaÃ§Ã£o de documentos digitais',
-  'Escritura pÃºblica de divÃ³rcio consensual',
-  'Dicas de seguranÃ§a jurÃ­dica em negÃ³cios',
-  'Abertura de novo horÃ¡rio de atendimento',
-  'CertificaÃ§Ã£o digital para cartÃ³rios',
-  'InventÃ¡rio extrajudicial: quando usar',
+  'Prazo para registro de imóveis',
+  'Autenticação de documentos digitais',
+  'Escritura pública de divórcio consensual',
+  'Dicas de segurança jurídica em negócios',
+  'Abertura de novo horário de atendimento',
+  'Certificação digital para cartórios',
+  'Inventário extrajudicial: quando usar',
 ];
 
 const CampanhasView: React.FC = () => {
@@ -75,7 +75,7 @@ const CampanhasView: React.FC = () => {
     setPosts({});
     setActivePlatformTab(null);
 
-    const context = `CartÃ³rio: ${state.user?.tenantId || 'MJ Consultoria'} | Operador: ${state.user?.name || 'UsuÃ¡rio'}`;
+    const context = `Cartório: ${state.user?.tenantId || 'MJ Consultoria'} | Operador: ${state.user?.name || 'Usuário'}`;
     try {
       const result = await GeminiService.generateCampaignPosts(
         topic,
@@ -88,7 +88,7 @@ const CampanhasView: React.FC = () => {
         setActivePlatformTab(selectedPlatforms[0]);
         showToast('Posts gerados com sucesso!', 'success');
       } else {
-        showToast('NÃ£o foi possÃ­vel gerar os posts. Tente novamente.', 'error');
+        showToast('Não foi possível gerar os posts. Tente novamente.', 'error');
       }
     } catch (e: any) {
       showToast(e?.message || 'Erro ao gerar posts.', 'error');
@@ -113,20 +113,20 @@ const CampanhasView: React.FC = () => {
   const activePlatformConfig = PLATFORMS.find(p => p.id === activePlatformTab);
 
   return (
-    <div className="p-8 space-y-6 bg-[#0D1B3E] min-h-screen animate-in fade-in">
+    <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
 
       <header>
         <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">
-          Campanhas de <span className="text-pink-500">ComunicaÃ§Ã£o</span>
+          Campanhas de <span className="text-pink-500">Comunicação</span>
         </h2>
         <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">
-          MJ Consultoria // Posts e ConteÃºdo para Redes Sociais com IA
+          MJ Consultoria // Posts e Conteúdo para Redes Sociais com IA
         </p>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        {/* Painel de ConfiguraÃ§Ã£o */}
+        {/* Painel de Configuração */}
         <div className="space-y-5">
 
           {/* Tema */}
@@ -137,12 +137,12 @@ const CampanhasView: React.FC = () => {
             <input
               value={topic}
               onChange={e => setTopic(e.target.value)}
-              placeholder="Ex: Novo prazo para registro de imÃ³veis..."
+              placeholder="Ex: Novo prazo para registro de imóveis..."
               className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-pink-500 transition-colors"
             />
-            {/* SugestÃµes rÃ¡pidas */}
+            {/* Sugestões rápidas */}
             <div className="space-y-1">
-              <p className="text-[9px] text-slate-600 font-bold uppercase tracking-widest">SugestÃµes:</p>
+              <p className="text-[9px] text-slate-600 font-bold uppercase tracking-widest">Sugestões:</p>
               <div className="flex flex-wrap gap-2">
                 {TOPIC_SUGGESTIONS.map((s, i) => (
                   <button type="button" key={i} onClick={() => setTopic(s)}
@@ -192,7 +192,7 @@ const CampanhasView: React.FC = () => {
           {/* Tom */}
           <div className="bg-white border border-slate-200 rounded-[24px] p-5 space-y-3">
             <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
-              3. Tom da comunicaÃ§Ã£o
+              3. Tom da comunicação
             </h4>
             <div className="space-y-2">
               {TONES.map(t => (
@@ -220,13 +220,13 @@ const CampanhasView: React.FC = () => {
             <textarea
               value={additionalContext}
               onChange={e => setAdditionalContext(e.target.value)}
-              placeholder="Ex: campanha do mÃªs do consumidor, novo endereÃ§o, promoÃ§Ã£o de prazo..."
+              placeholder="Ex: campanha do mês do consumidor, novo endereço, promoção de prazo..."
               rows={3}
               className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-pink-500 resize-none transition-colors"
             />
           </div>
 
-          {/* BotÃ£o gerar */}
+          {/* Botão gerar */}
           <button type="button" onClick={generatePosts} disabled={isLoading || !topic.trim() || selectedPlatforms.length === 0}
             className="w-full bg-pink-600 hover:bg-pink-500 disabled:opacity-50 text-[#0A1628] py-4 rounded-2xl text-sm font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3">
             {isLoading
@@ -300,7 +300,7 @@ const CampanhasView: React.FC = () => {
                   </div>
                 </div>
 
-                {/* ConteÃºdo do post */}
+                {/* Conteúdo do post */}
                 <div className="flex-1 bg-slate-900/50 border border-slate-200 rounded-2xl p-5 overflow-y-auto custom-scrollbar">
                   <p className="text-sm text-[#0A1628] whitespace-pre-wrap leading-relaxed">{posts[activePlatformTab]}</p>
                 </div>
@@ -331,7 +331,7 @@ const CampanhasView: React.FC = () => {
               <div className="flex-1 flex flex-col items-center justify-center text-center opacity-30 space-y-4">
                 <i className="fa-solid fa-bullhorn text-6xl text-slate-600"></i>
                 <div>
-                  <p className="text-slate-500 text-sm font-black uppercase tracking-widest">Seus posts aparecerÃ£o aqui</p>
+                  <p className="text-slate-500 text-sm font-black uppercase tracking-widest">Seus posts aparecerão aqui</p>
                   <p className="text-slate-600 text-[10px] mt-1">Configure o tema, plataformas e tom ao lado</p>
                 </div>
               </div>

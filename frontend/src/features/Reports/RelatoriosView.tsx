@@ -1,5 +1,5 @@
-﻿// frontend/src/features/Reports/RelatoriosView.tsx
-// RelatÃ³rios completos â€” KPIs, grÃ¡ficos recharts, evidÃªncias exportÃ¡veis
+// frontend/src/features/Reports/RelatoriosView.tsx
+// Relatórios completos — KPIs, gráficos recharts, evidências exportáveis
 
 import React, { useState, useEffect, useMemo } from 'react';
 import * as XLSX from 'xlsx';
@@ -20,7 +20,7 @@ import * as XLSX from 'xlsx';
 import * as XLSX from 'xlsx';
 import { useApp } from '../../context/AppContext';
 
-// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface QuizResult {
   id: string;
@@ -64,12 +64,12 @@ interface Certificado {
 
 type Tab = 'visao_geral' | 'colaboradores' | 'trilhas' | 'evidencias';
 
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function pct(a: number, b: number) { return b === 0 ? 0 : Math.round((a / b) * 100); }
 
 function formatDate(ts: any): string {
-  if (!ts) return 'â€“';
+  if (!ts) return '–';
   const d = ts?.toDate ? ts.toDate() : new Date(ts);
   return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' }) +
     ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -83,7 +83,7 @@ function getMonth(ts: any): string {
 
 const COLORS = ['#4F46E5', '#059669', '#D97706', '#DC2626', '#7C3AED', '#0891B2'];
 
-// â”€â”€â”€ Stat Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Stat Card ────────────────────────────────────────────────────────────────
 
 const StatCard: React.FC<{
   label: string; value: string | number; sub?: string;
@@ -101,7 +101,7 @@ const StatCard: React.FC<{
             ? 'bg-emerald-50 text-emerald-600'
             : 'bg-red-50 text-red-500'
         }`}>
-          {trend.value >= 0 ? 'â†‘' : 'â†“'} {Math.abs(trend.value)}% {trend.label}
+          {trend.value >= 0 ? '↑' : '↓'} {Math.abs(trend.value)}% {trend.label}
         </span>
       )}
     </div>
@@ -111,7 +111,7 @@ const StatCard: React.FC<{
   </div>
 );
 
-// â”€â”€â”€ Custom Tooltip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Custom Tooltip ───────────────────────────────────────────────────────────
 
 const CustomTooltip: React.FC<any> = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
@@ -120,14 +120,14 @@ const CustomTooltip: React.FC<any> = ({ active, payload, label }) => {
       <p className="font-black text-slate-700 mb-1">{label}</p>
       {payload.map((p: any, i: number) => (
         <p key={i} style={{ color: p.color }} className="font-bold">
-          {p.name}: {p.value}{p.name?.includes('%') || p.name === 'MÃ©dia' ? '%' : ''}
+          {p.name}: {p.value}{p.name?.includes('%') || p.name === 'Média' ? '%' : ''}
         </p>
       ))}
     </div>
   );
 };
 
-// â”€â”€â”€ Main View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Main View ────────────────────────────────────────────────────────────────
 
 const RelatoriosView: React.FC = () => {
   const { state } = useApp();
@@ -159,7 +159,7 @@ const RelatoriosView: React.FC = () => {
     return () => { u1(); u2(); u3(); u4(); };
   }, [tenantId]);
 
-  // Filtrar por perÃ­odo
+  // Filtrar por período
   const periodoMs = Number(periodo) * 24 * 60 * 60 * 1000;
   const cutoff = Date.now() - periodoMs;
   const filteredResults = quizResults.filter(r => {
@@ -177,7 +177,7 @@ const RelatoriosView: React.FC = () => {
     : 0;
   const totalCerts = certificados.length;
 
-  // GrÃ¡fico 1: AprovaÃ§Ã£o por trilha
+  // Gráfico 1: Aprovação por trilha
   const porTrilha = useMemo(() => {
     const map: Record<string, { total: number; aprovados: number; soma: number }> = {};
     filteredResults.forEach(r => {
@@ -189,16 +189,16 @@ const RelatoriosView: React.FC = () => {
     });
     return Object.entries(map)
       .map(([name, v]) => ({
-        name: name.length > 18 ? name.slice(0, 16) + 'â€¦' : name,
+        name: name.length > 18 ? name.slice(0, 16) + '…' : name,
         'Taxa (%)': pct(v.aprovados, v.total),
-        'MÃ©dia': Math.round(v.soma / v.total),
+        'Média': Math.round(v.soma / v.total),
         testes: v.total,
       }))
       .sort((a, b) => b['Taxa (%)'] - a['Taxa (%)'])
       .slice(0, 8);
   }, [filteredResults]);
 
-  // GrÃ¡fico 2: Atividade por mÃªs
+  // Gráfico 2: Atividade por mês
   const porMes = useMemo(() => {
     const map: Record<string, { testes: number; aprovados: number }> = {};
     filteredResults.forEach(r => {
@@ -217,7 +217,7 @@ const RelatoriosView: React.FC = () => {
       }));
   }, [filteredResults]);
 
-  // GrÃ¡fico 3: DistribuiÃ§Ã£o de notas
+  // Gráfico 3: Distribuição de notas
   const distribuicaoNotas = useMemo(() => {
     const faixas = [
       { name: '0-49', min: 0, max: 49 },
@@ -256,13 +256,13 @@ const RelatoriosView: React.FC = () => {
   const handlePrint = () => { window.print(); };
 
   const exportCSV = () => {
-    const rows = ['Colaborador,Trilha,MÃ³dulo,Data,Nota,Status,Tipo'];
+    const rows = ['Colaborador,Trilha,Módulo,Data,Nota,Status,Tipo'];
     filteredResults.forEach(r => {
       rows.push([
         r.colaborador, r.trailTitle || '', r.moduleTitle || '',
         formatDate(r.createdAt), r.nota + '%',
         r.aprovado ? 'Aprovado' : 'Reprovado',
-        r.ia ? 'IA' : 'PadrÃ£o'
+        r.ia ? 'IA' : 'Padrão'
       ].join(','));
     });
     const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
@@ -275,30 +275,30 @@ const RelatoriosView: React.FC = () => {
   };
 
   const ABAS: { id: Tab; label: string; icon: string }[] = [
-    { id: 'visao_geral',   label: 'VisÃ£o Geral',    icon: 'fa-chart-pie'    },
+    { id: 'visao_geral',   label: 'Visão Geral',    icon: 'fa-chart-pie'    },
     { id: 'colaboradores', label: 'Colaboradores',  icon: 'fa-users'        },
     { id: 'trilhas',       label: 'Por Trilha',     icon: 'fa-road'         },
-    { id: 'evidencias',    label: 'EvidÃªncias',     icon: 'fa-file-lines'   },
+    { id: 'evidencias',    label: 'Evidências',     icon: 'fa-file-lines'   },
   ];
 
   return (
-    <div className="min-h-screen bg-[#0D1B3E]">
+    <div className="min-h-screen bg-slate-50">
       <div className="max-w-7xl mx-auto p-6 space-y-6">
 
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-black text-[#0A1628]">RelatÃ³rios de Treinamento</h2>
-            <p className="text-sm text-slate-500 mt-0.5">Desempenho Â· EvidÃªncias Â· ExportaÃ§Ã£o</p>
+            <h2 className="text-2xl font-black text-[#0A1628]">Relatórios de Treinamento</h2>
+            <p className="text-sm text-slate-500 mt-0.5">Desempenho · Evidências · Exportação</p>
           </div>
           <div className="flex items-center gap-3">
             <select value={periodo} onChange={e => setPeriodo(e.target.value)}
               className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none focus:border-[#C9A84C] shadow-sm">
-              <option value="7">Ãšltimos 7 dias</option>
-              <option value="30">Ãšltimos 30 dias</option>
-              <option value="90">Ãšltimos 90 dias</option>
-              <option value="365">Ãšltimo ano</option>
-              <option value="99999">Todo o perÃ­odo</option>
+              <option value="7">Últimos 7 dias</option>
+              <option value="30">Últimos 30 dias</option>
+              <option value="90">Últimos 90 dias</option>
+              <option value="365">Último ano</option>
+              <option value="99999">Todo o período</option>
             </select>
             <button onClick={handlePrint} className="flex items-center gap-2 bg-white border border-slate-200 hover:border-slate-400 text-slate-600 px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm"><i className="fa-solid fa-print text-xs"></i>Imprimir</button><button onClick={exportCSV}
               className="flex items-center gap-2 bg-[#C9A84C] hover:bg-[#A8863C] text-[#0A1628] px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm">
@@ -309,9 +309,9 @@ const RelatoriosView: React.FC = () => {
 
         {/* KPIs */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard label="Total de Testes"   value={totalTestes}      icon="fa-clipboard-check"  color="#4F46E5" sub={`no perÃ­odo selecionado`} />
-          <StatCard label="Taxa de AprovaÃ§Ã£o" value={`${taxaAprovacao}%`} icon="fa-circle-check"  color="#059669" sub={`${totalAprovados} aprovaÃ§Ãµes`} />
-          <StatCard label="MÃ©dia Geral"       value={`${mediaGeral}%`} icon="fa-chart-bar"        color="#D97706" sub="mÃ©dia das notas" />
+          <StatCard label="Total de Testes"   value={totalTestes}      icon="fa-clipboard-check"  color="#4F46E5" sub={`no período selecionado`} />
+          <StatCard label="Taxa de Aprovação" value={`${taxaAprovacao}%`} icon="fa-circle-check"  color="#059669" sub={`${totalAprovados} aprovações`} />
+          <StatCard label="Média Geral"       value={`${mediaGeral}%`} icon="fa-chart-bar"        color="#D97706" sub="média das notas" />
           <StatCard label="Certificados"      value={totalCerts}       icon="fa-certificate"      color="#7C3AED" sub="emitidos no total" />
         </div>
 
@@ -332,17 +332,17 @@ const RelatoriosView: React.FC = () => {
 
           <div className="p-6">
 
-            {/* â”€â”€ VISÃƒO GERAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+            {/* ── VISÃO GERAL ─────────────────────────────────────────────── */}
             {tab === 'visao_geral' && (
               <div className="space-y-6">
 
-                {/* Linha 1: Atividade mensal + DistribuiÃ§Ã£o */}
+                {/* Linha 1: Atividade mensal + Distribuição */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {/* Atividade mensal */}
                   <div className="lg:col-span-2 space-y-3">
                     <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Atividade Mensal</p>
                     {porMes.length === 0 ? (
-                      <div className="h-48 flex items-center justify-center text-slate-500 text-sm">Sem dados no perÃ­odo</div>
+                      <div className="h-48 flex items-center justify-center text-slate-500 text-sm">Sem dados no período</div>
                     ) : (
                       <ResponsiveContainer width="100%" height={200}>
                         <LineChart data={porMes} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
@@ -358,9 +358,9 @@ const RelatoriosView: React.FC = () => {
                     )}
                   </div>
 
-                  {/* DistribuiÃ§Ã£o de notas */}
+                  {/* Distribuição de notas */}
                   <div className="space-y-3">
-                    <p className="text-xs font-black text-slate-500 uppercase tracking-widest">DistribuiÃ§Ã£o de Notas</p>
+                    <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Distribuição de Notas</p>
                     <ResponsiveContainer width="100%" height={200}>
                       <PieChart>
                         <Pie data={distribuicaoNotas} cx="50%" cy="50%" innerRadius={50} outerRadius={80}
@@ -384,11 +384,11 @@ const RelatoriosView: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Linha 2: AprovaÃ§Ã£o por trilha */}
+                {/* Linha 2: Aprovação por trilha */}
                 <div className="space-y-3">
-                  <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Taxa de AprovaÃ§Ã£o por Trilha</p>
+                  <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Taxa de Aprovação por Trilha</p>
                   {porTrilha.length === 0 ? (
-                    <div className="h-48 flex items-center justify-center text-slate-500 text-sm">Sem dados no perÃ­odo</div>
+                    <div className="h-48 flex items-center justify-center text-slate-500 text-sm">Sem dados no período</div>
                   ) : (
                     <ResponsiveContainer width="100%" height={220}>
                       <BarChart data={porTrilha} margin={{ top: 5, right: 10, left: -20, bottom: 40 }}>
@@ -400,18 +400,18 @@ const RelatoriosView: React.FC = () => {
                         <Bar dataKey="Taxa (%)" radius={[4, 4, 0, 0]}>
                           {porTrilha.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                         </Bar>
-                        <Bar dataKey="MÃ©dia" fill="#94a3b8" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="Média" fill="#94a3b8" radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   )}
                 </div>
 
-                {/* Resumo rÃ¡pido */}
+                {/* Resumo rápido */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {[
                     { label: 'Colaboradores ativos', value: colab.filter(u => filteredResults.some(r => r.userId === u.id || r.colaborador === u.name)).length },
                     { label: 'Testes com IA', value: filteredResults.filter(r => r.ia).length },
-                    { label: 'ReprovaÃ§Ãµes', value: filteredResults.filter(r => !r.aprovado).length },
+                    { label: 'Reprovações', value: filteredResults.filter(r => !r.aprovado).length },
                     { label: 'Trilhas ativas', value: new Set(progresso.map(p => p.trilhaId)).size },
                   ].map((s, i) => (
                     <div key={i} className="bg-[#0D1B3E] border border-slate-200 rounded-xl p-4 text-center">
@@ -423,7 +423,7 @@ const RelatoriosView: React.FC = () => {
               </div>
             )}
 
-            {/* â”€â”€ COLABORADORES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+            {/* ── COLABORADORES ────────────────────────────────────────────── */}
             {tab === 'colaboradores' && (
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
@@ -436,7 +436,7 @@ const RelatoriosView: React.FC = () => {
                   <table className="w-full text-xs">
                     <thead>
                       <tr className="bg-[#0D1B3E] border-b border-slate-200">
-                        {['Colaborador', 'Cargo', 'Testes', 'AprovaÃ§Ãµes', 'Taxa', 'MÃ©dia', 'Trilhas', 'Certs', 'Ãšltimo Teste'].map(h => (
+                        {['Colaborador', 'Cargo', 'Testes', 'Aprovações', 'Taxa', 'Média', 'Trilhas', 'Certs', 'Último Teste'].map(h => (
                           <th key={h} className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
                         ))}
                       </tr>
@@ -448,7 +448,7 @@ const RelatoriosView: React.FC = () => {
                       {porColab.map(c => (
                         <tr key={c.id} className="border-b border-slate-100 hover:bg-[#0D1B3E] transition-all">
                           <td className="p-3 font-bold text-[#0A1628]">{c.name}</td>
-                          <td className="p-3 text-slate-500">{c.cargo || 'â€“'}</td>
+                          <td className="p-3 text-slate-500">{c.cargo || '–'}</td>
                           <td className="p-3 text-slate-700 font-bold">{c.testes}</td>
                           <td className="p-3 text-emerald-600 font-bold">{c.aprovados}</td>
                           <td className="p-3">
@@ -467,14 +467,14 @@ const RelatoriosView: React.FC = () => {
                           <td className="p-3">
                             {c.certs > 0
                               ? <span className="bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-black px-2 py-0.5 rounded-lg">{c.certs} cert.</span>
-                              : <span className="text-slate-500">â€“</span>}
+                              : <span className="text-slate-500">–</span>}
                           </td>
                           <td className="p-3 text-slate-500 whitespace-nowrap">
                             {c.ultimo ? (
                               <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg ${
                                 c.ultimo.aprovado ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'
-                              }`}>{c.ultimo.nota}% Â· {c.ultimo.aprovado ? 'Aprov.' : 'Reprov.'}</span>
-                            ) : 'â€“'}
+                              }`}>{c.ultimo.nota}% · {c.ultimo.aprovado ? 'Aprov.' : 'Reprov.'}</span>
+                            ) : '–'}
                           </td>
                         </tr>
                       ))}
@@ -484,24 +484,24 @@ const RelatoriosView: React.FC = () => {
               </div>
             )}
 
-            {/* â”€â”€ POR TRILHA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+            {/* ── POR TRILHA ───────────────────────────────────────────────── */}
             {tab === 'trilhas' && (
               <div className="space-y-4">
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs">
                     <thead>
                       <tr className="bg-[#0D1B3E] border-b border-slate-200">
-                        {['Trilha', 'Total de Testes', 'AprovaÃ§Ãµes', 'Taxa de AprovaÃ§Ã£o', 'MÃ©dia', 'Testes c/ IA'].map(h => (
+                        {['Trilha', 'Total de Testes', 'Aprovações', 'Taxa de Aprovação', 'Média', 'Testes c/ IA'].map(h => (
                           <th key={h} className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {porTrilha.length === 0 && (
-                        <tr><td colSpan={6} className="text-center p-8 text-slate-500">Sem dados no perÃ­odo.</td></tr>
+                        <tr><td colSpan={6} className="text-center p-8 text-slate-500">Sem dados no período.</td></tr>
                       )}
                       {porTrilha.map((t, i) => {
-                        const raw = filteredResults.filter(r => (r.trailTitle || 'Sem trilha') === t.name || (r.trailTitle || 'Sem trilha').startsWith(t.name.replace('â€¦', '')));
+                        const raw = filteredResults.filter(r => (r.trailTitle || 'Sem trilha') === t.name || (r.trailTitle || 'Sem trilha').startsWith(t.name.replace('…', '')));
                         const ia = raw.filter(r => r.ia).length;
                         return (
                           <tr key={i} className="border-b border-slate-100 hover:bg-[#0D1B3E] transition-all">
@@ -521,11 +521,11 @@ const RelatoriosView: React.FC = () => {
                                 </span>
                               </div>
                             </td>
-                            <td className="p-3 font-bold text-slate-700">{t['MÃ©dia']}%</td>
+                            <td className="p-3 font-bold text-slate-700">{t['Média']}%</td>
                             <td className="p-3">
                               {ia > 0
-                                ? <span className="bg-white text-[#C9A84C] text-[10px] font-black px-2 py-0.5 rounded-lg border border-indigo-100">âœ¨ {ia}</span>
-                                : <span className="text-slate-500">â€“</span>}
+                                ? <span className="bg-white text-[#C9A84C] text-[10px] font-black px-2 py-0.5 rounded-lg border border-indigo-100">✨ {ia}</span>
+                                : <span className="text-slate-500">–</span>}
                             </td>
                           </tr>
                         );
@@ -536,13 +536,13 @@ const RelatoriosView: React.FC = () => {
               </div>
             )}
 
-            {/* â”€â”€ EVIDÃŠNCIAS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+            {/* ── EVIDÊNCIAS ───────────────────────────────────────────────── */}
             {tab === 'evidencias' && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-black text-slate-700">
-                    {filteredResults.length} registros no perÃ­odo
-                    <span className="text-slate-500 font-normal ml-2">â€” vÃ¡lidos como evidÃªncia para dossiÃª CNJ (Provimentos 149, 161 e 213)</span>
+                    {filteredResults.length} registros no período
+                    <span className="text-slate-500 font-normal ml-2">— válidos como evidência para dossiê CNJ (Provimentos 149, 161 e 213)</span>
                   </p>
                   <button onClick={handlePrint} className="flex items-center gap-2 bg-white border border-slate-200 hover:border-slate-400 text-slate-600 px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm"><i className="fa-solid fa-print text-xs"></i>Imprimir</button><button onClick={exportCSV}
                     className="flex items-center gap-2 bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-[#C9A84C] px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-sm">
@@ -553,20 +553,20 @@ const RelatoriosView: React.FC = () => {
                   <table className="w-full text-xs">
                     <thead>
                       <tr className="bg-[#0D1B3E] border-b border-slate-200">
-                        {['Colaborador', 'Trilha', 'MÃ³dulo', 'Data/Hora', 'Nota', 'Status', 'Tipo'].map(h => (
+                        {['Colaborador', 'Trilha', 'Módulo', 'Data/Hora', 'Nota', 'Status', 'Tipo'].map(h => (
                           <th key={h} className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {filteredResults.length === 0 && (
-                        <tr><td colSpan={7} className="text-center p-8 text-slate-500">Nenhum registro no perÃ­odo.</td></tr>
+                        <tr><td colSpan={7} className="text-center p-8 text-slate-500">Nenhum registro no período.</td></tr>
                       )}
                       {filteredResults.map(r => (
                         <tr key={r.id} className="border-b border-slate-100 hover:bg-[#0D1B3E] transition-all">
                           <td className="p-3 font-bold text-[#0A1628]">{r.colaborador}</td>
-                          <td className="p-3 text-slate-600 max-w-[160px] truncate">{r.trailTitle || 'â€“'}</td>
-                          <td className="p-3 text-slate-500 max-w-[140px] truncate">{r.moduleTitle || 'â€“'}</td>
+                          <td className="p-3 text-slate-600 max-w-[160px] truncate">{r.trailTitle || '–'}</td>
+                          <td className="p-3 text-slate-500 max-w-[140px] truncate">{r.moduleTitle || '–'}</td>
                           <td className="p-3 text-slate-500 whitespace-nowrap">{formatDate(r.createdAt)}</td>
                           <td className="p-3 font-black" style={{ color: r.nota >= 75 ? '#059669' : '#DC2626' }}>{r.nota}%</td>
                           <td className="p-3">
@@ -578,8 +578,8 @@ const RelatoriosView: React.FC = () => {
                           </td>
                           <td className="p-3">
                             {r.ia
-                              ? <span className="bg-white text-[#C9A84C] text-[10px] font-black px-2 py-0.5 rounded-lg border border-indigo-100">âœ¨ IA</span>
-                              : <span className="text-slate-500 text-[10px]">PadrÃ£o</span>}
+                              ? <span className="bg-white text-[#C9A84C] text-[10px] font-black px-2 py-0.5 rounded-lg border border-indigo-100">✨ IA</span>
+                              : <span className="text-slate-500 text-[10px]">Padrão</span>}
                           </td>
                         </tr>
                       ))}

@@ -1,24 +1,24 @@
-﻿
+
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 
 const MasterActivitiesView: React.FC = () => {
-  // CORREÃ‡ÃƒO: Removido dispatch do contexto simplificado
+  // CORREÇÃO: Removido dispatch do contexto simplificado
   const { state } = useApp();
   const { showToast } = useToast();
   const [name, setName] = useState('');
 
-  // Estado local para refletir as mudanÃ§as na interface sem o dispatch
+  // Estado local para refletir as mudanças na interface sem o dispatch
   const [localTemplates, setLocalTemplates] = useState<any[]>([]);
 
-  // CORREÃ‡ÃƒO: Acesso seguro e unificado aos templates de checklist
+  // CORREÇÃO: Acesso seguro e unificado aos templates de checklist
   const allTemplates = [...((state as any).checklistTemplates || []), ...localTemplates];
 
   const handleCreateTemplate = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // CORREÃ‡ÃƒO: Ajuste dos campos para bater com o tipo ChecklistTemplate (title e items)
+    // CORREÇÃO: Ajuste dos campos para bater com o tipo ChecklistTemplate (title e items)
     const newTemplate = {
       id: `tmpl-${Date.now()}`,
       title: name,
@@ -26,18 +26,18 @@ const MasterActivitiesView: React.FC = () => {
     };
 
     setLocalTemplates(prev => [...prev, newTemplate]);
-    showToast(`Modelo "${name}" criado no catÃ¡logo local!`, "success");
+    showToast(`Modelo "${name}" criado no catálogo local!`, "success");
     setName('');
   };
 
   return (
-    <div className="p-12 min-h-full bg-[#0D1B3E] animate-in fade-in space-y-12">
+    <div className="p-12 min-h-full bg-slate-50 animate-in fade-in space-y-12">
       <header>
         <h2 className="text-4xl font-black text-[#0A1628] italic uppercase tracking-tighter">
           Atividades <span className="text-emerald-500">Master</span>
         </h2>
         <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.4em] mt-2">
-          DefiniÃ§Ã£o de PadrÃµes de Conformidade // MJ Consultoria
+          Definição de Padrões de Conformidade // MJ Consultoria
         </p>
       </header>
 
@@ -53,15 +53,15 @@ const MasterActivitiesView: React.FC = () => {
             />
           </div>
           <button type="submit" className="w-full bg-emerald-600 text-[#0A1628] font-black py-6 rounded-3xl uppercase text-[11px] tracking-widest shadow-xl hover:bg-emerald-500 transition-all active:scale-[0.98]">
-            Salvar no CatÃ¡logo Master
+            Salvar no Catálogo Master
           </button>
         </form>
 
         <div className="bg-white border border-slate-200 rounded-[40px] p-10 space-y-6 shadow-lg">
-          <h3 className="text-slate-500 font-bold uppercase text-[10px] tracking-[0.3em] px-2">CatÃ¡logo de PadrÃµes</h3>
+          <h3 className="text-slate-500 font-bold uppercase text-[10px] tracking-[0.3em] px-2">Catálogo de Padrões</h3>
           <div className="space-y-3 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
             {allTemplates.length === 0 && (
-              <p className="text-slate-700 text-xs font-bold uppercase text-center py-10 italic">Nenhum modelo padrÃ£o definido.</p>
+              <p className="text-slate-700 text-xs font-bold uppercase text-center py-10 italic">Nenhum modelo padrão definido.</p>
             )}
             {allTemplates.map((ct: any) => (
               <div key={ct.id} className="p-5 bg-[#0D1B3E] border border-slate-200 rounded-2xl flex items-center gap-4 group hover:border-emerald-500/30 transition-all">

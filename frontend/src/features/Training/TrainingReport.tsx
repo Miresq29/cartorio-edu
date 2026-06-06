@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { db } from '../../services/firebase';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 
@@ -8,7 +8,7 @@ interface Participant {
   cargo: string;
   treinamento: string;
   dataConclusao: string;
-  status: 'concluÃ­do' | 'pendente' | 'vencido';
+  status: 'concluído' | 'pendente' | 'vencido';
   observacao?: string;
 }
 
@@ -58,7 +58,7 @@ const TrainingReport: React.FC = () => {
 
   // Stats
   const total = participants.length;
-  const concluidos = participants.filter(p => p.status === 'concluÃ­do').length;
+  const concluidos = participants.filter(p => p.status === 'concluído').length;
   const taxaAprovacao = quizResults.length > 0
     ? Math.round((quizResults.filter(r => r.aprovado).length / quizResults.length) * 100) : 0;
   const mediaNotas = quizResults.length > 0
@@ -66,7 +66,7 @@ const TrainingReport: React.FC = () => {
 
   // ---- EXPORTAR CSV ----
   const exportCSV = () => {
-    const headers = ['Colaborador', 'Cargo', 'Treinamento', 'Data ConclusÃ£o', 'Status', 'Nota Prova', 'Aprovado na Prova'];
+    const headers = ['Colaborador', 'Cargo', 'Treinamento', 'Data Conclusão', 'Status', 'Nota Prova', 'Aprovado na Prova'];
     const rows = filtered.map(p => {
       const quiz = getQuiz(p.nomeColaborador, p.treinamento);
       return [
@@ -75,8 +75,8 @@ const TrainingReport: React.FC = () => {
         p.treinamento,
         new Date(p.dataConclusao + 'T00:00:00').toLocaleDateString('pt-BR'),
         p.status,
-        quiz ? `${quiz.nota}%` : 'Sem avaliaÃ§Ã£o',
-        quiz ? (quiz.aprovado ? 'Sim' : 'NÃ£o') : '-',
+        quiz ? `${quiz.nota}%` : 'Sem avaliação',
+        quiz ? (quiz.aprovado ? 'Sim' : 'Não') : '-',
       ];
     });
 
@@ -100,7 +100,7 @@ const TrainingReport: React.FC = () => {
 
     const rows = filtered.map(p => {
       const quiz = getQuiz(p.nomeColaborador, p.treinamento);
-      const statusColor = p.status === 'concluÃ­do' ? '#10b981' : p.status === 'pendente' ? '#f59e0b' : '#ef4444';
+      const statusColor = p.status === 'concluído' ? '#10b981' : p.status === 'pendente' ? '#f59e0b' : '#ef4444';
       return `
         <tr>
           <td>${p.nomeColaborador}</td>
@@ -110,7 +110,7 @@ const TrainingReport: React.FC = () => {
           <td style="color:${statusColor};font-weight:bold">${p.status.toUpperCase()}</td>
           <td>${quiz ? `${quiz.nota}%` : '-'}</td>
           <td style="color:${quiz?.aprovado ? '#10b981' : quiz ? '#ef4444' : '#6b7280'};font-weight:bold">
-            ${quiz ? (quiz.aprovado ? 'âœ“ SIM' : 'âœ— NÃƒO') : '-'}
+            ${quiz ? (quiz.aprovado ? '✓ SIM' : '✗ NÃO') : '-'}
           </td>
         </tr>`;
     }).join('');
@@ -120,7 +120,7 @@ const TrainingReport: React.FC = () => {
       <html>
       <head>
         <meta charset="utf-8">
-        <title>RelatÃ³rio de Treinamentos â€” MJ Consultoria</title>
+        <title>Relatório de Treinamentos — MJ Consultoria</title>
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
           body { font-family: Arial, sans-serif; color: #111; padding: 40px; font-size: 12px; }
@@ -142,13 +142,13 @@ const TrainingReport: React.FC = () => {
       <body>
         <div class="header">
           <h1>MJ Consultoria</h1>
-          <p>RelatÃ³rio de Treinamentos â€” GestÃ£o do Conhecimento</p>
+          <p>Relatório de Treinamentos — Gestão do Conhecimento</p>
         </div>
         <div class="stats">
           <div class="stat"><div class="stat-value">${total}</div><div class="stat-label">Total Registros</div></div>
-          <div class="stat"><div class="stat-value">${concluidos}</div><div class="stat-label">ConcluÃ­dos</div></div>
-          <div class="stat"><div class="stat-value">${taxaAprovacao}%</div><div class="stat-label">Taxa AprovaÃ§Ã£o</div></div>
-          <div class="stat"><div class="stat-value">${mediaNotas}%</div><div class="stat-label">MÃ©dia nas Provas</div></div>
+          <div class="stat"><div class="stat-value">${concluidos}</div><div class="stat-label">Concluídos</div></div>
+          <div class="stat"><div class="stat-value">${taxaAprovacao}%</div><div class="stat-label">Taxa Aprovação</div></div>
+          <div class="stat"><div class="stat-value">${mediaNotas}%</div><div class="stat-label">Média nas Provas</div></div>
         </div>
         <table>
           <thead>
@@ -160,7 +160,7 @@ const TrainingReport: React.FC = () => {
           <tbody>${rows}</tbody>
         </table>
         <div class="footer">
-          Gerado em ${new Date().toLocaleDateString('pt-BR')} Ã s ${new Date().toLocaleTimeString('pt-BR')} Â· MJ Consultoria Â· ${filtered.length} registros
+          Gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')} · MJ Consultoria · ${filtered.length} registros
         </div>
         <script>window.onload = () => { window.print(); window.onafterprint = () => window.close(); }</script>
       </body>
@@ -181,7 +181,7 @@ const TrainingReport: React.FC = () => {
       <html>
       <head>
         <meta charset="utf-8">
-        <title>Certificado â€” ${p.nomeColaborador}</title>
+        <title>Certificado — ${p.nomeColaborador}</title>
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
           body { font-family: Georgia, serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8fafc; }
@@ -205,20 +205,20 @@ const TrainingReport: React.FC = () => {
       <body>
         <div class="cert">
           <div class="org">MJ Consultoria</div>
-          <div class="subtitle">GestÃ£o do Conhecimento Notarial</div>
-          <div class="cert-title">Certificado de ConclusÃ£o</div>
+          <div class="subtitle">Gestão do Conhecimento Notarial</div>
+          <div class="cert-title">Certificado de Conclusão</div>
           <div class="label">Certificamos que</div>
           <div class="name">${p.nomeColaborador}</div>
           ${p.cargo ? `<div class="role">${p.cargo}</div>` : '<div style="margin-bottom:28px"></div>'}
-          <div class="training-label">concluiu com Ãªxito o treinamento</div>
+          <div class="training-label">concluiu com êxito o treinamento</div>
           <div class="training">${p.treinamento}</div>
           <div class="date">em ${new Date(p.dataConclusao + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}</div>
-          ${quiz ? `<div class="quiz-badge">AvaliaÃ§Ã£o de conhecimento: <strong>${quiz.nota}%</strong> â€” ${quiz.aprovado ? 'âœ“ Aprovado' : 'âœ— Reprovado'}</div>` : ''}
+          ${quiz ? `<div class="quiz-badge">Avaliação de conhecimento: <strong>${quiz.nota}%</strong> — ${quiz.aprovado ? '✓ Aprovado' : '✗ Reprovado'}</div>` : ''}
           <div class="signatures">
-            <div class="sig-line">ResponsÃ¡vel pelo Treinamento</div>
+            <div class="sig-line">Responsável pelo Treinamento</div>
             <div class="sig-line">MJ Consultoria</div>
           </div>
-          <div class="footer">Documento gerado em ${new Date().toLocaleDateString('pt-BR')} Â· ID: ${p.id}</div>
+          <div class="footer">Documento gerado em ${new Date().toLocaleDateString('pt-BR')} · ID: ${p.id}</div>
         </div>
         <script>window.onload = () => { window.print(); window.onafterprint = () => window.close(); }</script>
       </body>
@@ -234,9 +234,9 @@ const TrainingReport: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
           { label: 'Total Registros',   value: total,               icon: 'fa-users',        color: 'blue'    },
-          { label: 'ConcluÃ­dos',        value: concluidos,          icon: 'fa-circle-check',  color: 'emerald' },
-          { label: 'Taxa de AprovaÃ§Ã£o', value: `${taxaAprovacao}%`, icon: 'fa-trophy',        color: 'amber'   },
-          { label: 'MÃ©dia nas Provas',  value: `${mediaNotas}%`,    icon: 'fa-chart-line',    color: 'purple'  },
+          { label: 'Concluídos',        value: concluidos,          icon: 'fa-circle-check',  color: 'emerald' },
+          { label: 'Taxa de Aprovação', value: `${taxaAprovacao}%`, icon: 'fa-trophy',        color: 'amber'   },
+          { label: 'Média nas Provas',  value: `${mediaNotas}%`,    icon: 'fa-chart-line',    color: 'purple'  },
         ].map((stat, i) => (
           <div key={i} className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-4 space-y-2">
             <i className={`fa-solid ${stat.icon} text-${stat.color}-500 text-lg`}></i>
@@ -260,13 +260,13 @@ const TrainingReport: React.FC = () => {
           <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
             className="bg-slate-900 border border-slate-200 rounded-xl px-4 py-2 text-sm text-[#0A1628] outline-none focus:border-blue-500">
             <option value="todos">Todos os Status</option>
-            <option value="concluÃ­do">ConcluÃ­do</option>
+            <option value="concluído">Concluído</option>
             <option value="pendente">Pendente</option>
             <option value="vencido">Vencido</option>
           </select>
         </div>
 
-        {/* BotÃµes de exportaÃ§Ã£o */}
+        {/* Botões de exportação */}
         <div className="flex gap-2">
           <button onClick={exportCSV}
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest bg-emerald-600 hover:bg-emerald-500 text-[#0A1628] transition-all">
@@ -291,7 +291,7 @@ const TrainingReport: React.FC = () => {
         ) : (
           filtered.map(p => {
             const quiz = getQuiz(p.nomeColaborador, p.treinamento);
-            const statusColor = p.status === 'concluÃ­do' ? 'emerald' : p.status === 'pendente' ? 'amber' : 'red';
+            const statusColor = p.status === 'concluído' ? 'emerald' : p.status === 'pendente' ? 'amber' : 'red';
             return (
               <div key={p.id} className="bg-[#0D1B3E] border border-slate-200 hover:border-slate-200 rounded-2xl p-4 flex items-center gap-4 transition-all group">
                 <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center flex-shrink-0">
@@ -313,7 +313,7 @@ const TrainingReport: React.FC = () => {
                     {quiz && (
                       <span className={`text-xs font-bold ${quiz.aprovado ? 'text-emerald-400' : 'text-red-400'}`}>
                         <i className="fa-solid fa-clipboard-question mr-1"></i>
-                        Prova: {quiz.nota}% â€” {quiz.aprovado ? 'Aprovado' : 'Reprovado'}
+                        Prova: {quiz.nota}% — {quiz.aprovado ? 'Aprovado' : 'Reprovado'}
                       </span>
                     )}
                   </div>
@@ -321,7 +321,7 @@ const TrainingReport: React.FC = () => {
                 <div className={`px-3 py-1.5 rounded-lg bg-${statusColor}-500/10 border border-${statusColor}-500/20 flex-shrink-0`}>
                   <span className={`text-[9px] font-black uppercase tracking-widest text-${statusColor}-400`}>{p.status}</span>
                 </div>
-                {p.status === 'concluÃ­do' && (
+                {p.status === 'concluído' && (
                   <button onClick={() => printCertificate(p)}
                     className="opacity-0 group-hover:opacity-100 bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5">
                     <i className="fa-solid fa-certificate text-xs"></i>Certificado

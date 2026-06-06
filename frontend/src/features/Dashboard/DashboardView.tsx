@@ -1,4 +1,4 @@
-﻿// frontend/src/features/Dashboard/DashboardView.tsx
+// frontend/src/features/Dashboard/DashboardView.tsx
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   BarChart, Bar, LineChart, Line, AreaChart, Area,
@@ -26,7 +26,7 @@ interface Certificado { id:string; colaboradorNome:string; trilhaTitulo:string; 
 
 function pct(a:number,b:number){ return b===0?0:Math.round((a/b)*100); }
 function getMonth(ts:any){ if(!ts)return ''; const d=ts?.toDate?ts.toDate():new Date(ts); return d.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'}); }
-function fmtDate(ts:any){ if(!ts)return 'â€“'; const d=ts?.toDate?ts.toDate():new Date(ts); return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}); }
+function fmtDate(ts:any){ if(!ts)return '–'; const d=ts?.toDate?ts.toDate():new Date(ts); return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}); }
 
 const Tip:React.FC<any> = ({active,payload,label}) => {
   if(!active||!payload?.length) return null;
@@ -48,7 +48,7 @@ const KPI:React.FC<{label:string;value:string|number;sub?:string;icon:string;col
       </div>
       {trend!==undefined&&(
         <span style={{fontSize:10,fontWeight:900,padding:'3px 8px',borderRadius:8,background:trend>=0?'#d1fae5':'#fee2e2',color:trend>=0?GREEN:RED}}>
-          {trend>=0?'â†‘':'â†“'}{Math.abs(trend)}%
+          {trend>=0?'↑':'↓'}{Math.abs(trend)}%
         </span>
       )}
     </div>
@@ -79,7 +79,7 @@ const CardHeader:React.FC<{title:string;charts:CT[];active:CT;onChange:(t:CT)=>v
   </div>
 );
 
-// â”€â”€ COLAB DASHBOARD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── COLAB DASHBOARD ───────────────────────────────────────────────────────────
 const ColabDashboard:React.FC<{trilhas:Trilha[];progresso:TrilhaProg[];quizResults:QuizResult[];certificados:Certificado[];userName:string;userId:string}> = ({trilhas,progresso,quizResults,certificados,userName,userId}) => {
   const myProg  = progresso.filter(p=>p.userId===userId||p.userName===userName);
   const myRes   = quizResults.filter(r=>r.userId===userId||r.colaborador===userName);
@@ -104,7 +104,7 @@ const ColabDashboard:React.FC<{trilhas:Trilha[];progresso:TrilhaProg[];quizResul
     const done=myProg.filter(p=>p.trilhaId===t.id&&p.concluido).length;
     const res=myRes.filter(r=>r.trailTitle===t.titulo);
     const m=res.length?Math.round(res.reduce((a,r)=>a+r.nota,0)/res.length):0;
-    return {name:t.titulo.slice(0,14)+(t.titulo.length>14?'â€¦':''),'Conclusao (%)':pct(done,mods),'Media':m};
+    return {name:t.titulo.slice(0,14)+(t.titulo.length>14?'…':''),'Conclusao (%)':pct(done,mods),'Media':m};
   }),[trilhas,myProg,myRes]);
 
   const statusTrilhas = useMemo(()=>{
@@ -138,7 +138,7 @@ const ColabDashboard:React.FC<{trilhas:Trilha[];progresso:TrilhaProg[];quizResul
         <div style={{width:'100%',background:'#F5EDD8',borderRadius:99,height:8}}>
           <div style={{width:`${gPct}%`,background:GOLD,height:8,borderRadius:99,transition:'width 0.7s'}}></div>
         </div>
-        <p style={{fontSize:10,color:'#8A9BB0',marginTop:6}}>Aprovacao minima: <strong style={{color:NAVY}}>75%</strong> Â· Taxonomia de Bloom Medio</p>
+        <p style={{fontSize:10,color:'#8A9BB0',marginTop:6}}>Aprovacao minima: <strong style={{color:NAVY}}>75%</strong> · Taxonomia de Bloom Medio</p>
       </div>
 
       <div style={{display:'grid',gridTemplateColumns:'2fr 1fr',gap:16}}>
@@ -226,7 +226,7 @@ const ColabDashboard:React.FC<{trilhas:Trilha[];progresso:TrilhaProg[];quizResul
   );
 };
 
-// â”€â”€ ADMIN DASHBOARD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── ADMIN DASHBOARD ───────────────────────────────────────────────────────────
 const AdminDashboard:React.FC<{trilhas:Trilha[];progresso:TrilhaProg[];quizResults:QuizResult[];usuarios:UserData[];certificados:Certificado[];tenantId:string}> = ({trilhas,progresso,quizResults,usuarios,certificados}) => {
   const colab = usuarios.filter(u=>!['SUPERADMIN','gestor'].includes(u.role));
   const allPass = quizResults.filter(r=>r.aprovado).length;
@@ -245,7 +245,7 @@ const AdminDashboard:React.FC<{trilhas:Trilha[];progresso:TrilhaProg[];quizResul
 
   const trilhasPerf = useMemo(()=>trilhas.slice(0,8).map(t=>{
     const res=quizResults.filter(r=>r.trailTitle===t.titulo);
-    return {name:t.titulo.slice(0,14)+(t.titulo.length>14?'â€¦':''),'Taxa (%)':res.length?pct(res.filter(r=>r.aprovado).length,res.length):0,Testes:res.length};
+    return {name:t.titulo.slice(0,14)+(t.titulo.length>14?'…':''),'Taxa (%)':res.length?pct(res.filter(r=>r.aprovado).length,res.length):0,Testes:res.length};
   }).filter(t=>t.Testes>0).sort((a,b)=>b['Taxa (%)']-a['Taxa (%)']),[trilhas,quizResults]);
 
   const perfisData = useMemo(()=>{
@@ -375,7 +375,7 @@ const AdminDashboard:React.FC<{trilhas:Trilha[];progresso:TrilhaProg[];quizResul
   );
 };
 
-// â”€â”€ MAIN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── MAIN ─────────────────────────────────────────────────────────────────────
 const DashboardView:React.FC = () => {
   const {state} = useApp();
   const user = state.user!;
@@ -418,7 +418,7 @@ const DashboardView:React.FC = () => {
           </div>
           <div style={{display:'flex',alignItems:'center',gap:8,background:'#fff',border:`1px solid ${GOLD}`,borderRadius:12,padding:'8px 14px'}}>
             <i className="fa-solid fa-brain" style={{color:GOLD,fontSize:12}}></i>
-            <span style={{fontSize:10,fontWeight:900,color:NAVY,textTransform:'uppercase',letterSpacing:'0.12em'}}>Bloom Medio Â· 75% aprovacao</span>
+            <span style={{fontSize:10,fontWeight:900,color:NAVY,textTransform:'uppercase',letterSpacing:'0.12em'}}>Bloom Medio · 75% aprovacao</span>
           </div>
         </div>
         {isGestor

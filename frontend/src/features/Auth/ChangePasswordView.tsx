@@ -1,4 +1,4 @@
-﻿
+
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
@@ -15,13 +15,13 @@ const ChangePasswordView: React.FC = () => {
 
   const user = state.user;
 
-  // ValidaÃ§Ã£o de senha forte (mÃ­nimo 12 caracteres conforme PasswordSchema)
+  // Validação de senha forte (mínimo 12 caracteres conforme PasswordSchema)
   const validateStrongPassword = (pass: string) => {
     const checks = [
-      { ok: pass.length >= 12, msg: 'MÃ­nimo de 12 caracteres' },
-      { ok: /[A-Z]/.test(pass), msg: 'Uma letra maiÃºscula' },
-      { ok: /[a-z]/.test(pass), msg: 'Uma letra minÃºscula' },
-      { ok: /[0-9]/.test(pass), msg: 'Um nÃºmero' },
+      { ok: pass.length >= 12, msg: 'Mínimo de 12 caracteres' },
+      { ok: /[A-Z]/.test(pass), msg: 'Uma letra maiúscula' },
+      { ok: /[a-z]/.test(pass), msg: 'Uma letra minúscula' },
+      { ok: /[0-9]/.test(pass), msg: 'Um número' },
       { ok: /[!@#$%^&*(),.?":{}|<>_\-]/.test(pass), msg: 'Um caractere especial (!@#$%...)' },
     ];
     return {
@@ -43,11 +43,11 @@ const ChangePasswordView: React.FC = () => {
     try {
       if (!validation.isValid) {
         const firstFail = validation.checks.find(c => !c.ok);
-        throw new Error(`Senha invÃ¡lida: ${firstFail?.msg}`);
+        throw new Error(`Senha inválida: ${firstFail?.msg}`);
       }
 
       if (newPass !== confirmPass) {
-        throw new Error('As senhas digitadas nÃ£o coincidem.');
+        throw new Error('As senhas digitadas não coincidem.');
       }
 
       const result = await AuthService.updatePassword(user.id, newPass);
@@ -66,16 +66,16 @@ const ChangePasswordView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0D1B3E] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
       <div className="bg-[#0D1B3E] w-full max-w-md rounded-[40px] shadow-2xl p-12 border border-blue-500/20 space-y-8">
 
         <div className="text-center space-y-4">
           <div className="w-20 h-20 bg-amber-500/10 border border-amber-500/20 rounded-full flex items-center justify-center text-amber-500 mx-auto">
-            <span className="text-3xl">ðŸ”‘</span>
+            <span className="text-3xl">🔑</span>
           </div>
-          <h2 className="text-xl font-black text-[#0A1628] italic uppercase tracking-tighter">Troca de Senha ObrigatÃ³ria</h2>
+          <h2 className="text-xl font-black text-[#0A1628] italic uppercase tracking-tighter">Troca de Senha Obrigatória</h2>
           <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest leading-relaxed">
-            Crie uma senha forte. NÃ£o poderÃ¡ reutilizar as Ãºltimas 3 senhas.
+            Crie uma senha forte. Não poderá reutilizar as últimas 3 senhas.
           </p>
         </div>
 
@@ -90,7 +90,7 @@ const ChangePasswordView: React.FC = () => {
                 value={newPass}
                 onChange={e => setNewPass(e.target.value)}
                 className="w-full bg-[#0D1B3E] border border-slate-200 rounded-2xl p-4 text-xs font-bold text-[#0A1628] focus:border-blue-500 outline-none pr-12"
-                placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                placeholder="••••••••••••"
                 required
               />
               <button type="button" onClick={() => setShowNew(!showNew)}
@@ -99,11 +99,11 @@ const ChangePasswordView: React.FC = () => {
               </button>
             </div>
 
-            {/* Barra de forÃ§a */}
+            {/* Barra de força */}
             {newPass && (
               <div className="space-y-2 mt-2">
                 <div className="flex justify-between items-center">
-                  <span className="text-[9px] text-slate-500 font-bold uppercase">ForÃ§a da senha</span>
+                  <span className="text-[9px] text-slate-500 font-bold uppercase">Força da senha</span>
                   <span className={`text-[9px] font-black uppercase ${strength <= 2 ? 'text-red-500' : strength <= 3 ? 'text-yellow-500' : strength === 4 ? 'text-blue-500' : 'text-emerald-500'}`}>
                     {strengthLabel}
                   </span>
@@ -134,7 +134,7 @@ const ChangePasswordView: React.FC = () => {
                 value={confirmPass}
                 onChange={e => setConfirmPass(e.target.value)}
                 className={`w-full bg-[#0D1B3E] border rounded-2xl p-4 text-xs font-bold text-[#0A1628] focus:border-blue-500 outline-none pr-12 ${confirmPass && confirmPass !== newPass ? 'border-red-500/50' : 'border-slate-200'}`}
-                placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                placeholder="••••••••••••"
                 required
               />
               <button type="button" onClick={() => setShowConfirm(!showConfirm)}
@@ -143,7 +143,7 @@ const ChangePasswordView: React.FC = () => {
               </button>
             </div>
             {confirmPass && confirmPass !== newPass && (
-              <p className="text-[10px] text-red-400 font-bold">Senhas nÃ£o coincidem</p>
+              <p className="text-[10px] text-red-400 font-bold">Senhas não coincidem</p>
             )}
           </div>
 

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { db } from '../../services/firebase';
@@ -22,7 +22,7 @@ const TIPO_CONFIG = {
   banner:       { label: 'Banner IA',    icon: 'fa-wand-magic-sparkles', color: 'pink'    },
   imagem:       { label: 'Imagem',       icon: 'fa-file-image',          color: 'blue'    },
   pdf:          { label: 'PDF',          icon: 'fa-file-pdf',            color: 'red'     },
-  apresentacao: { label: 'ApresentaÃ§Ã£o', icon: 'fa-file-powerpoint',     color: 'amber'   },
+  apresentacao: { label: 'Apresentação', icon: 'fa-file-powerpoint',     color: 'amber'   },
   link:         { label: 'Link',         icon: 'fa-link',                color: 'emerald' },
 };
 
@@ -34,11 +34,11 @@ const BannersView: React.FC = () => {
   const [materiais, setMateriais] = useState<Material[]>([]);
   const [filtroTipo, setFiltroTipo] = useState('');
 
-  /* â”€â”€ formulÃ¡rio link â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* ── formulário link ──────────────────────────────── */
   const [formLink, setFormLink] = useState({ titulo: '', url: '', tipo: 'imagem' as Material['tipo'] });
   const [salvandoLink, setSalvandoLink] = useState(false);
 
-  /* â”€â”€ gerador IA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* ── gerador IA ───────────────────────────────────── */
   const [promptBanner, setPromptBanner] = useState('');
   const [gerando, setGerando] = useState(false);
   const [textoBannerGerado, setTextoBannerGerado] = useState('');
@@ -52,10 +52,10 @@ const BannersView: React.FC = () => {
     );
   }, []);
 
-  /* â”€â”€ salva link externo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* ── salva link externo ──────────────────────────── */
   const salvarLink = async () => {
     if (!formLink.titulo.trim() || !formLink.url.trim()) {
-      showToast('Preencha o tÃ­tulo e o link.', 'error');
+      showToast('Preencha o título e o link.', 'error');
       return;
     }
     setSalvandoLink(true);
@@ -78,23 +78,23 @@ const BannersView: React.FC = () => {
     }
   };
 
-  /* â”€â”€ gera texto de banner por IA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* ── gera texto de banner por IA ──────────────────── */
   const gerarTextoBanner = async () => {
-    if (!promptBanner.trim()) { showToast('Descreva o conteÃºdo do banner.', 'error'); return; }
+    if (!promptBanner.trim()) { showToast('Descreva o conteúdo do banner.', 'error'); return; }
     setGerando(true);
     try {
       const prompt = `Crie um texto profissional e impactante para um banner corporativo de treinamento com o seguinte tema: "${promptBanner}".
 
 O texto deve ter:
-- Um tÃ­tulo principal curto e impactante (mÃ¡x 8 palavras)
-- Um subtÃ­tulo explicativo (1-2 frases)
+- Um título principal curto e impactante (máx 8 palavras)
+- Um subtítulo explicativo (1-2 frases)
 - Um call-to-action motivador
 - Tom profissional e positivo
 
 Formato de resposta:
-TÃTULO: [tÃ­tulo aqui]
-SUBTÃTULO: [subtÃ­tulo aqui]
-CTA: [chamada para aÃ§Ã£o aqui]`;
+TÍTULO: [título aqui]
+SUBTÍTULO: [subtítulo aqui]
+CTA: [chamada para ação aqui]`;
 
       const resultado = await GeminiService.chat(prompt, '', '');
       const texto = typeof resultado === 'string' ? resultado : (resultado as any).text || '';
@@ -107,10 +107,10 @@ CTA: [chamada para aÃ§Ã£o aqui]`;
     }
   };
 
-  /* â”€â”€ salva banner gerado por IA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* ── salva banner gerado por IA ───────────────────── */
   const salvarBannerGerado = async () => {
     if (!tituloBanner.trim() || !textoBannerGerado.trim()) {
-      showToast('Adicione um tÃ­tulo para o banner.', 'error');
+      showToast('Adicione um título para o banner.', 'error');
       return;
     }
     await addDoc(collection(db, 'materiaisbanner'), {
@@ -126,7 +126,7 @@ CTA: [chamada para aÃ§Ã£o aqui]`;
     setTituloBanner(''); setTextoBannerGerado(''); setPromptBanner(''); setPreviewBanner(false);
   };
 
-  /* â”€â”€ imprime banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* ── imprime banner ───────────────────────────────── */
   const imprimirBanner = (texto: string) => {
     const { titulo, subtitulo, cta } = parseBannerText(texto);
     const win = window.open('', '_blank');
@@ -149,28 +149,28 @@ CTA: [chamada para aÃ§Ã£o aqui]`;
     win.print();
   };
 
-  /* â”€â”€ excluir â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* ── excluir ──────────────────────────────────────── */
   const excluir = async (id: string) => {
     if (!confirm('Excluir este material?')) return;
     try {
       await deleteDoc(doc(db, 'materiaisbanner', id));
-      showToast('Material excluÃ­do.', 'success');
+      showToast('Material excluído.', 'success');
     } catch {
       showToast('Erro ao excluir.', 'error');
     }
   };
 
   const parseBannerText = (texto: string) => ({
-    titulo:    texto.match(/TÃTULO:\s*(.+)/)?.[1]?.trim()    || '',
-    subtitulo: texto.match(/SUBTÃTULO:\s*(.+)/)?.[1]?.trim() || '',
+    titulo:    texto.match(/TÍTULO:\s*(.+)/)?.[1]?.trim()    || '',
+    subtitulo: texto.match(/SUBTÍTULO:\s*(.+)/)?.[1]?.trim() || '',
     cta:       texto.match(/CTA:\s*(.+)/)?.[1]?.trim()       || '',
   });
 
   const filtrados = materiais.filter(m => !filtroTipo || m.tipo === filtroTipo);
 
-  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• RENDER â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+  /* ══════════════════ RENDER ══════════════════════════ */
   return (
-    <div className="p-8 space-y-6 bg-[#0D1B3E] min-h-screen animate-in fade-in">
+    <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
       <header>
         <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">
           Banners e <span className="text-pink-500">Materiais</span>
@@ -183,13 +183,13 @@ CTA: [chamada para aÃ§Ã£o aqui]`;
       {isGestor && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-          {/* â”€â”€ Link externo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+          {/* ── Link externo ────────────────────────────── */}
           <div className="bg-white border border-slate-200 rounded-[24px] p-6 space-y-4">
             <h3 className="text-[#0A1628] font-black uppercase text-sm flex items-center gap-2">
               <i className="fa-solid fa-link text-blue-400"></i>Adicionar Material via Link
             </h3>
             <p className="text-[10px] text-slate-500 leading-relaxed">
-              Cole um link do Google Drive, OneDrive, Dropbox ou qualquer URL pÃºblica.
+              Cole um link do Google Drive, OneDrive, Dropbox ou qualquer URL pública.
             </p>
 
             <input
@@ -229,19 +229,19 @@ CTA: [chamada para aÃ§Ã£o aqui]`;
             </button>
           </div>
 
-          {/* â”€â”€ Gerador IA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+          {/* ── Gerador IA ─────────────────────────────── */}
           <div className="bg-white border border-pink-500/30 rounded-[24px] p-6 space-y-4">
             <h3 className="text-[#0A1628] font-black uppercase text-sm flex items-center gap-2">
               <i className="fa-solid fa-wand-magic-sparkles text-pink-400"></i>Gerar Banner com IA
             </h3>
             <p className="text-[10px] text-slate-500 leading-relaxed">
-              A IA cria tÃ­tulo, subtÃ­tulo e call-to-action. VocÃª imprime ou salva o texto.
+              A IA cria título, subtítulo e call-to-action. Você imprime ou salva o texto.
             </p>
             <textarea
               value={promptBanner}
               onChange={e => setPromptBanner(e.target.value)}
               rows={4}
-              placeholder="Ex: Banner para treinamento de atendimento ao cliente com foco em excelÃªncia..."
+              placeholder="Ex: Banner para treinamento de atendimento ao cliente com foco em excelência..."
               className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-pink-500 resize-none"
             />
             <button type="button" onClick={gerarTextoBanner} disabled={gerando || !promptBanner.trim()}
@@ -255,7 +255,7 @@ CTA: [chamada para aÃ§Ã£o aqui]`;
         </div>
       )}
 
-      {/* â”€â”€ Preview banner gerado â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Preview banner gerado ──────────────────────── */}
       {previewBanner && textoBannerGerado && (() => {
         const { titulo, subtitulo, cta } = parseBannerText(textoBannerGerado);
         return (
@@ -269,7 +269,7 @@ CTA: [chamada para aÃ§Ã£o aqui]`;
             </div>
 
             <div className="bg-gradient-to-br from-blue-900 to-slate-900 rounded-2xl p-10 text-center space-y-4 border border-blue-500/20">
-              <h1 className="text-2xl md:text-4xl font-black text-[#0A1628] uppercase tracking-tight">{titulo || 'TÃ­tulo'}</h1>
+              <h1 className="text-2xl md:text-4xl font-black text-[#0A1628] uppercase tracking-tight">{titulo || 'Título'}</h1>
               <p className="text-slate-700 text-sm md:text-base leading-relaxed max-w-lg mx-auto">{subtitulo}</p>
               {cta && (
                 <div className="inline-block bg-blue-600 text-[#0A1628] px-8 py-3 rounded-xl font-black text-sm uppercase tracking-widest">{cta}</div>
@@ -296,7 +296,7 @@ CTA: [chamada para aÃ§Ã£o aqui]`;
         );
       })()}
 
-      {/* â”€â”€ Filtros â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Filtros ────────────────────────────────────── */}
       <div className="flex flex-wrap gap-2 items-center">
         <button type="button" onClick={() => setFiltroTipo('')}
           className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
@@ -314,7 +314,7 @@ CTA: [chamada para aÃ§Ã£o aqui]`;
         ))}
       </div>
 
-      {/* â”€â”€ Galeria â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Galeria ────────────────────────────────────── */}
       {filtrados.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 opacity-30">
           <i className="fa-solid fa-images text-5xl text-slate-600 mb-4"></i>
@@ -340,7 +340,7 @@ CTA: [chamada para aÃ§Ã£o aqui]`;
                 {/* preview texto banner IA */}
                 {m.textoBanner && (
                   <p className="text-[10px] text-slate-500 leading-relaxed line-clamp-3">
-                    {m.textoBanner.replace(/TÃTULO:|SUBTÃTULO:|CTA:/g, '').substring(0, 120)}...
+                    {m.textoBanner.replace(/TÍTULO:|SUBTÍTULO:|CTA:/g, '').substring(0, 120)}...
                   </p>
                 )}
 

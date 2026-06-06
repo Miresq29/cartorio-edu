@@ -1,5 +1,5 @@
-﻿// frontend/src/features/Audit/AuditoriaView.tsx
-// Auditoria completa â€” logs reais, filtros funcionais, exportaÃ§Ã£o CSV
+// frontend/src/features/Audit/AuditoriaView.tsx
+// Auditoria completa — logs reais, filtros funcionais, exportação CSV
 
 import React, { useState, useEffect, useCallback } from 'react';
 import * as XLSX from 'xlsx';
@@ -12,7 +12,7 @@ import { db } from '../../services/firebase';
 import * as XLSX from 'xlsx';
 import { useApp } from '../../context/AppContext';
 
-// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 type LogTipo =
   | 'login' | 'logout'
@@ -35,7 +35,7 @@ interface AuditLog {
   createdAt: any;
 }
 
-// â”€â”€â”€ Config visual por tipo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Config visual por tipo ───────────────────────────────────────────────────
 
 const TIPO_CONFIG: Record<string, { icon: string; color: string; bg: string; label: string; grupo: string }> = {
   login:              { icon: 'fa-right-to-bracket', color: '#059669', bg: '#d1fae5', label: 'Login',               grupo: 'acesso'     },
@@ -43,14 +43,14 @@ const TIPO_CONFIG: Record<string, { icon: string; color: string; bg: string; lab
   quiz_realizado:     { icon: 'fa-clipboard-check',   color: '#4F46E5', bg: '#eef2ff', label: 'Quiz Realizado',      grupo: 'treinamento'},
   quiz_aprovado:      { icon: 'fa-circle-check',      color: '#059669', bg: '#d1fae5', label: 'Quiz Aprovado',       grupo: 'treinamento'},
   quiz_reprovado:     { icon: 'fa-circle-xmark',      color: '#DC2626', bg: '#fee2e2', label: 'Quiz Reprovado',      grupo: 'treinamento'},
-  trilha_concluida:   { icon: 'fa-flag-checkered',    color: '#7C3AED', bg: '#ede9fe', label: 'Trilha ConcluÃ­da',    grupo: 'treinamento'},
+  trilha_concluida:   { icon: 'fa-flag-checkered',    color: '#7C3AED', bg: '#ede9fe', label: 'Trilha Concluída',    grupo: 'treinamento'},
   certificado_emitido:{ icon: 'fa-certificate',       color: '#D97706', bg: '#fef3c7', label: 'Certificado Emitido', grupo: 'treinamento'},
-  usuario_criado:     { icon: 'fa-user-plus',          color: '#4F46E5', bg: '#eef2ff', label: 'UsuÃ¡rio Criado',     grupo: 'usuarios'   },
-  usuario_alterado:   { icon: 'fa-user-pen',           color: '#D97706', bg: '#fef3c7', label: 'UsuÃ¡rio Alterado',   grupo: 'usuarios'   },
-  usuario_removido:   { icon: 'fa-user-minus',         color: '#DC2626', bg: '#fee2e2', label: 'UsuÃ¡rio Removido',   grupo: 'usuarios'   },
-  permissao_alterada: { icon: 'fa-shield-halved',      color: '#0891B2', bg: '#e0f2fe', label: 'PermissÃ£o Alterada', grupo: 'usuarios'   },
+  usuario_criado:     { icon: 'fa-user-plus',          color: '#4F46E5', bg: '#eef2ff', label: 'Usuário Criado',     grupo: 'usuarios'   },
+  usuario_alterado:   { icon: 'fa-user-pen',           color: '#D97706', bg: '#fef3c7', label: 'Usuário Alterado',   grupo: 'usuarios'   },
+  usuario_removido:   { icon: 'fa-user-minus',         color: '#DC2626', bg: '#fee2e2', label: 'Usuário Removido',   grupo: 'usuarios'   },
+  permissao_alterada: { icon: 'fa-shield-halved',      color: '#0891B2', bg: '#e0f2fe', label: 'Permissão Alterada', grupo: 'usuarios'   },
   documento_inserido: { icon: 'fa-file-circle-plus',   color: '#059669', bg: '#d1fae5', label: 'Doc. Inserido',      grupo: 'documentos' },
-  documento_excluido: { icon: 'fa-file-circle-xmark',  color: '#DC2626', bg: '#fee2e2', label: 'Doc. ExcluÃ­do',      grupo: 'documentos' },
+  documento_excluido: { icon: 'fa-file-circle-xmark',  color: '#DC2626', bg: '#fee2e2', label: 'Doc. Excluído',      grupo: 'documentos' },
   acesso:             { icon: 'fa-eye',                color: '#4F46E5', bg: '#eef2ff', label: 'Acesso',             grupo: 'acesso'     },
 };
 
@@ -58,20 +58,20 @@ const GRUPOS = [
   { id: 'todos',      label: 'Todos'       },
   { id: 'acesso',     label: 'Acessos'     },
   { id: 'treinamento',label: 'Treinamento' },
-  { id: 'usuarios',   label: 'UsuÃ¡rios'    },
+  { id: 'usuarios',   label: 'Usuários'    },
   { id: 'documentos', label: 'Documentos'  },
 ];
 
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function formatDate(ts: any): string {
-  if (!ts) return 'â€“';
+  if (!ts) return '–';
   const d = ts?.toDate ? ts.toDate() : new Date(ts);
   return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' }) +
     ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
-// Hook pÃºblico para gravar log â€” exportar para usar em outros mÃ³dulos
+// Hook público para gravar log — exportar para usar em outros módulos
 export async function registrarLog(
   tipo: LogTipo,
   descricao: string,
@@ -90,7 +90,7 @@ export async function registrarLog(
   }
 }
 
-// â”€â”€â”€ Main View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Main View ────────────────────────────────────────────────────────────────
 
 const AuditoriaView: React.FC = () => {
   const { state } = useApp();
@@ -153,7 +153,7 @@ const AuditoriaView: React.FC = () => {
   const usuarios = [...new Set(logs.map(l => l.usuario).filter(Boolean))];
 
   const exportCSV = () => {
-    const rows = ['Data,UsuÃ¡rio,Tipo,DescriÃ§Ã£o'];
+    const rows = ['Data,Usuário,Tipo,Descrição'];
     logsFiltrados.forEach(l => {
       rows.push([
         formatDate(l.createdAt),
@@ -172,14 +172,14 @@ const AuditoriaView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0D1B3E]">
+    <div className="min-h-screen bg-slate-50">
       <div className="max-w-7xl mx-auto p-6 space-y-6">
 
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-black text-[#0A1628]">Trilha de Auditoria</h2>
-            <p className="text-sm text-slate-500 mt-0.5">Registro completo de acessos e aÃ§Ãµes na plataforma</p>
+            <p className="text-sm text-slate-500 mt-0.5">Registro completo de acessos e ações na plataforma</p>
           </div>
           <button onClick={exportCSV}
             className="flex items-center gap-2 bg-[#C9A84C] hover:bg-[#A8863C] text-[#0A1628] px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm">
@@ -192,7 +192,7 @@ const AuditoriaView: React.FC = () => {
           {[
             { label: 'Total de Logs',     value: logs.length,                                                    icon: 'fa-list-check',    color: '#4F46E5' },
             { label: 'Hoje',              value: logsHoje.length,                                                icon: 'fa-calendar-day',  color: '#059669' },
-            { label: 'UsuÃ¡rios Ativos',   value: usuarios.length,                                                icon: 'fa-users',         color: '#D97706' },
+            { label: 'Usuários Ativos',   value: usuarios.length,                                                icon: 'fa-users',         color: '#D97706' },
             { label: 'Filtro Atual',      value: logsFiltrados.length,                                           icon: 'fa-filter',        color: '#7C3AED' },
           ].map((s, i) => (
             <div key={i} className="bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
@@ -225,12 +225,12 @@ const AuditoriaView: React.FC = () => {
             {/* Busca e datas */}
             <div className="flex flex-wrap gap-3 items-center">
               <input value={busca} onChange={e => { setBusca(e.target.value); setPagina(1); }}
-                placeholder="Buscar por usuÃ¡rio ou descriÃ§Ã£o..."
+                placeholder="Buscar por usuário ou descrição..."
                 className="bg-[#0D1B3E] border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-[#C9A84C] w-64" />
               <div className="flex items-center gap-2">
                 <input type="date" value={dataInicio} onChange={e => { setDataInicio(e.target.value); setPagina(1); }}
                   className="bg-[#0D1B3E] border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#C9A84C]" />
-                <span className="text-slate-500 text-sm">atÃ©</span>
+                <span className="text-slate-500 text-sm">até</span>
                 <input type="date" value={dataFim} onChange={e => { setDataFim(e.target.value); setPagina(1); }}
                   className="bg-[#0D1B3E] border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#C9A84C]" />
               </div>
@@ -262,7 +262,7 @@ const AuditoriaView: React.FC = () => {
               <table className="w-full text-xs">
                 <thead>
                   <tr className="bg-[#0D1B3E] border-b border-slate-200">
-                    {['Data/Hora', 'UsuÃ¡rio', 'Tipo', 'DescriÃ§Ã£o', 'Detalhes'].map(h => (
+                    {['Data/Hora', 'Usuário', 'Tipo', 'Descrição', 'Detalhes'].map(h => (
                       <th key={h} className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
                     ))}
                   </tr>
@@ -276,7 +276,7 @@ const AuditoriaView: React.FC = () => {
                           {formatDate(log.createdAt)}
                         </td>
                         <td className="p-3 font-bold text-slate-700 whitespace-nowrap">
-                          {log.usuario || 'â€“'}
+                          {log.usuario || '–'}
                         </td>
                         <td className="p-3 whitespace-nowrap">
                           <span className="inline-flex items-center gap-1.5 text-[10px] font-black px-2.5 py-1 rounded-lg"
@@ -286,7 +286,7 @@ const AuditoriaView: React.FC = () => {
                           </span>
                         </td>
                         <td className="p-3 text-slate-600 max-w-xs">
-                          {log.descricao || 'â€“'}
+                          {log.descricao || '–'}
                         </td>
                         <td className="p-3 text-slate-500 text-[10px] max-w-[200px]">
                           {log.metadata && Object.keys(log.metadata).length > 0 ? (
@@ -295,7 +295,7 @@ const AuditoriaView: React.FC = () => {
                                 <p key={k}><span className="text-slate-500 font-bold">{k}:</span> {String(v)}</p>
                               ))}
                             </div>
-                          ) : 'â€“'}
+                          ) : '–'}
                         </td>
                       </tr>
                     );
@@ -305,16 +305,16 @@ const AuditoriaView: React.FC = () => {
             </div>
           )}
 
-          {/* PaginaÃ§Ã£o */}
+          {/* Paginação */}
           {totalPaginas > 1 && (
             <div className="flex items-center justify-between p-4 border-t border-slate-100">
               <p className="text-xs text-slate-500">
-                PÃ¡gina {pagina} de {totalPaginas} Â· {logsFiltrados.length} registros
+                Página {pagina} de {totalPaginas} · {logsFiltrados.length} registros
               </p>
               <div className="flex gap-2">
                 <button onClick={() => setPagina(p => Math.max(1, p - 1))} disabled={pagina === 1}
                   className="px-3 py-1.5 rounded-lg bg-white text-slate-600 text-xs font-bold disabled:opacity-40 hover:bg-slate-200 transition-all">
-                  â† Anterior
+                  ← Anterior
                 </button>
                 {Array.from({ length: Math.min(5, totalPaginas) }, (_, i) => {
                   const p = Math.max(1, pagina - 2) + i;
@@ -328,7 +328,7 @@ const AuditoriaView: React.FC = () => {
                 })}
                 <button onClick={() => setPagina(p => Math.min(totalPaginas, p + 1))} disabled={pagina === totalPaginas}
                   className="px-3 py-1.5 rounded-lg bg-white text-slate-600 text-xs font-bold disabled:opacity-40 hover:bg-slate-200 transition-all">
-                  PrÃ³xima â†’
+                  Próxima →
                 </button>
               </div>
             </div>
@@ -339,9 +339,9 @@ const AuditoriaView: React.FC = () => {
         <div className="bg-blue-50 border border-blue-200 rounded-[14px] p-4 flex items-start gap-3">
           <i className="fa-solid fa-circle-info text-blue-500 text-base mt-0.5 flex-shrink-0"></i>
           <p className="text-xs text-blue-700 leading-relaxed">
-            <strong>Trilha de Auditoria CNJ</strong> â€” Os registros desta tela compÃµem a trilha de auditoria exigida pelo
-            Provimento CNJ nÂº 213/2026 (art. 14, Â§2Âº) e Provimento nÂº 161/2023. Os logs sÃ£o gravados automaticamente
-            a cada aÃ§Ã£o relevante na plataforma e nÃ£o podem ser alterados pelos usuÃ¡rios.
+            <strong>Trilha de Auditoria CNJ</strong> — Os registros desta tela compõem a trilha de auditoria exigida pelo
+            Provimento CNJ nº 213/2026 (art. 14, §2º) e Provimento nº 161/2023. Os logs são gravados automaticamente
+            a cada ação relevante na plataforma e não podem ser alterados pelos usuários.
           </p>
         </div>
       </div>

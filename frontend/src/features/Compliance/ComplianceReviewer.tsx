@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useAudit } from '../../hooks/useAudit';
 import { useToast } from '../../context/ToastContext';
@@ -24,6 +24,7 @@ const ComplianceReviewer: React.FC = () => {
   const { logAction } = useAudit();
   const { showToast } = useToast();
 
+  // ✅ CORREÇÃO: docData agora usa rawText (texto real extraído)
   const [docData, setDocData] = useState<{ fileName: string; text: string } | null>(null);
   const [analysisMode, setAnalysisMode] = useState<'checklist' | 'baselegal'>('checklist');
   const [checklists, setChecklists] = useState<Checklist[]>([]);
@@ -60,11 +61,15 @@ const ComplianceReviewer: React.FC = () => {
     try {
       showToast('Extraindo texto do documento com IA... Aguarde.', 'info');
       const extracted = await extractTextFromFile(file);
+
+      // ✅ CORREÇÃO: usa rawText que agora contém texto real (inclusive de PDFs)
       const textoReal = extracted.rawText || extracted.content || '';
+
       if (!textoReal.trim()) {
         showToast('Não foi possível extrair texto do arquivo.', 'error');
         return;
       }
+
       setDocData({ fileName: file.name, text: textoReal });
       showToast(`Documento carregado: ${textoReal.split(' ').length} palavras extraídas.`, 'success');
     } catch (err: any) {
@@ -80,8 +85,10 @@ const ComplianceReviewer: React.FC = () => {
 
   const handleRunAudit = async () => {
     if (!docData) return showToast('Suba um documento para conferência.', 'warning');
+
     if (analysisMode === 'checklist' && !selectedChecklistId)
       return showToast('Selecione um protocolo de referência.', 'warning');
+
     if (analysisMode === 'baselegal' && selectedKbIds.length === 0)
       return showToast('Selecione ao menos um documento da base legal.', 'warning');
 
@@ -100,29 +107,23 @@ const ComplianceReviewer: React.FC = () => {
         requirementsBlock = checklist.items.map((item, i) => `${i + 1}. ${item.text}`).join('\n');
 
         if (kbDocs.length > 0) {
-          // ✅ CORRIGIDO: máximo 3 docs × 1500 chars (era todos os docs × 2000)
-          contextBlock = kbDocs
-            .slice(0, 3)
-            .map((d, i) =>
-              `[DOCUMENTO BASE LEGAL ${i + 1} — ${d.fileName}]\n${(d.rawText || d.content)?.substring(0, 1500)}`
-            ).join('\n\n---\n\n');
+          contextBlock = kbDocs.map((d, i) =>
+            `[DOCUMENTO BASE LEGAL ${i + 1} — ${d.fileName}]\n${(d.rawText || d.content)?.substring(0, 2000)}`
+          ).join('\n\n---\n\n');
         }
       } else {
         const selected = kbDocs.filter(d => selectedKbIds.includes(d.id));
-        // ✅ CORRIGIDO: máximo 3 docs × 2000 chars (era sem limite × 3000)
-        contextBlock = selected
-          .slice(0, 3)
-          .map((d, i) =>
-            `[DOCUMENTO ${i + 1} — ${d.fileName}]\n${(d.rawText || d.content)?.substring(0, 2000)}`
-          ).join('\n\n---\n\n');
+        contextBlock = selected.map((d, i) =>
+          `[DOCUMENTO ${i + 1} — ${d.fileName}]\n${(d.rawText || d.content)?.substring(0, 3000)}`
+        ).join('\n\n---\n\n');
         requirementsBlock = 'Extraia os requisitos normativos dos documentos da base legal acima e aplique-os na análise do documento auditado.';
       }
 
       const prompt = `Você é um auditor notarial sênior. Sua análise DEVE ser baseada EXCLUSIVAMENTE nos documentos e requisitos fornecidos abaixo. É PROIBIDO utilizar qualquer lei, norma, provimento ou conhecimento externo que não esteja presente no contexto fornecido. Se não houver base suficiente no contexto, declare explicitamente que a informação não está disponível.
 
-══════════════════════════════════════════════════
+════════════════════════════════════════════════════
 MODO DE ANÁLISE: ${analysisMode === 'checklist' ? 'PROTOCOLO DE CONFORMIDADE' : 'BASE LEGAL NORMATIVA'}
-══════════════════════════════════════════════════
+════════════════════════════════════════════════════
 
 ${analysisMode === 'checklist' ? `PROTOCOLO DE VERIFICAÇÃO:\n${requirementsBlock}` : `FONTE NORMATIVA (base legal indexada):\n${contextBlock}`}
 
@@ -130,14 +131,14 @@ ${contextBlock && analysisMode === 'checklist' ? `BASE LEGAL DE APOIO (use apena
 
 ${analysisMode === 'baselegal' ? `REQUISITOS A APLICAR:\n${requirementsBlock}` : ''}
 
-══════════════════════════════════════════════════
+════════════════════════════════════════════════════
 DOCUMENTO AUDITADO: "${docData.fileName}"
-══════════════════════════════════════════════════
-${docData.text.substring(0, 4000)}
+════════════════════════════════════════════════════
+${docData.text.substring(0, 6000)}
 
-══════════════════════════════════════════════════
+════════════════════════════════════════════════════
 INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
-══════════════════════════════════════════════════
+════════════════════════════════════════════════════
 1. Analise cada requisito/item individualmente
 2. Para cada item, cite o trecho exato do documento auditado ou da base legal que embasa sua conclusão
 3. Se a base legal não cobrir um ponto, declare: "Sem base normativa disponível para este requisito"

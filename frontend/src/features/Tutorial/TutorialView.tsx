@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 
 interface Section {
   id: string;
@@ -12,112 +12,112 @@ const SECTIONS: Section[] = [
   {
     id: 'dashboard', icon: 'fa-border-all', title: 'Dashboard', subtitle: 'Painel operacional da sua serventia',
     steps: [
-      { title: 'Acessando o Dashboard', desc: 'Clique em "Dashboard" no menu lateral, na seÃ§Ã£o GESTÃƒO. Esta tela exibe dados em tempo real exclusivos da sua serventia.' },
-      { title: 'KPIs em tempo real', desc: 'Os cards no topo mostram mÃ©tricas como Documentos na Base, Protocolos Ativos, Treinamentos ConcluÃ­dos e AÃ§Ãµes Registradas. Todos atualizam automaticamente.' },
-      { title: 'Atividade Recente', desc: 'O painel de atividade mostra as Ãºltimas aÃ§Ãµes realizadas na plataforma â€” tipo de evento, usuÃ¡rio responsÃ¡vel e horÃ¡rio.' },
-      { title: 'Filtros de perÃ­odo', desc: 'Use os botÃµes de perÃ­odo (7, 30, 90 dias) para filtrar o histÃ³rico de dados exibido nos grÃ¡ficos e cards.' },
+      { title: 'Acessando o Dashboard', desc: 'Clique em "Dashboard" no menu lateral, na seção GESTÃO. Esta tela exibe dados em tempo real exclusivos da sua serventia.' },
+      { title: 'KPIs em tempo real', desc: 'Os cards no topo mostram métricas como Documentos na Base, Protocolos Ativos, Treinamentos Concluídos e Ações Registradas. Todos atualizam automaticamente.' },
+      { title: 'Atividade Recente', desc: 'O painel de atividade mostra as últimas ações realizadas na plataforma — tipo de evento, usuário responsável e horário.' },
+      { title: 'Filtros de período', desc: 'Use os botões de período (7, 30, 90 dias) para filtrar o histórico de dados exibido nos gráficos e cards.' },
     ]
   },
   {
-    id: 'collaborators', icon: 'fa-users-gear', title: 'Colaboradores', subtitle: 'Gerenciar usuÃ¡rios e permissÃµes',
+    id: 'collaborators', icon: 'fa-users-gear', title: 'Colaboradores', subtitle: 'Gerenciar usuários e permissões',
     steps: [
-      { title: 'Criando um colaborador', desc: 'Clique em "+ Novo Colaborador", preencha nome, e-mail e selecione o perfil de acesso. O colaborador deverÃ¡ trocar a senha no primeiro login.' },
-      { title: 'Perfis disponÃ­veis', desc: 'Super Admin: acesso total. Gestor: acesso completo Ã  serventia. Admin: gerenciar colaboradores. Colaborador: acesso aos prÃ³prios dados e treinamentos.' },
-      { title: 'Editando e desativando', desc: 'Clique no Ã­cone de ediÃ§Ã£o para alterar dados ou perfil. Ao desligar um colaborador, desative imediatamente para revogar o acesso Ã  plataforma.' },
+      { title: 'Criando um colaborador', desc: 'Clique em "+ Novo Colaborador", preencha nome, e-mail e selecione o perfil de acesso. O colaborador deverá trocar a senha no primeiro login.' },
+      { title: 'Perfis disponíveis', desc: 'Super Admin: acesso total. Gestor: acesso completo à serventia. Admin: gerenciar colaboradores. Colaborador: acesso aos próprios dados e treinamentos.' },
+      { title: 'Editando e desativando', desc: 'Clique no ícone de edição para alterar dados ou perfil. Ao desligar um colaborador, desative imediatamente para revogar o acesso à plataforma.' },
       { title: 'Matriz de Acesso', desc: 'Na aba "Matriz de Acesso", visualize um mapa completo de quais recursos cada perfil pode acessar.' },
     ]
   },
   {
-    id: 'reports', icon: 'fa-chart-column', title: 'RelatÃ³rios', subtitle: 'MÃ©tricas de treinamento e engajamento',
+    id: 'reports', icon: 'fa-chart-column', title: 'Relatórios', subtitle: 'Métricas de treinamento e engajamento',
     steps: [
-      { title: 'VisÃ£o Geral', desc: 'A primeira aba exibe a atividade mensal e distribuiÃ§Ã£o de notas da equipe. Acompanhe tendÃªncias de desempenho ao longo do tempo.' },
-      { title: 'Por Colaborador', desc: 'Veja quantos treinamentos, exames e certificados cada colaborador concluiu. Identifique usuÃ¡rios engajados e os que precisam de atenÃ§Ã£o.' },
-      { title: 'Por Trilha', desc: 'Acompanhe a taxa de conclusÃ£o e aprovaÃ§Ã£o por trilha de aprendizado. Ãštil para avaliar quais conteÃºdos tÃªm maior aderÃªncia.' },
-      { title: 'ExportaÃ§Ã£o', desc: 'Use "Imprimir" para gerar relatÃ³rio em PDF ou "Exportar Excel" para anÃ¡lise em planilha. Filtre por perÃ­odo usando o seletor no topo.' },
+      { title: 'Visão Geral', desc: 'A primeira aba exibe a atividade mensal e distribuição de notas da equipe. Acompanhe tendências de desempenho ao longo do tempo.' },
+      { title: 'Por Colaborador', desc: 'Veja quantos treinamentos, exames e certificados cada colaborador concluiu. Identifique usuários engajados e os que precisam de atenção.' },
+      { title: 'Por Trilha', desc: 'Acompanhe a taxa de conclusão e aprovação por trilha de aprendizado. Útil para avaliar quais conteúdos têm maior aderência.' },
+      { title: 'Exportação', desc: 'Use "Imprimir" para gerar relatório em PDF ou "Exportar Excel" para análise em planilha. Filtre por período usando o seletor no topo.' },
     ]
   },
   {
-    id: 'audit', icon: 'fa-clock-rotate-left', title: 'Auditoria', subtitle: 'HistÃ³rico completo de acessos e alteraÃ§Ãµes',
+    id: 'audit', icon: 'fa-clock-rotate-left', title: 'Auditoria', subtitle: 'Histórico completo de acessos e alterações',
     steps: [
-      { title: 'Log de Atividades', desc: 'Visualize todas as aÃ§Ãµes registradas na plataforma em ordem cronolÃ³gica. Filtre por tipo de evento, usuÃ¡rio e data.' },
-      { title: 'Tipos de Evento', desc: 'Os eventos incluem: login/logout, criaÃ§Ã£o e ediÃ§Ã£o de usuÃ¡rios, acesso a mÃ³dulos, geraÃ§Ã£o de certificados, exportaÃ§Ãµes e alteraÃ§Ãµes de configuraÃ§Ã£o.' },
-      { title: 'RetenÃ§Ã£o de logs', desc: 'Os logs sÃ£o retidos por no mÃ­nimo 5 anos conforme Provimento CNJ nÂº 149 e nÂº 213/2026, garantindo conformidade para inspeÃ§Ãµes da corregedoria.' },
-      { title: 'ExportaÃ§Ã£o', desc: 'Exporte os registros em CSV ou PDF para auditorias externas ou inspeÃ§Ãµes regulatÃ³rias.' },
+      { title: 'Log de Atividades', desc: 'Visualize todas as ações registradas na plataforma em ordem cronológica. Filtre por tipo de evento, usuário e data.' },
+      { title: 'Tipos de Evento', desc: 'Os eventos incluem: login/logout, criação e edição de usuários, acesso a módulos, geração de certificados, exportações e alterações de configuração.' },
+      { title: 'Retenção de logs', desc: 'Os logs são retidos por no mínimo 5 anos conforme Provimento CNJ nº 149 e nº 213/2026, garantindo conformidade para inspeções da corregedoria.' },
+      { title: 'Exportação', desc: 'Exporte os registros em CSV ou PDF para auditorias externas ou inspeções regulatórias.' },
     ]
   },
   {
-    id: 'security', icon: 'fa-lock', title: 'SeguranÃ§a', subtitle: 'Senhas, bloqueios e polÃ­ticas de acesso',
+    id: 'security', icon: 'fa-lock', title: 'Segurança', subtitle: 'Senhas, bloqueios e políticas de acesso',
     steps: [
-      { title: 'PolÃ­tica de senhas', desc: 'Configure comprimento mÃ­nimo, exigÃªncia de caracteres especiais e validade. Recomendamos no mÃ­nimo 10 caracteres com troca a cada 90 dias.' },
-      { title: 'Bloqueio automÃ¡tico', desc: 'Defina o nÃºmero mÃ¡ximo de tentativas antes do bloqueio automÃ¡tico (padrÃ£o: 5). UsuÃ¡rios bloqueados precisam ser reativados pelo gestor.' },
-      { title: 'Monitoramento de acessos', desc: 'Verifique regularmente a Auditoria para identificar acessos fora do horÃ¡rio comercial ou tentativas de login suspeitas.' },
+      { title: 'Política de senhas', desc: 'Configure comprimento mínimo, exigência de caracteres especiais e validade. Recomendamos no mínimo 10 caracteres com troca a cada 90 dias.' },
+      { title: 'Bloqueio automático', desc: 'Defina o número máximo de tentativas antes do bloqueio automático (padrão: 5). Usuários bloqueados precisam ser reativados pelo gestor.' },
+      { title: 'Monitoramento de acessos', desc: 'Verifique regularmente a Auditoria para identificar acessos fora do horário comercial ou tentativas de login suspeitas.' },
     ]
   },
   {
     id: 'trails', icon: 'fa-road', title: 'Trilhas', subtitle: 'Trilhas de aprendizagem por perfil',
     steps: [
-      { title: 'O que sÃ£o Trilhas?', desc: 'Trilhas sÃ£o sequÃªncias de conteÃºdos organizados por perfil profissional (atendente, escrevente, oficial substituto). Cada trilha guia o colaborador do bÃ¡sico ao avanÃ§ado.' },
-      { title: 'Navegando em uma trilha', desc: 'Selecione uma trilha para ver os mÃ³dulos disponÃ­veis. Complete os mÃ³dulos em sequÃªncia para liberar o prÃ³ximo nÃ­vel.' },
-      { title: 'Progresso', desc: 'O progresso de cada trilha Ã© salvo automaticamente. Acompanhe o avanÃ§o em "Meu Progresso" no menu CAPACITAÃ‡ÃƒO.' },
+      { title: 'O que são Trilhas?', desc: 'Trilhas são sequências de conteúdos organizados por perfil profissional (atendente, escrevente, oficial substituto). Cada trilha guia o colaborador do básico ao avançado.' },
+      { title: 'Navegando em uma trilha', desc: 'Selecione uma trilha para ver os módulos disponíveis. Complete os módulos em sequência para liberar o próximo nível.' },
+      { title: 'Progresso', desc: 'O progresso de cada trilha é salvo automaticamente. Acompanhe o avanço em "Meu Progresso" no menu CAPACITAÇÃO.' },
     ]
   },
   {
-    id: 'repositorio', icon: 'fa-photo-film', title: 'RepositÃ³rio', subtitle: 'VÃ­deos, Ã¡udios e PDFs de capacitaÃ§Ã£o',
+    id: 'repositorio', icon: 'fa-photo-film', title: 'Repositório', subtitle: 'Vídeos, áudios e PDFs de capacitação',
     steps: [
-      { title: 'Tipos de conteÃºdo', desc: 'O repositÃ³rio centraliza todos os materiais de capacitaÃ§Ã£o: vÃ­deos, arquivos de Ã¡udio, PDFs, apresentaÃ§Ãµes e documentos normativos.' },
-      { title: 'Buscando conteÃºdo', desc: 'Use a busca para localizar materiais por palavra-chave, tipo de arquivo ou categoria. Filtre por relevÃ¢ncia ou data de publicaÃ§Ã£o.' },
-      { title: 'Materiais obrigatÃ³rios', desc: 'ConteÃºdos marcados como obrigatÃ³rios aparecem destacados. O gestor pode definir quais materiais sÃ£o de leitura/visualizaÃ§Ã£o obrigatÃ³ria.' },
+      { title: 'Tipos de conteúdo', desc: 'O repositório centraliza todos os materiais de capacitação: vídeos, arquivos de áudio, PDFs, apresentações e documentos normativos.' },
+      { title: 'Buscando conteúdo', desc: 'Use a busca para localizar materiais por palavra-chave, tipo de arquivo ou categoria. Filtre por relevância ou data de publicação.' },
+      { title: 'Materiais obrigatórios', desc: 'Conteúdos marcados como obrigatórios aparecem destacados. O gestor pode definir quais materiais são de leitura/visualização obrigatória.' },
     ]
   },
   {
-    id: 'training', icon: 'fa-graduation-cap', title: 'Treinamento AI', subtitle: 'CapacitaÃ§Ã£o com IA, roteiros e quizzes',
+    id: 'training', icon: 'fa-graduation-cap', title: 'Treinamento AI', subtitle: 'Capacitação com IA, roteiros e quizzes',
     steps: [
-      { title: 'IA de Treinamento', desc: 'Gere 3 opÃ§Ãµes de roteiro de treinamento com IA baseadas nos protocolos e documentos da sua serventia. Personalize o pedido para focar em um tema especÃ­fico.' },
-      { title: 'Resumos Inteligentes', desc: 'Selecione um documento e o tipo de resumo (Executivo, TÃ©cnico, DidÃ¡tico ou Operacional) para que a IA gere um resumo otimizado para cada audiÃªncia.' },
-      { title: 'Participantes', desc: 'Registre quais colaboradores participaram de cada treinamento, controle a presenÃ§a e acompanhe o status de conclusÃ£o.' },
-      { title: 'QuestionÃ¡rios com IA', desc: 'Gere automaticamente questÃµes de mÃºltipla escolha baseadas no conteÃºdo dos treinamentos. Escolha entre 3, 5, 7 ou 10 questÃµes por avaliaÃ§Ã£o.' },
-      { title: 'Dashboard de GestÃ£o', desc: 'A aba "Dashboard GestÃ£o" consolida o desempenho de todos os participantes com grÃ¡ficos de aprovaÃ§Ã£o, mÃ©dia de notas e evoluÃ§Ã£o ao longo do tempo.' },
+      { title: 'IA de Treinamento', desc: 'Gere 3 opções de roteiro de treinamento com IA baseadas nos protocolos e documentos da sua serventia. Personalize o pedido para focar em um tema específico.' },
+      { title: 'Resumos Inteligentes', desc: 'Selecione um documento e o tipo de resumo (Executivo, Técnico, Didático ou Operacional) para que a IA gere um resumo otimizado para cada audiência.' },
+      { title: 'Participantes', desc: 'Registre quais colaboradores participaram de cada treinamento, controle a presença e acompanhe o status de conclusão.' },
+      { title: 'Questionários com IA', desc: 'Gere automaticamente questões de múltipla escolha baseadas no conteúdo dos treinamentos. Escolha entre 3, 5, 7 ou 10 questões por avaliação.' },
+      { title: 'Dashboard de Gestão', desc: 'A aba "Dashboard Gestão" consolida o desempenho de todos os participantes com gráficos de aprovação, média de notas e evolução ao longo do tempo.' },
     ]
   },
   {
-    id: 'exames', icon: 'fa-file-pen', title: 'Exames', subtitle: 'AvaliaÃ§Ãµes com IA e Taxonomia de Bloom',
+    id: 'exames', icon: 'fa-file-pen', title: 'Exames', subtitle: 'Avaliações com IA e Taxonomia de Bloom',
     steps: [
-      { title: 'O que sÃ£o os Exames?', desc: 'Exames sÃ£o avaliaÃ§Ãµes formais geradas pela IA com base na Taxonomia de Bloom â€” garantindo questÃµes que vÃ£o do conhecimento bÃ¡sico Ã  anÃ¡lise e avaliaÃ§Ã£o crÃ­tica.' },
-      { title: 'Realizando um exame', desc: 'Selecione o exame disponÃ­vel e responda as questÃµes no tempo determinado. As respostas sÃ£o corrigidas automaticamente com gabarito comentado.' },
-      { title: 'Resultado e aprovaÃ§Ã£o', desc: 'A nota mÃ­nima de aprovaÃ§Ã£o Ã© 75%. Exames reprovados podem ser refeitos apÃ³s o perÃ­odo de quarentena definido pelo gestor.' },
-      { title: 'HistÃ³rico de provas', desc: 'Consulte o histÃ³rico de todos os exames realizados, com data, nota e resultado. Gestores podem visualizar o desempenho de toda a equipe.' },
+      { title: 'O que são os Exames?', desc: 'Exames são avaliações formais geradas pela IA com base na Taxonomia de Bloom — garantindo questões que vão do conhecimento básico à análise e avaliação crítica.' },
+      { title: 'Realizando um exame', desc: 'Selecione o exame disponível e responda as questões no tempo determinado. As respostas são corrigidas automaticamente com gabarito comentado.' },
+      { title: 'Resultado e aprovação', desc: 'A nota mínima de aprovação é 75%. Exames reprovados podem ser refeitos após o período de quarentena definido pelo gestor.' },
+      { title: 'Histórico de provas', desc: 'Consulte o histórico de todos os exames realizados, com data, nota e resultado. Gestores podem visualizar o desempenho de toda a equipe.' },
     ]
   },
   {
-    id: 'metas', icon: 'fa-trophy', title: 'Metas & PremiaÃ§Ã£o', subtitle: 'Rankings, metas e desempate por Bloom Alto',
+    id: 'metas', icon: 'fa-trophy', title: 'Metas & Premiação', subtitle: 'Rankings, metas e desempate por Bloom Alto',
     steps: [
-      { title: 'Sistema de Metas', desc: 'O mÃ³dulo de Metas define objetivos de desempenho por colaborador ou equipe â€” nÃºmero de treinamentos, taxa de aprovaÃ§Ã£o em exames e conclusÃ£o de trilhas.' },
-      { title: 'Ranking', desc: 'O ranking consolida os colaboradores com melhor desempenho. Em caso de empate, o sistema utiliza o critÃ©rio de Bloom Alto (questÃµes de anÃ¡lise e avaliaÃ§Ã£o) para o desempate.' },
-      { title: 'PremiaÃ§Ã£o', desc: 'Configure prÃªmios e reconhecimentos para os colaboradores que atingirem as metas. O histÃ³rico de premiaÃ§Ãµes fica registrado no perfil do colaborador.' },
+      { title: 'Sistema de Metas', desc: 'O módulo de Metas define objetivos de desempenho por colaborador ou equipe — número de treinamentos, taxa de aprovação em exames e conclusão de trilhas.' },
+      { title: 'Ranking', desc: 'O ranking consolida os colaboradores com melhor desempenho. Em caso de empate, o sistema utiliza o critério de Bloom Alto (questões de análise e avaliação) para o desempate.' },
+      { title: 'Premiação', desc: 'Configure prêmios e reconhecimentos para os colaboradores que atingirem as metas. O histórico de premiações fica registrado no perfil do colaborador.' },
     ]
   },
   {
     id: 'progresso', icon: 'fa-chart-line', title: 'Meu Progresso', subtitle: 'Trilhas, exames e certificados pessoais',
     steps: [
-      { title: 'VisÃ£o pessoal', desc: 'Esta tela mostra exclusivamente o progresso do colaborador logado â€” trilhas iniciadas, exames realizados, certificados emitidos e pontuaÃ§Ã£o acumulada.' },
-      { title: 'Trilhas em andamento', desc: 'Veja o percentual de conclusÃ£o de cada trilha que vocÃª iniciou. Clique para retomar de onde parou.' },
-      { title: 'HistÃ³rico de notas', desc: 'Acompanhe a evoluÃ§Ã£o das suas notas ao longo do tempo. O grÃ¡fico mostra a tendÃªncia de desempenho por mÃ³dulo.' },
+      { title: 'Visão pessoal', desc: 'Esta tela mostra exclusivamente o progresso do colaborador logado — trilhas iniciadas, exames realizados, certificados emitidos e pontuação acumulada.' },
+      { title: 'Trilhas em andamento', desc: 'Veja o percentual de conclusão de cada trilha que você iniciou. Clique para retomar de onde parou.' },
+      { title: 'Histórico de notas', desc: 'Acompanhe a evolução das suas notas ao longo do tempo. O gráfico mostra a tendência de desempenho por módulo.' },
     ]
   },
   {
     id: 'certificado', icon: 'fa-certificate', title: 'Certificados', subtitle: 'Emitir e baixar certificados PDF',
     steps: [
-      { title: 'Elegibilidade', desc: 'Certificados sÃ£o emitidos automaticamente quando o colaborador conclui uma trilha ou Ã© aprovado em um exame com nota mÃ­nima de 75%.' },
-      { title: 'Emitindo o certificado', desc: 'Na tela de Certificados, localize o certificado disponÃ­vel e clique em "Emitir". O PDF Ã© gerado com dados da serventia, nome, data e carga horÃ¡ria.' },
-      { title: 'Validade e autenticidade', desc: 'Cada certificado possui um cÃ³digo Ãºnico de verificaÃ§Ã£o. O gestor pode validar a autenticidade de qualquer certificado emitido pela plataforma.' },
+      { title: 'Elegibilidade', desc: 'Certificados são emitidos automaticamente quando o colaborador conclui uma trilha ou é aprovado em um exame com nota mínima de 75%.' },
+      { title: 'Emitindo o certificado', desc: 'Na tela de Certificados, localize o certificado disponível e clique em "Emitir". O PDF é gerado com dados da serventia, nome, data e carga horária.' },
+      { title: 'Validade e autenticidade', desc: 'Cada certificado possui um código único de verificação. O gestor pode validar a autenticidade de qualquer certificado emitido pela plataforma.' },
     ]
   },
   {
-    id: 'support', icon: 'fa-headset', title: 'Suporte TÃ©cnico', subtitle: 'Contato direto com a MJ Consultoria',
+    id: 'support', icon: 'fa-headset', title: 'Suporte Técnico', subtitle: 'Contato direto com a MJ Consultoria',
     steps: [
-      { title: 'Abrindo um chamado', desc: 'Descreva o problema ou dÃºvida e clique em Enviar. A equipe MJ Consultoria responderÃ¡ em atÃ© 1 dia Ãºtil.' },
-      { title: 'InformaÃ§Ãµes Ãºteis', desc: 'Inclua detalhes: qual mÃ³dulo estava usando, a aÃ§Ã£o realizada, mensagem de erro exibida e capturas de tela quando possÃ­vel.' },
-      { title: 'UrgÃªncias', desc: 'Para problemas crÃ­ticos que impeÃ§am o funcionamento da serventia, indique "URGENTE" no inÃ­cio da mensagem para priorizaÃ§Ã£o do atendimento.' },
+      { title: 'Abrindo um chamado', desc: 'Descreva o problema ou dúvida e clique em Enviar. A equipe MJ Consultoria responderá em até 1 dia útil.' },
+      { title: 'Informações úteis', desc: 'Inclua detalhes: qual módulo estava usando, a ação realizada, mensagem de erro exibida e capturas de tela quando possível.' },
+      { title: 'Urgências', desc: 'Para problemas críticos que impeçam o funcionamento da serventia, indique "URGENTE" no início da mensagem para priorização do atendimento.' },
     ]
   },
 ];
@@ -157,7 +157,7 @@ const TutorialView: React.FC = () => {
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Manual do UsuÃ¡rio â€” MJ Consultoria</title>
+<title>Manual do Usuário — MJ Consultoria</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family: Arial, sans-serif; color:#1e293b; background:white; padding:40px; font-size:12px; }
@@ -189,20 +189,20 @@ body { font-family: Arial, sans-serif; color:#1e293b; background:white; padding:
 <body>
 <div class="cover">
   <div class="cover-logo">MJ <span>Consultoria</span></div>
-  <div class="cover-title">Manual do UsuÃ¡rio</div>
+  <div class="cover-title">Manual do Usuário</div>
   <div class="cover-sub">Plataforma de Treinamento Corporativo</div>
-  <div class="cover-date">MJ Consultoria &nbsp;Â·&nbsp; ${new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</div>
+  <div class="cover-date">MJ Consultoria &nbsp;·&nbsp; ${new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</div>
 </div>
 <div class="toc">
-  <div class="toc-title">Ãndice</div>
+  <div class="toc-title">Índice</div>
   <div class="toc-grid">
-    ${SECTIONS.map((s, i) => `<div class="toc-item"><b>${String(i+1).padStart(2,'0')}.</b>${s.title} â€” ${s.subtitle}</div>`).join('')}
+    ${SECTIONS.map((s, i) => `<div class="toc-item"><b>${String(i+1).padStart(2,'0')}.</b>${s.title} — ${s.subtitle}</div>`).join('')}
   </div>
 </div>
 ${allContent}
 <div class="footer">
-  MJ Consultoria Â· Plataforma de Treinamento Corporativo Â· Gerado em ${new Date().toLocaleDateString('pt-BR')}<br>
-  Em conformidade com LGPD Lei nÂº 13.709/2018 Â· Provimento CNJ nÂº 149 Â· Provimento CNJ nÂº 213/2026
+  MJ Consultoria · Plataforma de Treinamento Corporativo · Gerado em ${new Date().toLocaleDateString('pt-BR')}<br>
+  Em conformidade com LGPD Lei nº 13.709/2018 · Provimento CNJ nº 149 · Provimento CNJ nº 213/2026
 </div>
 </body>
 </html>`);
@@ -221,7 +221,7 @@ ${allContent}
             Tutorial da <span className="text-[#c9a84c]">Plataforma</span>
           </h2>
           <p className="text-[#8a6e2f] text-xs font-black uppercase tracking-widest mt-1">
-            MJ Consultoria â€” Guia Completo do UsuÃ¡rio
+            MJ Consultoria — Guia Completo do Usuário
           </p>
         </div>
         <button
@@ -236,7 +236,7 @@ ${allContent}
       <div className="bg-[#c9a84c]/8 border border-[#c9a84c]/25 rounded-2xl p-5 flex items-start gap-3">
         <i className="fa-solid fa-circle-info text-[#c9a84c] text-lg mt-0.5 flex-shrink-0"></i>
         <p className="text-sm text-[#7a5c1e] leading-relaxed">
-          Bem-vindo Ã  Plataforma MJ Consultoria. Selecione um mÃ³dulo para ver as instruÃ§Ãµes detalhadas,
+          Bem-vindo à Plataforma MJ Consultoria. Selecione um módulo para ver as instruções detalhadas,
           ou clique em <strong className="text-[#c9a84c]">Baixar PDF</strong> para salvar o manual completo.
         </p>
       </div>
@@ -245,7 +245,7 @@ ${allContent}
 
         {/* Menu lateral */}
         <div className="bg-[#0f172a] rounded-3xl border border-[#c9a84c]/20 p-4 space-y-1 h-fit">
-          <p className="text-xs font-black text-[#c9a84c]/60 uppercase tracking-widest px-3 py-2">MÃ³dulos</p>
+          <p className="text-xs font-black text-[#c9a84c]/60 uppercase tracking-widest px-3 py-2">Módulos</p>
           {SECTIONS.map(s => {
             const isActive = activeSection === s.id;
             return (
@@ -271,17 +271,17 @@ ${allContent}
           })}
         </div>
 
-        {/* ConteÃºdo */}
+        {/* Conteúdo */}
         <div className="lg:col-span-3 space-y-4">
 
-          {/* Header da seÃ§Ã£o */}
+          {/* Header da seção */}
           <div className="bg-[#0f172a] rounded-2xl p-6 flex items-center gap-4 shadow-lg border border-[#c9a84c]/20">
             <div className="w-14 h-14 rounded-2xl bg-[#c9a84c]/15 flex items-center justify-center flex-shrink-0">
               <i className={`fa-solid ${current.icon} text-[#c9a84c] text-2xl`}></i>
             </div>
             <div>
               <p className="text-[#c9a84c]/60 text-xs font-black uppercase tracking-widest">
-                MÃ³dulo {String(currentIdx + 1).padStart(2, '0')} de {SECTIONS.length}
+                Módulo {String(currentIdx + 1).padStart(2, '0')} de {SECTIONS.length}
               </p>
               <h3 className="text-xl font-black text-white uppercase italic mt-1">{current.title}</h3>
               <p className="text-[#c9a84c] text-sm mt-1">{current.subtitle}</p>
@@ -306,7 +306,7 @@ ${allContent}
             ))}
           </div>
 
-          {/* NavegaÃ§Ã£o */}
+          {/* Navegação */}
           <div className="flex justify-between pt-2">
             {currentIdx > 0 ? (
               <button
@@ -322,7 +322,7 @@ ${allContent}
                 onClick={() => setActiveSection(SECTIONS[currentIdx + 1].id)}
                 className="flex items-center gap-2 px-5 py-2.5 bg-[#c9a84c] hover:brightness-110 text-[#0f172a] rounded-xl text-xs font-black uppercase transition-all"
               >
-                PrÃ³ximo <i className="fa-solid fa-arrow-right"></i>
+                Próximo <i className="fa-solid fa-arrow-right"></i>
               </button>
             ) : (
               <button

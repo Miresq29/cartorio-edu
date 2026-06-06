@@ -1,6 +1,6 @@
-﻿// frontend/src/features/Repositorio/RepositorioView.tsx
-// RepositÃ³rio de MÃ­dias: YouTube, Ãudio e PDF via Google Drive (gratuito)
-// Admin faz upload no Drive e cola o link aqui â€” sem custos de storage
+// frontend/src/features/Repositorio/RepositorioView.tsx
+// Repositório de Mídias: YouTube, Áudio e PDF via Google Drive (gratuito)
+// Admin faz upload no Drive e cola o link aqui — sem custos de storage
 
 import React, { useState, useEffect, useRef } from 'react';
 import {
@@ -11,7 +11,7 @@ import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 
-// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 type MidiaTipo = 'youtube' | 'audio' | 'mp4';
 
@@ -28,28 +28,28 @@ interface Midia {
   createdAt: any;
   // YouTube
   youtubeId?: string;
-  // Drive (Ã¡udio / PDF)
+  // Drive (áudio / PDF)
   driveUrl?: string;
   driveId?: string;
 }
 
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const CATEGORIAS = [
   { id: 'onboarding',     label: 'Onboarding',    color: 'emerald', icon: 'fa-door-open'          },
   { id: 'normativo',      label: 'Normativo',     color: 'blue',    icon: 'fa-scale-balanced'     },
-  { id: 'tecnico',        label: 'TÃ©cnico',       color: 'purple',  icon: 'fa-screwdriver-wrench' },
+  { id: 'tecnico',        label: 'Técnico',       color: 'purple',  icon: 'fa-screwdriver-wrench' },
   { id: 'operacional',    label: 'Operacional',   color: 'amber',   icon: 'fa-gears'              },
   { id: 'comportamental', label: 'Comportamental',color: 'pink',    icon: 'fa-handshake'          },
 ];
 
 const TIPO_CONFIG: Record<MidiaTipo, { label: string; icon: string; color: string; desc: string }> = {
-  youtube: { label: 'VÃ­deo YouTube', icon: 'fa-brands fa-youtube',   color: 'red',    desc: 'Cole o link do YouTube'                          },
-  audio:   { label: 'Ãudio Drive',   icon: 'fa-solid fa-headphones', color: 'violet', desc: 'Cole o link de compartilhamento do Google Drive' },
+  youtube: { label: 'Vídeo YouTube', icon: 'fa-brands fa-youtube',   color: 'red',    desc: 'Cole o link do YouTube'                          },
+  audio:   { label: 'Áudio Drive',   icon: 'fa-solid fa-headphones', color: 'violet', desc: 'Cole o link de compartilhamento do Google Drive' },
   mp4:     { label: 'Video Drive',   icon: 'fa-solid fa-circle-play', color: 'teal',   desc: 'Cole o link de compartilhamento do Google Drive' },
 };
 
-// Extrai o ID de vÃ­deo do YouTube
+// Extrai o ID de vídeo do YouTube
 function extractYouTubeId(url: string): string | null {
   const patterns = [
     /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
@@ -82,7 +82,7 @@ function driveEmbedUrl(driveId: string): string {
   return `https://drive.google.com/file/d/${driveId}/preview`;
 }
 
-// Converte link Drive em URL de player de Ã¡udio (iframe)
+// Converte link Drive em URL de player de áudio (iframe)
 function driveAudioUrl(driveId: string): string {
   return `https://drive.google.com/file/d/${driveId}/preview`;
 }
@@ -91,16 +91,16 @@ function driveAudioUrl(driveId: string): string {
 function processarLink(url: string, tipo: MidiaTipo): { youtubeId?: string; driveId?: string; valid: boolean; erro?: string } {
   if (tipo === 'youtube') {
     const yid = extractYouTubeId(url);
-    if (!yid) return { valid: false, erro: 'Link do YouTube invÃ¡lido. Use o formato: https://youtube.com/watch?v=...' };
+    if (!yid) return { valid: false, erro: 'Link do YouTube inválido. Use o formato: https://youtube.com/watch?v=...' };
     return { youtubeId: yid, valid: true };
   }
-  // Ã¡udio ou PDF â€” precisa ser Google Drive
+  // áudio ou PDF — precisa ser Google Drive
   const did = extractDriveId(url);
-  if (!did) return { valid: false, erro: 'Link do Google Drive invÃ¡lido. Use o botÃ£o "Compartilhar" do Drive e copie o link.' };
+  if (!did) return { valid: false, erro: 'Link do Google Drive inválido. Use o botão "Compartilhar" do Drive e copie o link.' };
   return { driveId: did, valid: true };
 }
 
-// â”€â”€â”€ Player Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Player Modal ─────────────────────────────────────────────────────────────
 
 const PlayerModal: React.FC<{
   midia: Midia;
@@ -161,7 +161,7 @@ const PlayerModal: React.FC<{
           {/* Fallback: link direto */}
           <div className="bg-slate-900 border border-slate-200 rounded-2xl p-4 text-center space-y-2">
             <i className="fa-solid fa-headphones text-violet-400 text-3xl block mb-2"></i>
-            <p className="text-xs text-slate-500">Se o player nÃ£o carregar, abra diretamente no Drive:</p>
+            <p className="text-xs text-slate-500">Se o player não carregar, abra diretamente no Drive:</p>
             <a
               href={`https://drive.google.com/file/d/${midia.driveId}/view`}
               target="_blank"
@@ -175,7 +175,7 @@ const PlayerModal: React.FC<{
       );
     }
 
-    return <p className="text-slate-500 text-sm text-center py-8">ConteÃºdo indisponÃ­vel.</p>;
+    return <p className="text-slate-500 text-sm text-center py-8">Conteúdo indisponível.</p>;
   };
 
   return (
@@ -200,7 +200,7 @@ const PlayerModal: React.FC<{
   );
 };
 
-// â”€â”€â”€ Card de MÃ­dia â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Card de Mídia ────────────────────────────────────────────────────────────
 
 const MidiaCard: React.FC<{
   midia: Midia;
@@ -302,7 +302,7 @@ const MidiaCard: React.FC<{
   );
 };
 
-// â”€â”€â”€ FormulÃ¡rio de AdiÃ§Ã£o â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Formulário de Adição ─────────────────────────────────────────────────────
 
 const FormMidia: React.FC<{
   onSave: (data: Omit<Midia, 'id' | 'tenantId' | 'createdAt' | 'ativo'>) => Promise<void>;
@@ -320,12 +320,12 @@ const FormMidia: React.FC<{
 
   const handleSalvar = async () => {
     if (!form.titulo.trim() || !form.link.trim()) {
-      setLinkErro('Preencha o tÃ­tulo e o link.');
+      setLinkErro('Preencha o título e o link.');
       return;
     }
     const result = processarLink(form.link.trim(), tipo);
     if (!result.valid) {
-      setLinkErro(result.erro || 'Link invÃ¡lido.');
+      setLinkErro(result.erro || 'Link inválido.');
       return;
     }
     setLinkErro('');
@@ -349,11 +349,11 @@ const FormMidia: React.FC<{
 
   return (
     <div className="bg-[#0D1B3E] border border-blue-500/30 rounded-2xl p-6 space-y-5">
-      <h4 className="text-blue-400 font-black uppercase text-xs tracking-widest">Adicionar ConteÃºdo ao RepositÃ³rio</h4>
+      <h4 className="text-blue-400 font-black uppercase text-xs tracking-widest">Adicionar Conteúdo ao Repositório</h4>
 
       {/* Tipo */}
       <div className="space-y-2">
-        <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Tipo de ConteÃºdo</label>
+        <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Tipo de Conteúdo</label>
         <div className="grid grid-cols-3 gap-3">
           {(Object.entries(TIPO_CONFIG) as [MidiaTipo, typeof TIPO_CONFIG[MidiaTipo]][]).map(([key, cfg]) => (
             <button type="button" key={key} onClick={() => { setTipo(key); setLinkErro(''); set('link', ''); }}
@@ -367,15 +367,15 @@ const FormMidia: React.FC<{
         </div>
       </div>
 
-      {/* InstruÃ§Ã£o de como obter o link */}
+      {/* Instrução de como obter o link */}
       {tipo !== 'youtube' && (
         <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4 space-y-2">
           <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest">
             <i className="fa-brands fa-google-drive mr-1.5"></i>Como obter o link do Google Drive
           </p>
           <ol className="text-xs text-slate-500 space-y-1 list-decimal list-inside">
-            <li>FaÃ§a upload do arquivo no Google Drive</li>
-            <li>Clique com o botÃ£o direito no arquivo â†’ <strong className="text-[#0A1628]">Compartilhar</strong></li>
+            <li>Faça upload do arquivo no Google Drive</li>
+            <li>Clique com o botão direito no arquivo → <strong className="text-[#0A1628]">Compartilhar</strong></li>
             <li>Em "Acesso geral", selecione <strong className="text-[#0A1628]">"Qualquer pessoa com o link"</strong></li>
             <li>Clique em <strong className="text-[#0A1628]">Copiar link</strong> e cole abaixo</li>
           </ol>
@@ -402,11 +402,11 @@ const FormMidia: React.FC<{
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* TÃ­tulo */}
+        {/* Título */}
         <div className="space-y-1 md:col-span-2">
-          <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">TÃ­tulo *</label>
+          <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Título *</label>
           <input value={form.titulo} onChange={e => set('titulo', e.target.value)}
-            placeholder="Ex: IntroduÃ§Ã£o ao Provimento 213/2026"
+            placeholder="Ex: Introdução ao Provimento 213/2026"
             className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
         </div>
 
@@ -419,9 +419,9 @@ const FormMidia: React.FC<{
           </select>
         </div>
 
-        {/* DuraÃ§Ã£o */}
+        {/* Duração */}
         <div className="space-y-1">
-          <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">DuraÃ§Ã£o (minutos)</label>
+          <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Duração (minutos)</label>
           <input type="number" min={1} max={300} value={form.duracaoMin} onChange={e => set('duracaoMin', e.target.value)}
             className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
         </div>
@@ -434,11 +434,11 @@ const FormMidia: React.FC<{
             className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
         </div>
 
-        {/* DescriÃ§Ã£o */}
+        {/* Descrição */}
         <div className="space-y-1 md:col-span-2">
-          <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">DescriÃ§Ã£o</label>
+          <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Descrição</label>
           <input value={form.descricao} onChange={e => set('descricao', e.target.value)}
-            placeholder="Breve descriÃ§Ã£o do conteÃºdo"
+            placeholder="Breve descrição do conteúdo"
             className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
         </div>
       </div>
@@ -452,7 +452,7 @@ const FormMidia: React.FC<{
           className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-[#0A1628] px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
           {saving
             ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Salvando...</>
-            : <><i className="fa-solid fa-floppy-disk mr-2"></i>Adicionar ao RepositÃ³rio</>
+            : <><i className="fa-solid fa-floppy-disk mr-2"></i>Adicionar ao Repositório</>
           }
         </button>
       </div>
@@ -460,7 +460,7 @@ const FormMidia: React.FC<{
   );
 };
 
-// â”€â”€â”€ Main View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Main View ────────────────────────────────────────────────────────────────
 
 const RepositorioView: React.FC = () => {
   const { state } = useApp();
@@ -476,7 +476,7 @@ const RepositorioView: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [playerMidia, setPlayerMidia] = useState<Midia | null>(null);
 
-  // Load mÃ­dias
+  // Load mídias
   useEffect(() => {
     const q = query(collection(db, 'repositorio'), orderBy('createdAt', 'desc'));
     return onSnapshot(q, s =>
@@ -513,14 +513,14 @@ const RepositorioView: React.FC = () => {
       tenantId: user.tenantId, criadoPor: user.id,
       createdAt: serverTimestamp(),
     });
-    showToast('ConteÃºdo adicionado ao repositÃ³rio!', 'success');
+    showToast('Conteúdo adicionado ao repositório!', 'success');
     setShowForm(false);
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Remover este conteÃºdo do repositÃ³rio?')) return;
+    if (!confirm('Remover este conteúdo do repositório?')) return;
     await updateDoc(doc(db, 'repositorio', id), { ativo: false });
-    showToast('ConteÃºdo removido.', 'success');
+    showToast('Conteúdo removido.', 'success');
   };
 
   // Filtros
@@ -541,7 +541,7 @@ const RepositorioView: React.FC = () => {
   const totalVistos = assistidas.size;
 
   return (
-    <div className="p-8 space-y-6 bg-[#05080f] min-h-screen animate-in fade-in">
+    <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
 
       {/* Player Modal */}
       {playerMidia && (
@@ -552,10 +552,10 @@ const RepositorioView: React.FC = () => {
       <header className="flex items-start justify-between">
         <div>
           <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">
-            RepositÃ³rio de <span className="text-blue-500">ConteÃºdo</span>
+            Repositório de <span className="text-blue-500">Conteúdo</span>
           </h2>
           <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">
-            VÃ­deos Â· Ãudios Â· PDFs â€” Google Drive & YouTube
+            Vídeos · Áudios · PDFs — Google Drive & YouTube
           </p>
         </div>
         {isGestor && !showForm && (
@@ -569,8 +569,8 @@ const RepositorioView: React.FC = () => {
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'VÃ­deos',         value: totalVideos, icon: 'fa-brands fa-youtube',   color: 'red'    },
-          { label: 'Ãudios',         value: totalAudios, icon: 'fa-solid fa-headphones', color: 'violet' },
+          { label: 'Vídeos',         value: totalVideos, icon: 'fa-brands fa-youtube',   color: 'red'    },
+          { label: 'Áudios',         value: totalAudios, icon: 'fa-solid fa-headphones', color: 'violet' },
           { label: 'Videos',           value: totalPDFs,   icon: 'fa-solid fa-file-pdf',   color: 'rose'   },
           { label: 'Vistos por mim', value: totalVistos, icon: 'fa-solid fa-circle-check',color: 'emerald'},
         ].map((s, i) => (
@@ -582,7 +582,7 @@ const RepositorioView: React.FC = () => {
         ))}
       </div>
 
-      {/* FormulÃ¡rio */}
+      {/* Formulário */}
       {showForm && (
         <FormMidia onSave={handleSave} onCancel={() => setShowForm(false)} />
       )}
@@ -590,7 +590,7 @@ const RepositorioView: React.FC = () => {
       {/* Filtros */}
       <div className="flex flex-wrap gap-3 items-center">
         <input value={busca} onChange={e => setBusca(e.target.value)}
-          placeholder="Buscar conteÃºdo..."
+          placeholder="Buscar conteúdo..."
           className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500 w-56" />
 
         {/* Filtro tipo */}
@@ -627,8 +627,8 @@ const RepositorioView: React.FC = () => {
       {filtradas.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 opacity-30">
           <i className="fa-solid fa-photo-film text-5xl text-slate-600 mb-4"></i>
-          <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Nenhum conteÃºdo encontrado</p>
-          {isGestor && <p className="text-slate-600 text-[10px] mt-1">Clique em "Adicionar" para inserir o primeiro conteÃºdo</p>}
+          <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Nenhum conteúdo encontrado</p>
+          {isGestor && <p className="text-slate-600 text-[10px] mt-1">Clique em "Adicionar" para inserir o primeiro conteúdo</p>}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">

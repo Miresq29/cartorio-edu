@@ -1,19 +1,19 @@
-﻿
+
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 
 const TenantsView: React.FC = () => {
-  // CORREÃ‡ÃƒO: Removido dispatch, usando estado local para demonstraÃ§Ã£o imediata
+  // CORREÇÃO: Removido dispatch, usando estado local para demonstração imediata
   const { state } = useApp();
   const { showToast } = useToast();
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
 
-  // Estado local para refletir as mudanÃ§as na interface sem o dispatch
+  // Estado local para refletir as mudanças na interface sem o dispatch
   const [localTenants, setLocalTenants] = useState<any[]>([]);
 
-  // CORREÃ‡ÃƒO: Acesso seguro Ã  lista de tenants do estado global
+  // CORREÇÃO: Acesso seguro à lista de tenants do estado global
   const allTenants = [...((state as any).tenants || []), ...localTenants];
 
   const handleCreateTenant = (e: React.FormEvent) => {
@@ -28,29 +28,29 @@ const TenantsView: React.FC = () => {
     };
 
     setLocalTenants(prev => [...prev, newTenant]);
-    showToast(`CartÃ³rio "${name}" ativado com sucesso!`, "success");
+    showToast(`Cartório "${name}" ativado com sucesso!`, "success");
     setName(''); 
     setSlug('');
   };
 
   return (
-    <div className="p-12 min-h-full bg-[#0D1B3E] animate-in fade-in space-y-12">
+    <div className="p-12 min-h-full bg-slate-50 animate-in fade-in space-y-12">
       <header>
         <h2 className="text-4xl font-black text-[#0A1628] italic uppercase tracking-tighter">
-          GestÃ£o de <span className="text-blue-500">CartÃ³rios</span>
+          Gestão de <span className="text-blue-500">Cartórios</span>
         </h2>
         <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.4em] mt-2">
-          AtivaÃ§Ã£o de Novas InstÃ¢ncias // MJ Consultoria Master
+          Ativação de Novas Instâncias // MJ Consultoria Master
         </p>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         <form onSubmit={handleCreateTenant} className="bg-white border border-slate-200 rounded-[40px] p-12 space-y-6 shadow-2xl">
-          <h3 className="text-[#0A1628] font-bold uppercase text-sm italic">Ativar Novo CartÃ³rio Cliente</h3>
+          <h3 className="text-[#0A1628] font-bold uppercase text-sm italic">Ativar Novo Cartório Cliente</h3>
           <div className="space-y-4">
             <input 
               type="text" value={name} onChange={e => setName(e.target.value)}
-              placeholder="Nome da Serventia (Ex: 1Âº OfÃ­cio de Notas)"
+              placeholder="Nome da Serventia (Ex: 1º Ofício de Notas)"
               className="w-full bg-[#0D1B3E] border border-slate-200 rounded-3xl p-5 text-[#0A1628] outline-none focus:border-blue-600 transition-all" required 
             />
             <input 
@@ -65,10 +65,10 @@ const TenantsView: React.FC = () => {
         </form>
 
         <div className="bg-white border border-slate-200 rounded-[40px] p-10 space-y-6 shadow-lg">
-          <h3 className="text-slate-500 font-bold uppercase text-[10px] tracking-[0.3em] px-2">InstÃ¢ncias Ativas</h3>
+          <h3 className="text-slate-500 font-bold uppercase text-[10px] tracking-[0.3em] px-2">Instâncias Ativas</h3>
           <div className="space-y-3 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
             {allTenants.length === 0 && (
-              <p className="text-slate-700 text-xs font-bold uppercase text-center py-10 italic">Nenhum cartÃ³rio remoto carregado</p>
+              <p className="text-slate-700 text-xs font-bold uppercase text-center py-10 italic">Nenhum cartório remoto carregado</p>
             )}
             {allTenants.map((t: any) => (
               <div key={t.id} className="p-5 bg-[#0D1B3E] border border-slate-200 rounded-2xl flex justify-between items-center group hover:border-blue-500/30 transition-all">

@@ -1,5 +1,5 @@
-﻿// frontend/src/features/Certificado/CertificadoView.tsx
-// MÃ³dulo de Certificados â€” geraÃ§Ã£o em PDF direto no browser (sem backend)
+// frontend/src/features/Certificado/CertificadoView.tsx
+// Módulo de Certificados — geração em PDF direto no browser (sem backend)
 // Usa window.print() com CSS @media print para gerar PDF fiel
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -11,7 +11,7 @@ import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 
-// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface Certificado {
   id: string;
@@ -60,7 +60,7 @@ interface UserData {
   tenantId: string;
 }
 
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function gerarCodigo(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -73,18 +73,18 @@ function gerarCodigo(): string {
 }
 
 function formatDate(ts: any): string {
-  if (!ts) return 'â€“';
+  if (!ts) return '–';
   const d = ts?.toDate ? ts.toDate() : new Date(ts);
   return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
 }
 
 function formatDateShort(ts: any): string {
-  if (!ts) return 'â€“';
+  if (!ts) return '–';
   const d = ts?.toDate ? ts.toDate() : new Date(ts);
   return d.toLocaleDateString('pt-BR');
 }
 
-// â”€â”€â”€ Componente do Certificado (para impressÃ£o) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Componente do Certificado (para impressão) ───────────────────────────────
 
 const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
   const dataExtenso = formatDate(cert.emitidoEm);
@@ -112,7 +112,7 @@ const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
         pointerEvents: 'none',
       }} />
 
-      {/* Marca d'Ã¡gua */}
+      {/* Marca d'água */}
       <div style={{
         position: 'absolute', inset: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -127,7 +127,7 @@ const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
         background: 'linear-gradient(135deg, #0f2240 0%, #1e3a5f 60%, #c8a84b 100%)',
       }} />
 
-      {/* Faixa rodapÃ© */}
+      {/* Faixa rodapé */}
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0, height: '12mm',
         background: 'linear-gradient(90deg, #1e3a5f 0%, #0f2240 100%)',
@@ -135,41 +135,41 @@ const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
         padding: '0 16mm',
       }}>
         <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '7pt' }}>
-          Plataforma CartÃ³rioLearn Â· MJ Consultoria LGPD
+          Plataforma CartórioLearn · MJ Consultoria LGPD
         </span>
         <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '7pt' }}>
-          CÃ³digo: {cert.codigoVerificacao}
+          Código: {cert.codigoVerificacao}
         </span>
       </div>
 
-      {/* ConteÃºdo principal */}
+      {/* Conteúdo principal */}
       <div style={{
         position: 'absolute', top: '22mm', left: '18mm', right: '18mm', bottom: '16mm',
         display: 'flex', flexDirection: 'column', alignItems: 'center',
       }}>
-        {/* Logo / tÃ­tulo topo */}
+        {/* Logo / título topo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4mm' }}>
           <div style={{
             width: '32px', height: '32px', background: '#1e3a5f',
             borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: '16px',
-          }}>âš–ï¸</div>
+          }}>⚖️</div>
           <div>
             <div style={{ fontSize: '10pt', fontWeight: 800, color: '#1e3a5f', letterSpacing: '2px', textTransform: 'uppercase' }}>
-              CartÃ³rioLearn
+              CartórioLearn
             </div>
             <div style={{ fontSize: '6pt', color: '#888', letterSpacing: '1px', textTransform: 'uppercase' }}>
-              MJ Consultoria Â· Plataforma de Conformidade Notarial
+              MJ Consultoria · Plataforma de Conformidade Notarial
             </div>
           </div>
         </div>
 
-        {/* CERTIFICADO DE CONCLUSÃƒO */}
+        {/* CERTIFICADO DE CONCLUSÃO */}
         <div style={{
           fontSize: '7pt', fontWeight: 800, color: '#c8a84b',
           letterSpacing: '4px', textTransform: 'uppercase', marginBottom: '2mm',
         }}>
-          âœ¦ Certificado de {cert.tipo === 'exame' ? 'AprovaÃ§Ã£o em Exame' : 'ConclusÃ£o'} âœ¦
+          ✦ Certificado de {cert.tipo === 'exame' ? 'Aprovação em Exame' : 'Conclusão'} ✦
         </div>
 
         {/* Texto central */}
@@ -185,10 +185,10 @@ const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
             {cert.colaboradorNome}
           </p>
           <p style={{ fontSize: '8pt', color: '#777', margin: '2mm 0 4mm 0' }}>
-            {cert.cargo}{cert.cartorio ? ` Â· ${cert.cartorio}` : ''}
+            {cert.cargo}{cert.cartorio ? ` · ${cert.cartorio}` : ''}
           </p>
           <p style={{ fontSize: '10pt', color: '#333', margin: '0 0 1mm 0', lineHeight: 1.6 }}>
-            concluiu com Ãªxito o{cert.tipo === 'modulo' ? ' mÃ³dulo' : cert.tipo === 'exame' ? ' exame' : 'a trilha'}
+            concluiu com êxito o{cert.tipo === 'modulo' ? ' módulo' : cert.tipo === 'exame' ? ' exame' : 'a trilha'}
           </p>
           <p style={{
             fontSize: '15pt', fontWeight: 800, color: '#0f2240',
@@ -198,13 +198,13 @@ const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
           </p>
           {cert.moduloTitulo && (
             <p style={{ fontSize: '9pt', color: '#666', margin: '0 0 2mm 0' }}>
-              MÃ³dulo: {cert.moduloTitulo}
+              Módulo: {cert.moduloTitulo}
             </p>
           )}
           <p style={{ fontSize: '8pt', color: '#555', margin: '2mm 0 0 0' }}>
-            com aprovaÃ§Ã£o de <strong style={{ color: '#1e3a5f' }}>{cert.notaFinal}%</strong> e
-            carga horÃ¡ria de <strong style={{ color: '#1e3a5f' }}>{cert.cargaHoraria} horas</strong>,
-            em conformidade com os Provimentos CNJ nÂº 161/2023, 213/2026 e 149/2023.
+            com aprovação de <strong style={{ color: '#1e3a5f' }}>{cert.notaFinal}%</strong> e
+            carga horária de <strong style={{ color: '#1e3a5f' }}>{cert.cargaHoraria} horas</strong>,
+            em conformidade com os Provimentos CNJ nº 161/2023, 213/2026 e 149/2023.
           </p>
         </div>
 
@@ -219,7 +219,7 @@ const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
               Belo Horizonte, {dataExtenso}
             </div>
             <div style={{ width: '60mm', borderTop: '1px solid #999', paddingTop: '1mm' }}>
-              <div style={{ fontSize: '6pt', color: '#888', textAlign: 'center' }}>Data de EmissÃ£o</div>
+              <div style={{ fontSize: '6pt', color: '#888', textAlign: 'center' }}>Data de Emissão</div>
             </div>
           </div>
 
@@ -232,9 +232,9 @@ const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
               background: 'radial-gradient(circle, #fff9ed, #fff)',
               margin: '0 auto',
             }}>
-              <div style={{ fontSize: '16px' }}>âš–ï¸</div>
+              <div style={{ fontSize: '16px' }}>⚖️</div>
               <div style={{ fontSize: '5pt', fontWeight: 800, color: '#1e3a5f', textAlign: 'center', lineHeight: 1.2 }}>
-                CERTIFICADO<br/>VÃLIDO
+                CERTIFICADO<br/>VÁLIDO
               </div>
             </div>
           </div>
@@ -246,7 +246,7 @@ const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
             </div>
             <div style={{ width: '60mm', borderTop: '1px solid #999', paddingTop: '1mm' }}>
               <div style={{ fontSize: '6pt', color: '#888', textAlign: 'center' }}>
-                DPO Â· MJ Consultoria LGPD
+                DPO · MJ Consultoria LGPD
               </div>
             </div>
           </div>
@@ -256,7 +256,7 @@ const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
   );
 };
 
-// â”€â”€â”€ Modal de EmissÃ£o â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Modal de Emissão ─────────────────────────────────────────────────────────
 
 const ModalEmitir: React.FC<{
   quizResults: QuizResult[];
@@ -277,7 +277,7 @@ const ModalEmitir: React.FC<{
   const opcoesItem = tipo === 'trilha'
     ? [...new Set(colabTrilhas.map(t => t.trilhaTitulo || t.trilhaId).filter(Boolean))]
     : [...new Set(colabResults.filter(r => r.aprovado).map(r =>
-        tipo === 'modulo' ? `${r.trailTitle} â€” ${r.moduleTitle}` : r.trailTitle || ''
+        tipo === 'modulo' ? `${r.trailTitle} — ${r.moduleTitle}` : r.trailTitle || ''
       ).filter(Boolean))];
 
   const colabsDisponiveis = usuarios.filter(u => u.role !== 'SUPERADMIN' && u.role !== 'gestor');
@@ -285,7 +285,7 @@ const ModalEmitir: React.FC<{
   const mediaItem = (() => {
     if (!item) return 0;
     const notas = colabResults.filter(r => r.aprovado &&
-      (tipo === 'trilha' ? r.trailTitle === item : `${r.trailTitle} â€” ${r.moduleTitle}` === item)
+      (tipo === 'trilha' ? r.trailTitle === item : `${r.trailTitle} — ${r.moduleTitle}` === item)
     ).map(r => r.nota);
     return notas.length ? Math.round(notas.reduce((a, b) => a + b) / notas.length) : 0;
   })();
@@ -307,7 +307,7 @@ const ModalEmitir: React.FC<{
             className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500">
             <option value="">Selecione...</option>
             {colabsDisponiveis.map(u => (
-              <option key={u.id} value={u.id}>{u.name} â€” {u.cargo || u.role}</option>
+              <option key={u.id} value={u.id}>{u.name} — {u.cargo || u.role}</option>
             ))}
           </select>
         </div>
@@ -318,7 +318,7 @@ const ModalEmitir: React.FC<{
           <div className="grid grid-cols-3 gap-2">
             {[
               { id: 'trilha', label: 'Trilha', icon: 'fa-road' },
-              { id: 'modulo', label: 'MÃ³dulo', icon: 'fa-book-open' },
+              { id: 'modulo', label: 'Módulo', icon: 'fa-book-open' },
               { id: 'exame',  label: 'Exame',  icon: 'fa-file-pen' },
             ].map(t => (
               <button key={t.id} onClick={() => { setTipo(t.id as any); setItem(''); }}
@@ -336,12 +336,12 @@ const ModalEmitir: React.FC<{
         {colab && (
           <div className="space-y-1">
             <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
-              {tipo === 'trilha' ? 'Trilha ConcluÃ­da' : tipo === 'modulo' ? 'MÃ³dulo Aprovado' : 'Exame Aprovado'} *
+              {tipo === 'trilha' ? 'Trilha Concluída' : tipo === 'modulo' ? 'Módulo Aprovado' : 'Exame Aprovado'} *
             </label>
             {opcoesItem.length === 0 ? (
               <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl p-3">
                 <i className="fa-solid fa-triangle-exclamation mr-2"></i>
-                Nenhum {tipo} concluÃ­do/aprovado para este colaborador ainda.
+                Nenhum {tipo} concluído/aprovado para este colaborador ainda.
               </p>
             ) : (
               <select value={item} onChange={e => setItem(e.target.value)}
@@ -353,14 +353,14 @@ const ModalEmitir: React.FC<{
           </div>
         )}
 
-        {/* Preview rÃ¡pido */}
+        {/* Preview rápido */}
         {colab && item && (
           <div className="bg-slate-900 border border-slate-200 rounded-xl p-4 space-y-1">
             <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Preview</p>
             <p className="text-sm font-black text-[#0A1628]">{colabUser?.name}</p>
-            <p className="text-xs text-slate-500">{colabUser?.cargo} Â· {cartorio}</p>
+            <p className="text-xs text-slate-500">{colabUser?.cargo} · {cartorio}</p>
             <p className="text-xs text-blue-400">{item}</p>
-            {mediaItem > 0 && <p className="text-xs text-emerald-400">MÃ©dia: {mediaItem}%</p>}
+            {mediaItem > 0 && <p className="text-xs text-emerald-400">Média: {mediaItem}%</p>}
           </div>
         )}
 
@@ -372,8 +372,8 @@ const ModalEmitir: React.FC<{
           <button
             onClick={() => {
               if (!colab || !item) return;
-              const trilhaTitulo = tipo === 'modulo' ? item.split(' â€” ')[0] : item;
-              const moduloTitulo = tipo === 'modulo' ? item.split(' â€” ')[1] : undefined;
+              const trilhaTitulo = tipo === 'modulo' ? item.split(' — ')[0] : item;
+              const moduloTitulo = tipo === 'modulo' ? item.split(' — ')[1] : undefined;
               onEmitir({
                 colaboradorId: colab,
                 colaboradorNome: colabUser?.name || '',
@@ -396,7 +396,7 @@ const ModalEmitir: React.FC<{
   );
 };
 
-// â”€â”€â”€ Main View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Main View ────────────────────────────────────────────────────────────────
 
 const CertificadoView: React.FC = () => {
   const { state } = useApp();
@@ -427,7 +427,7 @@ const CertificadoView: React.FC = () => {
     const q4 = query(collection(db, 'users'), where('tenantId', '==', tenantId));
     const u4 = onSnapshot(q4, s => setUsuarios(s.docs.map(d => ({ id: d.id, ...d.data() } as UserData))));
 
-    // Pegar nome do cartÃ³rio
+    // Pegar nome do cartório
     const loadCartorio = async () => {
       try {
         const snap = await getDoc(doc(db, 'tenants', tenantId));
@@ -439,7 +439,7 @@ const CertificadoView: React.FC = () => {
     return () => { u1(); u2(); u3(); u4(); };
   }, [tenantId]);
 
-  // Filtrar certificados do colaborador atual se nÃ£o for gestor
+  // Filtrar certificados do colaborador atual se não for gestor
   const meusCerts = isGestor
     ? certificados
     : certificados.filter(c => c.colaboradorId === user.id || c.colaboradorNome === user.name);
@@ -472,12 +472,12 @@ const CertificadoView: React.FC = () => {
     }, 300);
   };
 
-  const tipoLabel = { trilha: 'Trilha', modulo: 'MÃ³dulo', exame: 'Exame' };
+  const tipoLabel = { trilha: 'Trilha', modulo: 'Módulo', exame: 'Exame' };
   const tipoColor = { trilha: 'teal', modulo: 'blue', exame: 'purple' };
 
   return (
     <>
-      {/* CSS para impressÃ£o */}
+      {/* CSS para impressão */}
       <style>{`
         @media print {
           body > * { display: none !important; }
@@ -487,15 +487,15 @@ const CertificadoView: React.FC = () => {
         #certificado-wrapper { display: none; }
       `}</style>
 
-      {/* Wrapper de impressÃ£o (oculto em tela) */}
+      {/* Wrapper de impressão (oculto em tela) */}
       <div id="certificado-wrapper">
         {imprimindo && <CertificadoImpressao cert={imprimindo} />}
       </div>
 
       {/* Interface principal */}
-      <div className="p-8 space-y-6 bg-[#0D1B3E] min-h-screen animate-in fade-in">
+      <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
 
-        {/* Modal de emissÃ£o */}
+        {/* Modal de emissão */}
         {showModal && isGestor && (
           <ModalEmitir
             quizResults={quizResults}
@@ -511,10 +511,10 @@ const CertificadoView: React.FC = () => {
         <header className="flex items-start justify-between">
           <div>
             <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">
-              Certificados de <span className="text-amber-500">ConclusÃ£o</span>
+              Certificados de <span className="text-amber-500">Conclusão</span>
             </h2>
             <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">
-              EmissÃ£o Â· HistÃ³rico Â· Download PDF
+              Emissão · Histórico · Download PDF
             </p>
           </div>
           {isGestor && (
@@ -530,7 +530,7 @@ const CertificadoView: React.FC = () => {
           {[
             { label: 'Total Emitidos',      value: meusCerts.length,                                       icon: 'fa-certificate',    color: 'amber'   },
             { label: 'Trilhas',             value: meusCerts.filter(c => c.tipo === 'trilha').length,       icon: 'fa-road',           color: 'teal'    },
-            { label: 'MÃ³dulos',             value: meusCerts.filter(c => c.tipo === 'modulo').length,       icon: 'fa-book-open',      color: 'blue'    },
+            { label: 'Módulos',             value: meusCerts.filter(c => c.tipo === 'modulo').length,       icon: 'fa-book-open',      color: 'blue'    },
             { label: 'Exames',              value: meusCerts.filter(c => c.tipo === 'exame').length,        icon: 'fa-file-pen',       color: 'purple'  },
           ].map((s, i) => (
             <div key={i} className="bg-white border border-slate-200 rounded-[20px] p-5 space-y-2">
@@ -545,10 +545,10 @@ const CertificadoView: React.FC = () => {
         <div className="bg-blue-500/5 border border-blue-500/20 rounded-2xl p-4 flex items-start gap-3">
           <i className="fa-solid fa-circle-info text-blue-400 text-lg mt-0.5 flex-shrink-0"></i>
           <div>
-            <p className="text-blue-400 font-black text-xs uppercase tracking-widest">Certificados para DossiÃª CNJ</p>
+            <p className="text-blue-400 font-black text-xs uppercase tracking-widest">Certificados para Dossiê CNJ</p>
             <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
-              Os certificados gerados por esta plataforma sÃ£o vÃ¡lidos como evidÃªncia de treinamento para o dossiÃª de conformidade CNJ, 
-              conforme Provimentos nÂº 149/2023, 161/2023 e 213/2026. Cada certificado possui cÃ³digo de verificaÃ§Ã£o Ãºnico.
+              Os certificados gerados por esta plataforma são válidos como evidência de treinamento para o dossiê de conformidade CNJ, 
+              conforme Provimentos nº 149/2023, 161/2023 e 213/2026. Cada certificado possui código de verificação único.
             </p>
           </div>
         </div>
@@ -586,7 +586,7 @@ const CertificadoView: React.FC = () => {
                       )}
                       <p className="text-[10px] text-slate-500">
                         <i className="fa-solid fa-user mr-1"></i>{cert.colaboradorNome}
-                        {cert.cargo && <span className="text-slate-600"> Â· {cert.cargo}</span>}
+                        {cert.cargo && <span className="text-slate-600"> · {cert.cargo}</span>}
                       </p>
                       <p className="text-[10px] text-slate-600 mt-0.5">
                         <i className="fa-solid fa-calendar mr-1"></i>{formatDateShort(cert.emitidoEm)}
@@ -594,7 +594,7 @@ const CertificadoView: React.FC = () => {
                       </p>
                     </div>
 
-                    {/* AÃ§Ãµes */}
+                    {/* Ações */}
                     <div className="flex flex-col gap-2 flex-shrink-0">
                       <button onClick={() => handleImprimir(cert)}
                         className="bg-amber-600 hover:bg-amber-500 text-[#0A1628] px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5">
@@ -602,10 +602,10 @@ const CertificadoView: React.FC = () => {
                       </button>
                       <button onClick={() => {
                         navigator.clipboard.writeText(cert.codigoVerificacao);
-                        showToast('CÃ³digo copiado!', 'success');
+                        showToast('Código copiado!', 'success');
                       }}
                         className="bg-slate-900 hover:bg-slate-800 border border-slate-200 text-slate-500 px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5">
-                        <i className="fa-solid fa-copy"></i>CÃ³d.
+                        <i className="fa-solid fa-copy"></i>Cód.
                       </button>
                     </div>
                   </div>

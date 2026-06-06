@@ -1,5 +1,5 @@
-﻿// frontend/src/features/Colaboradores/ColaboradoresView.tsx
-// Cole este conteÃºdo no arquivo que vocÃª criou
+// frontend/src/features/Colaboradores/ColaboradoresView.tsx
+// Cole este conteúdo no arquivo que você criou
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -10,7 +10,7 @@ import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
 import type { Colaborador, ColaboradorRole, ColaboradorCargo, ColaboradorCreatePayload } from '../../types/colaborador';
 
-// â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── helpers ──────────────────────────────────────────────────
 
 function maskCpf(cpf: string): string {
   const d = cpf.replace(/\D/g, '');
@@ -24,7 +24,7 @@ async function hashCpf(cpf: string): Promise<string> {
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// â”€â”€ constantes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── constantes ───────────────────────────────────────────────
 
 const ROLES: { value: ColaboradorRole; label: string }[] = [
   { value: 'gestor',    label: 'Gestor' },
@@ -34,8 +34,8 @@ const ROLES: { value: ColaboradorRole; label: string }[] = [
 ];
 
 const CARGOS: string[] = [
-  'TabeliÃ£o', 'Oficial de Registro', 'Escrevente Autorizado',
-  'Escrevente', 'Auxiliar Administrativo', 'ResponsÃ¡vel PLD', 'Outro',
+  'Tabelião', 'Oficial de Registro', 'Escrevente Autorizado',
+  'Escrevente', 'Auxiliar Administrativo', 'Responsável PLD', 'Outro',
 ];
 
 const ROLE_COLORS: Record<ColaboradorRole, string> = {
@@ -49,7 +49,7 @@ const emptyForm = {
   nome: '', cpf: '', cargo: '', email: '', role: 'atendente' as ColaboradorRole,
 };
 
-// â”€â”€ componente â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── componente ───────────────────────────────────────────────
 
 const ColaboradoresView: React.FC = () => {
   const { state } = useApp();
@@ -118,11 +118,11 @@ const ColaboradoresView: React.FC = () => {
       return;
     }
     if (!editTarget && form.cpf.replace(/\D/g, '').length !== 11) {
-      setError('CPF invÃ¡lido â€” informe os 11 dÃ­gitos.');
+      setError('CPF inválido — informe os 11 dígitos.');
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-      setError('E-mail invÃ¡lido.');
+      setError('E-mail inválido.');
       return;
     }
     setSaving(true);
@@ -174,19 +174,19 @@ const ColaboradoresView: React.FC = () => {
     await deleteDoc(doc(db, 'colaboradores', c.id));
   }
 
-  // â”€â”€ render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── render ────────────────────────────────────────────────
 
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto">
 
-      {/* cabeÃ§alho */}
+      {/* cabeçalho */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-black text-slate-100 uppercase tracking-widest">
             Colaboradores
           </h1>
           <p className="text-xs text-slate-500 mt-1 uppercase tracking-widest">
-            {colaboradores.filter(c => c.ativo).length} ativos Â·{' '}
+            {colaboradores.filter(c => c.ativo).length} ativos ·{' '}
             {colaboradores.length} cadastrados
           </p>
         </div>
@@ -204,7 +204,7 @@ const ColaboradoresView: React.FC = () => {
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <input
           type="text"
-          placeholder="Buscar por nome, e-mail ou cargoâ€¦"
+          placeholder="Buscar por nome, e-mail ou cargo…"
           value={search}
           onChange={e => setSearch(e.target.value)}
           className="flex-1 bg-slate-800/50 border border-slate-700/50 rounded-lg px-4 py-2 text-sm text-slate-700 placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30"
@@ -233,7 +233,7 @@ const ColaboradoresView: React.FC = () => {
           <table className="min-w-full divide-y divide-slate-700/50 text-sm">
             <thead>
               <tr className="bg-slate-900/50">
-                {['Nome', 'CPF', 'Cargo', 'E-mail', 'Perfil', 'Status', ...(canEdit ? ['AÃ§Ãµes'] : [])].map(h => (
+                {['Nome', 'CPF', 'Cargo', 'E-mail', 'Perfil', 'Status', ...(canEdit ? ['Ações'] : [])].map(h => (
                   <th key={h} className="px-4 py-3 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest">
                     {h}
                   </th>
@@ -281,7 +281,7 @@ const ColaboradoresView: React.FC = () => {
               <h3 className="text-xs font-black text-slate-700 uppercase tracking-widest">
                 {editTarget ? 'Editar colaborador' : 'Novo colaborador'}
               </h3>
-              <button onClick={closeForm} className="text-slate-500 hover:text-slate-600 text-xl leading-none transition-colors">Ã—</button>
+              <button onClick={closeForm} className="text-slate-500 hover:text-slate-600 text-xl leading-none transition-colors">×</button>
             </div>
 
             <div className="px-6 py-5 flex flex-col gap-4">
@@ -293,7 +293,7 @@ const ColaboradoresView: React.FC = () => {
 
               {[
                 { label: 'Nome completo *', key: 'nome', type: 'text', placeholder: 'Ex: Maria da Silva' },
-                ...(!editTarget ? [{ label: 'CPF * (sÃ³ nÃºmeros)', key: 'cpf', type: 'text', placeholder: '12345678900' }] : []),
+                ...(!editTarget ? [{ label: 'CPF * (só números)', key: 'cpf', type: 'text', placeholder: '12345678900' }] : []),
                 { label: 'E-mail *', key: 'email', type: 'email', placeholder: 'colaborador@cartorio.com', disabled: !!editTarget },
               ].map(({ label, key, type, placeholder, disabled }) => (
                 <label key={key} className="flex flex-col gap-1">
@@ -319,7 +319,7 @@ const ColaboradoresView: React.FC = () => {
                   onChange={e => setForm(f => ({ ...f, cargo: e.target.value }))}
                   className="bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-emerald-500/50"
                 >
-                  <option value="">Selecioneâ€¦</option>
+                  <option value="">Selecione…</option>
                   {CARGOS.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </label>
@@ -349,7 +349,7 @@ const ColaboradoresView: React.FC = () => {
                 disabled={saving}
                 className="px-5 py-2 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-xs font-black uppercase tracking-widest rounded-lg transition-all disabled:opacity-50"
               >
-                {saving ? 'Salvandoâ€¦' : editTarget ? 'Salvar' : 'Cadastrar'}
+                {saving ? 'Salvando…' : editTarget ? 'Salvar' : 'Cadastrar'}
               </button>
             </div>
           </div>

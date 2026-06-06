@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { db } from '../../services/firebase';
 import {
   collection, onSnapshot, query, orderBy,
@@ -11,7 +11,7 @@ interface Participant {
   cargo: string;
   treinamento: string;
   dataConclusao: string;
-  status: 'concluÃ­do' | 'pendente' | 'vencido';
+  status: 'concluído' | 'pendente' | 'vencido';
   observacao?: string;
   createdAt?: any;
 }
@@ -23,7 +23,7 @@ interface Checklist {
 }
 
 const STATUS_CONFIG = {
-  'concluÃ­do': { color: 'emerald', icon: 'fa-circle-check', label: 'ConcluÃ­do' },
+  'concluído': { color: 'emerald', icon: 'fa-circle-check', label: 'Concluído' },
   'pendente':  { color: 'amber',   icon: 'fa-clock',        label: 'Pendente'  },
   'vencido':   { color: 'red',     icon: 'fa-circle-xmark', label: 'Vencido'   },
 };
@@ -41,7 +41,7 @@ const TrainingParticipants: React.FC = () => {
     cargo: '',
     treinamento: '',
     dataConclusao: '',
-    status: 'concluÃ­do' as Participant['status'],
+    status: 'concluído' as Participant['status'],
     observacao: '',
   });
 
@@ -71,7 +71,7 @@ const TrainingParticipants: React.FC = () => {
         ...form,
         createdAt: serverTimestamp(),
       });
-      setForm({ nomeColaborador: '', cargo: '', treinamento: '', dataConclusao: '', status: 'concluÃ­do', observacao: '' });
+      setForm({ nomeColaborador: '', cargo: '', treinamento: '', dataConclusao: '', status: 'concluído', observacao: '' });
       setShowForm(false);
     } catch (e) {
       console.error('Erro ao salvar participante', e);
@@ -94,21 +94,21 @@ const TrainingParticipants: React.FC = () => {
 
   // Stats
   const total = participants.length;
-  const concluidos = participants.filter(p => p.status === 'concluÃ­do').length;
+  const concluidos = participants.filter(p => p.status === 'concluído').length;
   const pendentes = participants.filter(p => p.status === 'pendente').length;
   const vencidos = participants.filter(p => p.status === 'vencido').length;
 
-  // Treinamentos Ãºnicos registrados
+  // Treinamentos únicos registrados
   const treinamentosUnicos = [...new Set(participants.map(p => p.treinamento))];
 
   return (
     <div className="space-y-6">
 
-      {/* Header da seÃ§Ã£o */}
+      {/* Header da seção */}
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-[#0A1628] font-black uppercase italic text-sm tracking-wider">
-            HistÃ³rico de <span className="text-blue-500">Participantes</span>
+            Histórico de <span className="text-blue-500">Participantes</span>
           </h3>
           <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">
             Registro de colaboradores por treinamento
@@ -127,7 +127,7 @@ const TrainingParticipants: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
           { label: 'Total Registros', value: total, icon: 'fa-users', color: 'blue' },
-          { label: 'ConcluÃ­dos', value: concluidos, icon: 'fa-circle-check', color: 'emerald' },
+          { label: 'Concluídos', value: concluidos, icon: 'fa-circle-check', color: 'emerald' },
           { label: 'Pendentes', value: pendentes, icon: 'fa-clock', color: 'amber' },
           { label: 'Vencidos', value: vencidos, icon: 'fa-circle-xmark', color: 'red' },
         ].map((stat, i) => (
@@ -139,7 +139,7 @@ const TrainingParticipants: React.FC = () => {
         ))}
       </div>
 
-      {/* FormulÃ¡rio de registro */}
+      {/* Formulário de registro */}
       {showForm && (
         <div className="bg-[#0D1B3E] border border-blue-500/30 rounded-2xl p-6 space-y-4">
           <h4 className="text-xs font-black text-blue-400 uppercase tracking-widest">Novo Registro</h4>
@@ -150,17 +150,17 @@ const TrainingParticipants: React.FC = () => {
               <input
                 value={form.nomeColaborador}
                 onChange={e => setForm(f => ({ ...f, nomeColaborador: e.target.value }))}
-                placeholder="Ex: JoÃ£o Silva"
+                placeholder="Ex: João Silva"
                 className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500 transition-colors"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Cargo / FunÃ§Ã£o</label>
+              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Cargo / Função</label>
               <input
                 value={form.cargo}
                 onChange={e => setForm(f => ({ ...f, cargo: e.target.value }))}
-                placeholder="Ex: Escrevente TÃ©cnico"
+                placeholder="Ex: Escrevente Técnico"
                 className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500 transition-colors"
               />
             </div>
@@ -192,7 +192,7 @@ const TrainingParticipants: React.FC = () => {
             )}
 
             <div className="space-y-1">
-              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Data de ConclusÃ£o *</label>
+              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Data de Conclusão *</label>
               <input
                 type="date"
                 value={form.dataConclusao}
@@ -208,18 +208,18 @@ const TrainingParticipants: React.FC = () => {
                 onChange={e => setForm(f => ({ ...f, status: e.target.value as Participant['status'] }))}
                 className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500 transition-colors"
               >
-                <option value="concluÃ­do">âœ… ConcluÃ­do</option>
-                <option value="pendente">â³ Pendente</option>
-                <option value="vencido">âŒ Vencido</option>
+                <option value="concluído">✅ Concluído</option>
+                <option value="pendente">⏳ Pendente</option>
+                <option value="vencido">❌ Vencido</option>
               </select>
             </div>
 
             <div className="space-y-1 md:col-span-2">
-              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">ObservaÃ§Ã£o</label>
+              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Observação</label>
               <input
                 value={form.observacao}
                 onChange={e => setForm(f => ({ ...f, observacao: e.target.value }))}
-                placeholder="ObservaÃ§Ãµes adicionais..."
+                placeholder="Observações adicionais..."
                 className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500 transition-colors"
               />
             </div>
@@ -247,7 +247,7 @@ const TrainingParticipants: React.FC = () => {
       {/* Filtros */}
       <div className="flex flex-wrap gap-3">
         <div className="flex gap-2">
-          {['todos', 'concluÃ­do', 'pendente', 'vencido'].map(s => (
+          {['todos', 'concluído', 'pendente', 'vencido'].map(s => (
             <button
               key={s}
               onClick={() => setFilterStatus(s)}
@@ -289,7 +289,8 @@ const TrainingParticipants: React.FC = () => {
           </div>
         ) : (
           filtered.map(p => {
-            const sc = STATUS_CONFIG[p.status];
+            const sc = STATUS_CONFIG[p.status as keyof typeof STATUS_CONFIG]
+              ?? { color: 'slate', icon: 'fa-circle-question', label: p.status || 'Desconhecido' };
             return (
               <div
                 key={p.id}
