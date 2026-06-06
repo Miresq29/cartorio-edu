@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useAudit } from '../../hooks/useAudit';
 import { extractTextFromFile } from '../../services/extractor';
