@@ -25,10 +25,10 @@ const TABS: { id: Tab; icon: string; label: string }[] = [
 type SummaryType = 'executivo' | 'tecnico' | 'didatico' | 'operacional';
 
 const SUMMARY_TYPES: { id: SummaryType; label: string; desc: string; color: string }[] = [
-  { id: 'executivo',   label: 'Executivo',   desc: 'Para gestores — pontos-chave e impactos',        color: 'blue'    },
-  { id: 'tecnico',     label: 'Técnico',     desc: 'Fundamentos legais e análise normativa',          color: 'purple'  },
-  { id: 'didatico',    label: 'Didático',    desc: 'Para treinamento — exemplos práticos',            color: 'emerald' },
-  { id: 'operacional', label: 'Operacional', desc: 'Procedimentos e passo a passo do dia a dia',     color: 'amber'   },
+  { id: 'executivo',   label: 'Executivo',   desc: 'Para gestores — pontos-chave e impactos',       color: 'blue'    },
+  { id: 'tecnico',     label: 'Técnico',     desc: 'Fundamentos legais e análise normativa',         color: 'purple'  },
+  { id: 'didatico',    label: 'Didático',    desc: 'Para treinamento — exemplos práticos',           color: 'emerald' },
+  { id: 'operacional', label: 'Operacional', desc: 'Procedimentos e passo a passo do dia a dia',    color: 'amber'   },
 ];
 
 interface TrainingOption {
@@ -60,7 +60,6 @@ const TrainingView: React.FC = () => {
   const [checklists, setChecklists] = useState<any[]>([]);
   const [knowledgeDocs, setKnowledgeDocs] = useState<any[]>([]);
 
-  // IA de Treinamento
   const [messages, setMessages] = useState<TrainingMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -69,7 +68,6 @@ const TrainingView: React.FC = () => {
   const [customRequest, setCustomRequest] = useState('');
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  // Resumos
   const [selectedDoc, setSelectedDoc] = useState<any | null>(null);
   const [summaryType, setSummaryType] = useState<SummaryType>('executivo');
   const [summary, setSummary] = useState('');
@@ -136,7 +134,7 @@ const TrainingView: React.FC = () => {
     ).join('\n') || 'Módulos não especificados';
 
     return `ROTEIRO: ${opt.titulo.toUpperCase()}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+─────────────────────────────
 Abordagem: ${opt.descricao}
 Duração total: ${opt.duracao}
 Público-alvo: ${opt.publico}
@@ -173,14 +171,14 @@ ${opt.justificativa}
           <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Gere 3 opções de roteiro e escolha a melhor para sua equipe</p>
         </div>
         <button onClick={generateOptions} disabled={isLoading}
-          className="bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50 flex-shrink-0">
+          className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50 flex-shrink-0">
           <i className="fa-solid fa-wand-magic-sparkles mr-2"></i>
           {isLoading ? 'Gerando...' : 'Gerar 3 Opções'}
         </button>
       </div>
 
       {/* Campo para pedido específico */}
-      <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-4">
+      <div className="bg-white border border-slate-300 rounded-2xl p-4">
         <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-2">
           Personalizar pedido (opcional)
         </label>
@@ -188,22 +186,22 @@ ${opt.justificativa}
           value={customRequest}
           onChange={e => setCustomRequest(e.target.value)}
           placeholder="Ex: foco em escrituras públicas, para atendentes novos, duração máxima 2 horas..."
-          className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500"
+          className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500"
         />
       </div>
 
       {/* Base ativa */}
       {(checklists.length > 0 || knowledgeDocs.length > 0) && (
-        <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-4 space-y-2">
+        <div className="bg-white border border-slate-300 rounded-2xl p-4 space-y-2">
           <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">Base Ativa</h4>
           {checklists.slice(0, 3).map((c, i) => (
-            <div key={i} className="flex items-center gap-3 p-2 bg-slate-900/50 rounded-xl">
+            <div key={i} className="flex items-center gap-3 p-2 bg-slate-100 rounded-xl">
               <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
               <span className="text-xs text-slate-700"><span className="font-bold text-[#0A1628]">{c.title}</span> — {c.items?.length || 0} requisitos</span>
             </div>
           ))}
           {knowledgeDocs.slice(0, 3).map((d, i) => (
-            <div key={i} className="flex items-center gap-3 p-2 bg-slate-900/50 rounded-xl">
+            <div key={i} className="flex items-center gap-3 p-2 bg-slate-100 rounded-xl">
               <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
               <span className="text-xs text-slate-700"><span className="font-bold text-[#0A1628]">{d.fileName || d.title}</span> — documento indexado</span>
             </div>
@@ -221,29 +219,29 @@ ${opt.justificativa}
               const icon  = TIPO_ICON[opt.tipo]  || 'fa-graduation-cap';
               return (
                 <button key={i} onClick={() => selectOption(opt)}
-                  className={`text-left bg-[#0D1B3E] border border-${color}-500/30 hover:border-${color}-500 rounded-2xl p-5 space-y-3 transition-all hover:bg-${color}-500/5 group`}>
+                  className={`text-left bg-white border border-${color}-500/30 hover:border-${color}-500 rounded-2xl p-5 space-y-3 transition-all hover:bg-${color}-50 group shadow-sm`}>
                   <div className="flex items-center gap-3">
-                    <div className={`w-9 h-9 rounded-xl bg-${color}-500/20 flex items-center justify-center`}>
-                      <i className={`fa-solid ${icon} text-${color}-400 text-sm`}></i>
+                    <div className={`w-9 h-9 rounded-xl bg-${color}-100 flex items-center justify-center`}>
+                      <i className={`fa-solid ${icon} text-${color}-600 text-sm`}></i>
                     </div>
                     <div>
-                      <p className={`text-[9px] font-black uppercase tracking-widest text-${color}-400`}>{opt.tipo}</p>
+                      <p className={`text-[9px] font-black uppercase tracking-widest text-${color}-600`}>{opt.tipo}</p>
                       <p className="text-sm font-black text-[#0A1628] leading-tight">{opt.titulo}</p>
                     </div>
                   </div>
-                  <p className="text-xs text-slate-500 leading-relaxed">{opt.descricao}</p>
+                  <p className="text-xs text-slate-600 leading-relaxed">{opt.descricao}</p>
                   <div className="flex flex-wrap gap-2">
-                    <span className="text-[9px] bg-slate-800 text-slate-500 px-2 py-1 rounded-lg font-bold">
+                    <span className="text-[9px] bg-slate-100 text-slate-600 px-2 py-1 rounded-lg font-bold border border-slate-200">
                       <i className="fa-solid fa-clock mr-1"></i>{opt.duracao}
                     </span>
-                    <span className="text-[9px] bg-slate-800 text-slate-500 px-2 py-1 rounded-lg font-bold">
+                    <span className="text-[9px] bg-slate-100 text-slate-600 px-2 py-1 rounded-lg font-bold border border-slate-200">
                       <i className="fa-solid fa-users mr-1"></i>{opt.publico}
                     </span>
-                    <span className="text-[9px] bg-slate-800 text-slate-500 px-2 py-1 rounded-lg font-bold">
+                    <span className="text-[9px] bg-slate-100 text-slate-600 px-2 py-1 rounded-lg font-bold border border-slate-200">
                       <i className="fa-solid fa-list-check mr-1"></i>{opt.modulos?.length || 0} módulos
                     </span>
                   </div>
-                  <p className={`text-[9px] font-black text-${color}-400 uppercase tracking-widest group-hover:underline`}>
+                  <p className={`text-[9px] font-black text-${color}-600 uppercase tracking-widest group-hover:underline`}>
                     Selecionar este roteiro →
                   </p>
                 </button>
@@ -254,11 +252,11 @@ ${opt.justificativa}
       )}
 
       {/* Chat de resultado */}
-      <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl overflow-hidden">
-        <div className="h-80 overflow-y-auto p-6 space-y-4 custom-scrollbar">
+      <div className="bg-white border border-slate-300 rounded-2xl overflow-hidden shadow-sm">
+        <div className="h-80 overflow-y-auto p-6 space-y-4 custom-scrollbar bg-slate-50">
           {messages.length === 0 && trainingOptions.length === 0 && (
-            <div className="h-full flex flex-col items-center justify-center text-center opacity-30">
-              <i className="fa-solid fa-graduation-cap text-5xl text-slate-600 mb-4"></i>
+            <div className="h-full flex flex-col items-center justify-center text-center opacity-40">
+              <i className="fa-solid fa-graduation-cap text-5xl text-slate-400 mb-4"></i>
               <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">
                 Clique em "Gerar 3 Opções" ou faça uma pergunta
               </p>
@@ -267,7 +265,9 @@ ${opt.justificativa}
           {messages.map((m, i) => (
             <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div className={`max-w-[85%] px-5 py-4 rounded-2xl text-sm leading-relaxed ${
-                m.role === 'user' ? 'bg-blue-600 text-[#0A1628]' : 'bg-slate-800 text-[#0A1628] border border-slate-200'
+                m.role === 'user'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-[#0A1628] border border-slate-200 shadow-sm'
               }`}>
                 <p className="whitespace-pre-wrap font-mono text-xs">{m.text}</p>
               </div>
@@ -275,7 +275,7 @@ ${opt.justificativa}
           ))}
           {isLoading && (
             <div className="flex justify-start">
-              <div className="bg-slate-800 border border-slate-200 px-5 py-4 rounded-2xl">
+              <div className="bg-white border border-slate-200 px-5 py-4 rounded-2xl shadow-sm">
                 <i className="fa-solid fa-circle-notch animate-spin text-blue-500"></i>
                 <span className="text-xs text-slate-500 ml-2">IA gerando opções de roteiro...</span>
               </div>
@@ -284,25 +284,25 @@ ${opt.justificativa}
           {selectedOption && messages.length > 0 && (
             <div className="flex gap-2 flex-wrap">
               <button onClick={generateOptions} disabled={isLoading}
-                className="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-700 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
+                className="text-[9px] bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
                 <i className="fa-solid fa-rotate mr-1"></i>Gerar novas opções
               </button>
               <button onClick={() => { navigator.clipboard.writeText(messages[messages.length - 1]?.text || ''); showToast('Roteiro copiado!', 'success'); }}
-                className="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-700 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
+                className="text-[9px] bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
                 <i className="fa-solid fa-copy mr-1"></i>Copiar roteiro
               </button>
             </div>
           )}
           <div ref={chatEndRef} />
         </div>
-        <div className="p-4 border-t border-slate-200 flex gap-3">
+        <div className="p-4 border-t border-slate-200 flex gap-3 bg-white">
           <input value={input} onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
             placeholder="Ex: Adapte o roteiro para apenas atendentes de balcão..."
-            className="flex-1 bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+            className="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
           <button type="button" onClick={handleSend} disabled={isLoading || !input.trim()}
             title="Enviar mensagem"
-            className="bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-6 py-3 rounded-xl font-black text-sm transition-all disabled:opacity-50">
+            className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-black text-sm transition-all disabled:opacity-50">
             <i className="fa-solid fa-paper-plane"></i>
           </button>
         </div>
@@ -318,10 +318,8 @@ ${opt.justificativa}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Coluna esquerda: seleção */}
         <div className="space-y-4">
-          {/* Seleção de documento */}
-          <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-4 space-y-3">
+          <div className="bg-white border border-slate-300 rounded-2xl p-4 space-y-3">
             <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">1. Selecione o documento</h4>
             {knowledgeDocs.length === 0 ? (
               <p className="text-xs text-slate-500 italic">Nenhum documento na base legal. Adicione documentos na seção "Base Legal".</p>
@@ -331,8 +329,8 @@ ${opt.justificativa}
                   <button key={i} onClick={() => setSelectedDoc(doc)}
                     className={`w-full text-left p-3 rounded-xl transition-all border ${
                       selectedDoc?.id === doc.id
-                        ? 'border-blue-500 bg-blue-500/10'
-                        : 'border-slate-200 hover:border-slate-600 bg-slate-900/30'
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-slate-200 hover:border-slate-400 bg-slate-50'
                     }`}>
                     <p className="text-xs font-bold text-[#0A1628] truncate">{doc.fileName || doc.title}</p>
                     <p className="text-[9px] text-slate-500 mt-0.5">{doc.content?.length || 0} caracteres indexados</p>
@@ -342,18 +340,17 @@ ${opt.justificativa}
             )}
           </div>
 
-          {/* Seleção de tipo */}
-          <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-4 space-y-3">
+          <div className="bg-white border border-slate-300 rounded-2xl p-4 space-y-3">
             <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">2. Tipo de resumo</h4>
             <div className="grid grid-cols-2 gap-2">
               {SUMMARY_TYPES.map(st => (
                 <button key={st.id} onClick={() => setSummaryType(st.id)}
                   className={`p-3 rounded-xl text-left transition-all border ${
                     summaryType === st.id
-                      ? `border-${st.color}-500 bg-${st.color}-500/10`
-                      : 'border-slate-200 hover:border-slate-600'
+                      ? `border-${st.color}-500 bg-${st.color}-50`
+                      : 'border-slate-200 hover:border-slate-400 bg-slate-50'
                   }`}>
-                  <p className={`text-xs font-black ${summaryType === st.id ? `text-${st.color}-400` : 'text-[#0A1628]'}`}>{st.label}</p>
+                  <p className={`text-xs font-black ${summaryType === st.id ? `text-${st.color}-600` : 'text-[#0A1628]'}`}>{st.label}</p>
                   <p className="text-[9px] text-slate-500 mt-0.5 leading-tight">{st.desc}</p>
                 </button>
               ))}
@@ -361,7 +358,7 @@ ${opt.justificativa}
           </div>
 
           <button onClick={generateSummary} disabled={summaryLoading || !selectedDoc}
-            className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-[#0A1628] py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+            className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
             {summaryLoading
               ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Gerando resumo...</>
               : <><i className="fa-solid fa-file-lines mr-2"></i>Gerar Resumo</>
@@ -369,13 +366,12 @@ ${opt.justificativa}
           </button>
         </div>
 
-        {/* Coluna direita: resultado */}
-        <div className="bg-[#0D1B3E] border border-slate-200 rounded-2xl p-5 min-h-[350px] flex flex-col">
+        <div className="bg-white border border-slate-300 rounded-2xl p-5 min-h-[350px] flex flex-col shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Resultado</h4>
             {summary && (
               <button onClick={() => { navigator.clipboard.writeText(summary); showToast('Resumo copiado!', 'success'); }}
-                className="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-700 px-3 py-1.5 rounded-lg font-black uppercase tracking-widest transition-all">
+                className="text-[9px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-black uppercase tracking-widest transition-all border border-slate-200">
                 <i className="fa-solid fa-copy mr-1"></i>Copiar
               </button>
             )}
@@ -392,9 +388,9 @@ ${opt.justificativa}
               <p className="text-xs text-slate-700 whitespace-pre-wrap leading-relaxed">{summary}</p>
             </div>
           ) : (
-            <div className="flex-1 flex items-center justify-center opacity-30">
+            <div className="flex-1 flex items-center justify-center opacity-40">
               <div className="text-center space-y-2">
-                <i className="fa-solid fa-file-lines text-4xl text-slate-600"></i>
+                <i className="fa-solid fa-file-lines text-4xl text-slate-400"></i>
                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Selecione um documento e gere o resumo</p>
               </div>
             </div>
@@ -406,13 +402,13 @@ ${opt.justificativa}
 
   const renderTab = () => {
     switch (activeTab) {
-      case 'ia':           return renderIATab();
-      case 'resumos':      return renderResumosTab();
+      case 'ia':            return renderIATab();
+      case 'resumos':       return renderResumosTab();
       case 'participantes': return <TrainingParticipants />;
       case 'questionarios': return <TrainingQuiz checklists={checklists} />;
-      case 'relatorios':   return <TrainingReport />;
-      case 'dashboard':    return <TrainingDashboard />;
-      default:             return null;
+      case 'relatorios':    return <TrainingReport />;
+      case 'dashboard':     return <TrainingDashboard />;
+      default:              return null;
     }
   };
 
@@ -433,7 +429,7 @@ ${opt.justificativa}
           { label: 'Docs na Base Legal', value: knowledgeDocs.length, icon: 'fa-scale-balanced',  color: 'amber'   },
           { label: 'Cobertura Estimada', value: `${Math.min(100, checklists.length * 12 + knowledgeDocs.length * 8)}%`, icon: 'fa-chart-pie', color: 'purple' },
         ].map((s, i) => (
-          <div key={i} className="bg-white border border-slate-200 rounded-[24px] p-6 space-y-3">
+          <div key={i} className="bg-white border border-slate-200 rounded-[24px] p-6 space-y-3 shadow-sm">
             <i className={`fa-solid ${s.icon} text-${s.color}-500 text-xl`}></i>
             <p className="text-3xl font-black text-[#0A1628]">{s.value}</p>
             <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">{s.label}</p>
@@ -441,14 +437,14 @@ ${opt.justificativa}
         ))}
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-[32px] overflow-hidden shadow-2xl">
+      <div className="bg-white border border-slate-200 rounded-[32px] overflow-hidden shadow-sm">
         <div className="flex border-b border-slate-200 overflow-x-auto">
           {TABS.map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-6 py-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all border-b-2 ${
                 activeTab === tab.id
-                  ? 'text-blue-400 border-blue-500 bg-blue-500/5'
-                  : 'text-slate-500 border-transparent hover:text-slate-700 hover:bg-slate-800/50'
+                  ? 'text-blue-600 border-blue-500 bg-blue-50'
+                  : 'text-slate-500 border-transparent hover:text-slate-700 hover:bg-slate-100'
               }`}>
               <i className={`fa-solid ${tab.icon} text-xs`}></i>{tab.label}
             </button>
