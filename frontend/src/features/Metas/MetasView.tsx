@@ -175,7 +175,7 @@ const FormMeta: React.FC<{
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
 
   return (
-    <div className="bg-[#0D1B3E] border border-blue-500/30 rounded-2xl p-6 space-y-5">
+    <div className="bg-white border border-blue-500/30 rounded-2xl p-6 space-y-5">
       <h4 className="text-blue-400 font-black uppercase text-xs tracking-widest">
         {initial ? 'Editar Meta' : 'Nova Meta de Premiação'}
       </h4>
@@ -185,7 +185,7 @@ const FormMeta: React.FC<{
         <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Título da Meta *</label>
         <input value={form.titulo} onChange={e => set('titulo', e.target.value)}
           placeholder="Ex: Campeões do 2º Trimestre"
-          className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
       </div>
 
       {/* Descrição */}
@@ -194,7 +194,7 @@ const FormMeta: React.FC<{
         <textarea value={form.descricao} onChange={e => set('descricao', e.target.value)}
           placeholder="Descreva os critérios e condições da premiação..."
           rows={2}
-          className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500 resize-none" />
+          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500 resize-none" />
       </div>
 
       {/* Métrica */}
@@ -223,7 +223,7 @@ const FormMeta: React.FC<{
         <div className="space-y-1">
           <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Top Premiados</label>
           <select value={form.topN} onChange={e => set('topN', Number(e.target.value))}
-            className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500">
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500">
             {[1, 2, 3, 5, 10].map(n => <option key={n} value={n}>Top {n}</option>)}
           </select>
         </div>
@@ -232,14 +232,14 @@ const FormMeta: React.FC<{
         <div className="space-y-1">
           <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Data Início</label>
           <input type="date" value={form.dataInicio} onChange={e => set('dataInicio', e.target.value)}
-            className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
         </div>
 
         {/* Data Fim */}
         <div className="space-y-1">
           <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Data Encerramento *</label>
           <input type="date" value={form.dataFim} onChange={e => set('dataFim', e.target.value)}
-            className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
         </div>
       </div>
 
@@ -248,14 +248,14 @@ const FormMeta: React.FC<{
         <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Prêmio / Reconhecimento *</label>
         <input value={form.premio} onChange={e => set('premio', e.target.value)}
           placeholder="Ex: Voucher R$200, Folga extra, Certificado de Destaque..."
-          className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
       </div>
 
       {/* Status */}
       <div className="space-y-1">
         <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Status</label>
         <select value={form.status} onChange={e => set('status', e.target.value as StatusMeta)}
-          className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500">
+          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500">
           <option value="rascunho">Rascunho (não visível)</option>
           <option value="ativa">Ativa (visível a todos)</option>
           <option value="encerrada">Encerrada</option>
@@ -347,7 +347,7 @@ const MetaCard: React.FC<{
             {/* Minha posição */}
             {meuRanking >= 0 && (
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                meuRanking < meta.topN ? 'bg-amber-500/20 border border-amber-500/30' : 'bg-slate-800'
+                meuRanking < meta.topN ? 'bg-amber-500/20 border border-amber-500/30' : 'bg-slate-200'
               }`}>
                 <span className={`text-sm font-black ${meuRanking < meta.topN ? 'text-amber-400' : 'text-slate-500'}`}>
                   #{meuRanking + 1}
@@ -438,7 +438,7 @@ const MetaCard: React.FC<{
                     <div key={item.nome} className={`flex items-center gap-3 p-2.5 rounded-xl transition-all ${
                       item.isPremiated ? 'bg-amber-500/5 border border-amber-500/20' :
                       isMe            ? 'bg-blue-500/5 border border-blue-500/20' :
-                                        'bg-slate-900/30'
+                                        'bg-slate-50/30'
                     }`}>
                       <i className={`fa-solid ${medalIcon} text-sm w-5 text-center ${medalColor}`}></i>
                       <span className={`flex-1 text-sm font-bold truncate ${isMe ? 'text-blue-400' : 'text-[#0A1628]'}`}>
@@ -483,7 +483,7 @@ const MetaCard: React.FC<{
             <div className="flex gap-2 flex-wrap border-t border-slate-200/50 pt-4">
               {meta.status === 'ativa' && (
                 <button onClick={onEncerrar}
-                  className="px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest bg-slate-800 hover:bg-slate-700 text-slate-700 transition-all">
+                  className="px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest bg-slate-200 hover:bg-slate-700 text-slate-700 transition-all">
                   <i className="fa-solid fa-lock mr-1"></i>Encerrar
                 </button>
               )}
@@ -543,7 +543,7 @@ const DesempatePlayer: React.FC<{
           <p className={`text-4xl font-black ${resultado.nota >= 70 ? 'text-emerald-400' : 'text-red-400'}`}>{resultado.nota}%</p>
           <p className="text-[#0A1628] font-black text-lg uppercase">Desempate concluído!</p>
           <p className="text-slate-500 text-sm">Seu resultado foi registrado. Aguarde a apuração final pelo gestor.</p>
-          <div className="bg-slate-900 rounded-xl p-4 text-left space-y-1">
+          <div className="bg-slate-50 rounded-xl p-4 text-left space-y-1">
             <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Gabarito rápido</p>
             {sessao.questoes.map((q, i) => {
               const acertou = respostas[i] === q.correta;
@@ -577,7 +577,7 @@ const DesempatePlayer: React.FC<{
               <p className="text-[9px] text-slate-500 uppercase">respondidas</p>
             </div>
           </div>
-          <div className="w-full bg-slate-800 rounded-full h-1.5">
+          <div className="w-full bg-slate-200 rounded-full h-1.5">
             <div className="bg-amber-500 h-1.5 rounded-full transition-all"
               style={{ width: `${(Object.keys(respostas).length / total) * 100}%` }}></div>
           </div>
@@ -589,7 +589,7 @@ const DesempatePlayer: React.FC<{
             const resp = respostas[qi];
             const bloomColor = q.bloom === 'avaliacao' ? 'purple' : 'pink';
             return (
-              <div key={q.id} className={`bg-[#0D1B3E] border rounded-2xl p-5 space-y-3 ${resp ? 'border-amber-500/30' : 'border-slate-200'}`}>
+              <div key={q.id} className={`bg-white border rounded-2xl p-5 space-y-3 ${resp ? 'border-amber-500/30' : 'border-slate-200'}`}>
                 <div className="flex items-start gap-3">
                   <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg bg-${bloomColor}-500/20 text-${bloomColor}-400 flex-shrink-0 mt-0.5`}>
                     {q.bloom === 'avaliacao' ? 'Avaliar' : 'Criar'} • Bloom {q.bloom === 'avaliacao' ? 'Nível 5' : 'Nível 6'}
@@ -608,7 +608,7 @@ const DesempatePlayer: React.FC<{
                           : 'border-slate-200 hover:border-slate-600 text-slate-700'
                       }`}>
                       <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black flex-shrink-0 ${
-                        resp === alt.letra ? 'bg-amber-500 text-[#0A1628]' : 'bg-slate-800 text-slate-500'
+                        resp === alt.letra ? 'bg-amber-500 text-[#0A1628]' : 'bg-slate-200 text-slate-500'
                       }`}>{alt.letra}</span>
                       <span className="text-xs leading-snug">{alt.texto}</span>
                     </button>

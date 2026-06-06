@@ -216,7 +216,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 no-print">
         <div className="lg:col-span-5 space-y-6">
-          <div className="bg-[#0D1B3E] border border-slate-200 rounded-[32px] p-8 space-y-7 shadow-2xl">
+          <div className="bg-white border border-slate-200 rounded-[32px] p-8 space-y-7 shadow-2xl">
 
             <div className="space-y-3">
               <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Documento a Auditar</label>
@@ -238,13 +238,13 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => setAnalysisMode('checklist')}
-                  className={`py-3 rounded-xl text-[10px] font-black uppercase transition-all ${analysisMode === 'checklist' ? 'bg-blue-600 text-[#0A1628]' : 'bg-slate-800 text-slate-500 hover:bg-slate-700'}`}
+                  className={`py-3 rounded-xl text-[10px] font-black uppercase transition-all ${analysisMode === 'checklist' ? 'bg-blue-600 text-[#0A1628]' : 'bg-slate-200 text-slate-500 hover:bg-slate-700'}`}
                 >
                   <i className="fa-solid fa-clipboard-list mr-2"></i>Protocolo
                 </button>
                 <button
                   onClick={() => setAnalysisMode('baselegal')}
-                  className={`py-3 rounded-xl text-[10px] font-black uppercase transition-all ${analysisMode === 'baselegal' ? 'bg-blue-600 text-[#0A1628]' : 'bg-slate-800 text-slate-500 hover:bg-slate-700'}`}
+                  className={`py-3 rounded-xl text-[10px] font-black uppercase transition-all ${analysisMode === 'baselegal' ? 'bg-blue-600 text-[#0A1628]' : 'bg-slate-200 text-slate-500 hover:bg-slate-700'}`}
                 >
                   <i className="fa-solid fa-book-open mr-2"></i>Base Legal
                 </button>
@@ -260,7 +260,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
                   <select
                     value={selectedChecklistId}
                     onChange={e => setSelectedChecklistId(e.target.value)}
-                    className="w-full bg-[#0D1B3E] border border-slate-200 rounded-xl px-4 py-4 text-xs font-bold text-[#0A1628] focus:border-blue-600 outline-none transition-all"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-4 text-xs font-bold text-[#0A1628] focus:border-blue-600 outline-none transition-all"
                   >
                     <option value="">Selecione um protocolo...</option>
                     {checklists.map(t => (
@@ -310,7 +310,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
         </div>
 
         <div className="lg:col-span-7 flex flex-col justify-center items-center text-center p-10 bg-blue-600/5 border border-blue-500/10 rounded-[32px] shadow-inner">
-          <div className="w-24 h-24 bg-slate-900 rounded-3xl flex items-center justify-center text-blue-500 text-4xl mb-6 shadow-2xl">
+          <div className="w-24 h-24 bg-slate-50 rounded-3xl flex items-center justify-center text-blue-500 text-4xl mb-6 shadow-2xl">
             <i className="fa-solid fa-robot"></i>
           </div>
           <h3 className="text-xl font-black text-[#0A1628] uppercase italic">Análise RAG Estrita</h3>
@@ -318,11 +318,11 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
             O sistema usa apenas os documentos que você indexou na Base Legal e os protocolos cadastrados. Nenhuma lei ou norma externa é consultada.
           </p>
           <div className="mt-6 grid grid-cols-2 gap-4 w-full max-w-sm">
-            <div className="bg-slate-900 rounded-2xl p-4 text-center">
+            <div className="bg-slate-50 rounded-2xl p-4 text-center">
               <p className="text-2xl font-black text-blue-500">{checklists.length}</p>
               <p className="text-[9px] text-slate-500 uppercase font-bold mt-1">Protocolos</p>
             </div>
-            <div className="bg-slate-900 rounded-2xl p-4 text-center">
+            <div className="bg-slate-50 rounded-2xl p-4 text-center">
               <p className="text-2xl font-black text-blue-500">{kbDocs.length}</p>
               <p className="text-[9px] text-slate-500 uppercase font-bold mt-1">Docs Indexados</p>
             </div>
@@ -352,7 +352,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
               <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Índice de Conformidade</span>
               <span className="text-sm font-black text-[#0A1628]">{conformePercent}%</span>
             </div>
-            <div className="w-full bg-slate-800 rounded-full h-3">
+            <div className="w-full bg-slate-200 rounded-full h-3">
               <div
                 className={`h-3 rounded-full transition-all duration-700 ${conformePercent >= 80 ? 'bg-emerald-500' : conformePercent >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`}
                 style={{ width: `${conformePercent}%` }}
@@ -364,7 +364,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
             </div>
           </div>
 
-          <div className="p-8 bg-slate-900/40 border border-slate-200 rounded-3xl backdrop-blur-md">
+          <div className="p-8 bg-slate-50/40 border border-slate-200 rounded-3xl backdrop-blur-md">
             <h3 className="text-xl font-black text-[#0A1628] italic uppercase mb-6 flex items-center gap-3">
               <i className="fa-solid fa-file-invoice text-blue-500"></i> Parecer Técnico Detalhado
             </h3>
@@ -401,7 +401,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
       )}
 
       {!results.length && rawParecer && (
-        <div className="mt-8 p-8 bg-slate-900/40 border border-slate-200 rounded-3xl">
+        <div className="mt-8 p-8 bg-slate-50/40 border border-slate-200 rounded-3xl">
           <h3 className="text-lg font-black text-[#0A1628] italic uppercase mb-4 flex items-center gap-3">
             <i className="fa-solid fa-file-invoice text-blue-500"></i> Parecer Técnico
           </h3>

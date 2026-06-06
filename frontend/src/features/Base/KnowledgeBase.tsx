@@ -198,15 +198,15 @@ const KnowledgeBase: React.FC = () => {
               </div>
               <div className="flex items-center gap-3">
                 <button onClick={() => navigator.clipboard.writeText(viewingDoc.content).then(() => showToast('Copiado!', 'success'))}
-                  className="text-xs text-slate-500 hover:text-[#0A1628] font-bold uppercase px-4 py-2 rounded-xl hover:bg-slate-800 transition-all">
+                  className="text-xs text-slate-500 hover:text-[#0A1628] font-bold uppercase px-4 py-2 rounded-xl hover:bg-slate-200 transition-all">
                   <i className="fa-solid fa-copy mr-2"></i>Copiar
                 </button>
-                <button onClick={() => setViewingDoc(null)} className="w-10 h-10 rounded-full bg-slate-800 text-[#0A1628] flex items-center justify-center hover:bg-red-500 transition-all">
+                <button onClick={() => setViewingDoc(null)} className="w-10 h-10 rounded-full bg-slate-200 text-[#0A1628] flex items-center justify-center hover:bg-red-500 transition-all">
                   <i className="fa-solid fa-xmark"></i>
                 </button>
               </div>
             </header>
-            <div className="flex-1 overflow-y-auto p-10 bg-[#0D1B3E]">
+            <div className="flex-1 overflow-y-auto p-10 bg-white">
               <pre className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap font-sans">{viewingDoc.content}</pre>
             </div>
           </div>

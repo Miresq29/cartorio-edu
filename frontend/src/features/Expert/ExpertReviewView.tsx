@@ -113,7 +113,7 @@ const ExpertReviewView: React.FC = () => {
             </div>
             <button 
               onClick={() => window.print()}
-              className="text-blue-500 text-xs font-black uppercase tracking-widest hover:text-[#0A1628] transition-all flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-slate-900"
+              className="text-blue-500 text-xs font-black uppercase tracking-widest hover:text-[#0A1628] transition-all flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-slate-50"
             >
               <i className="fa-solid fa-print"></i> Exportar Parecer
             </button>

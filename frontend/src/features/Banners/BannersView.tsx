@@ -196,14 +196,14 @@ CTA: [chamada para ação aqui]`;
               value={formLink.titulo}
               onChange={e => setFormLink(p => ({ ...p, titulo: e.target.value }))}
               placeholder="Nome do material..."
-              className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500 transition-colors"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500 transition-colors"
             />
 
             <input
               value={formLink.url}
               onChange={e => setFormLink(p => ({ ...p, url: e.target.value }))}
               placeholder="https://drive.google.com/..."
-              className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500 transition-colors"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500 transition-colors"
             />
 
             {/* Tipo */}
@@ -213,7 +213,7 @@ CTA: [chamada para ação aqui]`;
                   className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${
                     formLink.tipo === t
                       ? 'bg-blue-600 text-[#0A1628]'
-                      : 'bg-slate-800 text-slate-500 hover:bg-slate-700'
+                      : 'bg-slate-200 text-slate-500 hover:bg-slate-700'
                   }`}>
                   <i className={`fa-solid ${TIPO_CONFIG[t].icon} mr-1`}></i>{TIPO_CONFIG[t].label}
                 </button>
@@ -242,7 +242,7 @@ CTA: [chamada para ação aqui]`;
               onChange={e => setPromptBanner(e.target.value)}
               rows={4}
               placeholder="Ex: Banner para treinamento de atendimento ao cliente com foco em excelência..."
-              className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-pink-500 resize-none"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-pink-500 resize-none"
             />
             <button type="button" onClick={gerarTextoBanner} disabled={gerando || !promptBanner.trim()}
               className="w-full bg-pink-600 hover:bg-pink-500 disabled:opacity-50 text-[#0A1628] py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
@@ -263,7 +263,7 @@ CTA: [chamada para ação aqui]`;
             <div className="flex items-center justify-between flex-wrap gap-3">
               <h3 className="text-[#0A1628] font-black uppercase text-sm">Preview do Banner</h3>
               <button type="button" onClick={() => imprimirBanner(textoBannerGerado)}
-                className="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-700 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
+                className="text-[9px] bg-slate-200 hover:bg-slate-700 text-slate-700 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
                 <i className="fa-solid fa-print mr-1"></i>Imprimir / PDF
               </button>
             </div>
@@ -281,14 +281,14 @@ CTA: [chamada para ação aqui]`;
                 value={tituloBanner}
                 onChange={e => setTituloBanner(e.target.value)}
                 placeholder="Nome para salvar este banner..."
-                className="flex-1 min-w-0 bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-pink-500"
+                className="flex-1 min-w-0 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-pink-500"
               />
               <button type="button" onClick={salvarBannerGerado} disabled={!tituloBanner.trim()}
                 className="bg-pink-600 hover:bg-pink-500 disabled:opacity-50 text-[#0A1628] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
                 <i className="fa-solid fa-floppy-disk mr-2"></i>Salvar
               </button>
               <button type="button" onClick={() => setPreviewBanner(false)}
-                className="bg-slate-800 hover:bg-slate-700 text-slate-700 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                className="bg-slate-200 hover:bg-slate-700 text-slate-700 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
                 Fechar
               </button>
             </div>
@@ -300,14 +300,14 @@ CTA: [chamada para ação aqui]`;
       <div className="flex flex-wrap gap-2 items-center">
         <button type="button" onClick={() => setFiltroTipo('')}
           className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-            !filtroTipo ? 'bg-pink-600 text-[#0A1628]' : 'bg-slate-900 text-slate-500 hover:bg-slate-800'
+            !filtroTipo ? 'bg-pink-600 text-[#0A1628]' : 'bg-slate-50 text-slate-500 hover:bg-slate-200'
           }`}>
           Todos ({materiais.length})
         </button>
         {Object.entries(TIPO_CONFIG).map(([id, cfg]) => (
           <button type="button" key={id} onClick={() => setFiltroTipo(filtroTipo === id ? '' : id)}
             className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-              filtroTipo === id ? 'bg-pink-600 text-[#0A1628]' : 'bg-slate-900 text-slate-500 hover:bg-slate-800'
+              filtroTipo === id ? 'bg-pink-600 text-[#0A1628]' : 'bg-slate-50 text-slate-500 hover:bg-slate-200'
             }`}>
             <i className={`fa-solid ${cfg.icon} mr-1.5`}></i>{cfg.label}
           </button>
@@ -348,20 +348,20 @@ CTA: [chamada para ação aqui]`;
                   {/* abrir link externo */}
                   {m.linkUrl && (
                     <a href={m.linkUrl} target="_blank" rel="noreferrer"
-                      className="flex-1 text-center text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-700 px-3 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
+                      className="flex-1 text-center text-[9px] bg-slate-200 hover:bg-slate-700 text-slate-700 px-3 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
                       <i className="fa-solid fa-arrow-up-right-from-square mr-1"></i>Abrir
                     </a>
                   )}
                   {/* imprimir banner IA */}
                   {m.textoBanner && (
                     <button type="button" onClick={() => imprimirBanner(m.textoBanner)}
-                      className="flex-1 text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-700 px-3 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
+                      className="flex-1 text-[9px] bg-slate-200 hover:bg-slate-700 text-slate-700 px-3 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
                       <i className="fa-solid fa-print mr-1"></i>Imprimir
                     </button>
                   )}
                   {isGestor && (
                     <button type="button" title="Excluir material" onClick={() => excluir(m.id)}
-                      className="w-8 h-8 bg-slate-900 hover:bg-red-500/20 text-slate-500 hover:text-red-400 rounded-xl flex items-center justify-center transition-all flex-shrink-0">
+                      className="w-8 h-8 bg-slate-50 hover:bg-red-500/20 text-slate-500 hover:text-red-400 rounded-xl flex items-center justify-center transition-all flex-shrink-0">
                       <i className="fa-solid fa-trash text-xs"></i>
                     </button>
                   )}

@@ -4,7 +4,7 @@ const TermsView: React.FC = () => {
   return (
     <div className="p-12 max-w-5xl mx-auto space-y-10 animate-in fade-in duration-700 pb-20">
       <header className="space-y-4">
-        <div className="w-16 h-16 bg-slate-800 rounded-3xl flex items-center justify-center text-slate-500 border border-slate-700 shadow-xl">
+        <div className="w-16 h-16 bg-slate-200 rounded-3xl flex items-center justify-center text-slate-500 border border-slate-700 shadow-xl">
           <i className="fa-solid fa-file-contract text-3xl"></i>
         </div>
         <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">Termos de Uso & Privacidade</h2>
@@ -26,7 +26,7 @@ const TermsView: React.FC = () => {
           </p>
         </div>
 
-        <div className="w-full h-px bg-slate-800/50"></div>
+        <div className="w-full h-px bg-slate-200/50"></div>
 
         <div className="space-y-4">
           <h3 className="text-xl font-black text-emerald-500 uppercase tracking-widest flex items-center gap-3">
@@ -39,7 +39,7 @@ const TermsView: React.FC = () => {
           </p>
         </div>
 
-        <div className="w-full h-px bg-slate-800/50"></div>
+        <div className="w-full h-px bg-slate-200/50"></div>
 
         <div className="space-y-4">
           <h3 className="text-xl font-black text-purple-500 uppercase tracking-widest flex items-center gap-3">
@@ -51,7 +51,7 @@ const TermsView: React.FC = () => {
           </p>
         </div>
 
-        <div className="w-full h-px bg-slate-800/50"></div>
+        <div className="w-full h-px bg-slate-200/50"></div>
 
         <div className="space-y-4">
           <h3 className="text-xl font-black text-amber-500 uppercase tracking-widest flex items-center gap-3">
@@ -64,7 +64,7 @@ const TermsView: React.FC = () => {
           </p>
         </div>
 
-        <div className="w-full h-px bg-slate-800/50"></div>
+        <div className="w-full h-px bg-slate-200/50"></div>
 
         <div className="space-y-4">
           <h3 className="text-xl font-black text-red-500 uppercase tracking-widest flex items-center gap-3">

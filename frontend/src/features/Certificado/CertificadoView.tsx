@@ -304,7 +304,7 @@ const ModalEmitir: React.FC<{
         <div className="space-y-1">
           <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Colaborador *</label>
           <select value={colab} onChange={e => { setColab(e.target.value); setItem(''); }}
-            className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500">
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500">
             <option value="">Selecione...</option>
             {colabsDisponiveis.map(u => (
               <option key={u.id} value={u.id}>{u.name} — {u.cargo || u.role}</option>
@@ -345,7 +345,7 @@ const ModalEmitir: React.FC<{
               </p>
             ) : (
               <select value={item} onChange={e => setItem(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500">
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500">
                 <option value="">Selecione...</option>
                 {opcoesItem.map((o, i) => <option key={i} value={o}>{o}</option>)}
               </select>
@@ -355,7 +355,7 @@ const ModalEmitir: React.FC<{
 
         {/* Preview rápido */}
         {colab && item && (
-          <div className="bg-slate-900 border border-slate-200 rounded-xl p-4 space-y-1">
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-1">
             <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Preview</p>
             <p className="text-sm font-black text-[#0A1628]">{colabUser?.name}</p>
             <p className="text-xs text-slate-500">{colabUser?.cargo} · {cartorio}</p>
@@ -604,7 +604,7 @@ const CertificadoView: React.FC = () => {
                         navigator.clipboard.writeText(cert.codigoVerificacao);
                         showToast('Código copiado!', 'success');
                       }}
-                        className="bg-slate-900 hover:bg-slate-800 border border-slate-200 text-slate-500 px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5">
+                        className="bg-slate-50 hover:bg-slate-200 border border-slate-200 text-slate-500 px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5">
                         <i className="fa-solid fa-copy"></i>Cód.
                       </button>
                     </div>

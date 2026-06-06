@@ -136,7 +136,7 @@ const MeuProgressoView: React.FC = () => {
   }, []);
 
   if (loading) return (
-    <div className="flex items-center justify-center h-screen bg-[#0D1B3E]">
+    <div className="flex items-center justify-center h-screen bg-white">
       <div className="text-center space-y-3">
         <div className="w-8 h-8 border-2 border-slate-200 border-t-indigo-500 rounded-full animate-spin mx-auto"></div>
         <p className="text-slate-500 text-sm">Carregando...</p>

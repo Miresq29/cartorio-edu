@@ -42,7 +42,7 @@ const ROLE_COLORS: Record<ColaboradorRole, string> = {
   gestor:    'bg-blue-500/20 text-blue-300 border border-blue-500/30',
   atendente: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30',
   auditor:   'bg-purple-500/20 text-purple-300 border border-purple-500/30',
-  viewer:    'bg-[#0D1B3E]0/20 text-slate-500 border border-slate-500/30',
+  viewer:    'bg-white0/20 text-slate-500 border border-slate-500/30',
 };
 
 const emptyForm = {
@@ -207,12 +207,12 @@ const ColaboradoresView: React.FC = () => {
           placeholder="Buscar por nome, e-mail ou cargo…"
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="flex-1 bg-slate-800/50 border border-slate-700/50 rounded-lg px-4 py-2 text-sm text-slate-700 placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30"
+          className="flex-1 bg-slate-200/50 border border-slate-700/50 rounded-lg px-4 py-2 text-sm text-slate-700 placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30"
         />
         <select
           value={filterRole}
           onChange={e => setFilterRole(e.target.value as ColaboradorRole | '')}
-          className="bg-slate-800/50 border border-slate-700/50 rounded-lg px-4 py-2 text-sm text-slate-600 focus:outline-none focus:border-emerald-500/50"
+          className="bg-slate-200/50 border border-slate-700/50 rounded-lg px-4 py-2 text-sm text-slate-600 focus:outline-none focus:border-emerald-500/50"
         >
           <option value="">Todos os perfis</option>
           {ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
@@ -229,10 +229,10 @@ const ColaboradoresView: React.FC = () => {
           {search || filterRole ? 'Nenhum resultado.' : 'Nenhum colaborador cadastrado.'}
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-slate-700/50 bg-slate-800/30">
+        <div className="overflow-x-auto rounded-xl border border-slate-700/50 bg-slate-200/30">
           <table className="min-w-full divide-y divide-slate-700/50 text-sm">
             <thead>
-              <tr className="bg-slate-900/50">
+              <tr className="bg-slate-50/50">
                 {['Nome', 'CPF', 'Cargo', 'E-mail', 'Perfil', 'Status', ...(canEdit ? ['Ações'] : [])].map(h => (
                   <th key={h} className="px-4 py-3 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest">
                     {h}
@@ -307,7 +307,7 @@ const ColaboradoresView: React.FC = () => {
                     }}
                     disabled={disabled}
                     placeholder={placeholder}
-                    className="bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-slate-700 placeholder-slate-600 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 disabled:opacity-40"
+                    className="bg-slate-200/50 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-slate-700 placeholder-slate-600 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 disabled:opacity-40"
                   />
                 </label>
               ))}
@@ -317,7 +317,7 @@ const ColaboradoresView: React.FC = () => {
                 <select
                   value={form.cargo}
                   onChange={e => setForm(f => ({ ...f, cargo: e.target.value }))}
-                  className="bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-emerald-500/50"
+                  className="bg-slate-200/50 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-emerald-500/50"
                 >
                   <option value="">Selecione…</option>
                   {CARGOS.map(c => <option key={c} value={c}>{c}</option>)}
@@ -329,7 +329,7 @@ const ColaboradoresView: React.FC = () => {
                 <select
                   value={form.role}
                   onChange={e => setForm(f => ({ ...f, role: e.target.value as ColaboradorRole }))}
-                  className="bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-emerald-500/50"
+                  className="bg-slate-200/50 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-emerald-500/50"
                 >
                   {ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
                 </select>

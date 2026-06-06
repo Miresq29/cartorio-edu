@@ -292,7 +292,7 @@ const ExamesView: React.FC = () => {
         </div>
 
         {/* barra de progresso */}
-        <div className="w-full bg-slate-800 rounded-full h-2">
+        <div className="w-full bg-slate-200 rounded-full h-2">
           <div className="bg-blue-500 h-2 rounded-full transition-all duration-300" style={{ width: `${percentualFeito}%` }}></div>
         </div>
 
@@ -321,10 +321,10 @@ const ExamesView: React.FC = () => {
                       className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${
                         respondida === alt.letra
                           ? 'border-blue-500 bg-blue-500/20 text-[#0A1628]'
-                          : 'border-slate-200 hover:border-slate-600 text-slate-700 hover:bg-slate-900'
+                          : 'border-slate-200 hover:border-slate-600 text-slate-700 hover:bg-slate-50'
                       }`}>
                       <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black flex-shrink-0 ${
-                        respondida === alt.letra ? 'bg-blue-500 text-[#0A1628]' : 'bg-slate-800 text-slate-500'
+                        respondida === alt.letra ? 'bg-blue-500 text-[#0A1628]' : 'bg-slate-200 text-slate-500'
                       }`}>{alt.letra}</span>
                       <span className="text-xs leading-snug">{alt.texto}</span>
                     </button>
@@ -414,7 +414,7 @@ const ExamesView: React.FC = () => {
             </button>
           )}
           <button onClick={() => { setFase('escolher'); setFonteEscolhida(null); setResultado(null); }}
-            className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-[#0A1628] font-black uppercase tracking-widest rounded-xl transition-all text-sm">
+            className="px-6 py-3 bg-slate-200 hover:bg-slate-700 text-[#0A1628] font-black uppercase tracking-widest rounded-xl transition-all text-sm">
             <i className="fa-solid fa-arrow-left mr-2"></i>Voltar
           </button>
         </div>
@@ -482,7 +482,7 @@ const ExamesView: React.FC = () => {
                       ? 'border-slate-200 opacity-50 cursor-not-allowed'
                       : selecionada
                         ? 'border-blue-500 bg-blue-500/10'
-                        : 'border-slate-200 hover:border-slate-600 hover:bg-slate-900/30'
+                        : 'border-slate-200 hover:border-slate-600 hover:bg-slate-50/30'
                   }`}>
                   <div className="flex items-start gap-3">
                     <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
@@ -577,7 +577,7 @@ const ExamesView: React.FC = () => {
           </h3>
           <div className="space-y-2">
             {resultados.slice(0, 10).map(r => (
-              <div key={r.id} className="flex items-center gap-3 p-3 bg-slate-900/50 rounded-xl">
+              <div key={r.id} className="flex items-center gap-3 p-3 bg-slate-50/50 rounded-xl">
                 <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${r.aprovado ? 'bg-emerald-500/20' : 'bg-red-500/20'}`}>
                   <i className={`fa-solid ${r.aprovado ? 'fa-trophy' : 'fa-xmark'} ${r.aprovado ? 'text-emerald-400' : 'text-red-400'} text-sm`}></i>
                 </div>

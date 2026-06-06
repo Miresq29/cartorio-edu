@@ -126,7 +126,7 @@ const PlayerModal: React.FC<{
     if (midia.tipo === 'mp4' && midia.driveId) {
       return (
         <div className="space-y-3">
-          <div className="rounded-2xl overflow-hidden shadow-2xl bg-slate-900" style={{ height: '70vh' }}>
+          <div className="rounded-2xl overflow-hidden shadow-2xl bg-slate-50" style={{ height: '70vh' }}>
             <iframe
               src={driveEmbedUrl(midia.driveId)}
               className="w-full h-full"
@@ -150,7 +150,7 @@ const PlayerModal: React.FC<{
       return (
         <div className="space-y-4">
           {/* Player iframe do Drive */}
-          <div className="rounded-2xl overflow-hidden bg-slate-900" style={{ height: '120px' }}>
+          <div className="rounded-2xl overflow-hidden bg-slate-50" style={{ height: '120px' }}>
             <iframe
               src={driveAudioUrl(midia.driveId)}
               className="w-full h-full"
@@ -159,7 +159,7 @@ const PlayerModal: React.FC<{
             />
           </div>
           {/* Fallback: link direto */}
-          <div className="bg-slate-900 border border-slate-200 rounded-2xl p-4 text-center space-y-2">
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-center space-y-2">
             <i className="fa-solid fa-headphones text-violet-400 text-3xl block mb-2"></i>
             <p className="text-xs text-slate-500">Se o player não carregar, abra diretamente no Drive:</p>
             <a
@@ -187,7 +187,7 @@ const PlayerModal: React.FC<{
             <h3 className="text-[#0A1628] font-black text-lg">{midia.titulo}</h3>
           </div>
           <button onClick={onClose}
-            className="text-slate-500 hover:text-[#0A1628] w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center transition-all">
+            className="text-slate-500 hover:text-[#0A1628] w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center transition-all">
             <i className="fa-solid fa-xmark"></i>
           </button>
         </div>
@@ -292,7 +292,7 @@ const MidiaCard: React.FC<{
           </button>
           {isGestor && (
             <button onClick={onDelete}
-              className="w-9 h-9 bg-slate-900 hover:bg-red-500/20 text-slate-500 hover:text-red-400 rounded-xl flex items-center justify-center transition-all flex-shrink-0">
+              className="w-9 h-9 bg-slate-50 hover:bg-red-500/20 text-slate-500 hover:text-red-400 rounded-xl flex items-center justify-center transition-all flex-shrink-0">
               <i className="fa-solid fa-trash text-xs"></i>
             </button>
           )}
@@ -348,7 +348,7 @@ const FormMidia: React.FC<{
   };
 
   return (
-    <div className="bg-[#0D1B3E] border border-blue-500/30 rounded-2xl p-6 space-y-5">
+    <div className="bg-white border border-blue-500/30 rounded-2xl p-6 space-y-5">
       <h4 className="text-blue-400 font-black uppercase text-xs tracking-widest">Adicionar Conteúdo ao Repositório</h4>
 
       {/* Tipo */}
@@ -394,7 +394,7 @@ const FormMidia: React.FC<{
             ? 'https://youtube.com/watch?v=...'
             : 'https://drive.google.com/file/d/.../view?usp=sharing'
           }
-          className={`w-full bg-slate-900 border rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none transition-all ${
+          className={`w-full bg-slate-50 border rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none transition-all ${
             linkErro ? 'border-red-500' : 'border-slate-200 focus:border-blue-500'
           }`}
         />
@@ -407,14 +407,14 @@ const FormMidia: React.FC<{
           <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Título *</label>
           <input value={form.titulo} onChange={e => set('titulo', e.target.value)}
             placeholder="Ex: Introdução ao Provimento 213/2026"
-            className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
         </div>
 
         {/* Categoria */}
         <div className="space-y-1">
           <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Categoria</label>
           <select value={form.categoria} onChange={e => set('categoria', e.target.value)}
-            className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500">
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500">
             {CATEGORIAS.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
           </select>
         </div>
@@ -423,7 +423,7 @@ const FormMidia: React.FC<{
         <div className="space-y-1">
           <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Duração (minutos)</label>
           <input type="number" min={1} max={300} value={form.duracaoMin} onChange={e => set('duracaoMin', e.target.value)}
-            className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
         </div>
 
         {/* Trilha */}
@@ -431,7 +431,7 @@ const FormMidia: React.FC<{
           <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Trilha Associada (opcional)</label>
           <input value={form.trilhaTitulo} onChange={e => set('trilhaTitulo', e.target.value)}
             placeholder="Ex: Trilha do Atendente"
-            className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
         </div>
 
         {/* Descrição */}
@@ -439,7 +439,7 @@ const FormMidia: React.FC<{
           <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Descrição</label>
           <input value={form.descricao} onChange={e => set('descricao', e.target.value)}
             placeholder="Breve descrição do conteúdo"
-            className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
         </div>
       </div>
 

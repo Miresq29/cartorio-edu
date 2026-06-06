@@ -96,7 +96,7 @@ const ComunicadosView: React.FC = () => {
           {isGestor && (
             <>
               <button onClick={() => setModo(modo === 'mural' ? 'gestao' : 'mural')}
-                className="bg-slate-800 hover:bg-slate-700 text-slate-700 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                className="bg-slate-200 hover:bg-slate-700 text-slate-700 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
                 <i className={`fa-solid ${modo === 'mural' ? 'fa-cog' : 'fa-eye'} mr-2`}></i>
                 {modo === 'mural' ? 'Gestão' : 'Mural'}
               </button>
@@ -134,18 +134,18 @@ const ComunicadosView: React.FC = () => {
               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Título *</label>
               <input value={form.titulo} onChange={e => setForm(p => ({ ...p, titulo: e.target.value }))}
                 placeholder="Ex: Reunião de equipe - Semana de 14/04"
-                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-amber-500" />
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-amber-500" />
             </div>
             <div className="md:col-span-2">
               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Mensagem *</label>
               <textarea value={form.corpo} onChange={e => setForm(p => ({ ...p, corpo: e.target.value }))} rows={4}
                 placeholder="Digite o comunicado completo aqui..."
-                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-amber-500 resize-none" />
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-amber-500 resize-none" />
             </div>
             <div>
               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Prioridade</label>
               <select value={form.prioridade} onChange={e => setForm(p => ({ ...p, prioridade: e.target.value as any }))}
-                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-amber-500">
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-amber-500">
                 <option value="informativo">Informativo</option>
                 <option value="normal">Normal</option>
                 <option value="urgente">Urgente</option>
@@ -154,13 +154,13 @@ const ComunicadosView: React.FC = () => {
             <div>
               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Prazo (opcional)</label>
               <input type="date" value={form.prazo} onChange={e => setForm(p => ({ ...p, prazo: e.target.value }))}
-                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-amber-500" />
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-amber-500" />
             </div>
             <div>
               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Link de Anexo (opcional)</label>
               <input value={form.anexoUrl} onChange={e => setForm(p => ({ ...p, anexoUrl: e.target.value }))}
                 placeholder="https://drive.google.com/..."
-                className="w-full bg-slate-900 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-amber-500" />
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-amber-500" />
             </div>
             <div className="flex items-center gap-3">
               <input type="checkbox" id="fixado" checked={form.fixado} onChange={e => setForm(p => ({ ...p, fixado: e.target.checked }))}
@@ -173,7 +173,7 @@ const ComunicadosView: React.FC = () => {
               className="bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-[#0A1628] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
               {loading ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Publicando...</> : <><i className="fa-solid fa-bullhorn mr-2"></i>Publicar</>}
             </button>
-            <button onClick={() => setShowForm(false)} className="bg-slate-800 hover:bg-slate-700 text-slate-700 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+            <button onClick={() => setShowForm(false)} className="bg-slate-200 hover:bg-slate-700 text-slate-700 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
               Cancelar
             </button>
           </div>
@@ -220,7 +220,7 @@ const ComunicadosView: React.FC = () => {
                   <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{c.corpo}</p>
                   {c.anexoUrl && (
                     <a href={c.anexoUrl} target="_blank" rel="noreferrer"
-                      className="inline-flex items-center gap-2 text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-700 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
+                      className="inline-flex items-center gap-2 text-[10px] bg-slate-200 hover:bg-slate-700 text-slate-700 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
                       <i className="fa-solid fa-paperclip"></i>Ver Anexo
                     </a>
                   )}
@@ -233,7 +233,7 @@ const ComunicadosView: React.FC = () => {
                     )}
                     {isGestor && modo === 'gestao' && (
                       <button onClick={() => arquivar(c.id)}
-                        className="text-[9px] bg-slate-800 hover:bg-red-500/20 text-slate-500 hover:text-red-400 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
+                        className="text-[9px] bg-slate-200 hover:bg-red-500/20 text-slate-500 hover:text-red-400 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
                         <i className="fa-solid fa-archive mr-1"></i>Arquivar
                       </button>
                     )}
