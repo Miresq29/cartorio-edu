@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { db } from '../../services/firebase';
@@ -25,9 +25,9 @@ const TABS: { id: Tab; icon: string; label: string }[] = [
 type SummaryType = 'executivo' | 'tecnico' | 'didatico' | 'operacional';
 
 const SUMMARY_TYPES: { id: SummaryType; label: string; desc: string; color: string }[] = [
-  { id: 'executivo',   label: 'Executivo',   desc: 'Para gestores â€” pontos-chave e impactos',       color: 'blue'    },
+  { id: 'executivo',   label: 'Executivo',   desc: 'Para gestores " pontos-chave e impactos',       color: 'blue'    },
   { id: 'tecnico',     label: 'Técnico',     desc: 'Fundamentos legais e análise normativa',         color: 'purple'  },
-  { id: 'didatico',    label: 'Didático',    desc: 'Para treinamento â€” exemplos práticos',           color: 'emerald' },
+  { id: 'didatico',    label: 'Didático',    desc: 'Para treinamento " exemplos práticos',           color: 'emerald' },
   { id: 'operacional', label: 'Operacional', desc: 'Procedimentos e passo a passo do dia a dia',    color: 'amber'   },
 ];
 
@@ -145,7 +145,7 @@ const TrainingView: React.FC = () => {
 
   const formatSelectedOption = (opt: TrainingOption): string => {
     const modulos = opt.modulos?.map((m, i) =>
-      `  ${i + 1}. ${m.nome} (${m.duracao})${m.obrigatorio ? ' â˜…' : ''}\n     Objetivo: ${m.objetivo}`
+      `  ${i + 1}. ${m.nome} (${m.duracao})${m.obrigatorio ? ' ★' : ''}\n     Objetivo: ${m.objetivo}`
     ).join('\n') || 'Módulos não especificados';
 
     return `ROTEIRO: ${opt.titulo.toUpperCase()}
@@ -160,7 +160,7 @@ ${modulos}
 JUSTIFICATIVA:
 ${opt.justificativa}
 
-â˜… = Módulo obrigatório
+★ = Módulo obrigatório
 `;
   };
 
@@ -212,13 +212,13 @@ ${opt.justificativa}
           {checklists.slice(0, 3).map((c, i) => (
             <div key={i} className="flex items-center gap-3 p-2 bg-slate-100 rounded-xl">
               <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <span className="text-xs text-slate-700"><span className="font-bold text-[#0A1628]">{c.title}</span> â€” {c.items?.length || 0} requisitos</span>
+              <span className="text-xs text-slate-700"><span className="font-bold text-[#0A1628]">{c.title}</span> " {c.items?.length || 0} requisitos</span>
             </div>
           ))}
           {knowledgeDocs.slice(0, 3).map((d, i) => (
             <div key={i} className="flex items-center gap-3 p-2 bg-slate-100 rounded-xl">
               <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-              <span className="text-xs text-slate-700"><span className="font-bold text-[#0A1628]">{d.fileName || d.title}</span> â€” documento indexado</span>
+              <span className="text-xs text-slate-700"><span className="font-bold text-[#0A1628]">{d.fileName || d.title}</span> " documento indexado</span>
             </div>
           ))}
         </div>

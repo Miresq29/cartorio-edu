@@ -400,7 +400,7 @@ Retorne APENAS array JSON sem markdown:
 [{"id":1,"enunciado":"...","alternativas":[{"letra":"A","texto":"..."},{"letra":"B","texto":"..."},{"letra":"C","texto":"..."},{"letra":"D","texto":"..."}],"correta":"A","bloom":"compreensao","justificativa":"..."}]`;
 
   try {
-    const text = await callGemini(prompt, 2500);
+    const text = await callGemini(prompt, 4096);
     const questoes = extractJsonObject(text);
     if (!Array.isArray(questoes) || questoes.length === 0)
       throw new Error('Formato inválido na resposta da IA.');

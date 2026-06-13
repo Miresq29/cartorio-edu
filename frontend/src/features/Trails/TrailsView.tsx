@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
   collection, addDoc, updateDoc, deleteDoc, doc,
   onSnapshot, query, where, serverTimestamp, getDoc, setDoc
@@ -104,7 +104,7 @@ const ModuloForm: React.FC<{
             color: modulo.tipo === 'obrigatorio' ? 'white' : '#64748b',
           }}
         >
-          {modulo.tipo === 'obrigatorio' ? 'â˜… obrigatório' : 'â—‡ Opcional'}
+          {modulo.tipo === 'obrigatorio' ? '★ obrigatório' : '◇ Opcional'}
         </button>
         <button onClick={onRemove} style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer', fontSize: 16 }}>
           <i className="fa-solid fa-trash-can"></i>
@@ -121,7 +121,7 @@ const ModuloForm: React.FC<{
       <textarea
         value={modulo.descricao}
         onChange={e => onChange({ ...modulo, descricao: e.target.value })}
-        placeholder="Descrição do módulo â€” o que o colaborador vai aprender"
+        placeholder="Descrição do módulo " o que o colaborador vai aprender"
         rows={2}
         style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '10px 14px', color: '#0f172a', fontSize: 13, resize: 'vertical' }}
       />
@@ -353,7 +353,7 @@ Nota mínima para aprovação: ${modulo.notaMinima}/10`
         <div style={{ padding: '24px 28px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <p style={{ fontSize: 10, fontWeight: 900, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 6 }}>
-              {trilha.titulo} Â· Módulo {moduloIdx + 1} de {trilha.modulos.length}
+              {trilha.titulo} · Módulo {moduloIdx + 1} de {trilha.modulos.length}
             </p>
             <h3 style={{ fontSize: 20, fontWeight: 900, color: '#0f172a' }}>{modulo.titulo}</h3>
             <p style={{ fontSize: 12, color: '#475569', marginTop: 4 }}>{modulo.descricao}</p>
@@ -379,7 +379,7 @@ Nota mínima para aprovação: ${modulo.notaMinima}/10`
                   borderColor: i === moduloIdx ? '#3b82f6' : done ? '#10b981' : '#1e293b',
                 }}
               >
-                {done ? 'âœ“ ' : ''}{m.tipo === 'obrigatorio' ? 'â˜… ' : 'â—‡ '}{m.titulo}
+                {done ? 'âœ“ ' : ''}{m.tipo === 'obrigatorio' ? '★ ' : '◇ '}{m.titulo}
               </button>
             );
           })}
@@ -389,7 +389,7 @@ Nota mínima para aprovação: ${modulo.notaMinima}/10`
         <div style={{ padding: '0 28px 28px' }}>
           <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 16, padding: 20, marginBottom: 16 }}>
             <p style={{ fontSize: 10, fontWeight: 900, color: '#475569', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 10 }}>
-              {modulo.tipo === 'obrigatorio' ? 'â˜… Módulo obrigatório' : 'â—‡ Módulo Opcional'}
+              {modulo.tipo === 'obrigatorio' ? '★ Módulo obrigatório' : '◇ Módulo Opcional'}
             </p>
             <p style={{ fontSize: 13, color: '#334155', lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{modulo.conteudo || modulo.descricao}</p>
           </div>
@@ -400,9 +400,9 @@ Nota mínima para aprovação: ${modulo.notaMinima}/10`
               <i className={`fa-solid ${progModulo.aprovado ? 'fa-circle-check' : 'fa-circle-xmark'}`} style={{ color: progModulo.aprovado ? '#10b981' : '#dc2626', fontSize: 18 }}></i>
               <div>
                 <p style={{ fontSize: 12, fontWeight: 900, color: progModulo.aprovado ? '#10b981' : '#dc2626' }}>
-                  {progModulo.aprovado ? 'Aprovado' : 'Reprovado'} â€” Nota: {progModulo.nota}/10
+                  {progModulo.aprovado ? 'Aprovado' : 'Reprovado'} " Nota: {progModulo.nota}/10
                 </p>
-                <p style={{ fontSize: 11, color: '#475569' }}>Tentativas: {progModulo.tentativas} Â· Nota mínima: {modulo.notaMinima}</p>
+                <p style={{ fontSize: 11, color: '#475569' }}>Tentativas: {progModulo.tentativas} · Nota mínima: {modulo.notaMinima}</p>
               </div>
             </div>
           )}
@@ -491,7 +491,7 @@ Nota mínima para aprovação: ${modulo.notaMinima}/10`
                   {p?.aprovado ? 'Aprovado!' : 'Não aprovado'}
                 </p>
                 <p style={{ fontSize: 14, color: '#475569', marginBottom: 16 }}>
-                  Sua nota: <strong style={{ color: '#0f172a' }}>{p?.nota}/10</strong> Â· Mínima: {modulo.notaMinima}
+                  Sua nota: <strong style={{ color: '#0f172a' }}>{p?.nota}/10</strong> · Mínima: {modulo.notaMinima}
                 </p>
                 {!p?.aprovado && (
                   <button onClick={() => { setShowQuiz(false); setQuizEnviado(false); setRespostas({}); setQuizQuestoes([]); }} style={{ background: '#7c3aed', border: 'none', color: '#0f172a', padding: '10px 24px', borderRadius: 12, cursor: 'pointer', fontWeight: 900, fontSize: 12, textTransform: 'uppercase' }}>
@@ -641,7 +641,7 @@ const TrailsView: React.FC = () => {
           Trilhas de <span style={{ color: '#3b82f6' }}>Treinamento</span>
         </h2>
         <p style={{ fontSize: 11, color: '#475569', fontWeight: 900, textTransform: 'uppercase', letterSpacing: 3, marginTop: 4 }}>
-          Capacitação por perfil de usuário Â· CartórioRAG PRO
+          Capacitação por perfil de usuário · CartórioRAG PRO
         </p>
       </div>
 
@@ -734,7 +734,7 @@ const TrailsView: React.FC = () => {
               <div>
                 <label style={{ fontSize: 10, fontWeight: 900, color: '#475569', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6 }}>Título da Trilha</label>
                 <input value={form.titulo} onChange={e => setForm(f => ({ ...f, titulo: e.target.value }))}
-                  placeholder="Ex: Trilha do Atendente Â· Onboarding Notarial"
+                  placeholder="Ex: Trilha do Atendente · Onboarding Notarial"
                   style={{ width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 16px', color: '#0f172a', fontSize: 14 }} />
               </div>
               <div>
@@ -770,7 +770,7 @@ const TrailsView: React.FC = () => {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                 <div>
                   <p style={{ fontSize: 13, fontWeight: 900, color: '#0f172a', textTransform: 'uppercase', letterSpacing: 1 }}>Módulos</p>
-                  <p style={{ fontSize: 10, color: '#475569', marginTop: 2 }}>â˜… obrigatório = conta para conclusão Â· â—‡ Opcional = complementar</p>
+                  <p style={{ fontSize: 10, color: '#475569', marginTop: 2 }}>★ obrigatório = conta para conclusão · ◇ Opcional = complementar</p>
                 </div>
                 <button onClick={addModulo} style={{ background: '#2563eb', border: 'none', color: '#0f172a', padding: '8px 16px', borderRadius: 10, cursor: 'pointer', fontSize: 11, fontWeight: 900, textTransform: 'uppercase' }}>
                   <i className="fa-solid fa-plus" style={{ marginRight: 6 }}></i>Módulo
@@ -833,7 +833,7 @@ const TrailsView: React.FC = () => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                       <div>
                         <p style={{ fontSize: 15, fontWeight: 900, color: '#0f172a' }}>{t.titulo}</p>
-                        <p style={{ fontSize: 11, color: '#475569', marginTop: 2 }}>{t.modulos.length} módulos Â· {t.perfis.map(p => PERFIL_LABEL[p]).join(', ')}</p>
+                        <p style={{ fontSize: 11, color: '#475569', marginTop: 2 }}>{t.modulos.length} módulos · {t.perfis.map(p => PERFIL_LABEL[p]).join(', ')}</p>
                       </div>
                       <div style={{ textAlign: 'right' }}>
                         <p style={{ fontSize: 22, fontWeight: 900, color: '#10b981' }}>{progs.filter(p => p.concluida).length}</p>
