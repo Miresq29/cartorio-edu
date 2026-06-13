@@ -239,24 +239,35 @@ export const generateTrainingOptions = async (
   context: string,
   customRequest?: string
 ): Promise<any[]> => {
-  const ctxTruncated = context.substring(0, 3000);
+  const ctxTruncated = context.substring(0, 2000);
   const prompt = `${ctxTruncated}
 
-${customRequest ? `Pedido específico: ${customRequest}\n\n` : ''}Gere EXATAMENTE 3 opções de roteiro de treinamento notarial com abordagens diferentes:
+${customRequest ? `Pedido específico: ${customRequest}\n\n` : ''}Gere EXATAMENTE 3 opções de roteiro de treinamento notarial. Seja conciso em cada campo.
 - Opção 1: ESSENCIAL (básico, itens críticos, duração curta)
 - Opção 2: COMPLETO (abrangente, todos os módulos)
 - Opção 3: RELÂMPAGO (intensivo, pontos-chave, reciclagem)
 
-Retorne APENAS array JSON com 3 objetos, sem markdown:
-[{"titulo":"...","tipo":"essencial|completo|relampago","descricao":"...","duracao":"...","publico":"...","modulos":[{"nome":"...","objetivo":"...","duracao":"...","obrigatorio":true}],"justificativa":"..."}]`;
+Retorne APENAS array JSON válido e completo com 3 objetos, sem markdown, sem texto extra:
+[{"titulo":"...","tipo":"essencial","descricao":"...","duracao":"...","publico":"...","modulos":[{"nome":"...","objetivo":"...","duracao":"...","obrigatorio":true}],"justificativa":"..."},{"titulo":"...","tipo":"completo","descricao":"...","duracao":"...","publico":"...","modulos":[{"nome":"...","objetivo":"...","duracao":"...","obrigatorio":true}],"justificativa":"..."},{"titulo":"...","tipo":"relampago","descricao":"...","duracao":"...","publico":"...","modulos":[{"nome":"...","objetivo":"...","duracao":"...","obrigatorio":true}],"justificativa":"..."}]`;
 
   try {
-    const text = await callGemini(prompt, 3000);
+    const text = await callGemini(prompt, 4096);
     const cleaned = cleanJsonOutput(text);
-    return JSON.parse(cleaned);
+    const parsed = JSON.parse(cleaned);
+    if (!Array.isArray(parsed) || parsed.length === 0) throw new Error('Resposta não é array válido');
+    return parsed;
   } catch (e) {
     console.error('Erro ao gerar opções de treinamento:', e);
-    return [];
+    // Segunda tentativa com prompt ainda mais simples
+    try {
+      const simplePrompt = `${customRequest ? customRequest + '\n\n' : ''}Gere 3 roteiros de treinamento notarial (essencial, completo, relampago). JSON sem markdown:
+[{"titulo":"Roteiro Essencial","tipo":"essencial","descricao":"Foco nos pontos críticos","duracao":"1h","publico":"Todos","modulos":[{"nome":"Introdução","objetivo":"Conceitos básicos","duracao":"30min","obrigatorio":true}],"justificativa":"Cobre o mínimo necessário"},{"titulo":"Roteiro Completo","tipo":"completo","descricao":"Abrangente","duracao":"4h","publico":"Todos","modulos":[{"nome":"Módulo 1","objetivo":"Base","duracao":"1h","obrigatorio":true}],"justificativa":"Cobertura total"},{"titulo":"Roteiro Relâmpago","tipo":"relampago","descricao":"Pontos-chave","duracao":"45min","publico":"Veteranos","modulos":[{"nome":"Revisão","objetivo":"Reciclagem","duracao":"45min","obrigatorio":true}],"justificativa":"Para reciclagem rápida"}]`;
+      const text2 = await callGemini(simplePrompt, 4096);
+      const cleaned2 = cleanJsonOutput(text2);
+      return JSON.parse(cleaned2);
+    } catch {
+      return [];
+    }
   }
 };
 
