@@ -485,10 +485,13 @@ const RepositorioView: React.FC = () => {
     );
   }, [user.tenantId]);
 
-  // Load progresso (assistidas)
+  // Load progresso (assistidas) — filtro por tenantId obrigatório nas rules
   useEffect(() => {
     if (!user?.id) return;
-    const q = query(collection(db, 'repositorioProgresso'));
+    const q = query(
+      collection(db, 'repositorioProgresso'),
+      where('tenantId', '==', user.tenantId)
+    );
     return onSnapshot(q, s => {
       const ids = new Set<string>();
       s.docs.forEach(d => {
@@ -496,7 +499,7 @@ const RepositorioView: React.FC = () => {
       });
       setAssistidas(ids);
     });
-  }, [user?.id]);
+  }, [user?.id, user.tenantId]);
 
   const abrirPlayer = async (midia: Midia) => {
     setPlayerMidia(midia);

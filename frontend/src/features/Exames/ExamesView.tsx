@@ -106,6 +106,7 @@ const ExamesView: React.FC = () => {
     const q = query(
       collection(db, 'examesResultados'),
       where('userId', '==', user.id),
+      where('tenantId', '==', user.tenantId),
     );
     return onSnapshot(q, snap => {
       const docs = snap.docs.map(d => ({ id: d.id, ...d.data() } as ExameResultado));

@@ -15,8 +15,8 @@ service cloud.firestore {
     function newSameTenant() { return request.resource.data.get('tenantId', myTenant()) == myTenant(); }
     function isGlobalContent() { return resource.data.get('tenantId', '') == 'GLOBAL'; }
 
-    // Content: same tenant OR global (SUPERADMIN can create global)
-    function canReadContent() { return isActive() && (sameTenant() || isGlobalContent()); }
+    // Content: SUPERADMIN vê tudo; demais usuários: mesmo tenant ou global
+    function canReadContent() { return isSuperAdmin() || (isActive() && (sameTenant() || isGlobalContent())); }
     function canWriteContent() { return isSuperAdmin() || (isGestor() && newSameTenant()); }
     function canEditContent() { return isSuperAdmin() || (isGestor() && sameTenant()); }
 

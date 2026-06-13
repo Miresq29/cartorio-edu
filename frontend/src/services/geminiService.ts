@@ -201,7 +201,8 @@ const extractJsonObject = (text: string): any => {
 // ─── Função base com maxOutputTokens configurável ────────────────────────────
 const callGemini = async (
   prompt: string,
-  maxOutputTokens: number = 1024
+  maxOutputTokens: number = 1024,
+  jsonMode: boolean = false
 ): Promise<string> => {
   if (!GEMINI_API_KEY) {
     console.error('[Gemini] VITE_GEMINI_API_KEY não configurada.');
@@ -218,7 +219,8 @@ const callGemini = async (
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: {
         temperature: 0.2,
-        maxOutputTokens, // ← agora cada função define seu próprio limite
+        maxOutputTokens,
+        ...(jsonMode ? { responseMimeType: 'application/json' } : {}),
       },
     }),
   });
@@ -319,9 +321,9 @@ Preencha o JSON abaixo com títulos e módulos específicos para ESTE documento.
 ]`;
 
   try {
-    const text = await callGemini(prompt, 4096);
-    const cleaned = cleanJsonOutput(text);
-    const parsed = JSON.parse(cleaned);
+    // jsonMode=true: Gemini garante JSON válido — sem truncamento nem chars não-escapados
+    const text = await callGemini(prompt, 4096, true);
+    const parsed = JSON.parse(text);
     if (!Array.isArray(parsed) || parsed.length === 0) throw new Error('Array inválido');
     return parsed;
   } catch (e) {
@@ -347,7 +349,7 @@ Preencha o JSON abaixo com títulos e módulos específicos para ESTE documento.
 
 // ─── Resumo de documento ──────────────────────────────────────────────────────
 // OTIMIZAÇÃO: cache em memória — mesmo doc+tipo não chama a API novamente
-// 1000 tokens: resumos de 1 página são suficientes
+// 2000 tokens: resumos detalhados com headers e bullets
 export const generateSummary = async (
   docContent: string,
   docTitle: string,
@@ -389,7 +391,7 @@ ${docContent.substring(0, 5000)}
 Gere o resumo com títulos em MAIÚSCULAS e bullets quando necessário.`;
 
   try {
-    const result = await callGemini(prompt, 1000);
+    const result = await callGemini(prompt, 2000);
     summaryMemCache.set(cacheKey, result);
     writeSummaryCache(cacheKey, result);
     return result;
@@ -501,8 +503,9 @@ Retorne APENAS array JSON sem markdown:
 [{"id":1,"enunciado":"...","alternativas":[{"letra":"A","texto":"..."},{"letra":"B","texto":"..."},{"letra":"C","texto":"..."},{"letra":"D","texto":"..."}],"correta":"A","bloom":"compreensao","justificativa":"..."}]`;
 
   try {
-    const text = await callGemini(prompt, 4096);
-    const questoes = extractJsonObject(text);
+    // jsonMode=true: Gemini garante JSON válido
+    const text = await callGemini(prompt, 4096, true);
+    const questoes = JSON.parse(text);
     if (!Array.isArray(questoes) || questoes.length === 0)
       throw new Error('Formato inválido na resposta da IA.');
     return questoes;

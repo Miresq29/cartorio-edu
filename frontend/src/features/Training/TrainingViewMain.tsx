@@ -145,22 +145,22 @@ const TrainingView: React.FC = () => {
 
   const formatSelectedOption = (opt: TrainingOption): string => {
     const modulos = opt.modulos?.map((m, i) =>
-      `  ${i + 1}. ${m.nome} (${m.duracao})${m.obrigatorio ? ' ★' : ''}\n     Objetivo: ${m.objetivo}`
+      `  ${i + 1}. ${m.nome} (${m.duracao})${m.obrigatorio ? ' [obrigatorio]' : ''}\n     Objetivo: ${m.objetivo}`
     ).join('\n') || 'Módulos não especificados';
 
     return `ROTEIRO: ${opt.titulo.toUpperCase()}
-â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+------------------------------
 Abordagem: ${opt.descricao}
 Duração total: ${opt.duracao}
 Público-alvo: ${opt.publico}
 
-MÃ“DULOS:
+MÓDULOS:
 ${modulos}
 
 JUSTIFICATIVA:
 ${opt.justificativa}
 
-★ = Módulo obrigatório
+[obrigatorio] = Módulo obrigatório
 `;
   };
 
@@ -212,13 +212,13 @@ ${opt.justificativa}
           {checklists.slice(0, 3).map((c, i) => (
             <div key={i} className="flex items-center gap-3 p-2 bg-slate-100 rounded-xl">
               <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <span className="text-xs text-slate-700"><span className="font-bold text-[#0A1628]">{c.title}</span> " {c.items?.length || 0} requisitos</span>
+              <span className="text-xs text-slate-700"><span className="font-bold text-[#0A1628]">{c.title}</span> - {c.items?.length || 0} requisitos</span>
             </div>
           ))}
           {knowledgeDocs.slice(0, 3).map((d, i) => (
             <div key={i} className="flex items-center gap-3 p-2 bg-slate-100 rounded-xl">
               <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-              <span className="text-xs text-slate-700"><span className="font-bold text-[#0A1628]">{d.fileName || d.title}</span> " documento indexado</span>
+              <span className="text-xs text-slate-700"><span className="font-bold text-[#0A1628]">{d.fileName || d.title}</span> - documento indexado</span>
             </div>
           ))}
         </div>
@@ -257,7 +257,7 @@ ${opt.justificativa}
                     </span>
                   </div>
                   <p className={`text-[9px] font-black text-${color}-600 uppercase tracking-widest group-hover:underline`}>
-                    Selecionar este roteiro â†’
+                    Selecionar este roteiro -&gt;
                   </p>
                 </button>
               );
