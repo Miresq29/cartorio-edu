@@ -98,8 +98,11 @@ const UsersView: React.FC = () => {
   const tenantId = user.tenantId;
   const isGestor = ['SUPERADMIN', 'gestor'].includes(user.role);
 
+  const isSuperAdmin = user.role === 'SUPERADMIN';
+
   const [tab, setTab] = useState<Tab>('colaboradores');
   const [users, setUsers] = useState<UserData[]>([]);
+  const [tenants, setTenants] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [busca, setBusca] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -107,12 +110,11 @@ const UsersView: React.FC = () => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const [form, setForm] = useState({
-    name: '', email: '', role: 'colaborador' as Role, cargo: '', tenantId,
+    name: '', email: '', role: 'colaborador' as Role, cargo: '', tenantId: isSuperAdmin ? '' : tenantId,
   });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const isSuperAdmin = user.role === 'SUPERADMIN';
     const q = isSuperAdmin
       ? query(collection(db, 'users'), orderBy('name'))
       : query(collection(db, 'users'), where('tenantId', '==', tenantId), orderBy('name'));
@@ -123,6 +125,14 @@ const UsersView: React.FC = () => {
     return () => u();
   }, [tenantId, user.role]);
 
+  useEffect(() => {
+    if (!isSuperAdmin) return;
+    const q = query(collection(db, 'tenants'), orderBy('name'));
+    return onSnapshot(q, snap => {
+      setTenants(snap.docs.map(d => ({ id: d.id, name: (d.data() as any).name || d.id })));
+    });
+  }, [isSuperAdmin]);
+
   const setF = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
 
   const abrirForm = (u?: UserData) => {
@@ -131,13 +141,14 @@ const UsersView: React.FC = () => {
       setForm({ name: u.name, email: u.email, role: u.role, cargo: u.cargo || '', tenantId: u.tenantId });
     } else {
       setEditUser(null);
-      setForm({ name: '', email: '', role: 'colaborador', cargo: '', tenantId });
+      setForm({ name: '', email: '', role: 'colaborador', cargo: '', tenantId: isSuperAdmin ? '' : tenantId });
     }
     setShowForm(true);
   };
 
   const handleSave = async () => {
     if (!form.name || !form.email) { showToast('Preencha nome e e-mail.', 'error'); return; }
+    if (isSuperAdmin && !form.tenantId) { showToast('Selecione o cartório para este colaborador.', 'error'); return; }
     setSaving(true);
     try {
       if (editUser) {
@@ -303,6 +314,21 @@ const UsersView: React.FC = () => {
                         {CARGOS.map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
                     </div>
+                    {isSuperAdmin && (
+                      <div className="space-y-1 md:col-span-2">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                          Cartório <span className="text-red-400">*</span>
+                        </label>
+                        <select value={form.tenantId} onChange={e => setF('tenantId', e.target.value)}
+                          title="Cartório do colaborador"
+                          className="w-full bg-white border border-[#C9A84C]/60 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-[#C9A84C]">
+                          <option value="">Selecione o cartório...</option>
+                          {tenants.map(t => (
+                            <option key={t.id} value={t.id}>{t.name} — {t.id}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                   </div>
                   {/* Info de permissões do perfil selecionado */}
                   <div className="bg-white border border-indigo-100 rounded-xl p-3">
@@ -352,20 +378,27 @@ const UsersView: React.FC = () => {
                   <table className="w-full text-xs">
                     <thead>
                       <tr className="bg-white border-b border-slate-200">
-                        {['Colaborador', 'E-mail', 'Cargo', 'Perfil', 'Status', 'Desde', 'Ações'].map(h => (
+                        {['Colaborador', 'E-mail', 'Cargo', ...(isSuperAdmin ? ['Cartório'] : []), 'Perfil', 'Status', 'Desde', 'Ações'].map(h => (
                           <th key={h} className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {filtrados.length === 0 && (
-                        <tr><td colSpan={7} className="text-center p-8 text-slate-500">Nenhum colaborador encontrado.</td></tr>
+                        <tr><td colSpan={isSuperAdmin ? 8 : 7} className="text-center p-8 text-slate-500">Nenhum colaborador encontrado.</td></tr>
                       )}
                       {filtrados.map(u => (
                         <tr key={u.id} className={`border-b border-slate-100 hover:bg-white transition-all ${u.ativo === false ? 'opacity-50' : ''}`}>
                           <td className="p-3 font-bold text-[#0A1628]">{u.name}</td>
                           <td className="p-3 text-slate-500">{u.email || '–'}</td>
                           <td className="p-3 text-slate-500">{u.cargo || '–'}</td>
+                          {isSuperAdmin && (
+                            <td className="p-3">
+                              <span className="text-[10px] font-mono bg-blue-50 text-blue-600 border border-blue-100 px-2 py-0.5 rounded-lg">
+                                {u.tenantId || '–'}
+                              </span>
+                            </td>
+                          )}
                           <td className="p-3">
                             <span className="text-[10px] font-black px-2.5 py-1 rounded-lg"
                               style={{ background: roleColor(u.role) + '15', color: roleColor(u.role) }}>
