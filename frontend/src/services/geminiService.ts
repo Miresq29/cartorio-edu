@@ -17,29 +17,48 @@ const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const GEMINI_MODEL = 'gemini-flash-latest';
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
-// ─── Cache em memória para resumos ───────────────────────────────────────────
-// Chave: hash simples de docTitle + summaryType
-// Evita rechamar a API para o mesmo documento/tipo já gerado na sessão
-const summaryCache = new Map<string, string>();
+// ─── Cache persistente para resumos (localStorage) ───────────────────────────
+// Persiste entre sessões — evita rechamar a API para o mesmo doc+tipo
+// TTL: 30 dias (provimentos mudam raramente)
+const SUMMARY_CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 const makeCacheKey = (title: string, type: string): string =>
-  `${title.trim().toLowerCase()}::${type}`;
+  `mjc_summary__${title.trim().toLowerCase().replace(/[^a-z0-9]/g, '_')}__${type}`;
+
+const readSummaryCache = (key: string): string | null => {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const { value, ts } = JSON.parse(raw);
+    if (Date.now() - ts > SUMMARY_CACHE_TTL_MS) { localStorage.removeItem(key); return null; }
+    return value;
+  } catch { return null; }
+};
+
+const writeSummaryCache = (key: string, value: string) => {
+  try { localStorage.setItem(key, JSON.stringify({ value, ts: Date.now() })); } catch {}
+};
+
+// Cache em memória para a sessão atual (evita releitura do localStorage)
+const summaryMemCache = new Map<string, string>();
 
 // ─── Checklists estáticos para provimentos conhecidos ────────────────────────
 // Elimina 100% das chamadas Gemini para documentos fixos do acervo
 const STATIC_CHECKLISTS: Record<string, { id: string; text: string }[]> = {
+  // ── LGPD / Segurança da Informação ────────────────────────────────────────
   'provimento 213': [
-    { id: '1', text: 'Designar Responsável Técnico de TI (art. 3º)' },
-    { id: '2', text: 'Designar Encarregado de Dados (DPO) (art. 4º)' },
-    { id: '3', text: 'Elaborar Política de Segurança da Informação (PSI)' },
-    { id: '4', text: 'Elaborar Plano de Continuidade de Negócios (PCN)' },
-    { id: '5', text: 'Manter inventário de ativos de TI atualizado' },
-    { id: '6', text: 'Formalizar contratos com operadores de dados (DPA)' },
-    { id: '7', text: 'Elaborar ROPA (Registro de Operações de Tratamento)' },
-    { id: '8', text: 'Realizar treinamento de equipe em LGPD' },
-    { id: '9', text: 'Implantar canal de atendimento ao titular de dados' },
+    { id: '1',  text: 'Designar Responsável Técnico de TI (art. 3º)' },
+    { id: '2',  text: 'Designar Encarregado de Dados (DPO) (art. 4º)' },
+    { id: '3',  text: 'Elaborar Política de Segurança da Informação (PSI)' },
+    { id: '4',  text: 'Elaborar Plano de Continuidade de Negócios (PCN)' },
+    { id: '5',  text: 'Manter inventário de ativos de TI atualizado' },
+    { id: '6',  text: 'Formalizar contratos com operadores de dados (DPA)' },
+    { id: '7',  text: 'Elaborar ROPA (Registro de Operações de Tratamento)' },
+    { id: '8',  text: 'Realizar treinamento de equipe em LGPD' },
+    { id: '9',  text: 'Implantar canal de atendimento ao titular de dados' },
     { id: '10', text: 'Implementar controles de acesso e autenticação' },
   ],
+  // ── Segurança cibernética / backup ────────────────────────────────────────
   'provimento 149': [
     { id: '1', text: 'Manter sistema de gestão eletrônica de documentos' },
     { id: '2', text: 'Garantir backup periódico dos dados' },
@@ -47,6 +66,7 @@ const STATIC_CHECKLISTS: Record<string, { id: string; text: string }[]> = {
     { id: '4', text: 'Registrar logs de acesso e alterações' },
     { id: '5', text: 'Comunicar incidentes ao CNJ no prazo previsto' },
   ],
+  // ── PLD/FTP (Prevenção à Lavagem de Dinheiro) ────────────────────────────
   'provimento 161': [
     { id: '1', text: 'Implementar programa PLD/FTP (Lei 9.613/98)' },
     { id: '2', text: 'Realizar identificação e cadastro de clientes (KYC)' },
@@ -54,6 +74,82 @@ const STATIC_CHECKLISTS: Record<string, { id: string; text: string }[]> = {
     { id: '4', text: 'Comunicar operações suspeitas ao COAF' },
     { id: '5', text: 'Treinar colaboradores em PLD/FTP anualmente' },
     { id: '6', text: 'Manter registros pelo prazo legal (5 anos)' },
+  ],
+  // ── Inventário e partilha extrajudicial (Resolução 35/CNJ) ───────────────
+  'resolução 35': [
+    { id: '1', text: 'Verificar inexistência de herdeiros incapazes (art. 2º)' },
+    { id: '2', text: 'Exigir certidão de óbito do autor da herança' },
+    { id: '3', text: 'Identificar todos os bens, dívidas e obrigações' },
+    { id: '4', text: 'Verificar quitação do ITCMD (imposto de transmissão)' },
+    { id: '5', text: 'Lavrar escritura de inventário/partilha com todos os herdeiros' },
+    { id: '6', text: 'Registrar escritura no Cartório de Imóveis (se houver imóvel)' },
+  ],
+  // ── Divórcio e separação extrajudicial ───────────────────────────────────
+  'provimento 65': [
+    { id: '1', text: 'Verificar ausência de filhos menores ou incapazes (art. 1º)' },
+    { id: '2', text: 'Obter certidão de casamento atualizada' },
+    { id: '3', text: 'Identificar e discriminar todos os bens partilhados' },
+    { id: '4', text: 'Lavrar escritura com advogado constituído pelas partes' },
+    { id: '5', text: 'Registrar averbação no Cartório de Registro Civil' },
+    { id: '6', text: 'Registrar averbação no Cartório de Imóveis (se houver imóvel)' },
+  ],
+  // ── Apostilamento de Haia ────────────────────────────────────────────────
+  'provimento 32': [
+    { id: '1', text: 'Verificar autenticidade do documento público a ser apostilado' },
+    { id: '2', text: 'Confirmar que o país de destino é signatário da Convenção de Haia' },
+    { id: '3', text: 'Lançar dados no sistema e-Apostila do CNJ' },
+    { id: '4', text: 'Apor apostila com código de verificação único' },
+    { id: '5', text: 'Registrar o ato no livro competente' },
+    { id: '6', text: 'Arquivar cópia do documento apostilado' },
+  ],
+  // ── Atos notariais eletrônicos ───────────────────────────────────────────
+  'provimento 100': [
+    { id: '1', text: 'Usar plataforma e-Notariado homologada pelo CNJ' },
+    { id: '2', text: 'Verificar identidade das partes por videoconferência' },
+    { id: '3', text: 'Coletar assinaturas com certificado ICP-Brasil' },
+    { id: '4', text: 'Gerar QR Code para verificação da escritura' },
+    { id: '5', text: 'Arquivar instrumento eletrônico em servidor certificado' },
+    { id: '6', text: 'Registrar ato no livro eletrônico do e-Notariado' },
+  ],
+  // ── Reconhecimento de parentalidade socioafetiva ─────────────────────────
+  'provimento 63': [
+    { id: '1', text: 'Verificar manifestação espontânea e livre de vício' },
+    { id: '2', text: 'Exigir idade mínima de 18 anos do declarante' },
+    { id: '3', text: 'Confirmar diferença mínima de 16 anos entre as partes' },
+    { id: '4', text: 'Lavrar escritura declaratória de reconhecimento' },
+    { id: '5', text: 'Comunicar o ato ao Cartório de Registro Civil' },
+    { id: '6', text: 'Averbação na certidão de nascimento do filho' },
+  ],
+  // ── Usucapião extrajudicial ───────────────────────────────────────────────
+  'provimento 65_usucapiao': [
+    { id: '1', text: 'Verificar requisitos do art. 1.238 a 1.244 do CC' },
+    { id: '2', text: 'Exigir ata notarial de constatação de posse' },
+    { id: '3', text: 'Obter planta e memorial descritivo do imóvel' },
+    { id: '4', text: 'Notificar confinantes e titulares de direitos reais' },
+    { id: '5', text: 'Registrar procedimento no Cartório de Imóveis' },
+    { id: '6', text: 'Emitir certidão de conclusão do procedimento' },
+  ],
+  // ── Qualidade e excelência notarial ──────────────────────────────────────
+  'provimento 150': [
+    { id: '1', text: 'Implementar sistema de gestão da qualidade (SGQ)' },
+    { id: '2', text: 'Estabelecer indicadores de desempenho (KPIs notariais)' },
+    { id: '3', text: 'Realizar avaliação de satisfação do usuário periodicamente' },
+    { id: '4', text: 'Manter equipe capacitada com horas mínimas de treinamento' },
+    { id: '5', text: 'Elaborar relatório de gestão anual' },
+    { id: '6', text: 'Submeter-se à auditoria do sistema de qualidade' },
+  ],
+  // ── Escritura pública em geral ────────────────────────────────────────────
+  'escritura publica': [
+    { id: '1',  text: 'Verificar identidade e capacidade civil das partes' },
+    { id: '2',  text: 'Conferir representação legal (procuração/mandato)' },
+    { id: '3',  text: 'Verificar impedimentos legais ao ato' },
+    { id: '4',  text: 'Ler o instrumento às partes ou confirmar leitura' },
+    { id: '5',  text: 'Colher assinaturas de todas as partes e testemunhas' },
+    { id: '6',  text: 'Assinar e autenticar com sinal público do tabelião' },
+    { id: '7',  text: 'Lavrar no livro de notas com numeração sequencial' },
+    { id: '8',  text: 'Arquivar minutas e documentos comprobatórios' },
+    { id: '9',  text: 'Expedir certidão (traslado/certidão) quando solicitado' },
+    { id: '10', text: 'Recolher emolumentos conforme tabela estadual' },
   ],
 };
 
@@ -164,42 +260,6 @@ export const getGeminiResponse = async (prompt: string): Promise<string> => {
   }
 };
 
-// ─── Auditoria de conformidade ────────────────────────────────────────────────
-// 2000 tokens: JSON estruturado com N itens do checklist
-// Input do documento truncado em 4000 chars para controle de custo
-export const analyzeComplianceDeep = async (
-  doc: { text?: string },
-  checklist: string[],
-  context: string
-) => {
-  const docText = (doc.text || 'Conteúdo não disponível.').substring(0, 4000);
-  const prompt = `Analise o documento abaixo contra o checklist. Retorne APENAS um array JSON válido, sem texto adicional, sem markdown:
-[{"requirement": "...", "compliant": true/false, "comment": "...", "suggestion": "..."}]
-
-Checklist:
-${checklist.map((item) => `- ${item}`).join('\n')}
-
-Contexto legal: ${context}
-
-Documento: ${docText}`;
-
-  try {
-    const text = await callGemini(prompt, 2000);
-    const cleaned = cleanJsonOutput(text);
-    return JSON.parse(cleaned);
-  } catch (e) {
-    console.error('Erro conformidade:', e);
-    return [
-      {
-        requirement: 'Erro de Processamento',
-        compliant: false,
-        comment: 'A IA não gerou JSON válido.',
-        suggestion: 'Tente novamente.',
-      },
-    ];
-  }
-};
-
 // ─── Extração de checklist de documento ──────────────────────────────────────
 // OTIMIZAÇÃO: usa checklist estático para provimentos conhecidos (0 tokens)
 // Só chama a IA para documentos desconhecidos
@@ -235,39 +295,53 @@ Documento: ${docText}`;
 // ─── Roteiros de treinamento ──────────────────────────────────────────────────
 // 3000 tokens: 3 objetos JSON com módulos
 // Context truncado em 3000 chars
+// Templates base garantem estrutura JSON válida — IA só personaliza os campos de texto
+const TRAINING_TEMPLATES = [
+  { tipo: 'essencial',  duracao: '1h30',  publico: 'Toda a equipe',           modulos: 3 },
+  { tipo: 'completo',   duracao: '4h',    publico: 'Equipe completa + gestores', modulos: 5 },
+  { tipo: 'relampago',  duracao: '45min', publico: 'Colaboradores experientes', modulos: 2 },
+];
+
 export const generateTrainingOptions = async (
   context: string,
   customRequest?: string
 ): Promise<any[]> => {
-  const ctxTruncated = context.substring(0, 2000);
-  const prompt = `${ctxTruncated}
+  const ctxTruncated = context.substring(0, 1500);
+  const prompt = `Conteúdo do documento notarial:
+${ctxTruncated}
+${customRequest ? `\nPedido: ${customRequest}` : ''}
 
-${customRequest ? `Pedido específico: ${customRequest}\n\n` : ''}Gere EXATAMENTE 3 opções de roteiro de treinamento notarial. Seja conciso em cada campo.
-- Opção 1: ESSENCIAL (básico, itens críticos, duração curta)
-- Opção 2: COMPLETO (abrangente, todos os módulos)
-- Opção 3: RELÂMPAGO (intensivo, pontos-chave, reciclagem)
-
-Retorne APENAS array JSON válido e completo com 3 objetos, sem markdown, sem texto extra:
-[{"titulo":"...","tipo":"essencial","descricao":"...","duracao":"...","publico":"...","modulos":[{"nome":"...","objetivo":"...","duracao":"...","obrigatorio":true}],"justificativa":"..."},{"titulo":"...","tipo":"completo","descricao":"...","duracao":"...","publico":"...","modulos":[{"nome":"...","objetivo":"...","duracao":"...","obrigatorio":true}],"justificativa":"..."},{"titulo":"...","tipo":"relampago","descricao":"...","duracao":"...","publico":"...","modulos":[{"nome":"...","objetivo":"...","duracao":"...","obrigatorio":true}],"justificativa":"..."}]`;
+Preencha o JSON abaixo com títulos e módulos específicos para ESTE documento. Não altere a estrutura — apenas preencha os campos "titulo", "descricao", "justificativa", e o array "modulos" de cada opção. Retorne APENAS o JSON completo sem markdown:
+[
+  {"titulo":"PREENCHER","tipo":"essencial","descricao":"PREENCHER","duracao":"1h30","publico":"Toda a equipe","modulos":[{"nome":"PREENCHER","objetivo":"PREENCHER","duracao":"30min","obrigatorio":true},{"nome":"PREENCHER","objetivo":"PREENCHER","duracao":"30min","obrigatorio":true},{"nome":"PREENCHER","objetivo":"PREENCHER","duracao":"30min","obrigatorio":false}],"justificativa":"PREENCHER"},
+  {"titulo":"PREENCHER","tipo":"completo","descricao":"PREENCHER","duracao":"4h","publico":"Equipe completa + gestores","modulos":[{"nome":"PREENCHER","objetivo":"PREENCHER","duracao":"45min","obrigatorio":true},{"nome":"PREENCHER","objetivo":"PREENCHER","duracao":"45min","obrigatorio":true},{"nome":"PREENCHER","objetivo":"PREENCHER","duracao":"45min","obrigatorio":true},{"nome":"PREENCHER","objetivo":"PREENCHER","duracao":"30min","obrigatorio":true},{"nome":"PREENCHER","objetivo":"PREENCHER","duracao":"15min","obrigatorio":false}],"justificativa":"PREENCHER"},
+  {"titulo":"PREENCHER","tipo":"relampago","descricao":"PREENCHER","duracao":"45min","publico":"Colaboradores experientes","modulos":[{"nome":"PREENCHER","objetivo":"PREENCHER","duracao":"25min","obrigatorio":true},{"nome":"PREENCHER","objetivo":"PREENCHER","duracao":"20min","obrigatorio":true}],"justificativa":"PREENCHER"}
+]`;
 
   try {
-    const text = await callGemini(prompt, 4096);
+    const text = await callGemini(prompt, 3000);
     const cleaned = cleanJsonOutput(text);
     const parsed = JSON.parse(cleaned);
-    if (!Array.isArray(parsed) || parsed.length === 0) throw new Error('Resposta não é array válido');
+    if (!Array.isArray(parsed) || parsed.length === 0) throw new Error('Array inválido');
     return parsed;
   } catch (e) {
     console.error('Erro ao gerar opções de treinamento:', e);
-    // Segunda tentativa com prompt ainda mais simples
-    try {
-      const simplePrompt = `${customRequest ? customRequest + '\n\n' : ''}Gere 3 roteiros de treinamento notarial (essencial, completo, relampago). JSON sem markdown:
-[{"titulo":"Roteiro Essencial","tipo":"essencial","descricao":"Foco nos pontos críticos","duracao":"1h","publico":"Todos","modulos":[{"nome":"Introdução","objetivo":"Conceitos básicos","duracao":"30min","obrigatorio":true}],"justificativa":"Cobre o mínimo necessário"},{"titulo":"Roteiro Completo","tipo":"completo","descricao":"Abrangente","duracao":"4h","publico":"Todos","modulos":[{"nome":"Módulo 1","objetivo":"Base","duracao":"1h","obrigatorio":true}],"justificativa":"Cobertura total"},{"titulo":"Roteiro Relâmpago","tipo":"relampago","descricao":"Pontos-chave","duracao":"45min","publico":"Veteranos","modulos":[{"nome":"Revisão","objetivo":"Reciclagem","duracao":"45min","obrigatorio":true}],"justificativa":"Para reciclagem rápida"}]`;
-      const text2 = await callGemini(simplePrompt, 4096);
-      const cleaned2 = cleanJsonOutput(text2);
-      return JSON.parse(cleaned2);
-    } catch {
-      return [];
-    }
+    // Fallback: retorna templates com contexto básico extraído
+    const titulo = ctxTruncated.split('\n')[0]?.substring(0, 60) || 'Documento Notarial';
+    return TRAINING_TEMPLATES.map(t => ({
+      titulo: `${titulo} — ${t.tipo.charAt(0).toUpperCase() + t.tipo.slice(1)}`,
+      tipo: t.tipo,
+      descricao: `Roteiro ${t.tipo} baseado no documento`,
+      duracao: t.duracao,
+      publico: t.publico,
+      modulos: Array.from({ length: t.modulos }, (_, i) => ({
+        nome: `Módulo ${i + 1}`,
+        objetivo: 'Consulte o documento para detalhar este módulo',
+        duracao: '30min',
+        obrigatorio: i < 2,
+      })),
+      justificativa: `Cobertura ${t.tipo} do conteúdo normativo`,
+    }));
   }
 };
 
@@ -279,11 +353,18 @@ export const generateSummary = async (
   docTitle: string,
   summaryType: 'executivo' | 'tecnico' | 'didatico' | 'operacional'
 ): Promise<string> => {
-  // Verifica cache antes de chamar a API
   const cacheKey = makeCacheKey(docTitle, summaryType);
-  if (summaryCache.has(cacheKey)) {
-    console.info(`[Gemini] Cache hit para resumo: ${cacheKey}`);
-    return summaryCache.get(cacheKey)!;
+  // 1º: cache em memória (mesma sessão)
+  if (summaryMemCache.has(cacheKey)) {
+    console.info(`[Gemini] Cache memória hit: ${cacheKey}`);
+    return summaryMemCache.get(cacheKey)!;
+  }
+  // 2º: cache localStorage (entre sessões, TTL 30 dias)
+  const persisted = readSummaryCache(cacheKey);
+  if (persisted) {
+    console.info(`[Gemini] Cache localStorage hit: ${cacheKey}`);
+    summaryMemCache.set(cacheKey, persisted);
+    return persisted;
   }
 
   const instructions: Record<string, string> = {
@@ -309,7 +390,8 @@ Gere o resumo com títulos em MAIÚSCULAS e bullets quando necessário.`;
 
   try {
     const result = await callGemini(prompt, 1000);
-    summaryCache.set(cacheKey, result); // salva no cache
+    summaryMemCache.set(cacheKey, result);
+    writeSummaryCache(cacheKey, result);
     return result;
   } catch (e) {
     console.error('Erro ao gerar resumo:', e);
@@ -318,13 +400,30 @@ Gere o resumo com títulos em MAIÚSCULAS e bullets quando necessário.`;
 };
 
 // ─── Posts para campanhas ─────────────────────────────────────────────────────
-// 1500 tokens: suficiente para até 4 plataformas
+// Cache: localStorage com TTL de 7 dias — posts do mesmo tema/plataformas/tom
+const POSTS_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const makePostsCacheKey = (topic: string, platforms: string[], tone: string) =>
+  `mjc_posts__${topic.trim().toLowerCase().replace(/\s+/g, '_').substring(0, 40)}__${platforms.sort().join('-')}__${tone}`;
+
 export const generateCampaignPosts = async (
   topic: string,
   platforms: string[],
   tone: string,
   additionalContext?: string
 ): Promise<Record<string, string>> => {
+  const cacheKey = makePostsCacheKey(topic, platforms, tone);
+  try {
+    const raw = localStorage.getItem(cacheKey);
+    if (raw) {
+      const { value, ts } = JSON.parse(raw);
+      if (Date.now() - ts < POSTS_CACHE_TTL_MS) {
+        console.info(`[Gemini] Cache posts hit: ${topic}`);
+        return value;
+      }
+      localStorage.removeItem(cacheKey);
+    }
+  } catch {}
+
   const platformInstructions: Record<string, string> = {
     linkedin:
       'Post LinkedIn: até 1300 chars, formal, hashtags ao final.',
@@ -357,7 +456,9 @@ Retorne APENAS JSON válido sem markdown:
     const firstBrace = cleaned.indexOf('{');
     const lastBrace = cleaned.lastIndexOf('}');
     if (firstBrace !== -1 && lastBrace > firstBrace) {
-      return JSON.parse(cleaned.substring(firstBrace, lastBrace + 1));
+      const result = JSON.parse(cleaned.substring(firstBrace, lastBrace + 1));
+      try { localStorage.setItem(cacheKey, JSON.stringify({ value: result, ts: Date.now() })); } catch {}
+      return result;
     }
     return {};
   } catch (e) {
@@ -415,7 +516,6 @@ Retorne APENAS array JSON sem markdown:
 export const GeminiService = {
   chat,
   getGeminiResponse,
-  analyzeComplianceDeep,
   extractChecklistFromDocument,
   generateTrainingOptions,
   generateSummary,
