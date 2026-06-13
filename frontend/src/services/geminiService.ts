@@ -293,8 +293,8 @@ Documento: ${docText}`;
 };
 
 // ─── Roteiros de treinamento ──────────────────────────────────────────────────
-// 3000 tokens: 3 objetos JSON com módulos
-// Context truncado em 3000 chars
+// 4096 tokens: template JSON completo com 3 objetos + módulos
+// Context truncado em 1500 chars
 // Templates base garantem estrutura JSON válida — IA só personaliza os campos de texto
 const TRAINING_TEMPLATES = [
   { tipo: 'essencial',  duracao: '1h30',  publico: 'Toda a equipe',           modulos: 3 },
@@ -319,7 +319,7 @@ Preencha o JSON abaixo com títulos e módulos específicos para ESTE documento.
 ]`;
 
   try {
-    const text = await callGemini(prompt, 3000);
+    const text = await callGemini(prompt, 4096);
     const cleaned = cleanJsonOutput(text);
     const parsed = JSON.parse(cleaned);
     if (!Array.isArray(parsed) || parsed.length === 0) throw new Error('Array inválido');

@@ -509,8 +509,12 @@ const RepositorioView: React.FC = () => {
   };
 
   const handleSave = async (data: Omit<Midia, 'id' | 'tenantId' | 'createdAt' | 'ativo'>) => {
+    // Firestore rejeita campos undefined — remove antes de salvar
+    const cleanData = Object.fromEntries(
+      Object.entries(data).filter(([, v]) => v !== undefined)
+    );
     await addDoc(collection(db, 'repositorio'), {
-      ...data, ativo: true,
+      ...cleanData, ativo: true,
       tenantId: user.tenantId, criadoPor: user.id,
       createdAt: serverTimestamp(),
     });
