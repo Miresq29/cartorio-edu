@@ -4,7 +4,7 @@ import { AppTab } from '../types';
 import { AuthService } from '../services/authService';
 
 const Sidebar: React.FC = () => {
-  const { state, setActiveTab, logout: appLogout } = useApp();
+  const { state, setActiveTab, setActiveTenant, logout: appLogout } = useApp();
   const [expanded, setExpanded] = useState(false);
   const [openSections, setOpenSections] = useState<Record<number, boolean>>({
     0: true, 1: true, 2: false, 3: false, 4: false
@@ -98,6 +98,37 @@ const Sidebar: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Banner cartório ativo (apenas SUPERADMIN em modo tenant) */}
+      {state.user?.role === 'SUPERADMIN' && state.activeTenantId && (
+        <div className={`mx-2 mt-2 rounded-xl border border-amber-300 bg-amber-50 transition-all ${expanded ? 'p-3' : 'p-2'}`}>
+          {expanded ? (
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-[9px] font-black text-amber-600 uppercase tracking-widest">Visualizando</p>
+                <p className="text-xs font-black text-amber-800 truncate leading-tight mt-0.5">{state.activeTenantName || state.activeTenantId}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setActiveTenant(null); setActiveTab('dashboard'); }}
+                title="Sair do cartório"
+                className="w-6 h-6 flex-shrink-0 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-600 flex items-center justify-center transition-all"
+              >
+                <i className="fa-solid fa-xmark text-[10px]"></i>
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => { setActiveTenant(null); setActiveTab('dashboard'); }}
+              title="Sair do cartório"
+              className="w-full flex items-center justify-center text-amber-600"
+            >
+              <i className="fa-solid fa-building-circle-xmark text-sm"></i>
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Nav */}
       <nav className="flex-1 px-2 py-3 space-y-1 overflow-y-auto custom-scrollbar pb-8">

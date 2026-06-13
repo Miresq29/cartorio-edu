@@ -16,7 +16,7 @@ interface Tenant {
 }
 
 const TenantsView: React.FC = () => {
-  const { state } = useApp();
+  const { state, setActiveTenant, setActiveTab } = useApp();
   const { showToast } = useToast();
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
@@ -103,12 +103,23 @@ const TenantsView: React.FC = () => {
               <p className="text-slate-700 text-xs font-bold uppercase text-center py-10 italic">Nenhum cartório cadastrado</p>
             )}
             {tenants.map(t => (
-              <div key={t.id} className="p-5 bg-white border border-slate-200 rounded-2xl flex justify-between items-center group hover:border-blue-500/30 transition-all">
+              <div key={t.id} className="p-4 bg-white border border-slate-200 rounded-2xl flex justify-between items-center group hover:border-blue-500/30 transition-all">
                 <div className="flex items-center gap-3">
-                  <div className={`w-2 h-2 rounded-full ${t.active ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`}></div>
-                  <span className="text-[#0A1628] font-bold italic uppercase text-sm">{t.name}</span>
+                  <div className={`w-2 h-2 rounded-full flex-shrink-0 ${t.active ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`}></div>
+                  <div>
+                    <span className="text-[#0A1628] font-bold italic uppercase text-sm">{t.name}</span>
+                    <p className="text-[10px] font-mono text-slate-400">{t.id}</p>
+                  </div>
                 </div>
-                <span className="text-[10px] font-mono text-slate-500 bg-slate-50 px-3 py-1 rounded-md">{t.id}</span>
+                <button
+                  type="button"
+                  onClick={() => { setActiveTenant(t.id, t.name); setActiveTab('unit'); }}
+                  className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white border border-blue-200 hover:border-blue-600 transition-all"
+                  title={`Acessar ${t.name}`}
+                >
+                  <i className="fa-solid fa-arrow-right-to-bracket text-[9px]"></i>
+                  Acessar
+                </button>
               </div>
             ))}
           </div>

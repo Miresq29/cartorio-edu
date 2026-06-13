@@ -93,9 +93,8 @@ export async function registrarLog(
 // ─── Main View ────────────────────────────────────────────────────────────────
 
 const AuditoriaView: React.FC = () => {
-  const { state } = useApp();
+  const { state, tenantId } = useApp();
   const user = state.user!;
-  const tenantId = user.tenantId;
 
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -107,8 +106,8 @@ const AuditoriaView: React.FC = () => {
   const POR_PAGINA = 50;
 
   useEffect(() => {
-    const isSuperAdmin = user.role === 'SUPERADMIN';
-    const q = isSuperAdmin
+    const superAdminSeesAll = user.role === 'SUPERADMIN' && !state.activeTenantId;
+    const q = superAdminSeesAll
       ? query(collection(db, 'auditLogs'), orderBy('createdAt', 'desc'), limit(1000))
       : query(collection(db, 'auditLogs'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'), limit(1000));
     const unsub = onSnapshot(q, snap => {
@@ -116,7 +115,7 @@ const AuditoriaView: React.FC = () => {
       setLoading(false);
     });
     return () => unsub();
-  }, [tenantId, user.role]);
+  }, [tenantId, state.activeTenantId, user.role]);
 
   // Filtros
   const logsFiltrados = logs.filter(log => {

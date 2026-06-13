@@ -92,10 +92,9 @@ function formatDate(ts: any): string {
 type Tab = 'colaboradores' | 'permissoes';
 
 const UsersView: React.FC = () => {
-  const { state } = useApp();
+  const { state, tenantId } = useApp();
   const { showToast } = useToast();
   const user = state.user!;
-  const tenantId = user.tenantId;
   const isGestor = ['SUPERADMIN', 'gestor'].includes(user.role);
 
   const isSuperAdmin = user.role === 'SUPERADMIN';
@@ -296,6 +295,7 @@ const UsersView: React.FC = () => {
                     <div className="space-y-1">
                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Perfil de Acesso</label>
                       <select value={form.role} onChange={e => setF('role', e.target.value)}
+                        title="Perfil de acesso"
                         className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-[#C9A84C]">
                         {ROLES.filter(r => r.id !== 'SUPERADMIN').map(r => (
                           <option key={r.id} value={r.id}>{r.label} — {r.desc}</option>
@@ -309,6 +309,7 @@ const UsersView: React.FC = () => {
                     <div className="space-y-1">
                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Cargo</label>
                       <select value={form.cargo} onChange={e => setF('cargo', e.target.value)}
+                        title="Cargo do colaborador"
                         className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-[#C9A84C]">
                         <option value="">Selecione...</option>
                         {CARGOS.map(c => <option key={c} value={c}>{c}</option>)}

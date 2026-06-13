@@ -130,9 +130,8 @@ const CustomTooltip: React.FC<any> = ({ active, payload, label }) => {
 // ─── Main View ────────────────────────────────────────────────────────────────
 
 const RelatoriosView: React.FC = () => {
-  const { state } = useApp();
+  const { state, tenantId } = useApp();
   const user = state.user!;
-  const tenantId = user.tenantId;
   const isSuperAdmin = user.role === 'SUPERADMIN';
 
   const [tab, setTab] = useState<Tab>('visao_geral');

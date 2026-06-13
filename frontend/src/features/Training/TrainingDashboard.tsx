@@ -132,7 +132,7 @@ const printTrilhaCertificate = (userName: string, cargo: string, trilhaTitulo: s
 // ─── Main Component ─────────────────────────────────────────────────────────
 
 const TrainingDashboard: React.FC = () => {
-  const { state } = useApp();
+  const { state, tenantId: ctxTenantId } = useApp();
 
   const [activeTab, setActiveTab] = useState<DashTab>('visao-geral');
   const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
@@ -142,8 +142,8 @@ const TrainingDashboard: React.FC = () => {
   const [appUsers, setAppUsers] = useState<AppUser[]>([]);
 
   useEffect(() => {
-    const tenantId = state.user?.tenantId || '';
-    const isSuperAdmin = state.user?.role === 'SUPERADMIN';
+    const tenantId = ctxTenantId;
+    const superAdminSeesAll = state.user?.role === 'SUPERADMIN' && !state.activeTenantId;
     const tenantFilter = [tenantId, 'GLOBAL'];
     const unsubs = [
       onSnapshot(query(collection(db, 'treinamentosQuizResults'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc')),
@@ -153,33 +153,33 @@ const TrainingDashboard: React.FC = () => {
       onSnapshot(query(collection(db, 'trilhasProgresso'), where('tenantId', '==', tenantId)),
         s => setTrilhasProgresso(s.docs.map(d => ({ id: d.id, ...d.data() } as TrilhaProgresso)))),
       onSnapshot(
-        isSuperAdmin
+        superAdminSeesAll
           ? query(collection(db, 'trilhas'))
           : query(collection(db, 'trilhas'), where('tenantId', 'in', tenantFilter)),
         s => setTrilhas(s.docs.map(d => ({ id: d.id, ...d.data() } as Trilha)))),
       onSnapshot(
-        isSuperAdmin
+        superAdminSeesAll
           ? query(collection(db, 'users'))
           : query(collection(db, 'users'), where('tenantId', '==', tenantId)),
         s => setAppUsers(s.docs.map(d => ({ id: d.id, ...d.data() } as AppUser)))),
     ];
     return () => unsubs.forEach(u => u());
-  }, [state.user?.tenantId, state.user?.role]);
+  }, [ctxTenantId, state.activeTenantId, state.user?.role]);
 
   // ── KPIs ────────────────────────────────────────────────────────────────
 
-  const tenantId = state.user?.tenantId || '';
-  const isSuperAdmin = state.user?.role === 'SUPERADMIN';
+  const tenantId = ctxTenantId;
+  const superAdminSeesAll = state.user?.role === 'SUPERADMIN' && !state.activeTenantId;
 
-  const users = isSuperAdmin
+  const users = superAdminSeesAll
     ? appUsers.filter(u => u.active)
     : appUsers.filter(u => u.active && (u.tenantId === tenantId || !u.tenantId));
 
-  const progressoDoTenant = isSuperAdmin
+  const progressoDoTenant = superAdminSeesAll
     ? trilhasProgresso
     : trilhasProgresso.filter(p => p.tenantId === tenantId);
 
-  const trilhasDoTenant = isSuperAdmin
+  const trilhasDoTenant = superAdminSeesAll
     ? trilhas.filter(t => t.ativa)
     : trilhas.filter(t => t.ativa && t.tenantId === tenantId);
 

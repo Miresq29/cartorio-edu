@@ -377,9 +377,8 @@ const AdminDashboard:React.FC<{trilhas:Trilha[];progresso:TrilhaProg[];quizResul
 
 // ── MAIN ─────────────────────────────────────────────────────────────────────
 const DashboardView:React.FC = () => {
-  const {state} = useApp();
+  const {state, tenantId} = useApp();
   const user = state.user!;
-  const tenantId = user.tenantId;
   const isGestor = ['SUPERADMIN','gestor','admin'].includes(user.role);
 
   const [trilhas,      setTrilhas]      = useState<Trilha[]>([]);
