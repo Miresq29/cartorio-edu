@@ -121,14 +121,14 @@ const ModuloForm: React.FC<{
       <textarea
         value={modulo.descricao}
         onChange={e => onChange({ ...modulo, descricao: e.target.value })}
-        placeholder="Descrição do módulo " o que o colaborador vai aprender"
+        placeholder="Descrição do módulo - o que o colaborador vai aprender"
         rows={2}
         style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '10px 14px', color: '#0f172a', fontSize: 13, resize: 'vertical' }}
       />
       <textarea
         value={modulo.conteudo}
         onChange={e => onChange({ ...modulo, conteudo: e.target.value })}
-        placeholder="Conteúdo do módulo (texto, links, ou referÃªncias de documentos da Base Legal)"
+        placeholder="Conteúdo do módulo (texto, links, ou referências de documentos da Base Legal)"
         rows={3}
         style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '10px 14px', color: '#0f172a', fontSize: 13, resize: 'vertical' }}
       />
@@ -294,14 +294,14 @@ const ModuloPlayer: React.FC<{
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
           max_tokens: 1000,
-          system: `VocÃª é um gerador de quiz para treinamento notarial. 
+          system: `Você é um gerador de quiz para treinamento notarial. 
 Retorne APENAS um JSON válido, sem texto adicional, sem markdown, sem explicações.
 Formato exato:
 {"questoes":[{"pergunta":"...","opcoes":["A","B","C","D"],"correta":0,"explicacao":"..."}]}
 correta é o índice (0-3) da opção correta.`,
           messages: [{
             role: 'user',
-            content: `Gere 4 questÃµes de múltipla escolha sobre este conteúdo:
+            content: `Gere 4 questões de múltipla escolha sobre este conteúdo:
 Módulo: ${modulo.titulo}
 Conteúdo: ${modulo.conteudo || modulo.descricao}
 Nota mínima para aprovação: ${modulo.notaMinima}/10`
@@ -400,7 +400,7 @@ Nota mínima para aprovação: ${modulo.notaMinima}/10`
               <i className={`fa-solid ${progModulo.aprovado ? 'fa-circle-check' : 'fa-circle-xmark'}`} style={{ color: progModulo.aprovado ? '#10b981' : '#dc2626', fontSize: 18 }}></i>
               <div>
                 <p style={{ fontSize: 12, fontWeight: 900, color: progModulo.aprovado ? '#10b981' : '#dc2626' }}>
-                  {progModulo.aprovado ? 'Aprovado' : 'Reprovado'} " Nota: {progModulo.nota}/10
+                  {progModulo.aprovado ? 'Aprovado' : 'Reprovado'} — Nota: {progModulo.nota}/10
                 </p>
                 <p style={{ fontSize: 11, color: '#475569' }}>Tentativas: {progModulo.tentativas} · Nota mínima: {modulo.notaMinima}</p>
               </div>
@@ -439,7 +439,7 @@ Nota mínima para aprovação: ${modulo.notaMinima}/10`
               {gerandoQuiz ? (
                 <div style={{ textAlign: 'center', padding: 40, color: '#475569' }}>
                   <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: 24, marginBottom: 12 }}></i>
-                  <p style={{ fontSize: 13 }}>Gerando questÃµes com IA...</p>
+                  <p style={{ fontSize: 13 }}>Gerando questões com IA...</p>
                 </div>
               ) : (
                 <>

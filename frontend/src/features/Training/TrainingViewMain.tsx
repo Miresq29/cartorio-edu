@@ -25,9 +25,9 @@ const TABS: { id: Tab; icon: string; label: string }[] = [
 type SummaryType = 'executivo' | 'tecnico' | 'didatico' | 'operacional';
 
 const SUMMARY_TYPES: { id: SummaryType; label: string; desc: string; color: string }[] = [
-  { id: 'executivo',   label: 'Executivo',   desc: 'Para gestores " pontos-chave e impactos',       color: 'blue'    },
+  { id: 'executivo',   label: 'Executivo',   desc: 'Para gestores - pontos-chave e impactos',       color: 'blue'    },
   { id: 'tecnico',     label: 'Técnico',     desc: 'Fundamentos legais e análise normativa',         color: 'purple'  },
-  { id: 'didatico',    label: 'Didático',    desc: 'Para treinamento " exemplos práticos',           color: 'emerald' },
+  { id: 'didatico',    label: 'Didático',    desc: 'Para treinamento - exemplos práticos',           color: 'emerald' },
   { id: 'operacional', label: 'Operacional', desc: 'Procedimentos e passo a passo do dia a dia',    color: 'amber'   },
 ];
 
@@ -273,7 +273,7 @@ ${opt.justificativa}
             <div className="h-full flex flex-col items-center justify-center text-center opacity-40">
               <i className="fa-solid fa-graduation-cap text-5xl text-slate-400 mb-4"></i>
               <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">
-                Clique em "Gerar 3 Opções" ou faÃ§a uma pergunta
+                Clique em "Gerar 3 Opções" ou faça uma pergunta
               </p>
             </div>
           )}
