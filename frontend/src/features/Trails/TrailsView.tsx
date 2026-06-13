@@ -519,6 +519,8 @@ const TrailsView: React.FC = () => {
   const user = state.user!;
   const tenantId = user.tenantId;
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(user.role);
+  const isSuperAdmin = user.role === 'SUPERADMIN';
+  const [createAsGlobal, setCreateAsGlobal] = useState(false);
 
   const [tab, setTab] = useState<'minhas' | 'todas' | 'criar' | 'progresso'>(isGestor ? 'todas' : 'minhas');
   const [trilhas, setTrilhas] = useState<Trilha[]>([]);
@@ -581,7 +583,8 @@ const TrailsView: React.FC = () => {
     if (!form.titulo || form.modulos.length === 0 || form.perfis.length === 0) return;
     setSaving(true);
     try {
-      const data = { ...form, tenantId, updatedAt: serverTimestamp() };
+      const effectiveTenantId = isSuperAdmin && createAsGlobal ? 'GLOBAL' : tenantId;
+      const data = { ...form, tenantId: effectiveTenantId, updatedAt: serverTimestamp() };
       if (editando) {
         await updateDoc(doc(db, 'trilhas', editando.id), data);
       } else {
@@ -790,7 +793,17 @@ const TrailsView: React.FC = () => {
             </div>
 
             {/* Salvar */}
-            <div style={{ display: 'flex', gap: 10, marginTop: 24, justifyContent: 'flex-end' }}>
+            <div style={{ display: 'flex', gap: 10, marginTop: 24, justifyContent: 'flex-end', alignItems: 'center' }}>
+              {isSuperAdmin && (
+                <button
+                  type="button"
+                  onClick={() => setCreateAsGlobal(v => !v)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 10, border: createAsGlobal ? '1px solid #f59e0b' : '1px solid #e2e8f0', background: createAsGlobal ? '#fffbeb' : 'white', color: createAsGlobal ? '#b45309' : '#64748b', cursor: 'pointer', fontWeight: 900, fontSize: 10, textTransform: 'uppercase', marginRight: 'auto' }}
+                >
+                  <i className={`fa-solid ${createAsGlobal ? 'fa-globe' : 'fa-building'}`}></i>
+                  {createAsGlobal ? 'Todos os cartórios' : 'Este cartório'}
+                </button>
+              )}
               <button onClick={() => setTab(isGestor ? 'todas' : 'minhas')} style={{ padding: '12px 24px', borderRadius: 12, border: '1px solid #e2e8f0', background: 'none', color: '#475569', cursor: 'pointer', fontWeight: 900, fontSize: 12, textTransform: 'uppercase' }}>
                 Cancelar
               </button>

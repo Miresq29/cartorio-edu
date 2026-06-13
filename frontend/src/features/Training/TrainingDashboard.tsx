@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { db } from '../../services/firebase';
-import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, where } from 'firebase/firestore';
 import { useApp } from '../../context/AppContext';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
@@ -142,20 +142,29 @@ const TrainingDashboard: React.FC = () => {
   const [appUsers, setAppUsers] = useState<AppUser[]>([]);
 
   useEffect(() => {
+    const tenantId = state.user?.tenantId || '';
+    const isSuperAdmin = state.user?.role === 'SUPERADMIN';
+    const tenantFilter = [tenantId, 'GLOBAL'];
     const unsubs = [
-      onSnapshot(query(collection(db, 'treinamentosQuizResults'), orderBy('createdAt', 'desc')),
+      onSnapshot(query(collection(db, 'treinamentosQuizResults'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc')),
         s => setQuizResults(s.docs.map(d => ({ id: d.id, ...d.data() } as QuizResult)))),
-      onSnapshot(query(collection(db, 'treinamentosQuizzes'), orderBy('createdAt', 'desc')),
+      onSnapshot(query(collection(db, 'treinamentosQuizzes'), where('tenantId', 'in', tenantFilter), orderBy('createdAt', 'desc')),
         s => setQuizzes(s.docs.map(d => ({ id: d.id, ...d.data() } as Quiz)))),
-      onSnapshot(query(collection(db, 'trilhasProgresso')),
+      onSnapshot(query(collection(db, 'trilhasProgresso'), where('tenantId', '==', tenantId)),
         s => setTrilhasProgresso(s.docs.map(d => ({ id: d.id, ...d.data() } as TrilhaProgresso)))),
-      onSnapshot(query(collection(db, 'trilhas')),
+      onSnapshot(
+        isSuperAdmin
+          ? query(collection(db, 'trilhas'))
+          : query(collection(db, 'trilhas'), where('tenantId', 'in', tenantFilter)),
         s => setTrilhas(s.docs.map(d => ({ id: d.id, ...d.data() } as Trilha)))),
-      onSnapshot(query(collection(db, 'users')),
+      onSnapshot(
+        isSuperAdmin
+          ? query(collection(db, 'users'))
+          : query(collection(db, 'users'), where('tenantId', '==', tenantId)),
         s => setAppUsers(s.docs.map(d => ({ id: d.id, ...d.data() } as AppUser)))),
     ];
     return () => unsubs.forEach(u => u());
-  }, []);
+  }, [state.user?.tenantId, state.user?.role]);
 
   // ── KPIs ────────────────────────────────────────────────────────────────
 

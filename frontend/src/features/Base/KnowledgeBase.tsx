@@ -32,7 +32,9 @@ const KnowledgeBase: React.FC = () => {
   const { logAction } = useAudit();
 
   const user = state.user;
-  const canManage = user?.role === 'SUPERADMIN' || user?.role === 'gestor';
+  const isSuperAdmin = user?.role === 'SUPERADMIN';
+  const canManage = isSuperAdmin || user?.role === 'gestor';
+  const [uploadAsGlobal, setUploadAsGlobal] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -89,7 +91,7 @@ const KnowledgeBase: React.FC = () => {
       }
 
       await addDoc(collection(db, 'knowledgeBase'), {
-        tenantId: user.tenantId,
+        tenantId: isSuperAdmin && uploadAsGlobal ? 'GLOBAL' : user.tenantId,
         title: file.name,
         fileName: file.name,
         content,
@@ -141,11 +143,24 @@ const KnowledgeBase: React.FC = () => {
               className="bg-white border border-slate-300 rounded-xl pl-10 pr-4 py-3 text-xs text-[#0A1628] outline-none focus:border-blue-500 w-56" />
           </div>
           {canManage && (
-            <label className={`bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-2xl cursor-pointer flex items-center gap-3 text-xs font-black uppercase transition-all shadow-lg shadow-blue-900/20 ${isUploading ? 'opacity-60 pointer-events-none' : ''}`}>
-              <i className={`fa-solid ${isUploading ? 'fa-circle-notch animate-spin' : 'fa-cloud-arrow-up'}`}></i>
-              {isUploading ? 'Processando...' : 'Adicionar'}
-              <input type="file" className="hidden" onChange={handleFileUpload} disabled={isUploading} accept=".pdf,.docx,.txt,.jpg,.jpeg,.png,.webp,.bmp,.gif" />
-            </label>
+            <div className="flex items-center gap-2">
+              {isSuperAdmin && (
+                <button
+                  type="button"
+                  onClick={() => setUploadAsGlobal(v => !v)}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-black uppercase transition-all border ${uploadAsGlobal ? 'bg-amber-50 border-amber-400 text-amber-700' : 'bg-white border-slate-200 text-slate-500'}`}
+                  title="Visível para todos os cartórios"
+                >
+                  <i className={`fa-solid ${uploadAsGlobal ? 'fa-globe' : 'fa-building'}`}></i>
+                  {uploadAsGlobal ? 'Global' : 'Cartório'}
+                </button>
+              )}
+              <label className={`bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-2xl cursor-pointer flex items-center gap-3 text-xs font-black uppercase transition-all shadow-lg shadow-blue-900/20 ${isUploading ? 'opacity-60 pointer-events-none' : ''}`}>
+                <i className={`fa-solid ${isUploading ? 'fa-circle-notch animate-spin' : 'fa-cloud-arrow-up'}`}></i>
+                {isUploading ? 'Processando...' : 'Adicionar'}
+                <input type="file" className="hidden" onChange={handleFileUpload} disabled={isUploading} accept=".pdf,.docx,.txt,.jpg,.jpeg,.png,.webp,.bmp,.gif" />
+              </label>
+            </div>
           )}
         </div>
       </header>

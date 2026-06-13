@@ -107,17 +107,16 @@ const AuditoriaView: React.FC = () => {
   const POR_PAGINA = 50;
 
   useEffect(() => {
-    const q = query(
-      collection(db, 'auditLogs'),
-      orderBy('createdAt', 'desc'),
-      limit(1000)
-    );
+    const isSuperAdmin = user.role === 'SUPERADMIN';
+    const q = isSuperAdmin
+      ? query(collection(db, 'auditLogs'), orderBy('createdAt', 'desc'), limit(1000))
+      : query(collection(db, 'auditLogs'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'), limit(1000));
     const unsub = onSnapshot(q, snap => {
       setLogs(snap.docs.map(d => ({ id: d.id, ...d.data() } as AuditLog)));
       setLoading(false);
     });
     return () => unsub();
-  }, [tenantId]);
+  }, [tenantId, user.role]);
 
   // Filtros
   const logsFiltrados = logs.filter(log => {

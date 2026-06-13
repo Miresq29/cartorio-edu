@@ -5,7 +5,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   collection, addDoc, updateDoc, deleteDoc, doc,
-  onSnapshot, query, orderBy, serverTimestamp, setDoc
+  onSnapshot, query, orderBy, where, serverTimestamp, setDoc
 } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
@@ -478,11 +478,12 @@ const RepositorioView: React.FC = () => {
 
   // Load mídias
   useEffect(() => {
-    const q = query(collection(db, 'repositorio'), orderBy('createdAt', 'desc'));
+    const tenantId = user.tenantId || '';
+    const q = query(collection(db, 'repositorio'), where('tenantId', 'in', [tenantId, 'GLOBAL']), orderBy('createdAt', 'desc'));
     return onSnapshot(q, s =>
       setMidias(s.docs.map(d => ({ id: d.id, ...d.data() } as Midia)).filter(m => m.ativo !== false))
     );
-  }, []);
+  }, [user.tenantId]);
 
   // Load progresso (assistidas)
   useEffect(() => {

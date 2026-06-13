@@ -7,7 +7,7 @@ import { useToast } from '../../context/ToastContext';
 import { db } from '../../services/firebase';
 import { AuthService } from '../../services/authService';
 import {
-  collection, onSnapshot, query, orderBy,
+  collection, onSnapshot, query, orderBy, where,
   doc, updateDoc, deleteDoc, serverTimestamp
 } from 'firebase/firestore';
 
@@ -112,13 +112,16 @@ const UsersView: React.FC = () => {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const q = query(collection(db, 'users'), orderBy('name'));
+    const isSuperAdmin = user.role === 'SUPERADMIN';
+    const q = isSuperAdmin
+      ? query(collection(db, 'users'), orderBy('name'))
+      : query(collection(db, 'users'), where('tenantId', '==', tenantId), orderBy('name'));
     const u = onSnapshot(q, snap => {
       setUsers(snap.docs.map(d => ({ id: d.id, ...d.data() } as UserData)));
       setLoading(false);
     });
     return () => u();
-  }, []);
+  }, [tenantId, user.role]);
 
   const setF = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
 

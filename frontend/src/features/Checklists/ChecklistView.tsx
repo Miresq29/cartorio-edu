@@ -18,11 +18,13 @@ const ChecklistView: React.FC = () => {
   const { showToast } = useToast();
   const { logAction } = useAudit();
 
+  const isSuperAdmin = state.user?.role === 'SUPERADMIN';
   const [checklists, setChecklists] = useState<Checklist[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeChecklistId, setActiveChecklistId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [createAsGlobal, setCreateAsGlobal] = useState(false);
   const [mode, setMode] = useState<'roteiro' | 'executar'>('roteiro');
 
   // Execução
@@ -44,13 +46,14 @@ const ChecklistView: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const q = query(collection(db, 'checklists'), orderBy('createdAt', 'desc'));
+    const tenantId = state.user?.tenantId || '';
+    const q = query(collection(db, 'checklists'), where('tenantId', 'in', [tenantId, 'GLOBAL']), orderBy('createdAt', 'desc'));
     const unsub = onSnapshot(q, snap => {
       setChecklists(snap.docs.map(d => ({ id: d.id, ...d.data() } as Checklist)));
       setLoading(false);
     });
     return () => unsub();
-  }, []);
+  }, [state.user?.tenantId]);
 
   const activeChecklist = checklists.find(t => t.id === activeChecklistId);
 
@@ -97,7 +100,7 @@ const ChecklistView: React.FC = () => {
       const docRef = await addDoc(collection(db, 'checklists'), {
         title: formName.trim(),
         items: validItems.map(text => ({ id: Math.random().toString(36).substring(7), text: text.trim() })),
-        tenantId: state.user?.tenantId || '',
+        tenantId: isSuperAdmin && createAsGlobal ? 'GLOBAL' : (state.user?.tenantId || ''),
         createdAt: serverTimestamp(),
         createdBy: state.user?.id
       });
@@ -434,11 +437,23 @@ Produza um parecer técnico detalhado, minucioso e formal. Ao final, apresente u
                 ))}
               </div>
             </div>
-            <footer className="p-8 border-t border-slate-200 flex justify-end gap-4">
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-500 hover:text-[#0A1628] text-[10px] font-black uppercase px-6 py-3 transition-colors">Cancelar</button>
-              <button onClick={handleSave} disabled={isSaving} className="bg-blue-600 text-[#0A1628] text-[10px] font-black uppercase px-8 py-3 rounded-xl hover:bg-blue-500 transition-all disabled:opacity-50">
-                {isSaving ? 'Salvando...' : 'Salvar Protocolo'}
-              </button>
+            <footer className="p-8 border-t border-slate-200 flex justify-between items-center gap-4">
+              {isSuperAdmin && (
+                <button
+                  type="button"
+                  onClick={() => setCreateAsGlobal(v => !v)}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-black uppercase transition-all border ${createAsGlobal ? 'bg-amber-50 border-amber-400 text-amber-700' : 'bg-white border-slate-200 text-slate-500'}`}
+                >
+                  <i className={`fa-solid ${createAsGlobal ? 'fa-globe' : 'fa-building'}`}></i>
+                  {createAsGlobal ? 'Todos os cartórios' : 'Este cartório'}
+                </button>
+              )}
+              <div className="flex gap-4">
+                <button onClick={() => setIsModalOpen(false)} className="text-slate-500 hover:text-[#0A1628] text-[10px] font-black uppercase px-6 py-3 transition-colors">Cancelar</button>
+                <button onClick={handleSave} disabled={isSaving} className="bg-blue-600 text-[#0A1628] text-[10px] font-black uppercase px-8 py-3 rounded-xl hover:bg-blue-500 transition-all disabled:opacity-50">
+                  {isSaving ? 'Salvando...' : 'Salvar Protocolo'}
+                </button>
+              </div>
             </footer>
           </div>
         </div>

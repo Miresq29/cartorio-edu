@@ -3,7 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { db } from '../../services/firebase';
 import {
-  collection, onSnapshot, query, orderBy,
+  collection, onSnapshot, query, orderBy, where,
   addDoc, deleteDoc, doc, serverTimestamp,
 } from 'firebase/firestore';
 import { GeminiService } from '../../services/geminiService';
@@ -46,11 +46,12 @@ const BannersView: React.FC = () => {
   const [previewBanner, setPreviewBanner] = useState(false);
 
   useEffect(() => {
-    const q = query(collection(db, 'materiaisbanner'), orderBy('criadoEm', 'desc'));
+    const tenantId = state.user?.tenantId || '';
+    const q = query(collection(db, 'materiaisbanner'), where('tenantId', 'in', [tenantId, 'GLOBAL']), orderBy('criadoEm', 'desc'));
     return onSnapshot(q, s =>
       setMateriais(s.docs.map(d => ({ id: d.id, ...d.data() } as Material)))
     );
-  }, []);
+  }, [state.user?.tenantId]);
 
   /* ── salva link externo ──────────────────────────── */
   const salvarLink = async () => {

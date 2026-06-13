@@ -110,7 +110,7 @@ const MeuProgressoView: React.FC = () => {
     const unsubs: (() => void)[] = [];
     unsubs.push(onSnapshot(query(collection(db,'trilhas'), where('tenantId','==',tenantId)), s => setTrilhas(s.docs.map(d => ({id:d.id,...d.data()} as Trilha)))));
     unsubs.push(onSnapshot(query(collection(db,'trilhasProgresso'), where('tenantId','==',tenantId)), s => setProgresso(s.docs.map(d => ({id:d.id,...d.data()} as TrilhaProgresso)))));
-    unsubs.push(onSnapshot(query(collection(db,'treinamentosQuizResults'), orderBy('createdAt','desc')), s => { setQuizResults(s.docs.map(d => ({id:d.id,...d.data()} as QuizResult))); setLoading(false); }));
+    unsubs.push(onSnapshot(query(collection(db,'treinamentosQuizResults'), where('tenantId','==',tenantId), orderBy('createdAt','desc')), s => { setQuizResults(s.docs.map(d => ({id:d.id,...d.data()} as QuizResult))); setLoading(false); }));
     unsubs.push(onSnapshot(query(collection(db,'certificados'), where('tenantId','==',tenantId)), s => setCertificados(s.docs.map(d => ({id:d.id,...d.data()} as Certificado)))));
     return () => unsubs.forEach(u => u());
   }, [tenantId]);

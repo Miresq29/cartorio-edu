@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { db } from '../../services/firebase';
-import { collection, onSnapshot, query, orderBy, limit } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, limit, where } from 'firebase/firestore';
 import { useApp } from '../../context/AppContext';
 
 interface AuditLog {
@@ -51,12 +51,16 @@ const IAAnaliticaView: React.FC = () => {
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const q1 = query(collection(db, 'auditLogs'), orderBy('createdAt', 'desc'), limit(200));
+    const tenantId = state.user?.tenantId || '';
+    const isSuperAdmin = state.user?.role === 'SUPERADMIN';
+    const q1 = isSuperAdmin
+      ? query(collection(db, 'auditLogs'), orderBy('createdAt', 'desc'), limit(200))
+      : query(collection(db, 'auditLogs'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'), limit(200));
     const u1 = onSnapshot(q1, s => setAuditLogs(s.docs.map(d => ({ id: d.id, ...d.data() } as AuditLog))));
-    const q2 = query(collection(db, 'knowledgeBase'), orderBy('createdAt', 'desc'));
+    const q2 = query(collection(db, 'knowledgeBase'), where('tenantId', 'in', [tenantId, 'GLOBAL']), orderBy('createdAt', 'desc'));
     const u2 = onSnapshot(q2, s => setKnowledgeDocs(s.docs.map(d => ({ id: d.id, ...d.data() } as KnowledgeDoc))));
     return () => { u1(); u2(); };
-  }, []);
+  }, [state.user?.tenantId, state.user?.role]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });

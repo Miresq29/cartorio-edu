@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { db } from '../../services/firebase';
-import { collection, onSnapshot, query, orderBy, addDoc, updateDoc, doc, serverTimestamp, setDoc, getDoc } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, where, addDoc, updateDoc, doc, serverTimestamp, setDoc, getDoc } from 'firebase/firestore';
 
 interface Comunicado {
   id: string;
@@ -28,6 +28,8 @@ const ComunicadosView: React.FC = () => {
   const { state } = useApp();
   const { showToast } = useToast();
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(state.user?.role || '');
+  const isSuperAdmin = state.user?.role === 'SUPERADMIN';
+  const [createAsGlobal, setCreateAsGlobal] = useState(false);
 
   const [comunicados, setComunicados] = useState<Comunicado[]>([]);
   const [lidos, setLidos] = useState<Set<string>>(new Set());
@@ -38,19 +40,21 @@ const ComunicadosView: React.FC = () => {
   const [form, setForm] = useState({ titulo: '', corpo: '', prazo: '', anexoUrl: '', prioridade: 'normal' as const, fixado: false });
 
   useEffect(() => {
-    const q = query(collection(db, 'comunicados'), orderBy('criadoEm', 'desc'));
+    const tenantId = state.user?.tenantId || '';
+    const q = query(collection(db, 'comunicados'), where('tenantId', 'in', [tenantId, 'GLOBAL']), orderBy('criadoEm', 'desc'));
     return onSnapshot(q, s => setComunicados(s.docs.map(d => ({ id: d.id, ...d.data() } as Comunicado)).filter(c => c.ativo !== false)));
-  }, []);
+  }, [state.user?.tenantId]);
 
   useEffect(() => {
     if (!state.user?.id) return;
-    const q = query(collection(db, 'comunicadosLeituras'));
+    const tenantId = state.user?.tenantId || '';
+    const q = query(collection(db, 'comunicadosLeituras'), where('tenantId', '==', tenantId));
     return onSnapshot(q, s => {
       const ids = new Set<string>();
       s.docs.forEach(d => { if (d.data().userId === state.user!.id) ids.add(d.data().comunicadoId); });
       setLidos(ids);
     });
-  }, [state.user?.id]);
+  }, [state.user?.id, state.user?.tenantId]);
 
   const marcarLido = async (id: string) => {
     if (!state.user?.id || lidos.has(id)) return;
@@ -65,7 +69,7 @@ const ComunicadosView: React.FC = () => {
     setLoading(true);
     try {
       await addDoc(collection(db, 'comunicados'), {
-        ...form, ativo: true, tenantId: state.user?.tenantId || '',
+        ...form, ativo: true, tenantId: isSuperAdmin && createAsGlobal ? 'GLOBAL' : (state.user?.tenantId || ''),
         publicadoPor: state.user?.id || '', publicadoPorNome: state.user?.name || '',
         criadoEm: serverTimestamp(),
       });
@@ -168,7 +172,7 @@ const ComunicadosView: React.FC = () => {
               <label htmlFor="fixado" className="text-sm text-slate-700 font-bold cursor-pointer">Fixar comunicado no topo</label>
             </div>
           </div>
-          <div className="flex gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <button onClick={salvar} disabled={loading}
               className="bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-[#0A1628] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
               {loading ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Publicando...</> : <><i className="fa-solid fa-bullhorn mr-2"></i>Publicar</>}
@@ -176,6 +180,16 @@ const ComunicadosView: React.FC = () => {
             <button onClick={() => setShowForm(false)} className="bg-slate-200 hover:bg-slate-700 text-slate-700 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
               Cancelar
             </button>
+            {isSuperAdmin && (
+              <button
+                type="button"
+                onClick={() => setCreateAsGlobal(v => !v)}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-black uppercase transition-all border ml-auto ${createAsGlobal ? 'bg-amber-50 border-amber-400 text-amber-700' : 'bg-white border-slate-200 text-slate-500'}`}
+              >
+                <i className={`fa-solid ${createAsGlobal ? 'fa-globe' : 'fa-building'}`}></i>
+                {createAsGlobal ? 'Todos os cartórios' : 'Este cartório'}
+              </button>
+            )}
           </div>
         </div>
       )}

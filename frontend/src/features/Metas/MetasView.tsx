@@ -659,7 +659,7 @@ const MetasView: React.FC = () => {
     const q1 = query(collection(db, 'metas'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'));
     const u1 = onSnapshot(q1, s => setMetas(s.docs.map(d => ({ id: d.id, ...d.data() } as Meta))));
 
-    const q2 = query(collection(db, 'treinamentosQuizResults'), orderBy('createdAt', 'desc'));
+    const q2 = query(collection(db, 'treinamentosQuizResults'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'));
     const u2 = onSnapshot(q2, s => setQuizResults(s.docs.map(d => ({ id: d.id, ...d.data() } as QuizResult))));
 
     const q3 = query(collection(db, 'trilhasProgresso'), where('tenantId', '==', tenantId));

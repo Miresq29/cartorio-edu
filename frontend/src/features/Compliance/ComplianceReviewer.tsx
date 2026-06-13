@@ -40,7 +40,7 @@ const ComplianceReviewer: React.FC = () => {
   const tenantId = state.user?.tenantId || '';
 
   useEffect(() => {
-    const q1 = query(collection(db, 'checklists'), orderBy('createdAt', 'desc'));
+    const q1 = query(collection(db, 'checklists'), where('tenantId', 'in', [tenantId, 'GLOBAL']), orderBy('createdAt', 'desc'));
     const unsub1 = onSnapshot(q1, snap => setChecklists(snap.docs.map(d => ({ id: d.id, ...d.data() } as Checklist))));
 
     const fetchKB = async () => {

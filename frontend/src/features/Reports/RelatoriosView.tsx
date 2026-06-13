@@ -144,13 +144,13 @@ const RelatoriosView: React.FC = () => {
   const [buscaColab, setBuscaColab] = useState('');
 
   useEffect(() => {
-    const q1 = query(collection(db, 'treinamentosQuizResults'), orderBy('createdAt', 'desc'));
+    const q1 = query(collection(db, 'treinamentosQuizResults'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'));
     const u1 = onSnapshot(q1, s => setQuizResults(s.docs.map(d => ({ id: d.id, ...d.data() } as QuizResult))));
 
     const q2 = query(collection(db, 'trilhasProgresso'), where('tenantId', '==', tenantId));
     const u2 = onSnapshot(q2, s => setProgresso(s.docs.map(d => ({ id: d.id, ...d.data() } as TrilhaProgresso))));
 
-    const q3 = query(collection(db, 'users'));
+    const q3 = query(collection(db, 'users'), where('tenantId', '==', tenantId));
     const u3 = onSnapshot(q3, s => setUsuarios(s.docs.map(d => ({ id: d.id, ...d.data() } as UserData))));
 
     const q4 = query(collection(db, 'certificados'), where('tenantId', '==', tenantId));

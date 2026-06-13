@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { db } from '../../services/firebase';
-import { collection, onSnapshot, query, orderBy, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, where, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, setDoc } from 'firebase/firestore';
 
 interface Video {
   id: string;
@@ -42,6 +42,8 @@ const VideosView: React.FC = () => {
   const { state } = useApp();
   const { showToast } = useToast();
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(state.user?.role || '');
+  const isSuperAdmin = state.user?.role === 'SUPERADMIN';
+  const [createAsGlobal, setCreateAsGlobal] = useState(false);
 
   const [videos, setVideos] = useState<Video[]>([]);
   const [filtroCategoria, setFiltroCategoria] = useState('');
@@ -57,19 +59,21 @@ const VideosView: React.FC = () => {
   });
 
   useEffect(() => {
-    const q = query(collection(db, 'videos'), orderBy('createdAt', 'desc'));
+    const tenantId = state.user?.tenantId || '';
+    const q = query(collection(db, 'videos'), where('tenantId', 'in', [tenantId, 'GLOBAL']), orderBy('createdAt', 'desc'));
     return onSnapshot(q, s => setVideos(s.docs.map(d => ({ id: d.id, ...d.data() } as Video)).filter(v => v.ativo !== false)));
-  }, []);
+  }, [state.user?.tenantId]);
 
   useEffect(() => {
     if (!state.user?.id) return;
-    const q = query(collection(db, 'videosProgresso'));
+    const tenantId = state.user?.tenantId || '';
+    const q = query(collection(db, 'videosProgresso'), where('tenantId', '==', tenantId));
     return onSnapshot(q, s => {
       const ids = new Set<string>();
       s.docs.forEach(d => { if (d.data().userId === state.user!.id && d.data().assistido) ids.add(d.data().videoId); });
       setAssistidos(ids);
     });
-  }, [state.user?.id]);
+  }, [state.user?.id, state.user?.tenantId]);
 
   const videosFiltrados = videos.filter(v => {
     const matchCat = !filtroCategoria || v.categoria === filtroCategoria;
@@ -94,7 +98,7 @@ const VideosView: React.FC = () => {
     try {
       await addDoc(collection(db, 'videos'), {
         ...form, youtubeId: yid, ativo: true,
-        tenantId: state.user?.tenantId || '', publicadoPor: state.user?.id || '',
+        tenantId: isSuperAdmin && createAsGlobal ? 'GLOBAL' : (state.user?.tenantId || ''), publicadoPor: state.user?.id || '',
         createdAt: serverTimestamp(),
       });
       showToast('Vídeo adicionado!', 'success');

@@ -9,110 +9,147 @@ service cloud.firestore {
     function isSuperAdmin() { return isActive() && getUserData().get('role', '') == 'SUPERADMIN'; }
     function isGestor() { return isActive() && getUserData().get('role', '') in ['SUPERADMIN', 'gestor', 'admin']; }
 
+    // Tenant isolation helpers
+    function myTenant() { return getUserData().get('tenantId', ''); }
+    function sameTenant() { return resource.data.get('tenantId', myTenant()) == myTenant(); }
+    function newSameTenant() { return request.resource.data.get('tenantId', myTenant()) == myTenant(); }
+    function isGlobalContent() { return resource.data.get('tenantId', '') == 'GLOBAL'; }
+
+    // Content: same tenant OR global (SUPERADMIN can create global)
+    function canReadContent() { return isActive() && (sameTenant() || isGlobalContent()); }
+    function canWriteContent() { return isSuperAdmin() || (isGestor() && newSameTenant()); }
+    function canEditContent() { return isSuperAdmin() || (isGestor() && sameTenant()); }
+
+    // Private: strictly per tenant, SUPERADMIN sees all
+    function canReadPrivate() { return isSuperAdmin() || (isActive() && sameTenant()); }
+    function canWritePrivate() { return isActive() && newSameTenant(); }
+    function canEditPrivate() { return isSuperAdmin() || (isActive() && sameTenant()); }
+
     match /users/{userId} {
       allow read: if isAuthenticated();
-      allow write: if isSuperAdmin();
+      allow create: if isSuperAdmin() || (isGestor() && newSameTenant());
+      allow update: if isSuperAdmin() || (isGestor() && sameTenant());
+      allow delete: if isSuperAdmin();
     }
+
     match /loginAttempts/{docId} { allow read, write: if true; }
+
     match /auditLogs/{docId} {
-      allow read: if isGestor();
+      allow read: if isSuperAdmin() || (isGestor() && sameTenant());
       allow create: if true;
     }
+
+    // ── Conteúdo compartilhável (tenantId == 'GLOBAL' = visível a todos) ──
+
     match /treinamentos/{docId} {
-      allow read: if isActive();
-      allow create, update, delete: if isGestor();
+      allow read: if canReadContent();
+      allow create: if canWriteContent();
+      allow update, delete: if canEditContent();
     }
     match /treinamentosQuizzes/{docId} {
-      allow read: if isActive();
-      allow create, update, delete: if isGestor();
-    }
-    match /treinamentosQuizResults/{docId} {
-      allow read: if isActive();
-      allow create, update: if isActive();
-      allow delete: if isGestor();
+      allow read: if canReadContent();
+      allow create: if canWriteContent();
+      allow update, delete: if canEditContent();
     }
     match /trilhas/{docId} {
-      allow read: if isActive();
-      allow create, update, delete: if isGestor();
-    }
-    match /trilhasProgresso/{docId} {
-      allow read: if isActive();
-      allow create, update: if isActive();
-      allow delete: if isGestor();
-    }
-    match /treinamentosParticipantes/{docId} {
-      allow read: if isActive();
-      allow create, update: if isActive();
-      allow delete: if isGestor();
+      allow read: if canReadContent();
+      allow create: if canWriteContent();
+      allow update, delete: if canEditContent();
     }
     match /knowledgeBase/{docId} {
-      allow read: if isActive();
-      allow create, update, delete: if isGestor();
+      allow read: if canReadContent();
+      allow create: if canWriteContent();
+      allow update, delete: if canEditContent();
     }
     match /checklists/{docId} {
-      allow read: if isActive();
-      allow create, update, delete: if isGestor();
+      allow read: if canReadContent();
+      allow create: if canWriteContent();
+      allow update, delete: if canEditContent();
+    }
+    match /videos/{docId} {
+      allow read: if canReadContent();
+      allow create: if canWriteContent();
+      allow update, delete: if canEditContent();
+    }
+    match /materiaisbanner/{docId} {
+      allow read: if canReadContent();
+      allow create: if canWriteContent();
+      allow update, delete: if canEditContent();
+    }
+    match /comunicados/{docId} {
+      allow read: if canReadContent();
+      allow create: if canWriteContent();
+      allow update, delete: if canEditContent();
+    }
+    match /repositorio/{docId} {
+      allow read: if canReadContent();
+      allow create: if canWriteContent();
+      allow update, delete: if canEditContent();
+    }
+
+    // ── Dados privados (estritamente por cartório) ──
+
+    match /treinamentosQuizResults/{docId} {
+      allow read: if canReadPrivate();
+      allow create: if canWritePrivate();
+      allow update: if canEditPrivate();
+      allow delete: if isSuperAdmin() || (isGestor() && sameTenant());
+    }
+    match /trilhasProgresso/{docId} {
+      allow read: if canReadPrivate();
+      allow create, update: if canWritePrivate();
+      allow delete: if isSuperAdmin() || (isGestor() && sameTenant());
+    }
+    match /treinamentosParticipantes/{docId} {
+      allow read: if canReadPrivate();
+      allow create, update: if canWritePrivate();
+      allow delete: if isSuperAdmin() || (isGestor() && sameTenant());
+    }
+    match /videosProgresso/{docId} {
+      allow read: if canReadPrivate();
+      allow create, update: if canWritePrivate();
+      allow delete: if isSuperAdmin() || (isGestor() && sameTenant());
+    }
+    match /comunicadosLeituras/{docId} {
+      allow read: if canReadPrivate();
+      allow create, update: if canWritePrivate();
+      allow delete: if isSuperAdmin() || (isGestor() && sameTenant());
+    }
+    match /examesResultados/{docId} {
+      allow read: if canReadPrivate();
+      allow create: if canWritePrivate();
+      allow update, delete: if isSuperAdmin() || (isGestor() && sameTenant());
+    }
+    match /metas/{docId} {
+      allow read: if canReadPrivate();
+      allow create: if canWriteContent();
+      allow update, delete: if canEditContent();
+    }
+    match /metasDesempate/{docId} {
+      allow read: if canReadPrivate();
+      allow create: if canWriteContent();
+      allow update, delete: if canEditContent();
+    }
+    match /repositorioProgresso/{docId} {
+      allow read: if canReadPrivate();
+      allow create, update: if canWritePrivate();
+      allow delete: if isSuperAdmin() || (isGestor() && sameTenant());
+    }
+    match /certificados/{docId} {
+      allow read: if canReadPrivate();
+      allow create, update: if canWritePrivate();
+      allow delete: if isSuperAdmin() || (isGestor() && sameTenant());
+    }
+    match /backup/{docId} {
+      allow read, write: if isSuperAdmin() || (isGestor() && sameTenant());
     }
     match /cartorios/{docId} {
       allow read: if isActive();
       allow write: if isSuperAdmin();
     }
-    match /videos/{docId} {
-      allow read: if isActive();
-      allow create, update, delete: if isGestor();
-    }
-    match /videosProgresso/{docId} {
-      allow read: if isActive();
-      allow create, update: if isActive();
-      allow delete: if isGestor();
-    }
-    match /comunicados/{docId} {
-      allow read: if isActive();
-      allow create, update, delete: if isGestor();
-    }
-    match /comunicadosLeituras/{docId} {
-      allow read: if isActive();
-      allow create, update: if isActive();
-      allow delete: if isGestor();
-    }
-    match /materiaisbanner/{docId} {
-      allow read: if isActive();
-      allow create, update: if isGestor();
-      allow delete: if isGestor();
-    }
-    match /examesResultados/{docId} {
-      allow read: if isActive();
-      allow create: if isActive();
-      allow update, delete: if isGestor();
-    }
     match /tenants/{docId} {
       allow read: if isAuthenticated();
       allow write: if isSuperAdmin();
-    }
-    match /metas/{docId} {
-      allow read: if isActive();
-      allow write: if isGestor();
-    }
-    match /metasDesempate/{docId} {
-      allow read: if isActive();
-      allow write: if isGestor();
-    }
-    match /repositorio/{docId} {
-      allow read: if isActive();
-      allow write: if isGestor();
-    }
-    match /repositorioProgresso/{docId} {
-      allow read: if isActive();
-      allow create, update: if isActive();
-      allow delete: if isGestor();
-    }
-    match /certificados/{docId} {
-      allow read: if isActive();
-      allow create, update: if isActive();
-      allow delete: if isGestor();
-    }
-    match /backup/{docId} {
-      allow read, write: if isGestor();
     }
 
     match /{document=**} { allow read, write: if false; }
