@@ -310,21 +310,21 @@ export const generateTrainingOptions = async (
 ): Promise<any[]> => {
   const ctxTruncated = context.substring(0, 4000);
   // Template pre-definido: IA substitui apenas os textos marcados — sem verbosidade
-  const prompt = `Analise o documento e preencha o JSON abaixo substituindo apenas os campos marcados com ">>PREENCHER<<". Retorne o JSON completo sem explicacoes.
+  const prompt = `Analise o documento e preencha o JSON abaixo substituindo apenas os campos marcados com ">>PREENCHER<<". Retorne o JSON completo sem explicacoes. Escreva SEMPRE em portugues brasileiro.
 
 DOCUMENTO:
 ${ctxTruncated}
 ${customRequest ? `PEDIDO: ${customRequest}\n` : ''}
 Regras:
-- nomes dos modulos: max 6 palavras
-- objetivo de cada modulo: 1 frase usando VERBOS de nivel medio-alto de Bloom (aplicar, analisar, avaliar, justificar, desenvolver, propor, examinar, decidir) — nunca usar "conhecer", "entender" ou "saber"
-- descricao e justificativa: max 1 frase curta
+- nomes dos modulos: max 5 palavras em portugues
+- objetivo de cada modulo: max 10 palavras, use 1 verbo de acao (aplicar, analisar, avaliar, propor, examinar, decidir, desenvolver)
+- descricao e justificativa: max 1 frase curta em portugues
 
 [{"titulo":">>PREENCHER<<","tipo":"essencial","descricao":">>PREENCHER<<","duracao":"1h30","publico":"Toda a equipe","justificativa":">>PREENCHER<<","modulos":[{"nome":">>PREENCHER<<","objetivo":">>PREENCHER<<","duracao":"30min","obrigatorio":true},{"nome":">>PREENCHER<<","objetivo":">>PREENCHER<<","duracao":"30min","obrigatorio":true},{"nome":">>PREENCHER<<","objetivo":">>PREENCHER<<","duracao":"30min","obrigatorio":false}]},{"titulo":">>PREENCHER<<","tipo":"completo","descricao":">>PREENCHER<<","duracao":"4h","publico":"Equipe completa + gestores","justificativa":">>PREENCHER<<","modulos":[{"nome":">>PREENCHER<<","objetivo":">>PREENCHER<<","duracao":"45min","obrigatorio":true},{"nome":">>PREENCHER<<","objetivo":">>PREENCHER<<","duracao":"45min","obrigatorio":true},{"nome":">>PREENCHER<<","objetivo":">>PREENCHER<<","duracao":"45min","obrigatorio":true},{"nome":">>PREENCHER<<","objetivo":">>PREENCHER<<","duracao":"30min","obrigatorio":true},{"nome":">>PREENCHER<<","objetivo":">>PREENCHER<<","duracao":"15min","obrigatorio":false}]},{"titulo":">>PREENCHER<<","tipo":"relampago","descricao":">>PREENCHER<<","duracao":"45min","publico":"Colaboradores experientes","justificativa":">>PREENCHER<<","modulos":[{"nome":">>PREENCHER<<","objetivo":">>PREENCHER<<","duracao":"25min","obrigatorio":true},{"nome":">>PREENCHER<<","objetivo":">>PREENCHER<<","duracao":"20min","obrigatorio":true}]}]`;
 
   try {
     // Template pre-preenchido: IA substitui apenas textos — JSON minimo e previsivel
-    const text = await callGemini(prompt, 3000, true);
+    const text = await callGemini(prompt, 5000, true);
     const parsed = JSON.parse(text);
     if (!Array.isArray(parsed) || parsed.length === 0) throw new Error('Array inválido');
     return parsed;
@@ -370,7 +370,7 @@ const buildModulePrompt = (
   total: number,
   ctx: string
 ): string =>
-  `Voce e um PROFESSOR DOUTOR especialista em direito notarial, design instrucional e Taxonomia de Bloom. Elabore o conteudo educativo deste modulo em nivel cognitivo MEDIO-ALTO de Bloom (Aplicar, Analisar, Avaliar) — nao apenas memorizar ou compreender.
+  `Voce e um PROFESSOR DOUTOR especialista em direito notarial brasileiro e pedagogia universitaria. Escreva TUDO em portugues brasileiro. Nunca use ingles. Elabore o conteudo educativo em nivel cognitivo MEDIO-ALTO (Aplicar, Analisar, Avaliar na Taxonomia de Bloom) — nunca no nivel basico de memorizar ou compreender.
 
 DOCUMENTO OFICIAL DE REFERENCIA (cite SEMPRE artigos, paragrafos e incisos especificos):
 ${ctx}
@@ -385,6 +385,7 @@ TAXONOMIA DE BLOOM — NIVEIS EXIGIDOS NESTE MODULO:
 - Nivel AVALIAR (${BLOOM_LEVELS.avaliar}): o colaborador toma decisoes fundamentadas e justifica juridicamente
 
 INSTRUCOES:
+- Escreva SEMPRE em portugues brasileiro — nunca use ingles em nenhuma palavra
 - Texto simples, SEM asteriscos, SEM hashtags, SEM qualquer markdown
 - Conceitos: nao apenas explique — mostre como APLICAR e ANALISAR cada norma em casos reais
 - Atividade: nivel AVALIAR — o colaborador deve tomar decisoes e justifica-las, nao apenas repetir passos
