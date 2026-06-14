@@ -5,6 +5,7 @@ import {
   addDoc, deleteDoc, doc, serverTimestamp
 } from 'firebase/firestore';
 import { useApp } from '../../context/AppContext';
+import { GeminiService } from '../../services/geminiService';
 
 interface Question {
   id: string;
@@ -34,11 +35,13 @@ interface QuizResult {
   total: number;
   aprovado: boolean;
   respostas: number[];
+  tenantId?: string;
   createdAt?: any;
 }
 
 interface Props {
   checklists: any[];
+  knowledgeDocs?: any[];
 }
 
 const DIAS_BLOQUEIO = 3;
@@ -65,7 +68,7 @@ const formatCountdown = (liberadoEm: Date): string => {
   return `${hours}h ${mins}min`;
 };
 
-const TrainingQuiz: React.FC<Props> = ({ checklists }) => {
+const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
   const { state } = useApp();
   const tenantId = state.user?.tenantId || '';
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
@@ -103,74 +106,44 @@ const TrainingQuiz: React.FC<Props> = ({ checklists }) => {
     return () => unsub();
   }, []);
 
-  // ---- GERAR QUIZ VIA IA ----
+  // ---- GERAR QUIZ VIA IA (Gemini) ----
   const generateQuizWithAI = async () => {
     if (!aiForm.treinamento) return;
     setIsGenerating(true);
     setGenerateError('');
 
-    const treinamento = checklists.find(c => c.title === aiForm.treinamento);
-    const context = treinamento
-      ? `Treinamento: ${treinamento.title}\nItens: ${treinamento.items?.map((i: any) => i.text).join('; ')}`
-      : `Treinamento: ${aiForm.treinamento}`;
-
-    const prompt = `Você é um especialista em treinamento notarial da MJ Consultoria.
-Com base no seguinte treinamento, crie ${aiForm.quantidade} questões de múltipla escolha para avaliar o conhecimento dos colaboradores.
-
-${context}
-
-RESPONDA APENAS COM UM JSON VÁLIDO, sem texto antes ou depois, sem markdown, sem \`\`\`:
-{
-  "titulo": "Avaliação de [nome do treinamento]",
-  "questoes": [
-    {
-      "texto": "Texto da pergunta",
-      "opcoes": ["Opção A", "Opção B", "Opção C", "Opção D"],
-      "correta": 0,
-      "explicacao": "Explicação detalhada do porquê esta é a resposta correta e por que as outras estão erradas"
-    }
-  ]
-}
-
-Regras:
-- "correta" é o índice (0 a 3) da opção correta
-- As perguntas devem ser práticas e relevantes para o dia a dia do cartório
-- A explicação deve ser clara e didática, com no mínimo 2 linhas
-- Retorne exatamente ${aiForm.quantidade} questões`;
+    const checklist = checklists.find(c => c.title === aiForm.treinamento);
+    const docItem = knowledgeDocs.find(d => (d.fileName || d.title) === aiForm.treinamento);
+    const titulo = aiForm.treinamento;
+    const conteudo = checklist
+      ? `${checklist.title}\n${checklist.items?.map((i: any) => i.text).join('\n') || ''}`
+      : docItem
+        ? (docItem.rawText || docItem.content || titulo).substring(0, 6000)
+        : titulo;
 
     try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 4000,
-          messages: [{ role: 'user', content: prompt }]
-        })
-      });
-
-      const data = await response.json();
-      const raw = data.content?.[0]?.text || '';
-
-      // Parse JSON da resposta
-      const jsonMatch = raw.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error('Resposta inválida da IA');
-
-      const parsed = JSON.parse(jsonMatch[0]);
-      const questoesComId = parsed.questoes.map((q: any, i: number) => ({ ...q, id: `q${i + 1}` }));
+      const questoesExame = await GeminiService.generateExam(titulo, conteudo, parseInt(aiForm.quantidade));
+      const questoesComId = questoesExame.map((q: any, i: number) => ({
+        id: `q${i + 1}`,
+        texto: q.enunciado,
+        opcoes: q.alternativas.map((a: any) => a.texto),
+        correta: ['A', 'B', 'C', 'D'].indexOf(q.correta),
+        explicacao: q.justificativa,
+      }));
 
       await addDoc(collection(db, 'treinamentosQuizzes'), {
-        treinamento: aiForm.treinamento,
-        titulo: parsed.titulo,
+        treinamento: titulo,
+        titulo: `Avaliacao: ${titulo}`,
         questoes: questoesComId,
         geradoPorIA: true,
+        tenantId,
         createdAt: serverTimestamp(),
       });
 
       setAiForm({ treinamento: '', quantidade: '5' });
       setMode('list');
     } catch (e: any) {
-      setGenerateError('Erro ao gerar questionário. Tente novamente.');
+      setGenerateError(e?.message || 'Erro ao gerar questionario. Tente novamente.');
       console.error(e);
     } finally {
       setIsGenerating(false);
@@ -182,7 +155,7 @@ Regras:
     if (!form.treinamento || !form.titulo) return;
     const questoesComId = questoes.map((q, i) => ({ ...q, id: `q${i + 1}` }));
     await addDoc(collection(db, 'treinamentosQuizzes'), {
-      ...form, questoes: questoesComId, geradoPorIA: false, createdAt: serverTimestamp(),
+      ...form, questoes: questoesComId, geradoPorIA: false, tenantId, createdAt: serverTimestamp(),
     });
     setForm({ treinamento: '', titulo: '' });
     setQuestoes([{ texto: '', opcoes: ['', '', '', ''], correta: 0, explicacao: '' }]);
@@ -236,7 +209,7 @@ Regras:
       quizId: selectedQuiz.id, quizTitulo: selectedQuiz.titulo,
       treinamento: selectedQuiz.treinamento, colaborador: respondente.nome,
       cargo: respondente.cargo, nota, total: selectedQuiz.questoes.length,
-      aprovado: nota >= 70, respostas: resps, createdAt: serverTimestamp(),
+      aprovado: nota >= 70, respostas: resps, tenantId, createdAt: serverTimestamp(),
     };
     const docRef = await addDoc(collection(db, 'treinamentosQuizResults'), result);
     setQuizResult({ ...result, id: docRef.id });
@@ -486,7 +459,18 @@ Regras:
               <select value={aiForm.treinamento} onChange={e => setAiForm(f => ({ ...f, treinamento: e.target.value }))}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500">
                 <option value="">Selecione o treinamento...</option>
-                {checklists.map(c => <option key={c.id} value={c.title}>{c.title}</option>)}
+                {checklists.length > 0 && (
+                  <optgroup label="Protocolos">
+                    {checklists.map(c => <option key={c.id} value={c.title}>{c.title}</option>)}
+                  </optgroup>
+                )}
+                {knowledgeDocs.length > 0 && (
+                  <optgroup label="Base Legal">
+                    {knowledgeDocs.map(d => (
+                      <option key={d.id} value={d.fileName || d.title}>{d.fileName || d.title}</option>
+                    ))}
+                  </optgroup>
+                )}
               </select>
             </div>
             <div className="space-y-1">
@@ -517,6 +501,9 @@ Regras:
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500">
                   <option value="">Selecione...</option>
                   {checklists.map(c => <option key={c.id} value={c.title}>{c.title}</option>)}
+                  {knowledgeDocs.map(d => (
+                    <option key={d.id} value={d.fileName || d.title}>{d.fileName || d.title}</option>
+                  ))}
                   <option value="outro">Outro</option>
                 </select>
               </div>

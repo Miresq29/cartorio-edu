@@ -23,7 +23,7 @@ const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/
 const SUMMARY_CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 const makeCacheKey = (title: string, type: string): string =>
-  `mjc_summary__${title.trim().toLowerCase().replace(/[^a-z0-9]/g, '_')}__${type}`;
+  `mjc_summary_v2__${title.trim().toLowerCase().replace(/[^a-z0-9]/g, '_')}__${type}`;
 
 const readSummaryCache = (key: string): string | null => {
   try {
@@ -308,21 +308,31 @@ export const generateTrainingOptions = async (
   context: string,
   customRequest?: string
 ): Promise<any[]> => {
-  const ctxTruncated = context.substring(0, 1500);
-  const prompt = `Conteúdo do documento notarial:
-${ctxTruncated}
-${customRequest ? `\nPedido: ${customRequest}` : ''}
+  const ctxTruncated = context.substring(0, 5000);
+  const prompt = `Voce e um PROFESSOR ESPECIALISTA em direito notarial brasileiro com 20 anos formando equipes de cartorio.
 
-Preencha o JSON abaixo com títulos e módulos específicos para ESTE documento. Não altere a estrutura — apenas preencha os campos "titulo", "descricao", "justificativa", e o array "modulos" de cada opção. Retorne APENAS o JSON completo sem markdown:
-[
-  {"titulo":"PREENCHER","tipo":"essencial","descricao":"PREENCHER","duracao":"1h30","publico":"Toda a equipe","modulos":[{"nome":"PREENCHER","objetivo":"PREENCHER","duracao":"30min","obrigatorio":true},{"nome":"PREENCHER","objetivo":"PREENCHER","duracao":"30min","obrigatorio":true},{"nome":"PREENCHER","objetivo":"PREENCHER","duracao":"30min","obrigatorio":false}],"justificativa":"PREENCHER"},
-  {"titulo":"PREENCHER","tipo":"completo","descricao":"PREENCHER","duracao":"4h","publico":"Equipe completa + gestores","modulos":[{"nome":"PREENCHER","objetivo":"PREENCHER","duracao":"45min","obrigatorio":true},{"nome":"PREENCHER","objetivo":"PREENCHER","duracao":"45min","obrigatorio":true},{"nome":"PREENCHER","objetivo":"PREENCHER","duracao":"45min","obrigatorio":true},{"nome":"PREENCHER","objetivo":"PREENCHER","duracao":"30min","obrigatorio":true},{"nome":"PREENCHER","objetivo":"PREENCHER","duracao":"15min","obrigatorio":false}],"justificativa":"PREENCHER"},
-  {"titulo":"PREENCHER","tipo":"relampago","descricao":"PREENCHER","duracao":"45min","publico":"Colaboradores experientes","modulos":[{"nome":"PREENCHER","objetivo":"PREENCHER","duracao":"25min","obrigatorio":true},{"nome":"PREENCHER","objetivo":"PREENCHER","duracao":"20min","obrigatorio":true}],"justificativa":"PREENCHER"}
-]`;
+CONTEUDO DA BASE LEGAL:
+${ctxTruncated}
+${customRequest ? `\nSOLICITACAO: ${customRequest}` : ''}
+
+Crie 3 roteiros de treinamento DETALHADOS. Regras obrigatorias:
+- Cite artigos, incisos e dispositivos especificos do documento acima
+- Objetivos com verbo de acao: "O colaborador sera capaz de [identificar/aplicar/executar] ..."
+- conteudo: 3 topicos tecnicos reais extraidos do documento, cada topico com 1-2 frases de explicacao tecnica
+- exemplos: situacao concreta que ocorre no balcao do cartorio relacionada ao topico
+- atividade: exercicio pratico que o colaborador executa para fixar o conteudo
+
+Configuracoes fixas por tipo:
+- essencial: 3 modulos, duracao "1h30", publico "Toda a equipe"
+- completo: 5 modulos, duracao "4h", publico "Equipe completa + gestores"
+- relampago: 2 modulos, duracao "45min", publico "Colaboradores experientes"
+
+Retorne array JSON com 3 objetos, schema de cada objeto:
+{"titulo":"nome especifico do treinamento","tipo":"essencial|completo|relampago","descricao":"o que o colaborador domina ao concluir","duracao":"conforme configuracao","publico":"conforme configuracao","objetivoGeral":"competencia principal desenvolvida","prerequisitos":"conhecimentos necessarios antes ou Nenhum","justificativa":"por que este formato e ideal","modulos":[{"nome":"nome do modulo","objetivo":"O colaborador sera capaz de [verbo] [conteudo especifico do documento]","duracao":"ex: 30min","obrigatorio":true,"conteudo":"Topico 1: [explicacao tecnica real]\\nTopico 2: [explicacao tecnica real]\\nTopico 3: [explicacao tecnica real]","exemplos":"Situacao real: [cenario especifico no balcao]","atividade":"[exercicio pratico especifico e executavel]"}]}`;
 
   try {
-    // jsonMode=true: Gemini garante JSON válido — sem truncamento nem chars não-escapados
-    const text = await callGemini(prompt, 4096, true);
+    // jsonMode=true: Gemini garante JSON valido
+    const text = await callGemini(prompt, 6000, true);
     const parsed = JSON.parse(text);
     if (!Array.isArray(parsed) || parsed.length === 0) throw new Error('Array inválido');
     return parsed;
@@ -388,7 +398,12 @@ INSTRUÇÃO: ${instructions[summaryType]}
 CONTEÚDO:
 ${docContent.substring(0, 5000)}
 
-Gere o resumo com títulos em MAIÚSCULAS e bullets quando necessário.`;
+REGRAS DE FORMATACAO:
+- Use texto simples SEM asteriscos nem markdown
+- Titulos de secao em MAIUSCULAS seguidos de dois-pontos
+- Listas com "- " no inicio de cada item
+- Numere os topicos quando houver sequencia
+- Escreva em portugues brasileiro claro e direto`;
 
   try {
     const result = await callGemini(prompt, 2000);

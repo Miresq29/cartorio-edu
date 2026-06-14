@@ -37,7 +37,9 @@ interface TrainingOption {
   descricao: string;
   duracao: string;
   publico: string;
-  modulos: { nome: string; objetivo: string; duracao: string; obrigatorio: boolean }[];
+  objetivoGeral?: string;
+  prerequisitos?: string;
+  modulos: { nome: string; objetivo: string; duracao: string; obrigatorio: boolean; conteudo?: string; exemplos?: string; atividade?: string }[];
   justificativa: string;
 }
 
@@ -104,7 +106,7 @@ const TrainingView: React.FC = () => {
       : knowledgeDocs;
 
     const cl = checklistsCtx.map((c: any) => `PROTOCOLO: ${c.title}\nITENS: ${c.items?.map((i: any) => i.text).join('; ')}`).join('\n\n');
-    const kl = docsCtx.slice(0, 8).map((d: any) => `DOCUMENTO: ${d.fileName || d.title}\nCONTEÚDO: ${d.content?.substring(0, 800)}`).join('\n\n');
+    const kl = docsCtx.slice(0, 5).map((d: any) => `DOCUMENTO: ${d.fileName || d.title}\nCONTEUDO: ${(d.rawText || d.content || '').substring(0, 2000)}`).join('\n\n');
     return `Você é um especialista em treinamento notarial da MJ Consultoria.\nBASE LEGAL:\n${kl || 'Nenhum documento.'}\nPROTOCOLOS:\n${cl || 'Nenhum protocolo.'}\nUnidade: ${state.user?.tenantId || 'MJ Consultoria'} | Operador: ${state.user?.name || 'Usuário'}`;
   };
 
@@ -144,24 +146,35 @@ const TrainingView: React.FC = () => {
   };
 
   const formatSelectedOption = (opt: TrainingOption): string => {
-    const modulos = opt.modulos?.map((m, i) =>
-      `  ${i + 1}. ${m.nome} (${m.duracao})${m.obrigatorio ? ' [obrigatorio]' : ''}\n     Objetivo: ${m.objetivo}`
-    ).join('\n') || 'Módulos não especificados';
+    const modulos = opt.modulos?.map((m, i) => {
+      let txt = `MODULO ${i + 1}: ${m.nome} (${m.duracao})${m.obrigatorio ? ' [obrigatorio]' : ''}
+    Objetivo: ${m.objetivo}`;
+      if (m.conteudo) {
+        txt += `\n    Conteudo:\n${m.conteudo.split('\n').map((l: string) => `      ${l}`).join('\n')}`;
+      }
+      if (m.exemplos) txt += `\n    Exemplo: ${m.exemplos}`;
+      if (m.atividade) txt += `\n    Atividade: ${m.atividade}`;
+      return txt;
+    }).join('\n\n') || 'Modulos nao especificados';
 
-    return `ROTEIRO: ${opt.titulo.toUpperCase()}
-------------------------------
-Abordagem: ${opt.descricao}
-Duração total: ${opt.duracao}
-Público-alvo: ${opt.publico}
+    let result = `ROTEIRO: ${opt.titulo.toUpperCase()}
+==============================
+Descricao: ${opt.descricao}
+Duracao total: ${opt.duracao}
+Publico-alvo: ${opt.publico}`;
+    if (opt.objetivoGeral) result += `\nObjetivo Geral: ${opt.objetivoGeral}`;
+    if (opt.prerequisitos) result += `\nPrerequisitos: ${opt.prerequisitos}`;
+    result += `
 
-MÓDULOS:
+MODULOS:
 ${modulos}
 
 JUSTIFICATIVA:
 ${opt.justificativa}
 
-[obrigatorio] = Módulo obrigatório
+[obrigatorio] = Modulo obrigatorio
 `;
+    return result;
   };
 
   const generateSummary = async () => {
@@ -420,7 +433,7 @@ ${opt.justificativa}
       case 'ia':            return renderIATab();
       case 'resumos':       return renderResumosTab();
       case 'participantes': return <TrainingParticipants />;
-      case 'questionarios': return <TrainingQuiz checklists={checklists} />;
+      case 'questionarios': return <TrainingQuiz checklists={checklists} knowledgeDocs={knowledgeDocs} />;
       case 'relatorios':    return <TrainingReport />;
       case 'dashboard':     return <TrainingDashboard />;
       default:              return null;
