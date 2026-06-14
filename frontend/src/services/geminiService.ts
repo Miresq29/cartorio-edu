@@ -315,9 +315,9 @@ export const generateTrainingOptions = async (
 DOCUMENTO:
 ${ctxTruncated}
 ${customRequest ? `PEDIDO: ${customRequest}\n` : ''}
-Regra: nomes dos modulos max 6 palavras; descricao e justificativa max 1 frase curta.
+Regra: nomes dos modulos max 6 palavras; objetivo max 1 frase; descricao e justificativa max 1 frase curta.
 
-[{"titulo":">>PREENCHER<<","tipo":"essencial","descricao":">>PREENCHER<<","duracao":"1h30","publico":"Toda a equipe","justificativa":">>PREENCHER<<","modulos":[{"nome":">>PREENCHER<<","duracao":"30min","obrigatorio":true},{"nome":">>PREENCHER<<","duracao":"30min","obrigatorio":true},{"nome":">>PREENCHER<<","duracao":"30min","obrigatorio":false}]},{"titulo":">>PREENCHER<<","tipo":"completo","descricao":">>PREENCHER<<","duracao":"4h","publico":"Equipe completa + gestores","justificativa":">>PREENCHER<<","modulos":[{"nome":">>PREENCHER<<","duracao":"45min","obrigatorio":true},{"nome":">>PREENCHER<<","duracao":"45min","obrigatorio":true},{"nome":">>PREENCHER<<","duracao":"45min","obrigatorio":true},{"nome":">>PREENCHER<<","duracao":"30min","obrigatorio":true},{"nome":">>PREENCHER<<","duracao":"15min","obrigatorio":false}]},{"titulo":">>PREENCHER<<","tipo":"relampago","descricao":">>PREENCHER<<","duracao":"45min","publico":"Colaboradores experientes","justificativa":">>PREENCHER<<","modulos":[{"nome":">>PREENCHER<<","duracao":"25min","obrigatorio":true},{"nome":">>PREENCHER<<","duracao":"20min","obrigatorio":true}]}]`;
+[{"titulo":">>PREENCHER<<","tipo":"essencial","descricao":">>PREENCHER<<","duracao":"1h30","publico":"Toda a equipe","justificativa":">>PREENCHER<<","modulos":[{"nome":">>PREENCHER<<","objetivo":">>PREENCHER<<","duracao":"30min","obrigatorio":true},{"nome":">>PREENCHER<<","objetivo":">>PREENCHER<<","duracao":"30min","obrigatorio":true},{"nome":">>PREENCHER<<","objetivo":">>PREENCHER<<","duracao":"30min","obrigatorio":false}]},{"titulo":">>PREENCHER<<","tipo":"completo","descricao":">>PREENCHER<<","duracao":"4h","publico":"Equipe completa + gestores","justificativa":">>PREENCHER<<","modulos":[{"nome":">>PREENCHER<<","objetivo":">>PREENCHER<<","duracao":"45min","obrigatorio":true},{"nome":">>PREENCHER<<","objetivo":">>PREENCHER<<","duracao":"45min","obrigatorio":true},{"nome":">>PREENCHER<<","objetivo":">>PREENCHER<<","duracao":"45min","obrigatorio":true},{"nome":">>PREENCHER<<","objetivo":">>PREENCHER<<","duracao":"30min","obrigatorio":true},{"nome":">>PREENCHER<<","objetivo":">>PREENCHER<<","duracao":"15min","obrigatorio":false}]},{"titulo":">>PREENCHER<<","tipo":"relampago","descricao":">>PREENCHER<<","duracao":"45min","publico":"Colaboradores experientes","justificativa":">>PREENCHER<<","modulos":[{"nome":">>PREENCHER<<","objetivo":">>PREENCHER<<","duracao":"25min","obrigatorio":true},{"nome":">>PREENCHER<<","objetivo":">>PREENCHER<<","duracao":"20min","obrigatorio":true}]}]`;
 
   try {
     // Template pre-preenchido: IA substitui apenas textos — JSON minimo e previsivel
@@ -348,51 +348,57 @@ Regra: nomes dos modulos max 6 palavras; descricao e justificativa max 1 frase c
 };
 
 // ─── Detalhamento de roteiro selecionado ─────────────────────────────────────
-// Chamada focada em 1 roteiro — conteudo educativo rico para cada modulo
-// Separada do generateTrainingOptions para evitar truncamento de JSON
+// Gera conteudo educativo REAL para cada modulo: texto corrido, exemplos e atividade
+// Retorna apenas o array de modulos enriquecidos — JSON minimo, mais espaco para conteudo
 export const generateTrainingDetail = async (
   option: any,
   context: string
 ): Promise<any> => {
   const ctxTruncated = context.substring(0, 5000);
+  const numModulos = (option.modulos || []).length;
   const modulosList = (option.modulos || []).map((m: any, i: number) =>
-    `MODULO ${i + 1}: ${m.nome}\nObjetivo: ${m.objetivo}`
-  ).join('\n\n');
+    `${i + 1}. ${m.nome} (${m.duracao})${m.objetivo ? ' — ' + m.objetivo : ''}`
+  ).join('\n');
 
-  const prompt = `Voce e um PROFESSOR ESPECIALISTA em direito notarial com 20 anos de experiencia formando equipes de cartorio.
+  const prompt = `Voce e um PROFESSOR ESPECIALISTA em direito notarial e cartorial com 20 anos de experiencia.
 
-BASE LEGAL COMPLETA:
+DOCUMENTO BASE (use para embasar TODO o conteudo — cite artigos especificos):
 ${ctxTruncated}
 
-Voce vai detalhar COMPLETAMENTE o seguinte treinamento para ser aplicado na equipe:
-Titulo: "${option.titulo}"
-Tipo: ${option.tipo} | Duracao: ${option.duracao} | Publico: ${option.publico}
+TREINAMENTO: "${option.titulo}" | Publico: ${option.publico} | Duracao: ${option.duracao}
 
-MODULOS DO ROTEIRO:
+MODULOS A DETALHAR (${numModulos} modulos):
 ${modulosList}
 
-Para CADA modulo, gere conteudo EDUCATIVO COMPLETO E RICO:
+INSTRUCAO: Produza conteudo educativo COMPLETO e ESPECIFICO para cada modulo.
+Cite artigos, paragrafos e incisos reais do documento acima. Proibido conteudo generico.
 
-conteudo: 3 topicos tecnicos especificos retirados do documento legal acima, separados por \\n.
-  Cada topico deve ter 2-3 frases explicando o conceito e citando artigos, incisos ou dispositivos especificos.
-  Exemplo de formato: "Topico 1: O art. 4 do Provimento 213 determina que..."
+Retorne APENAS um array JSON com ${numModulos} objetos, um por modulo, nesta ordem:
+[
+  {
+    "nome": "nome exato do modulo 1",
+    "objetivo": "Ao final deste modulo, o colaborador sera capaz de [verbo + competencia especifica e mensuravel]",
+    "duracao": "xmin",
+    "obrigatorio": true,
+    "conteudo": "CONCEITO 1: [Nome do conceito]. [Cite o artigo/dispositivo especifico do documento]. [Explique em 2-3 frases o que determina e por que importa para o cartorio].\\nCONCEITO 2: [Nome do conceito]. [Cite outro artigo]. [2-3 frases de explicacao].\\nCONCEITO 3: [Nome do conceito]. [Cite mais um dispositivo]. [2-3 frases].",
+    "exemplos": "Situacao real no balcao: [Descreva em 6 a 8 frases um atendimento concreto. Inclua: o que o cliente solicita, qual documento apresenta, o que o colaborador verifica, qual artigo ou norma se aplica naquele momento, como o ato e registrado ou recusado e qual e o proximo passo do atendimento.]",
+    "atividade": "Exercicio pratico: [Descreva em 4 a 6 frases um exercicio que o colaborador executa durante o treinamento. Inclua: situacao simulada, documentos necessarios, passos que o colaborador deve executar, resultado esperado e como o facilitador avalia se o colaborador acertou.]"
+  }
+]
 
-exemplos: Narrar em 6-8 frases uma situacao CONCRETA E DETALHADA que ocorre no balcao do cartorio.
-  Inclua: tipo de documento, o que o cliente solicita, como o colaborador age, qual dispositivo legal se aplica.
-
-atividade: Descrever em 4-6 frases um EXERCICIO PRATICO que o colaborador executa para fixar o aprendizado.
-  Inclua passos especificos, documentos usados, resultado esperado.
-
-Para o treinamento inteiro, gere tambem:
-objetivoGeral: 2-3 frases descrevendo a competencia principal desenvolvida
-prerequisitos: Conhecimentos necessarios antes (1-2 frases ou "Nenhum")
-
-Retorne JSON com o treinamento completo incluindo todos os campos originais mais os novos campos educativos.`;
+Gere os ${numModulos} modulos na ordem listada. Cada campo deve ter o texto completo descrito acima.`;
 
   try {
     const text = await callGemini(prompt, 8192, true);
-    const parsed = JSON.parse(text);
-    return { ...option, ...parsed, modulos: parsed.modulos || option.modulos };
+    let parsed = JSON.parse(text);
+    // Modelo pode retornar objeto wrapper ou array direto
+    const modulos = Array.isArray(parsed) ? parsed : (parsed.modulos || option.modulos);
+    return {
+      ...option,
+      objetivoGeral: parsed.objetivoGeral || `Capacitar a equipe do cartorio em ${option.titulo}, com dominio tecnico e pratico dos dispositivos normativos aplicaveis.`,
+      prerequisitos: parsed.prerequisitos || 'Nenhum conhecimento previo necessario.',
+      modulos,
+    };
   } catch (e: any) {
     console.error('Erro ao detalhar treinamento:', e);
     throw new Error('Nao foi possivel gerar o conteudo detalhado. Tente novamente.');

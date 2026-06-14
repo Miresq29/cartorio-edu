@@ -169,18 +169,18 @@ const TrainingView: React.FC = () => {
 
   const formatSelectedOption = (opt: TrainingOption): string => {
     const modulos = opt.modulos?.map((m, i) => {
-      let txt = `MODULO ${i + 1}: ${m.nome} (${m.duracao})${m.obrigatorio ? ' [obrigatorio]' : ''}
-    Objetivo: ${m.objetivo}`;
+      let txt = `MODULO ${i + 1}: ${m.nome} (${m.duracao})${m.obrigatorio ? ' [obrigatorio]' : ''}`;
+      if (m.objetivo) txt += `\n  Objetivo: ${m.objetivo}`;
       if (m.conteudo) {
-        txt += `\n    Conteudo:\n${m.conteudo.split('\n').map((l: string) => `      ${l}`).join('\n')}`;
+        txt += `\n\n  CONTEUDO:\n${m.conteudo.split('\n').map((l: string) => `  ${l}`).join('\n')}`;
       }
-      if (m.exemplos) txt += `\n    Exemplo: ${m.exemplos}`;
-      if (m.atividade) txt += `\n    Atividade: ${m.atividade}`;
+      if (m.exemplos) txt += `\n\n  EXEMPLO PRATICO:\n  ${m.exemplos}`;
+      if (m.atividade) txt += `\n\n  ATIVIDADE:\n  ${m.atividade}`;
       return txt;
-    }).join('\n\n') || 'Modulos nao especificados';
+    }).join('\n\n' + '─'.repeat(50) + '\n\n') || 'Modulos nao especificados';
 
     let result = `ROTEIRO: ${opt.titulo.toUpperCase()}
-==============================
+${'='.repeat(50)}
 Descricao: ${opt.descricao}
 Duracao total: ${opt.duracao}
 Publico-alvo: ${opt.publico}`;
@@ -188,9 +188,13 @@ Publico-alvo: ${opt.publico}`;
     if (opt.prerequisitos) result += `\nPrerequisitos: ${opt.prerequisitos}`;
     result += `
 
+${'='.repeat(50)}
 MODULOS:
+${'='.repeat(50)}
+
 ${modulos}
 
+${'='.repeat(50)}
 JUSTIFICATIVA:
 ${opt.justificativa}
 
