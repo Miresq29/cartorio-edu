@@ -315,31 +315,37 @@ CONTEUDO DA BASE LEGAL:
 ${ctxTruncated}
 ${customRequest ? `\nSOLICITACAO: ${customRequest}` : ''}
 
-Crie 3 roteiros de treinamento DETALHADOS. Regras obrigatorias:
-- Cite artigos, incisos e dispositivos especificos do documento acima
-- Objetivos com verbo de acao: "O colaborador sera capaz de [identificar/aplicar/executar] ..."
-- conteudo: 3 topicos tecnicos reais extraidos do documento, cada topico com 1-2 frases de explicacao tecnica
-- exemplos: situacao concreta que ocorre no balcao do cartorio relacionada ao topico
-- atividade: exercicio pratico que o colaborador executa para fixar o conteudo
+Crie 3 roteiros de treinamento. LIMITES OBRIGATORIOS DE PALAVRAS (nunca exceda):
+- titulo: max 10 palavras
+- descricao: max 20 palavras
+- objetivoGeral: max 20 palavras
+- prerequisitos: max 10 palavras
+- justificativa: max 25 palavras
+- modulo.nome: max 8 palavras
+- modulo.objetivo: max 18 palavras com verbo de acao (identificar/aplicar/executar)
+- modulo.conteudo: EXATAMENTE 3 topicos separados por \\n, cada topico MAX 12 palavras
+- modulo.exemplos: max 20 palavras descrevendo situacao real no balcao
+- modulo.atividade: max 15 palavras descrevendo exercicio pratico
 
-Configuracoes fixas por tipo:
+Configuracoes fixas:
 - essencial: 3 modulos, duracao "1h30", publico "Toda a equipe"
 - completo: 5 modulos, duracao "4h", publico "Equipe completa + gestores"
 - relampago: 2 modulos, duracao "45min", publico "Colaboradores experientes"
 
-Retorne array JSON com 3 objetos, schema de cada objeto:
-{"titulo":"nome especifico do treinamento","tipo":"essencial|completo|relampago","descricao":"o que o colaborador domina ao concluir","duracao":"conforme configuracao","publico":"conforme configuracao","objetivoGeral":"competencia principal desenvolvida","prerequisitos":"conhecimentos necessarios antes ou Nenhum","justificativa":"por que este formato e ideal","modulos":[{"nome":"nome do modulo","objetivo":"O colaborador sera capaz de [verbo] [conteudo especifico do documento]","duracao":"ex: 30min","obrigatorio":true,"conteudo":"Topico 1: [explicacao tecnica real]\\nTopico 2: [explicacao tecnica real]\\nTopico 3: [explicacao tecnica real]","exemplos":"Situacao real: [cenario especifico no balcao]","atividade":"[exercicio pratico especifico e executavel]"}]}`;
+Retorne array JSON com 3 objetos, schema:
+{"titulo":"nome especifico","tipo":"essencial|completo|relampago","descricao":"texto","duracao":"conf","publico":"conf","objetivoGeral":"texto","prerequisitos":"texto","justificativa":"texto","modulos":[{"nome":"texto","objetivo":"O colaborador sera capaz de [verbo] [conteudo]","duracao":"30min","obrigatorio":true,"conteudo":"Topico 1: texto\\nTopico 2: texto\\nTopico 3: texto","exemplos":"texto","atividade":"texto"}]}`;
 
   try {
-    // jsonMode=true: Gemini garante JSON valido
-    const text = await callGemini(prompt, 6000, true);
+    // jsonMode=true: Gemini garante JSON valido; 8192 = max tokens Gemini Flash
+    const text = await callGemini(prompt, 8192, true);
     const parsed = JSON.parse(text);
     if (!Array.isArray(parsed) || parsed.length === 0) throw new Error('Array inválido');
     return parsed;
   } catch (e) {
     console.error('Erro ao gerar opções de treinamento:', e);
     // Fallback: retorna templates com contexto básico extraído
-    const titulo = ctxTruncated.split('\n')[0]?.substring(0, 60) || 'Documento Notarial';
+    const docMatch = context.match(/DOCUMENTO:\s*(.+)/);
+    const titulo = docMatch ? docMatch[1].trim().replace(/\.(pdf|docx|txt)$/i, '').substring(0, 50) : 'Treinamento Notarial';
     return TRAINING_TEMPLATES.map(t => ({
       titulo: `${titulo} — ${t.tipo.charAt(0).toUpperCase() + t.tipo.slice(1)}`,
       tipo: t.tipo,
@@ -518,8 +524,8 @@ Retorne APENAS array JSON sem markdown:
 [{"id":1,"enunciado":"...","alternativas":[{"letra":"A","texto":"..."},{"letra":"B","texto":"..."},{"letra":"C","texto":"..."},{"letra":"D","texto":"..."}],"correta":"A","bloom":"compreensao","justificativa":"..."}]`;
 
   try {
-    // jsonMode=true: Gemini garante JSON válido
-    const text = await callGemini(prompt, 4096, true);
+    // jsonMode=true: Gemini garante JSON valido; 6000 tokens para questoes detalhadas
+    const text = await callGemini(prompt, 6000, true);
     const questoes = JSON.parse(text);
     if (!Array.isArray(questoes) || questoes.length === 0)
       throw new Error('Formato inválido na resposta da IA.');

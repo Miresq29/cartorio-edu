@@ -2,7 +2,7 @@
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { db } from '../../services/firebase';
-import { collection, onSnapshot, query, orderBy, where } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, where, addDoc, serverTimestamp } from 'firebase/firestore';
 import { GeminiService } from '../../services/geminiService';
 import TrainingParticipants from './TrainingParticipants';
 import TrainingQuiz from './TrainingQuiz';
@@ -79,6 +79,8 @@ const TrainingView: React.FC = () => {
   const [selectedChecklists, setSelectedChecklists] = useState<string[]>([]);
   const [selectedKnowledgeDocs, setSelectedKnowledgeDocs] = useState<string[]>([]);
 
+  const [savedSummaries, setSavedSummaries] = useState<any[]>([]);
+
 
   useEffect(() => {
     const tenantId = state.user?.tenantId || '';
@@ -93,6 +95,14 @@ const TrainingView: React.FC = () => {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  useEffect(() => {
+    const tenantId = state.user?.tenantId;
+    if (!tenantId) return;
+    const q = query(collection(db, 'resumos'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'));
+    const unsub = onSnapshot(q, snap => setSavedSummaries(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+    return () => unsub();
+  }, [state.user?.tenantId]);
 
   const totalItems = checklists.reduce((acc, c) => acc + (c.items?.length || 0), 0);
 
@@ -182,12 +192,21 @@ ${opt.justificativa}
     setSummaryLoading(true);
     setSummary('');
     try {
+      const docTitle = selectedDoc.fileName || selectedDoc.title || 'Documento';
       const result = await GeminiService.generateSummary(
-        selectedDoc.content || selectedDoc.rawText || '',
-        selectedDoc.fileName || selectedDoc.title || 'Documento',
+        selectedDoc.rawText || selectedDoc.content || '',
+        docTitle,
         summaryType
       );
       setSummary(result);
+      await addDoc(collection(db, 'resumos'), {
+        tenantId: state.user?.tenantId || '',
+        docId: selectedDoc.id || '',
+        docTitle,
+        summaryType,
+        summary: result,
+        createdAt: serverTimestamp(),
+      });
     } catch (e: any) { showToast(e?.message || 'Erro ao gerar resumo.', 'error'); } finally { setSummaryLoading(false); }
   };
 
@@ -424,6 +443,34 @@ ${opt.justificativa}
             </div>
           )}
         </div>
+      </div>
+
+      {/* Historico de Resumos Salvos */}
+      <div className="bg-white border border-slate-300 rounded-2xl p-5 shadow-sm">
+        <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-3">
+          Historico de Resumos ({savedSummaries.length})
+        </h4>
+        {savedSummaries.length === 0 ? (
+          <p className="text-xs text-slate-400 italic">Nenhum resumo salvo. Gere um resumo para salvar automaticamente.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-64 overflow-y-auto custom-scrollbar">
+            {savedSummaries.map(r => (
+              <div key={r.id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-emerald-400 transition-all">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold text-[#0A1628] truncate">{r.docTitle}</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-[9px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold uppercase">{r.summaryType}</span>
+                    <span className="text-[9px] text-slate-400">{r.createdAt?.toDate?.()?.toLocaleDateString('pt-BR') || ''}</span>
+                  </div>
+                </div>
+                <button type="button" onClick={() => setSummary(r.summary)}
+                  className="text-[9px] bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-3 py-1.5 rounded-lg font-black uppercase tracking-widest transition-all flex-shrink-0">
+                  Ver
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

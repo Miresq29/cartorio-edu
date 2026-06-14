@@ -140,6 +140,11 @@ service cloud.firestore {
       allow create, update: if canWritePrivate();
       allow delete: if isSuperAdmin() || (isGestor() && sameTenant());
     }
+    match /resumos/{docId} {
+      allow read: if canReadPrivate();
+      allow create: if canWritePrivate();
+      allow update, delete: if canEditPrivate();
+    }
     match /backup/{docId} {
       allow read, write: if isSuperAdmin() || (isGestor() && sameTenant());
     }
