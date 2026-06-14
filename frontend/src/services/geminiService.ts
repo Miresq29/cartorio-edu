@@ -243,11 +243,11 @@ const callGemini = async (
 };
 
 // ─── Chat principal ───────────────────────────────────────────────────────────
-// 800 tokens: respostas conversacionais são curtas
+// 2000 tokens: respostas conversacionais de treinamento podem ser longas
 export const chat = async (message: string, context: string, _token?: string) => {
   const ctxTruncated = context ? context.substring(0, 2000) : '';
   const prompt = ctxTruncated ? `Contexto: ${ctxTruncated}\n\n${message}` : message;
-  const text = await callGemini(prompt, 800);
+  const text = await callGemini(prompt, 2000);
   return { text };
 };
 
@@ -348,61 +348,82 @@ Regra: nomes dos modulos max 6 palavras; objetivo max 1 frase; descricao e justi
 };
 
 // ─── Detalhamento de roteiro selecionado ─────────────────────────────────────
-// Gera conteudo educativo REAL para cada modulo: texto corrido, exemplos e atividade
-// Retorna apenas o array de modulos enriquecidos — JSON minimo, mais espaco para conteudo
+// Gera conteudo educativo real para cada modulo em chamadas PARALELAS independentes.
+// Texto simples (nao JSON) por modulo — sem risco de truncamento de JSON.
+// Cada chamada: 1 modulo × 3500 tokens.
+const buildModulePrompt = (
+  titulo: string,
+  publico: string,
+  modulo: any,
+  index: number,
+  total: number,
+  ctx: string
+): string =>
+  `Voce e um PROFESSOR ESPECIALISTA em direito notarial com 20 anos de experiencia.
+
+BASE LEGAL (cite dispositivos especificos deste documento em cada secao):
+${ctx}
+
+TREINAMENTO: "${titulo}" | Publico: ${publico}
+MODULO ${index + 1} de ${total}: ${modulo.nome} (${modulo.duracao})
+${modulo.objetivo ? 'Objetivo: ' + modulo.objetivo : ''}
+
+Elabore o conteudo didatico COMPLETO para este modulo. Siga EXATAMENTE este formato:
+
+CONTEUDO:
+CONCEITO 1: [nome do conceito]
+[Cite o artigo especifico do documento. Explique em 2-3 frases o que determina e o impacto pratico no cartorio.]
+
+CONCEITO 2: [nome do conceito]
+[Cite outro dispositivo do documento. 2-3 frases de explicacao clara.]
+
+CONCEITO 3: [nome do conceito]
+[Cite mais um ponto legal do documento. 2-3 frases.]
+
+EXEMPLO PRATICO:
+[Descreva em 6 a 8 frases um atendimento REAL no balcao do cartorio: o que o cliente solicita, qual documento apresenta, o que o colaborador verifica, qual artigo do documento acima se aplica naquele momento, como o ato e formalizado ou recusado e qual e o proximo passo.]
+
+ATIVIDADE:
+[Descreva em 4 a 6 frases um exercicio pratico que o colaborador executa no treinamento: situacao simulada, documentos necessarios, passos que o colaborador executa, resultado esperado e como o facilitador avalia.]
+
+REGRA ABSOLUTA: Cite artigos e dispositivos reais do documento acima. Proibido conteudo generico.`;
+
 export const generateTrainingDetail = async (
   option: any,
   context: string
 ): Promise<any> => {
-  const ctxTruncated = context.substring(0, 5000);
-  const numModulos = (option.modulos || []).length;
-  const modulosList = (option.modulos || []).map((m: any, i: number) =>
-    `${i + 1}. ${m.nome} (${m.duracao})${m.objetivo ? ' — ' + m.objetivo : ''}`
-  ).join('\n');
+  const ctxTruncated = context.substring(0, 4000);
+  const originalModulos: any[] = option.modulos || [];
 
-  const prompt = `Voce e um PROFESSOR ESPECIALISTA em direito notarial e cartorial com 20 anos de experiencia.
+  const enrichedModulos = await Promise.all(
+    originalModulos.map(async (m: any, i: number) => {
+      const prompt = buildModulePrompt(
+        option.titulo, option.publico, m, i, originalModulos.length, ctxTruncated
+      );
+      try {
+        const text = await callGemini(prompt, 3500, false);
+        const conteudoMatch  = text.match(/CONTEUDO:\s*([\s\S]*?)(?=EXEMPLO(?: PRATICO)?:|$)/i);
+        const exemploMatch   = text.match(/EXEMPLO(?: PRATICO)?:\s*([\s\S]*?)(?=ATIVIDADE:|$)/i);
+        const atividadeMatch = text.match(/ATIVIDADE:\s*([\s\S]*?)$/i);
+        return {
+          ...m,
+          conteudo:  (conteudoMatch?.[1]  || '').trim(),
+          exemplos:  (exemploMatch?.[1]   || '').trim(),
+          atividade: (atividadeMatch?.[1] || '').trim(),
+        };
+      } catch (e) {
+        console.error(`Erro no modulo ${i + 1}:`, e);
+        return m;
+      }
+    })
+  );
 
-DOCUMENTO BASE (use para embasar TODO o conteudo — cite artigos especificos):
-${ctxTruncated}
-
-TREINAMENTO: "${option.titulo}" | Publico: ${option.publico} | Duracao: ${option.duracao}
-
-MODULOS A DETALHAR (${numModulos} modulos):
-${modulosList}
-
-INSTRUCAO: Produza conteudo educativo COMPLETO e ESPECIFICO para cada modulo.
-Cite artigos, paragrafos e incisos reais do documento acima. Proibido conteudo generico.
-
-Retorne APENAS um array JSON com ${numModulos} objetos, um por modulo, nesta ordem:
-[
-  {
-    "nome": "nome exato do modulo 1",
-    "objetivo": "Ao final deste modulo, o colaborador sera capaz de [verbo + competencia especifica e mensuravel]",
-    "duracao": "xmin",
-    "obrigatorio": true,
-    "conteudo": "CONCEITO 1: [Nome do conceito]. [Cite o artigo/dispositivo especifico do documento]. [Explique em 2-3 frases o que determina e por que importa para o cartorio].\\nCONCEITO 2: [Nome do conceito]. [Cite outro artigo]. [2-3 frases de explicacao].\\nCONCEITO 3: [Nome do conceito]. [Cite mais um dispositivo]. [2-3 frases].",
-    "exemplos": "Situacao real no balcao: [Descreva em 6 a 8 frases um atendimento concreto. Inclua: o que o cliente solicita, qual documento apresenta, o que o colaborador verifica, qual artigo ou norma se aplica naquele momento, como o ato e registrado ou recusado e qual e o proximo passo do atendimento.]",
-    "atividade": "Exercicio pratico: [Descreva em 4 a 6 frases um exercicio que o colaborador executa durante o treinamento. Inclua: situacao simulada, documentos necessarios, passos que o colaborador deve executar, resultado esperado e como o facilitador avalia se o colaborador acertou.]"
-  }
-]
-
-Gere os ${numModulos} modulos na ordem listada. Cada campo deve ter o texto completo descrito acima.`;
-
-  try {
-    const text = await callGemini(prompt, 8192, true);
-    let parsed = JSON.parse(text);
-    // Modelo pode retornar objeto wrapper ou array direto
-    const modulos = Array.isArray(parsed) ? parsed : (parsed.modulos || option.modulos);
-    return {
-      ...option,
-      objetivoGeral: parsed.objetivoGeral || `Capacitar a equipe do cartorio em ${option.titulo}, com dominio tecnico e pratico dos dispositivos normativos aplicaveis.`,
-      prerequisitos: parsed.prerequisitos || 'Nenhum conhecimento previo necessario.',
-      modulos,
-    };
-  } catch (e: any) {
-    console.error('Erro ao detalhar treinamento:', e);
-    throw new Error('Nao foi possivel gerar o conteudo detalhado. Tente novamente.');
-  }
+  return {
+    ...option,
+    objetivoGeral: `Capacitar a equipe do cartorio em ${option.titulo} com dominio tecnico e pratico dos dispositivos normativos aplicaveis.`,
+    prerequisitos: 'Nenhum conhecimento previo necessario.',
+    modulos: enrichedModulos,
+  };
 };
 
 // ─── Resumo de documento ──────────────────────────────────────────────────────
