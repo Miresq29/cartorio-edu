@@ -309,35 +309,23 @@ export const generateTrainingOptions = async (
   customRequest?: string
 ): Promise<any[]> => {
   const ctxTruncated = context.substring(0, 5000);
-  const prompt = `Voce e um PROFESSOR ESPECIALISTA em direito notarial brasileiro com 20 anos formando equipes de cartorio.
+  const prompt = `Especialista em treinamento notarial. Analise o documento e crie 3 opcoes de roteiro (estrutura basica — o conteudo educativo sera detalhado em seguida).
 
-CONTEUDO DA BASE LEGAL:
+BASE LEGAL:
 ${ctxTruncated}
 ${customRequest ? `\nSOLICITACAO: ${customRequest}` : ''}
 
-Crie 3 roteiros de treinamento. LIMITES OBRIGATORIOS DE PALAVRAS (nunca exceda):
-- titulo: max 10 palavras
-- descricao: max 20 palavras
-- objetivoGeral: max 20 palavras
-- prerequisitos: max 10 palavras
-- justificativa: max 25 palavras
-- modulo.nome: max 8 palavras
-- modulo.objetivo: max 18 palavras com verbo de acao (identificar/aplicar/executar)
-- modulo.conteudo: EXATAMENTE 3 topicos separados por \\n, cada topico MAX 12 palavras
-- modulo.exemplos: max 20 palavras descrevendo situacao real no balcao
-- modulo.atividade: max 15 palavras descrevendo exercicio pratico
+Configuracoes:
+- essencial: 3 modulos, "1h30", "Toda a equipe"
+- completo: 5 modulos, "4h", "Equipe completa + gestores"
+- relampago: 2 modulos, "45min", "Colaboradores experientes"
 
-Configuracoes fixas:
-- essencial: 3 modulos, duracao "1h30", publico "Toda a equipe"
-- completo: 5 modulos, duracao "4h", publico "Equipe completa + gestores"
-- relampago: 2 modulos, duracao "45min", publico "Colaboradores experientes"
-
-Retorne array JSON com 3 objetos, schema:
-{"titulo":"nome especifico","tipo":"essencial|completo|relampago","descricao":"texto","duracao":"conf","publico":"conf","objetivoGeral":"texto","prerequisitos":"texto","justificativa":"texto","modulos":[{"nome":"texto","objetivo":"O colaborador sera capaz de [verbo] [conteudo]","duracao":"30min","obrigatorio":true,"conteudo":"Topico 1: texto\\nTopico 2: texto\\nTopico 3: texto","exemplos":"texto","atividade":"texto"}]}`;
+Retorne array JSON com 3 objetos:
+{"titulo":"nome especifico relevante","tipo":"essencial|completo|relampago","descricao":"o que o colaborador domina","duracao":"conf","publico":"conf","justificativa":"por que este formato","modulos":[{"nome":"nome do modulo","objetivo":"O colaborador sera capaz de [verbo] [algo especifico do documento]","duracao":"30min","obrigatorio":true}]}`;
 
   try {
-    // jsonMode=true: Gemini garante JSON valido; 8192 = max tokens Gemini Flash
-    const text = await callGemini(prompt, 8192, true);
+    // Apenas estrutura dos roteiros — tokens reduzidos intencionalmente (detalhe gerado em etapa separada)
+    const text = await callGemini(prompt, 2000, true);
     const parsed = JSON.parse(text);
     if (!Array.isArray(parsed) || parsed.length === 0) throw new Error('Array inválido');
     return parsed;
@@ -360,6 +348,58 @@ Retorne array JSON com 3 objetos, schema:
       })),
       justificativa: `Cobertura ${t.tipo} do conteúdo normativo`,
     }));
+  }
+};
+
+// ─── Detalhamento de roteiro selecionado ─────────────────────────────────────
+// Chamada focada em 1 roteiro — conteudo educativo rico para cada modulo
+// Separada do generateTrainingOptions para evitar truncamento de JSON
+export const generateTrainingDetail = async (
+  option: any,
+  context: string
+): Promise<any> => {
+  const ctxTruncated = context.substring(0, 5000);
+  const modulosList = (option.modulos || []).map((m: any, i: number) =>
+    `MODULO ${i + 1}: ${m.nome}\nObjetivo: ${m.objetivo}`
+  ).join('\n\n');
+
+  const prompt = `Voce e um PROFESSOR ESPECIALISTA em direito notarial com 20 anos de experiencia formando equipes de cartorio.
+
+BASE LEGAL COMPLETA:
+${ctxTruncated}
+
+Voce vai detalhar COMPLETAMENTE o seguinte treinamento para ser aplicado na equipe:
+Titulo: "${option.titulo}"
+Tipo: ${option.tipo} | Duracao: ${option.duracao} | Publico: ${option.publico}
+
+MODULOS DO ROTEIRO:
+${modulosList}
+
+Para CADA modulo, gere conteudo EDUCATIVO COMPLETO E RICO:
+
+conteudo: 3 topicos tecnicos especificos retirados do documento legal acima, separados por \\n.
+  Cada topico deve ter 2-3 frases explicando o conceito e citando artigos, incisos ou dispositivos especificos.
+  Exemplo de formato: "Topico 1: O art. 4 do Provimento 213 determina que..."
+
+exemplos: Narrar em 6-8 frases uma situacao CONCRETA E DETALHADA que ocorre no balcao do cartorio.
+  Inclua: tipo de documento, o que o cliente solicita, como o colaborador age, qual dispositivo legal se aplica.
+
+atividade: Descrever em 4-6 frases um EXERCICIO PRATICO que o colaborador executa para fixar o aprendizado.
+  Inclua passos especificos, documentos usados, resultado esperado.
+
+Para o treinamento inteiro, gere tambem:
+objetivoGeral: 2-3 frases descrevendo a competencia principal desenvolvida
+prerequisitos: Conhecimentos necessarios antes (1-2 frases ou "Nenhum")
+
+Retorne JSON com o treinamento completo incluindo todos os campos originais mais os novos campos educativos.`;
+
+  try {
+    const text = await callGemini(prompt, 8192, true);
+    const parsed = JSON.parse(text);
+    return { ...option, ...parsed, modulos: parsed.modulos || option.modulos };
+  } catch (e: any) {
+    console.error('Erro ao detalhar treinamento:', e);
+    throw new Error('Nao foi possivel gerar o conteudo detalhado. Tente novamente.');
   }
 };
 
@@ -542,6 +582,7 @@ export const GeminiService = {
   getGeminiResponse,
   extractChecklistFromDocument,
   generateTrainingOptions,
+  generateTrainingDetail,
   generateSummary,
   generateCampaignPosts,
   generateExam,

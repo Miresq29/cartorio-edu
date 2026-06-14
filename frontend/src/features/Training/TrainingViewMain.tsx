@@ -152,7 +152,19 @@ const TrainingView: React.FC = () => {
   const selectOption = async (option: TrainingOption) => {
     setSelectedOption(option);
     setTrainingOptions([]);
-    setMessages([{ role: 'ai', text: formatSelectedOption(option) }]);
+    setIsLoading(true);
+    setMessages([{ role: 'ai', text: `Gerando roteiro detalhado para "${option.titulo}"...\nO professor especialista esta elaborando o conteudo educativo completo. Aguarde.` }]);
+    try {
+      const detailed = await GeminiService.generateTrainingDetail(option, buildContext()) as TrainingOption;
+      setSelectedOption(detailed);
+      setMessages([{ role: 'ai', text: formatSelectedOption(detailed) }]);
+      showToast('Roteiro completo gerado!', 'success');
+    } catch (e: any) {
+      setMessages([{ role: 'ai', text: formatSelectedOption(option) }]);
+      showToast('Roteiro estrutural gerado. Clique novamente para tentar adicionar detalhes.', 'info');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const formatSelectedOption = (opt: TrainingOption): string => {
