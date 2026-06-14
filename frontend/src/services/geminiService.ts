@@ -359,34 +359,46 @@ const buildModulePrompt = (
   total: number,
   ctx: string
 ): string =>
-  `Voce e um PROFESSOR ESPECIALISTA em direito notarial com 20 anos de experiencia.
+  `Voce e um PROFESSOR ESPECIALISTA em direito notarial.
 
-BASE LEGAL (cite dispositivos especificos deste documento em cada secao):
+BASE LEGAL (use para citar artigos especificos):
 ${ctx}
 
 TREINAMENTO: "${titulo}" | Publico: ${publico}
 MODULO ${index + 1} de ${total}: ${modulo.nome} (${modulo.duracao})
 ${modulo.objetivo ? 'Objetivo: ' + modulo.objetivo : ''}
 
-Elabore o conteudo didatico COMPLETO para este modulo. Siga EXATAMENTE este formato:
+REGRAS OBRIGATORIAS:
+- Texto SIMPLES, SEM markdown, SEM asteriscos, SEM hashtags, SEM tracos decorativos
+- Maximo 80 palavras por conceito, 120 palavras por exemplo, 80 palavras por atividade
+- Cite artigos e paragrafos especificos do documento acima
+- Copie os titulos em MAIUSCULAS exatamente como mostrado abaixo
+
+Escreva usando EXATAMENTE este formato:
 
 CONTEUDO:
 CONCEITO 1: [nome do conceito]
-[Cite o artigo especifico do documento. Explique em 2-3 frases o que determina e o impacto pratico no cartorio.]
+[Cite o artigo especifico. Explique em 2 frases o que determina e o impacto no cartorio.]
 
 CONCEITO 2: [nome do conceito]
-[Cite outro dispositivo do documento. 2-3 frases de explicacao clara.]
+[Cite outro artigo. 2 frases de explicacao direta.]
 
 CONCEITO 3: [nome do conceito]
-[Cite mais um ponto legal do documento. 2-3 frases.]
+[Cite mais um dispositivo. 2 frases.]
 
 EXEMPLO PRATICO:
-[Descreva em 6 a 8 frases um atendimento REAL no balcao do cartorio: o que o cliente solicita, qual documento apresenta, o que o colaborador verifica, qual artigo do documento acima se aplica naquele momento, como o ato e formalizado ou recusado e qual e o proximo passo.]
+[Atendimento real no balcao: cliente chega com [documento], solicita [servico]. O colaborador verifica [o que], aplica o [artigo X], e [resultado]. Continue descrevendo em 5-6 frases com detalhes do procedimento.]
 
 ATIVIDADE:
-[Descreva em 4 a 6 frases um exercicio pratico que o colaborador executa no treinamento: situacao simulada, documentos necessarios, passos que o colaborador executa, resultado esperado e como o facilitador avalia.]
+[Exercicio: situacao simulada com [detalhes]. O colaborador deve [passos]. Resultado esperado: [o que o facilitador avalia]. 3-4 frases.]`;
 
-REGRA ABSOLUTA: Cite artigos e dispositivos reais do documento acima. Proibido conteudo generico.`;
+const stripMarkdown = (text: string): string =>
+  text
+    .replace(/\*\*([^*\n]+)\*\*/g, '$1')
+    .replace(/\*([^*\n]+)\*/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/^>\s+/gm, '')
+    .trim();
 
 export const generateTrainingDetail = async (
   option: any,
@@ -401,8 +413,9 @@ export const generateTrainingDetail = async (
         option.titulo, option.publico, m, i, originalModulos.length, ctxTruncated
       );
       try {
-        const text = await callGemini(prompt, 3500, false);
-        const conteudoMatch  = text.match(/CONTEUDO:\s*([\s\S]*?)(?=EXEMPLO(?: PRATICO)?:|$)/i);
+        const raw  = await callGemini(prompt, 2000, false);
+        const text = stripMarkdown(raw);
+        const conteudoMatch  = text.match(/CONTEUDO:\s*([\s\S]*?)(?=EXEMPLO(?: PRATICO)?:|ATIVIDADE:|$)/i);
         const exemploMatch   = text.match(/EXEMPLO(?: PRATICO)?:\s*([\s\S]*?)(?=ATIVIDADE:|$)/i);
         const atividadeMatch = text.match(/ATIVIDADE:\s*([\s\S]*?)$/i);
         return {

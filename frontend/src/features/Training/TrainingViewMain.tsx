@@ -332,7 +332,7 @@ ${opt.justificativa}
                   ? 'bg-blue-600 text-white'
                   : 'bg-white text-[#0A1628] border border-slate-200 shadow-sm'
               }`}>
-                <p className="whitespace-pre-wrap font-mono text-xs">{m.text}</p>
+                <p className={`whitespace-pre-wrap font-mono text-xs ${m.role === 'user' ? 'text-white' : 'text-[#0A1628]'}`}>{m.text}</p>
               </div>
             </div>
           ))}
