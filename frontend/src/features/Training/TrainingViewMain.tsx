@@ -2,7 +2,7 @@
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { db } from '../../services/firebase';
-import { collection, onSnapshot, query, orderBy, where, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, where, addDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { GeminiService } from '../../services/geminiService';
 import TrainingParticipants from './TrainingParticipants';
 import TrainingQuiz from './TrainingQuiz';
@@ -201,6 +201,20 @@ ${opt.justificativa}
 [obrigatorio] = Modulo obrigatorio
 `;
     return result;
+  };
+
+  const deleteSummary = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'resumos', id));
+      showToast('Resumo excluído.', 'success');
+    } catch (e: any) { showToast('Erro ao excluir resumo.', 'error'); }
+  };
+
+  const deleteAllSummaries = async () => {
+    try {
+      await Promise.all(savedSummaries.map(r => deleteDoc(doc(db, 'resumos', r.id))));
+      showToast('Histórico limpo.', 'success');
+    } catch (e: any) { showToast('Erro ao limpar histórico.', 'error'); }
   };
 
   const generateSummary = async () => {
@@ -463,9 +477,17 @@ ${opt.justificativa}
 
       {/* Historico de Resumos Salvos */}
       <div className="bg-white border border-slate-300 rounded-2xl p-5 shadow-sm">
-        <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-3">
-          Historico de Resumos ({savedSummaries.length})
-        </h4>
+        <div className="flex items-center justify-between mb-3">
+          <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
+            Historico de Resumos ({savedSummaries.length})
+          </h4>
+          {savedSummaries.length > 0 && (
+            <button type="button" onClick={deleteAllSummaries}
+              className="text-[9px] bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1.5 rounded-lg font-black uppercase tracking-widest transition-all border border-red-200">
+              <i className="fa-solid fa-trash mr-1"></i>Limpar Tudo
+            </button>
+          )}
+        </div>
         {savedSummaries.length === 0 ? (
           <p className="text-xs text-slate-400 italic">Nenhum resumo salvo. Gere um resumo para salvar automaticamente.</p>
         ) : (
@@ -479,10 +501,17 @@ ${opt.justificativa}
                     <span className="text-[9px] text-slate-400">{r.createdAt?.toDate?.()?.toLocaleDateString('pt-BR') || ''}</span>
                   </div>
                 </div>
-                <button type="button" onClick={() => setSummary(r.summary)}
-                  className="text-[9px] bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-3 py-1.5 rounded-lg font-black uppercase tracking-widest transition-all flex-shrink-0">
-                  Ver
-                </button>
+                <div className="flex gap-1 flex-shrink-0">
+                  <button type="button" onClick={() => setSummary(r.summary)}
+                    className="text-[9px] bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-3 py-1.5 rounded-lg font-black uppercase tracking-widest transition-all">
+                    Ver
+                  </button>
+                  <button type="button" onClick={() => deleteSummary(r.id)}
+                    className="text-[9px] bg-red-100 hover:bg-red-200 text-red-600 px-2 py-1.5 rounded-lg font-black transition-all"
+                    title="Excluir resumo">
+                    <i className="fa-solid fa-trash text-[8px]"></i>
+                  </button>
+                </div>
               </div>
             ))}
           </div>

@@ -429,14 +429,20 @@ export const generateTrainingDetail = async (
       try {
         const raw  = await callGemini(prompt, 2500, false);
         const text = stripMarkdown(raw);
-        const conteudoMatch  = text.match(/CONTEUDO:\s*([\s\S]*?)(?=EXEMPLO(?: PRATICO)?:|ATIVIDADE:|$)/i);
-        const exemploMatch   = text.match(/EXEMPLO(?: PRATICO)?:\s*([\s\S]*?)(?=ATIVIDADE:|$)/i);
+        // Regex aceita versoes com e sem acento (modelo gera "CONTEÚDO" ou "CONTEUDO")
+        const conteudoMatch  = text.match(/CONTE[ÚU]DO:\s*([\s\S]*?)(?=EXEMPLO|ATIVIDADE|$)/i);
+        const exemploMatch   = text.match(/EXEMPLO(?: PR[ÁA]TICO)?:\s*([\s\S]*?)(?=ATIVIDADE:|$)/i);
         const atividadeMatch = text.match(/ATIVIDADE:\s*([\s\S]*?)$/i);
+        const conteudo  = (conteudoMatch?.[1]  || '').trim();
+        const exemplos  = (exemploMatch?.[1]   || '').trim();
+        const atividade = (atividadeMatch?.[1] || '').trim();
+        // Fallback: se secoes nao parseadas, exibe texto bruto para nao perder conteudo
+        const conteudoFinal = conteudo || (!exemplos && !atividade ? text : '');
         return {
           ...m,
-          conteudo:  (conteudoMatch?.[1]  || '').trim(),
-          exemplos:  (exemploMatch?.[1]   || '').trim(),
-          atividade: (atividadeMatch?.[1] || '').trim(),
+          conteudo:  conteudoFinal,
+          exemplos,
+          atividade,
         };
       } catch (e) {
         console.error(`Erro no modulo ${i + 1}:`, e);
