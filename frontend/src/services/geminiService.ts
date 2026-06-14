@@ -315,7 +315,10 @@ export const generateTrainingOptions = async (
 DOCUMENTO:
 ${ctxTruncated}
 ${customRequest ? `PEDIDO: ${customRequest}\n` : ''}
-Regra: nomes dos modulos max 6 palavras; objetivo max 1 frase; descricao e justificativa max 1 frase curta.
+Regras:
+- nomes dos modulos: max 6 palavras
+- objetivo de cada modulo: 1 frase usando VERBOS de nivel medio-alto de Bloom (aplicar, analisar, avaliar, justificar, desenvolver, propor, examinar, decidir) — nunca usar "conhecer", "entender" ou "saber"
+- descricao e justificativa: max 1 frase curta
 
 [{"titulo":">>PREENCHER<<","tipo":"essencial","descricao":">>PREENCHER<<","duracao":"1h30","publico":"Toda a equipe","justificativa":">>PREENCHER<<","modulos":[{"nome":">>PREENCHER<<","objetivo":">>PREENCHER<<","duracao":"30min","obrigatorio":true},{"nome":">>PREENCHER<<","objetivo":">>PREENCHER<<","duracao":"30min","obrigatorio":true},{"nome":">>PREENCHER<<","objetivo":">>PREENCHER<<","duracao":"30min","obrigatorio":false}]},{"titulo":">>PREENCHER<<","tipo":"completo","descricao":">>PREENCHER<<","duracao":"4h","publico":"Equipe completa + gestores","justificativa":">>PREENCHER<<","modulos":[{"nome":">>PREENCHER<<","objetivo":">>PREENCHER<<","duracao":"45min","obrigatorio":true},{"nome":">>PREENCHER<<","objetivo":">>PREENCHER<<","duracao":"45min","obrigatorio":true},{"nome":">>PREENCHER<<","objetivo":">>PREENCHER<<","duracao":"45min","obrigatorio":true},{"nome":">>PREENCHER<<","objetivo":">>PREENCHER<<","duracao":"30min","obrigatorio":true},{"nome":">>PREENCHER<<","objetivo":">>PREENCHER<<","duracao":"15min","obrigatorio":false}]},{"titulo":">>PREENCHER<<","tipo":"relampago","descricao":">>PREENCHER<<","duracao":"45min","publico":"Colaboradores experientes","justificativa":">>PREENCHER<<","modulos":[{"nome":">>PREENCHER<<","objetivo":">>PREENCHER<<","duracao":"25min","obrigatorio":true},{"nome":">>PREENCHER<<","objetivo":">>PREENCHER<<","duracao":"20min","obrigatorio":true}]}]`;
 
@@ -351,6 +354,14 @@ Regra: nomes dos modulos max 6 palavras; objetivo max 1 frase; descricao e justi
 // Gera conteudo educativo real para cada modulo em chamadas PARALELAS independentes.
 // Texto simples (nao JSON) por modulo — sem risco de truncamento de JSON.
 // Cada chamada: 1 modulo × 3500 tokens.
+// Verbos de Bloom por nivel — usados no prompt para garantir nivel cognitivo correto
+const BLOOM_LEVELS = {
+  aplicar:  'aplicar, executar, demonstrar, resolver, usar, implementar',
+  analisar: 'analisar, comparar, diferenciar, examinar, investigar, decompor',
+  avaliar:  'avaliar, julgar, justificar, criticar, defender, selecionar, decidir',
+  criar:    'propor, formular, elaborar, planejar, desenvolver, construir',
+};
+
 const buildModulePrompt = (
   titulo: string,
   publico: string,
@@ -359,36 +370,41 @@ const buildModulePrompt = (
   total: number,
   ctx: string
 ): string =>
-  `Voce e um PROFESSOR DOUTOR especialista em direito notarial e cartorial com 20 anos formando equipes tecnicas de cartorios. Sua missao: elaborar conteudo educativo de NIVEL ESPECIALISTA para este modulo.
+  `Voce e um PROFESSOR DOUTOR especialista em direito notarial, design instrucional e Taxonomia de Bloom. Elabore o conteudo educativo deste modulo em nivel cognitivo MEDIO-ALTO de Bloom (Aplicar, Analisar, Avaliar) — nao apenas memorizar ou compreender.
 
 DOCUMENTO OFICIAL DE REFERENCIA (cite SEMPRE artigos, paragrafos e incisos especificos):
 ${ctx}
 
 TREINAMENTO: "${titulo}" | Publico: ${publico}
 MODULO ${index + 1} de ${total}: ${modulo.nome}
-${modulo.objetivo ? 'Competencia a desenvolver: ' + modulo.objetivo : ''}
+${modulo.objetivo ? 'Competencia: ' + modulo.objetivo : ''}
 
-INSTRUCAO: Escreva o conteudo educativo COMPLETO e APROFUNDADO abaixo.
+TAXONOMIA DE BLOOM — NIVEIS EXIGIDOS NESTE MODULO:
+- Nivel APLICAR (${BLOOM_LEVELS.aplicar}): o colaborador usa o conhecimento em situacoes reais
+- Nivel ANALISAR (${BLOOM_LEVELS.analisar}): o colaborador examina casos e identifica conformidades e irregularidades
+- Nivel AVALIAR (${BLOOM_LEVELS.avaliar}): o colaborador toma decisoes fundamentadas e justifica juridicamente
+
+INSTRUCOES:
 - Texto simples, SEM asteriscos, SEM hashtags, SEM qualquer markdown
-- Cada conceito: cite o artigo, explique o que determina, o porque juridico, o impacto operacional e a consequencia do descumprimento
-- Escreva como especialista — nao use frases genericas, seja tecnico e especifico
-- NUNCA encurte. Gere os tres conceitos + exemplo + atividade COMPLETOS.
+- Conceitos: nao apenas explique — mostre como APLICAR e ANALISAR cada norma em casos reais
+- Atividade: nivel AVALIAR — o colaborador deve tomar decisoes e justifica-las, nao apenas repetir passos
+- NUNCA encurte. Gere os tres conceitos + exemplo + atividade COMPLETOS e APROFUNDADOS.
 
 CONTEUDO:
-CONCEITO 1: [Nome juridico preciso do conceito]
-[Cite o artigo especifico e seu paragrafo/inciso. O que a norma determina exatamente. Por que esse requisito existe (contexto e motivacao juridica). Qual o impacto pratico para o cartorio. O que acontece em caso de descumprimento. Escreva 4 a 5 frases tecnicas e substanciais.]
+CONCEITO 1: [Nome juridico preciso — Nivel: APLICAR]
+[Cite o artigo especifico. Explique o que determina. Descreva COMO o colaborador aplica esse dispositivo no dia a dia: qual acao concreta executa, em qual situacao, com qual documento, qual registro faz. Mencione quando a aplicacao e direta e quando ha excecoes. 4 a 5 frases tecnicas.]
 
-CONCEITO 2: [Nome juridico preciso do segundo conceito — artigo diferente do conceito 1]
-[Mesma profundidade. Cite artigo, explique, impacto, consequencia. 4 a 5 frases.]
+CONCEITO 2: [Nome juridico preciso — Nivel: ANALISAR]
+[Cite artigo diferente. Explique o dispositivo e como o colaborador ANALISA a conformidade: quais sinais indicam conformidade, quais indicam irregularidade, como diferencia casos limites. Inclua um caso concreto de analise. 4 a 5 frases.]
 
-CONCEITO 3: [Nome juridico preciso do terceiro conceito — artigo diferente dos anteriores]
-[Mesma profundidade. 4 a 5 frases.]
+CONCEITO 3: [Nome juridico preciso — Nivel: AVALIAR]
+[Cite artigo diferente. Descreva como o colaborador AVALIA e DECIDE: quais criterios usa, como justifica a decisao juridicamente, o que documenta. Inclua uma situacao de decisao complexa. 4 a 5 frases.]
 
 EXEMPLO PRATICO:
-[Narre um atendimento CONCRETO e DETALHADO no balcao do cartorio diretamente relacionado a este modulo. Inclua: tipo de servico, o que o cliente apresenta, cada verificacao que o colaborador realiza e qual artigo justifica, a decisao tomada (aceitar, recusar ou condicionar), a fundamentacao legal usada e o registro feito. Minimo 7 frases com riqueza de detalhes operacionais.]
+[Narre um caso COMPLEXO no balcao que exige que o colaborador aplique, analise E avalie simultaneamente. Inclua: servico solicitado, documentos apresentados, irregularidade ou ponto critico identificado, o raciocinio juridico do colaborador para analisar o caso, a decisao fundamentada em artigo especifico, o que o colaborador comunica ao cliente e como registra. Minimo 7 frases com riqueza de detalhes tecnico-operacionais.]
 
 ATIVIDADE:
-[Exercicio de fixacao. Descreva: a situacao simulada que o facilitador apresenta aos colaboradores, o que cada colaborador deve fazer passo a passo, os documentos e sistemas envolvidos, o resultado correto esperado, o criterio com que o facilitador avalia e o feedback que fornece. 5 a 6 frases.]`;
+[Exercicio de nivel AVALIAR. O facilitador apresenta um CASO AMBIGUO ou com irregularidade que exige decisao. Cada colaborador deve: analisar os documentos e situacao, identificar o problema juridico, tomar uma decisao fundamentada citando o artigo aplicavel, e apresentar a justificativa ao grupo. Descreva o caso, os materiais, os passos, o criterio de avaliacao e o debriefing do facilitador. 5 a 6 frases.]`;
 
 const stripMarkdown = (text: string): string =>
   text
