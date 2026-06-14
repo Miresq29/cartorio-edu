@@ -359,38 +359,36 @@ const buildModulePrompt = (
   total: number,
   ctx: string
 ): string =>
-  `Voce e um PROFESSOR ESPECIALISTA em direito notarial.
+  `Voce e um PROFESSOR DOUTOR especialista em direito notarial e cartorial com 20 anos formando equipes tecnicas de cartorios. Sua missao: elaborar conteudo educativo de NIVEL ESPECIALISTA para este modulo.
 
-BASE LEGAL (use para citar artigos especificos):
+DOCUMENTO OFICIAL DE REFERENCIA (cite SEMPRE artigos, paragrafos e incisos especificos):
 ${ctx}
 
 TREINAMENTO: "${titulo}" | Publico: ${publico}
-MODULO ${index + 1} de ${total}: ${modulo.nome} (${modulo.duracao})
-${modulo.objetivo ? 'Objetivo: ' + modulo.objetivo : ''}
+MODULO ${index + 1} de ${total}: ${modulo.nome}
+${modulo.objetivo ? 'Competencia a desenvolver: ' + modulo.objetivo : ''}
 
-REGRAS OBRIGATORIAS:
-- Texto SIMPLES, SEM markdown, SEM asteriscos, SEM hashtags, SEM tracos decorativos
-- Maximo 80 palavras por conceito, 120 palavras por exemplo, 80 palavras por atividade
-- Cite artigos e paragrafos especificos do documento acima
-- Copie os titulos em MAIUSCULAS exatamente como mostrado abaixo
-
-Escreva usando EXATAMENTE este formato:
+INSTRUCAO: Escreva o conteudo educativo COMPLETO e APROFUNDADO abaixo.
+- Texto simples, SEM asteriscos, SEM hashtags, SEM qualquer markdown
+- Cada conceito: cite o artigo, explique o que determina, o porque juridico, o impacto operacional e a consequencia do descumprimento
+- Escreva como especialista — nao use frases genericas, seja tecnico e especifico
+- NUNCA encurte. Gere os tres conceitos + exemplo + atividade COMPLETOS.
 
 CONTEUDO:
-CONCEITO 1: [nome do conceito]
-[Cite o artigo especifico. Explique em 2 frases o que determina e o impacto no cartorio.]
+CONCEITO 1: [Nome juridico preciso do conceito]
+[Cite o artigo especifico e seu paragrafo/inciso. O que a norma determina exatamente. Por que esse requisito existe (contexto e motivacao juridica). Qual o impacto pratico para o cartorio. O que acontece em caso de descumprimento. Escreva 4 a 5 frases tecnicas e substanciais.]
 
-CONCEITO 2: [nome do conceito]
-[Cite outro artigo. 2 frases de explicacao direta.]
+CONCEITO 2: [Nome juridico preciso do segundo conceito — artigo diferente do conceito 1]
+[Mesma profundidade. Cite artigo, explique, impacto, consequencia. 4 a 5 frases.]
 
-CONCEITO 3: [nome do conceito]
-[Cite mais um dispositivo. 2 frases.]
+CONCEITO 3: [Nome juridico preciso do terceiro conceito — artigo diferente dos anteriores]
+[Mesma profundidade. 4 a 5 frases.]
 
 EXEMPLO PRATICO:
-[Atendimento real no balcao: cliente chega com [documento], solicita [servico]. O colaborador verifica [o que], aplica o [artigo X], e [resultado]. Continue descrevendo em 5-6 frases com detalhes do procedimento.]
+[Narre um atendimento CONCRETO e DETALHADO no balcao do cartorio diretamente relacionado a este modulo. Inclua: tipo de servico, o que o cliente apresenta, cada verificacao que o colaborador realiza e qual artigo justifica, a decisao tomada (aceitar, recusar ou condicionar), a fundamentacao legal usada e o registro feito. Minimo 7 frases com riqueza de detalhes operacionais.]
 
 ATIVIDADE:
-[Exercicio: situacao simulada com [detalhes]. O colaborador deve [passos]. Resultado esperado: [o que o facilitador avalia]. 3-4 frases.]`;
+[Exercicio de fixacao. Descreva: a situacao simulada que o facilitador apresenta aos colaboradores, o que cada colaborador deve fazer passo a passo, os documentos e sistemas envolvidos, o resultado correto esperado, o criterio com que o facilitador avalia e o feedback que fornece. 5 a 6 frases.]`;
 
 const stripMarkdown = (text: string): string =>
   text
@@ -413,7 +411,7 @@ export const generateTrainingDetail = async (
         option.titulo, option.publico, m, i, originalModulos.length, ctxTruncated
       );
       try {
-        const raw  = await callGemini(prompt, 2000, false);
+        const raw  = await callGemini(prompt, 2500, false);
         const text = stripMarkdown(raw);
         const conteudoMatch  = text.match(/CONTEUDO:\s*([\s\S]*?)(?=EXEMPLO(?: PRATICO)?:|ATIVIDADE:|$)/i);
         const exemploMatch   = text.match(/EXEMPLO(?: PRATICO)?:\s*([\s\S]*?)(?=ATIVIDADE:|$)/i);
