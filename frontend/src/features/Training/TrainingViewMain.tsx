@@ -169,15 +169,13 @@ const TrainingView: React.FC = () => {
 
   const formatSelectedOption = (opt: TrainingOption): string => {
     const modulos = opt.modulos?.map((m, i) => {
-      let txt = `MODULO ${i + 1}: ${m.nome} (${m.duracao})${m.obrigatorio ? ' [obrigatorio]' : ''}`;
-      if (m.objetivo) txt += `\n  Objetivo: ${m.objetivo}`;
+      let txt = `MODULO ${i + 1}: ${m.nome}${m.obrigatorio ? ' [obrigatorio]' : ''}`;
+      if (m.objetivo) txt += `\n  Competencia: ${m.objetivo}`;
       if (m.conteudo) {
-        txt += `\n\n  CONTEUDO:\n${m.conteudo.split('\n').map((l: string) => `  ${l}`).join('\n')}`;
+        txt += `\n\n${m.conteudo.split('\n').map((l: string) => `  ${l}`).join('\n')}`;
       }
-      if (m.exemplos) txt += `\n\n  EXEMPLO PRATICO:\n  ${m.exemplos}`;
-      if (m.atividade) txt += `\n\n  ATIVIDADE:\n  ${m.atividade}`;
       return txt;
-    }).join('\n\n' + '─'.repeat(50) + '\n\n') || 'Modulos nao especificados';
+    }).join('\n\n' + '─'.repeat(60) + '\n\n') || 'Modulos nao especificados';
 
     let result = `ROTEIRO: ${opt.titulo.toUpperCase()}
 ${'='.repeat(50)}

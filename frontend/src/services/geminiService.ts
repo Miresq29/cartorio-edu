@@ -353,14 +353,7 @@ Regras:
 // ─── Detalhamento de roteiro selecionado ─────────────────────────────────────
 // Gera conteudo educativo real para cada modulo em chamadas PARALELAS independentes.
 // Texto simples (nao JSON) por modulo — sem risco de truncamento de JSON.
-// Cada chamada: 1 modulo × 3500 tokens.
-// Verbos de Bloom por nivel — usados no prompt para garantir nivel cognitivo correto
-const BLOOM_LEVELS = {
-  aplicar:  'aplicar, executar, demonstrar, resolver, usar, implementar',
-  analisar: 'analisar, comparar, diferenciar, examinar, investigar, decompor',
-  avaliar:  'avaliar, julgar, justificar, criticar, defender, selecionar, decidir',
-  criar:    'propor, formular, elaborar, planejar, desenvolver, construir',
-};
+// Sem regex: texto gerado vai direto para exibicao.
 
 const buildModulePrompt = (
   titulo: string,
@@ -370,42 +363,28 @@ const buildModulePrompt = (
   total: number,
   ctx: string
 ): string =>
-  `Voce e um PROFESSOR DOUTOR especialista em direito notarial brasileiro e pedagogia universitaria. Escreva TUDO em portugues brasileiro. Nunca use ingles. Elabore o conteudo educativo em nivel cognitivo MEDIO-ALTO (Aplicar, Analisar, Avaliar na Taxonomia de Bloom) — nunca no nivel basico de memorizar ou compreender.
+  `Voce e um PROFESSOR DOUTOR especialista em direito notarial e cartorial brasileiro. Escreva TODO o texto em portugues brasileiro. Nunca use ingles.
 
-DOCUMENTO OFICIAL DE REFERENCIA (cite SEMPRE artigos, paragrafos e incisos especificos):
+BASE LEGAL OFICIAL (cite artigos, paragrafos e incisos deste documento):
 ${ctx}
 
-TREINAMENTO: "${titulo}" | Publico: ${publico}
+TREINAMENTO: "${titulo}" | Publico-alvo: ${publico}
 MODULO ${index + 1} de ${total}: ${modulo.nome}
-${modulo.objetivo ? 'Competencia: ' + modulo.objetivo : ''}
+${modulo.objetivo ? 'Competencia do modulo: ' + modulo.objetivo : ''}
 
-TAXONOMIA DE BLOOM — NIVEIS EXIGIDOS NESTE MODULO:
-- Nivel APLICAR (${BLOOM_LEVELS.aplicar}): o colaborador usa o conhecimento em situacoes reais
-- Nivel ANALISAR (${BLOOM_LEVELS.analisar}): o colaborador examina casos e identifica conformidades e irregularidades
-- Nivel AVALIAR (${BLOOM_LEVELS.avaliar}): o colaborador toma decisoes fundamentadas e justifica juridicamente
+Elabore o conteudo educativo COMPLETO em nivel MEDIO-ALTO (Aplicar, Analisar, Avaliar — Taxonomia de Bloom). Seja tecnico, especifico, cite artigos reais. Use texto corrido, sem asteriscos, sem hashtags.
 
-INSTRUCOES:
-- Escreva SEMPRE em portugues brasileiro — nunca use ingles em nenhuma palavra
-- Texto simples, SEM asteriscos, SEM hashtags, SEM qualquer markdown
-- Conceitos: nao apenas explique — mostre como APLICAR e ANALISAR cada norma em casos reais
-- Atividade: nivel AVALIAR — o colaborador deve tomar decisoes e justifica-las, nao apenas repetir passos
-- NUNCA encurte. Gere os tres conceitos + exemplo + atividade COMPLETOS e APROFUNDADOS.
+FUNDAMENTOS LEGAIS:
+Escreva 3 topicos numerados. Para cada topico: titulo em maiusculas, artigo especifico citado, o que a norma determina, por que esse requisito existe, como o colaborador aplica na pratica e o que ocorre em caso de descumprimento. Minimo 4 frases por topico.
 
-CONTEUDO:
-CONCEITO 1: [Nome juridico preciso — Nivel: APLICAR]
-[Cite o artigo especifico. Explique o que determina. Descreva COMO o colaborador aplica esse dispositivo no dia a dia: qual acao concreta executa, em qual situacao, com qual documento, qual registro faz. Mencione quando a aplicacao e direta e quando ha excecoes. 4 a 5 frases tecnicas.]
+CASO PRATICO:
+Descreva em texto corrido um atendimento real e detalhado no balcao do cartorio. Em 9 a 11 frases: tipo de servico solicitado, documentos apresentados, cada verificacao que o colaborador realiza (cite o artigo que justifica cada etapa), ponto critico ou irregularidade encontrada, raciocinio juridico aplicado, decisao tomada com fundamentacao legal, comunicacao ao cliente e registro realizado.
 
-CONCEITO 2: [Nome juridico preciso — Nivel: ANALISAR]
-[Cite artigo diferente. Explique o dispositivo e como o colaborador ANALISA a conformidade: quais sinais indicam conformidade, quais indicam irregularidade, como diferencia casos limites. Inclua um caso concreto de analise. 4 a 5 frases.]
+EXERCICIO DE AVALIACAO:
+Nivel Avaliar de Bloom. Apresente um caso com ambiguidade ou irregularidade que o colaborador deve resolver em grupo. Descreva: a situacao completa, o problema juridico a identificar, a decisao correta com o artigo correspondente, como o colaborador justifica ao grupo e o criterio de avaliacao do facilitador. 6 a 8 frases.
 
-CONCEITO 3: [Nome juridico preciso — Nivel: AVALIAR]
-[Cite artigo diferente. Descreva como o colaborador AVALIA e DECIDE: quais criterios usa, como justifica a decisao juridicamente, o que documenta. Inclua uma situacao de decisao complexa. 4 a 5 frases.]
-
-EXEMPLO PRATICO:
-[Narre um caso COMPLEXO no balcao que exige que o colaborador aplique, analise E avalie simultaneamente. Inclua: servico solicitado, documentos apresentados, irregularidade ou ponto critico identificado, o raciocinio juridico do colaborador para analisar o caso, a decisao fundamentada em artigo especifico, o que o colaborador comunica ao cliente e como registra. Minimo 7 frases com riqueza de detalhes tecnico-operacionais.]
-
-ATIVIDADE:
-[Exercicio de nivel AVALIAR. O facilitador apresenta um CASO AMBIGUO ou com irregularidade que exige decisao. Cada colaborador deve: analisar os documentos e situacao, identificar o problema juridico, tomar uma decisao fundamentada citando o artigo aplicavel, e apresentar a justificativa ao grupo. Descreva o caso, os materiais, os passos, o criterio de avaliacao e o debriefing do facilitador. 5 a 6 frases.]`;
+ERROS COMUNS:
+Liste 4 erros frequentes que colaboradores cometem neste tema. Para cada erro: o que e feito errado, o artigo legal violado e como corrigir o procedimento.`;
 
 const stripMarkdown = (text: string): string =>
   text
@@ -428,23 +407,9 @@ export const generateTrainingDetail = async (
         option.titulo, option.publico, m, i, originalModulos.length, ctxTruncated
       );
       try {
-        const raw  = await callGemini(prompt, 2500, false);
+        const raw  = await callGemini(prompt, 3500, false);
         const text = stripMarkdown(raw);
-        // Regex aceita versoes com e sem acento (modelo gera "CONTEÚDO" ou "CONTEUDO")
-        const conteudoMatch  = text.match(/CONTE[ÚU]DO:\s*([\s\S]*?)(?=EXEMPLO|ATIVIDADE|$)/i);
-        const exemploMatch   = text.match(/EXEMPLO(?: PR[ÁA]TICO)?:\s*([\s\S]*?)(?=ATIVIDADE:|$)/i);
-        const atividadeMatch = text.match(/ATIVIDADE:\s*([\s\S]*?)$/i);
-        const conteudo  = (conteudoMatch?.[1]  || '').trim();
-        const exemplos  = (exemploMatch?.[1]   || '').trim();
-        const atividade = (atividadeMatch?.[1] || '').trim();
-        // Fallback: se secoes nao parseadas, exibe texto bruto para nao perder conteudo
-        const conteudoFinal = conteudo || (!exemplos && !atividade ? text : '');
-        return {
-          ...m,
-          conteudo:  conteudoFinal,
-          exemplos,
-          atividade,
-        };
+        return { ...m, conteudo: text, exemplos: '', atividade: '' };
       } catch (e) {
         console.error(`Erro no modulo ${i + 1}:`, e);
         return m;
