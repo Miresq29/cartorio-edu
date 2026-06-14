@@ -23,7 +23,7 @@ const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/
 const SUMMARY_CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 const makeCacheKey = (title: string, type: string): string =>
-  `mjc_summary_v2__${title.trim().toLowerCase().replace(/[^a-z0-9]/g, '_')}__${type}`;
+  `mjc_summary_v3__${title.trim().toLowerCase().replace(/[^a-z0-9]/g, '_')}__${type}`;
 
 const readSummaryCache = (key: string): string | null => {
   try {
@@ -308,24 +308,20 @@ export const generateTrainingOptions = async (
   context: string,
   customRequest?: string
 ): Promise<any[]> => {
-  const ctxTruncated = context.substring(0, 5000);
-  const prompt = `Especialista em treinamento notarial. Analise o documento e crie 3 opcoes de roteiro (estrutura basica — o conteudo educativo sera detalhado em seguida).
+  const ctxTruncated = context.substring(0, 4000);
+  // Template pre-definido: IA substitui apenas os textos marcados — sem verbosidade
+  const prompt = `Analise o documento e preencha o JSON abaixo substituindo apenas os campos marcados com ">>PREENCHER<<". Retorne o JSON completo sem explicacoes.
 
-BASE LEGAL:
+DOCUMENTO:
 ${ctxTruncated}
-${customRequest ? `\nSOLICITACAO: ${customRequest}` : ''}
+${customRequest ? `PEDIDO: ${customRequest}\n` : ''}
+Regra: nomes dos modulos max 6 palavras; descricao e justificativa max 1 frase curta.
 
-Configuracoes:
-- essencial: 3 modulos, "1h30", "Toda a equipe"
-- completo: 5 modulos, "4h", "Equipe completa + gestores"
-- relampago: 2 modulos, "45min", "Colaboradores experientes"
-
-Retorne array JSON com 3 objetos:
-{"titulo":"nome especifico relevante","tipo":"essencial|completo|relampago","descricao":"o que o colaborador domina","duracao":"conf","publico":"conf","justificativa":"por que este formato","modulos":[{"nome":"nome do modulo","objetivo":"O colaborador sera capaz de [verbo] [algo especifico do documento]","duracao":"30min","obrigatorio":true}]}`;
+[{"titulo":">>PREENCHER<<","tipo":"essencial","descricao":">>PREENCHER<<","duracao":"1h30","publico":"Toda a equipe","justificativa":">>PREENCHER<<","modulos":[{"nome":">>PREENCHER<<","duracao":"30min","obrigatorio":true},{"nome":">>PREENCHER<<","duracao":"30min","obrigatorio":true},{"nome":">>PREENCHER<<","duracao":"30min","obrigatorio":false}]},{"titulo":">>PREENCHER<<","tipo":"completo","descricao":">>PREENCHER<<","duracao":"4h","publico":"Equipe completa + gestores","justificativa":">>PREENCHER<<","modulos":[{"nome":">>PREENCHER<<","duracao":"45min","obrigatorio":true},{"nome":">>PREENCHER<<","duracao":"45min","obrigatorio":true},{"nome":">>PREENCHER<<","duracao":"45min","obrigatorio":true},{"nome":">>PREENCHER<<","duracao":"30min","obrigatorio":true},{"nome":">>PREENCHER<<","duracao":"15min","obrigatorio":false}]},{"titulo":">>PREENCHER<<","tipo":"relampago","descricao":">>PREENCHER<<","duracao":"45min","publico":"Colaboradores experientes","justificativa":">>PREENCHER<<","modulos":[{"nome":">>PREENCHER<<","duracao":"25min","obrigatorio":true},{"nome":">>PREENCHER<<","duracao":"20min","obrigatorio":true}]}]`;
 
   try {
-    // Apenas estrutura dos roteiros — tokens reduzidos intencionalmente (detalhe gerado em etapa separada)
-    const text = await callGemini(prompt, 2000, true);
+    // Template pre-preenchido: IA substitui apenas textos — JSON minimo e previsivel
+    const text = await callGemini(prompt, 3000, true);
     const parsed = JSON.parse(text);
     if (!Array.isArray(parsed) || parsed.length === 0) throw new Error('Array inválido');
     return parsed;
@@ -426,33 +422,53 @@ export const generateSummary = async (
   }
 
   const instructions: Record<string, string> = {
-    executivo:
-      'Resumo executivo (máx. 400 palavras): pontos principais, impactos e conclusão. Linguagem direta para gestores.',
-    tecnico:
-      'Resumo técnico (máx. 500 palavras): fundamentos legais, artigos relevantes e requisitos normativos.',
-    didatico:
-      'Resumo didático (máx. 400 palavras): linguagem simples para colaborador novo, com exemplos práticos.',
-    operacional:
-      'Resumo operacional (máx. 400 palavras): procedimentos e passo a passo para o dia a dia.',
+    executivo: `Crie um PARECER EXECUTIVO completo com as seguintes secoes obrigatorias:
+OBJETIVO: (o que o documento determina e por que importa)
+PONTOS-CHAVE: (lista numerada com os 5-8 principais pontos de atencao)
+IMPACTOS PARA O CARTORIO: (consequencias praticas para a operacao)
+ACOES NECESSARIAS: (lista do que o cartorio deve fazer)
+CONCLUSAO: (sintese e recomendacao)`,
+    tecnico: `Crie uma ANALISE TECNICO-JURIDICA completa com as seguintes secoes obrigatorias:
+BASE LEGAL: (fundamentacao juridica, dispositivos que embasam o normativo)
+ARTIGOS E DISPOSITIVOS PRINCIPAIS: (cite e explique cada artigo relevante)
+REQUISITOS NORMATIVOS: (lista detalhada de todos os requisitos exigidos)
+OBRIGACOES E RESPONSABILIDADES: (o que o cartorio e os colaboradores devem fazer)
+PRAZOS E PENALIDADES: (prazos de adequacao e consequencias do descumprimento)
+CONCLUSAO TECNICA: (analise critica e pontos de maior impacto juridico)`,
+    didatico: `Crie um GUIA DIDATICO completo com as seguintes secoes obrigatorias:
+O QUE E ESTE DOCUMENTO: (explicacao simples do que e e por que existe)
+CONCEITOS BASICOS: (explicacao dos termos tecnicos em linguagem simples)
+COMO FUNCIONA NA PRATICA: (descricao do fluxo de trabalho relacionado)
+EXEMPLOS DO DIA A DIA: (situacoes concretas que ocorrem no balcao)
+O QUE MUDA PARA O COLABORADOR: (impacto direto no trabalho de cada um)
+DICAS E PONTOS DE ATENCAO: (erros comuns a evitar e boas praticas)`,
+    operacional: `Crie um MANUAL OPERACIONAL completo com as seguintes secoes obrigatorias:
+FLUXO DE ATENDIMENTO: (passo a passo do procedimento completo)
+DOCUMENTOS NECESSARIOS: (lista de documentos que devem ser exigidos/verificados)
+CHECKLIST DE CONFERENCIA: (lista de verificacao antes de concluir o ato)
+PONTOS DE ATENCAO: (situacoes especiais e excecoes ao procedimento padrao)
+ERROS COMUNS: (falhas frequentes e como evita-las)
+REFERENCIAS: (artigos e dispositivos que amparam cada procedimento)`,
   };
 
-  const prompt = `Você é especialista em direito notarial da MJ Consultoria.
-Documento: "${docTitle}"
+  const prompt = `Voce e um especialista em direito notarial da MJ Consultoria com 20 anos de experiencia.
+Documento analisado: "${docTitle}"
 
-INSTRUÇÃO: ${instructions[summaryType]}
+CONTEUDO DO DOCUMENTO:
+${docContent.substring(0, 6000)}
 
-CONTEÚDO:
-${docContent.substring(0, 5000)}
+INSTRUCAO: ${instructions[summaryType]}
 
-REGRAS DE FORMATACAO:
-- Use texto simples SEM asteriscos nem markdown
-- Titulos de secao em MAIUSCULAS seguidos de dois-pontos
+REGRAS OBRIGATORIAS DE FORMATACAO:
+- Texto simples SEM asteriscos nem markdown
+- Titulos de secao em MAIUSCULAS seguidos de dois-pontos (como acima)
 - Listas com "- " no inicio de cada item
 - Numere os topicos quando houver sequencia
-- Escreva em portugues brasileiro claro e direto`;
+- Gere o documento COMPLETO com todas as secoes indicadas
+- Escreva em portugues brasileiro claro e tecnico`;
 
   try {
-    const result = await callGemini(prompt, 2000);
+    const result = await callGemini(prompt, 4000);
     summaryMemCache.set(cacheKey, result);
     writeSummaryCache(cacheKey, result);
     return result;
