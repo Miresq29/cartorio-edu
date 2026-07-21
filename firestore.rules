@@ -13,22 +13,30 @@ service cloud.firestore {
     function myTenant() { return getUserData().get('tenantId', ''); }
     function sameTenant() { return resource.data.get('tenantId', myTenant()) == myTenant(); }
     function newSameTenant() { return request.resource.data.get('tenantId', myTenant()) == myTenant(); }
+    function tenantUnchanged() { return request.resource.data.get('tenantId', '') == resource.data.get('tenantId', ''); }
     function isGlobalContent() { return resource.data.get('tenantId', '') == 'GLOBAL'; }
+    function isSelfData() { return request.resource.data.get('userId', '') == request.auth.uid; }
 
     // Content: SUPERADMIN vê tudo; demais usuários: mesmo tenant ou global
     function canReadContent() { return isSuperAdmin() || (isActive() && (sameTenant() || isGlobalContent())); }
     function canWriteContent() { return isSuperAdmin() || (isGestor() && newSameTenant()); }
-    function canEditContent() { return isSuperAdmin() || (isGestor() && sameTenant()); }
+    function canEditContent() { return isSuperAdmin() || (isGestor() && sameTenant() && tenantUnchanged()); }
 
     // Private: strictly per tenant, SUPERADMIN sees all
     function canReadPrivate() { return isSuperAdmin() || (isActive() && sameTenant()); }
     function canWritePrivate() { return isActive() && newSameTenant(); }
-    function canEditPrivate() { return isSuperAdmin() || (isActive() && sameTenant()); }
+    function canEditPrivate() { return isSuperAdmin() || (isGestor() && sameTenant()); }
+    // Private + dono do registro: usar nas coleções onde o campo userId reflete o uid autenticado
+    function canWriteOwnPrivate() { return canWritePrivate() && (isSelfData() || isGestor()); }
 
     match /users/{userId} {
-      allow read: if isAuthenticated();
+      allow read: if isSuperAdmin()
+        || request.auth.uid == userId
+        || (isActive() && resource.data.get('tenantId', '') == myTenant());
       allow create: if isSuperAdmin() || (isGestor() && newSameTenant());
-      allow update: if isSuperAdmin() || (isGestor() && sameTenant());
+      allow update: if isSuperAdmin()
+        || (isGestor() && sameTenant() && tenantUnchanged()
+            && request.resource.data.get('role', '') == resource.data.get('role', ''));
       allow delete: if isSuperAdmin();
     }
 
@@ -97,7 +105,7 @@ service cloud.firestore {
     }
     match /trilhasProgresso/{docId} {
       allow read: if canReadPrivate();
-      allow create, update: if canWritePrivate();
+      allow create, update: if canWriteOwnPrivate();
       allow delete: if isSuperAdmin() || (isGestor() && sameTenant());
     }
     match /treinamentosParticipantes/{docId} {
@@ -107,17 +115,17 @@ service cloud.firestore {
     }
     match /videosProgresso/{docId} {
       allow read: if canReadPrivate();
-      allow create, update: if canWritePrivate();
+      allow create, update: if canWriteOwnPrivate();
       allow delete: if isSuperAdmin() || (isGestor() && sameTenant());
     }
     match /comunicadosLeituras/{docId} {
       allow read: if canReadPrivate();
-      allow create, update: if canWritePrivate();
+      allow create, update: if canWriteOwnPrivate();
       allow delete: if isSuperAdmin() || (isGestor() && sameTenant());
     }
     match /examesResultados/{docId} {
       allow read: if canReadPrivate();
-      allow create: if canWritePrivate();
+      allow create: if canWriteOwnPrivate();
       allow update, delete: if isSuperAdmin() || (isGestor() && sameTenant());
     }
     match /metas/{docId} {
@@ -132,12 +140,14 @@ service cloud.firestore {
     }
     match /repositorioProgresso/{docId} {
       allow read: if canReadPrivate();
-      allow create, update: if canWritePrivate();
+      allow create, update: if canWriteOwnPrivate();
       allow delete: if isSuperAdmin() || (isGestor() && sameTenant());
     }
     match /certificados/{docId} {
       allow read: if canReadPrivate();
-      allow create, update: if canWritePrivate();
+      // Emissao de certificado exige gestor/admin — evita autoemissao de aprovacao sem concluir o treinamento
+      allow create: if isSuperAdmin() || (isGestor() && newSameTenant());
+      allow update: if isSuperAdmin() || (isGestor() && sameTenant() && tenantUnchanged());
       allow delete: if isSuperAdmin() || (isGestor() && sameTenant());
     }
     match /resumos/{docId} {

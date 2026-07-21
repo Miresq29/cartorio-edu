@@ -90,16 +90,6 @@ const logAudit = async (log: any) => {
 
 const authenticate = async (req: any, res: any, next: any) => {
   const authHeader = req.headers.authorization;
-  
-  if (authHeader === `Bearer MASTER_TEST_KEY_2026`) {
-    req.user = {
-      uid: 'AUDITOR_HOMOLOG_MIRIAN',
-      tenantId: 'CARTORIO_DEMO_01',
-      role: 'SUPERADMIN',
-      email: 'mirian@consultoria.com'
-    };
-    return next();
-  }
 
   if (!authHeader?.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Token não fornecido' });
@@ -107,7 +97,7 @@ const authenticate = async (req: any, res: any, next: any) => {
   
   try {
     const token = authHeader.split(' ')[1];
-    const decodedToken = await admin.auth().verifyIdToken(token);
+    const decodedToken = await admin.auth().verifyIdToken(token, true);
     
     req.user = {
       uid: decodedToken.uid,
