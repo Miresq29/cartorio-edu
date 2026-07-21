@@ -808,7 +808,7 @@ const TrailsView: React.FC = () => {
                 Cancelar
               </button>
               <button onClick={salvarTrilha} disabled={saving || !form.titulo || form.modulos.length === 0 || form.perfis.length === 0}
-                style={{ padding: '12px 32px', borderRadius: 12, border: 'none', background: saving || !form.titulo || form.modulos.length === 0 || form.perfis.length === 0 ? '#1e293b' : '#10b981', color: '#0f172a', cursor: 'pointer', fontWeight: 900, fontSize: 12, textTransform: 'uppercase' }}>
+                style={{ padding: '12px 32px', borderRadius: 12, border: 'none', background: saving || !form.titulo || form.modulos.length === 0 || form.perfis.length === 0 ? '#cbd5e1' : '#10b981', color: saving || !form.titulo || form.modulos.length === 0 || form.perfis.length === 0 ? '#64748b' : '#0f172a', cursor: saving || !form.titulo || form.modulos.length === 0 || form.perfis.length === 0 ? 'not-allowed' : 'pointer', fontWeight: 900, fontSize: 12, textTransform: 'uppercase' }}>
                 <i className="fa-solid fa-floppy-disk" style={{ marginRight: 8 }}></i>
                 {saving ? 'Salvando...' : editando ? 'Salvar Alterações' : 'Criar Trilha'}
               </button>
