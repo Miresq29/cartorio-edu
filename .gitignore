@@ -107,6 +107,8 @@ parte3.txt
 projeto_completo.txt
 
 backend/cartorio-homolog-service-account.json
+backend/SENHAS_PROVISORIAS*.json
+backend/users_2tabmoc.json
 *.json
 !package.json
 !tsconfig*.json
