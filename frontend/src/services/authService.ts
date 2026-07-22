@@ -16,6 +16,13 @@ import {
 } from "firebase/firestore";
 import { User } from "../types";
 
+const isStrongPassword = (pass: string): boolean =>
+  pass.length >= 12
+  && /[A-Z]/.test(pass)
+  && /[a-z]/.test(pass)
+  && /\d/.test(pass)
+  && /[!@#$%^&*(),.?":{}|<>_-]/.test(pass);
+
 const hashPassword = async (password: string): Promise<string> => {
   const encoder = new TextEncoder();
   const data = encoder.encode(password + "cartorio-rag-salt-2026");
@@ -24,9 +31,9 @@ const hashPassword = async (password: string): Promise<string> => {
   return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
 };
 
-const logAudit = async (action: string, userId: string, email: string, details: string, severity: "INFO" | "WARNING" | "CRITICAL" = "INFO") => {
+const logAudit = async (action: string, userId: string, email: string, details: string, severity: "INFO" | "WARNING" | "CRITICAL" = "INFO", tenantId: string = "") => {
   try {
-    await addDoc(collection(db, "auditLogs"), { tipo: action, descricao: details, usuario: email, usuarioId: userId, severity, createdAt: serverTimestamp(), userAgent: navigator.userAgent });
+    await addDoc(collection(db, "auditLogs"), { tipo: action, descricao: details, usuario: email, usuarioId: userId, tenantId, severity, createdAt: serverTimestamp(), userAgent: navigator.userAgent });
   } catch { /* silencioso — auditoria é best-effort */ }
 };
 
@@ -98,15 +105,18 @@ export const AuthService = {
       const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
       if (!userDoc.exists()) { await signOut(auth); throw new Error("Perfil nao encontrado no banco de dados."); }
       const userData = userDoc.data();
-      if (!userData.active) { await signOut(auth); await logAudit("LOGIN_BLOCKED", firebaseUser.uid, email, "Conta desativada", "WARNING"); throw new Error("Conta desativada. Contate o administrador."); }
+      if (!userData.active) { await signOut(auth); await logAudit("LOGIN_BLOCKED", firebaseUser.uid, email, "Conta desativada", "WARNING", userData.tenantId || ""); throw new Error("Conta desativada. Contate o administrador."); }
       await clearFailedAttempts(email);
-      await logAudit("LOGIN_SUCCESS", firebaseUser.uid, email, "Login bem-sucedido", "INFO");
+      await logAudit("LOGIN_SUCCESS", firebaseUser.uid, email, "Login bem-sucedido", "INFO", userData.tenantId || "");
       return { user: { id: firebaseUser.uid, email: firebaseUser.email!, ...userData } as User, token };
     } catch (error: any) { throw new Error(error.message || "Falha na autenticacao."); }
   },
 
   updatePassword: async (userId: string, newPassword: string) => {
     try {
+      if (!isStrongPassword(newPassword)) {
+        throw new Error("Senha fraca. Minimo 12 caracteres, com maiuscula, minuscula, numero e caractere especial.");
+      }
       const userRef = doc(db, "users", userId);
       const userDoc = await getDoc(userRef);
       if (!userDoc.exists()) throw new Error("Usuario nao encontrado.");
@@ -119,7 +129,7 @@ export const AuthService = {
       if (currentUser) await firebaseUpdatePassword(currentUser, newPassword);
       const updatedHistory = [...passwordHistory, newHash].slice(-3);
       await updateDoc(userRef, { isFirstLogin: false, passwordHistory: updatedHistory, passwordUpdatedAt: serverTimestamp() });
-      await logAudit("PASSWORD_CHANGED", userId, userData.email || "", "Senha atualizada com sucesso", "INFO");
+      await logAudit("PASSWORD_CHANGED", userId, userData.email || "", "Senha atualizada com sucesso", "INFO", userData.tenantId || "");
       return { success: true };
     } catch (error: any) { console.error("Erro ao atualizar senha:", error); return { success: false, message: error.message }; }
   },
@@ -135,7 +145,7 @@ export const AuthService = {
       const uid = credential.user.uid;
       await secondaryAuth.signOut();
       await setDoc(doc(db, 'users', uid), { ...userData, email, active: true, isFirstLogin: true, createdAt: serverTimestamp() });
-      await logAudit('USER_CREATED', uid, email, 'Usuario criado pelo gestor', 'INFO');
+      await logAudit('USER_CREATED', uid, email, 'Usuario criado pelo gestor', 'INFO', userData.tenantId || '');
       return { success: true, uid };
     } catch (e: any) {
       const msgs: Record<string, string> = { 'auth/email-already-in-use': 'Este e-mail ja esta cadastrado no Firebase.', 'auth/weak-password': 'Senha fraca — minimo 6 caracteres.' };

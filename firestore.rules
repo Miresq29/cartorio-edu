@@ -40,11 +40,29 @@ service cloud.firestore {
       allow delete: if isSuperAdmin();
     }
 
-    match /loginAttempts/{docId} { allow read, write: if true; }
+    // Fluxo de login roda sem sessao Firebase Auth ainda (nao da pra exigir isAuthenticated aqui).
+    // Restringe o formato do documento para impedir bloqueio arbitrario/indefinido de contas alheias.
+    match /loginAttempts/{docId} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['attempts', 'lastAttempt'])
+                    && request.resource.data.attempts == 1;
+      allow update: if request.resource.data.keys().hasOnly(['attempts', 'lastAttempt', 'lockedUntil'])
+                    && request.resource.data.attempts is int
+                    && request.resource.data.attempts >= 0
+                    && request.resource.data.attempts <= resource.data.get('attempts', 0) + 1
+                    && (!('lockedUntil' in request.resource.data)
+                        || request.resource.data.lockedUntil == null
+                        || request.resource.data.lockedUntil <= request.time + duration.value(5, 'm'));
+    }
 
     match /auditLogs/{docId} {
       allow read: if isSuperAdmin() || (isGestor() && sameTenant());
-      allow create: if true;
+      // Autenticado: so pode registrar acao em nome de si mesmo (evita forjar log de outro usuario).
+      // Nao autenticado: so o evento de login falho, sem severidade CRITICAL (evita poluir/forjar auditoria).
+      allow create: if (isAuthenticated() && request.resource.data.get('usuarioId', '') == request.auth.uid)
+                    || (!isAuthenticated()
+                        && request.resource.data.get('tipo', '') == 'LOGIN_FAILED'
+                        && request.resource.data.get('severity', 'INFO') != 'CRITICAL');
     }
 
     // ── Conteúdo compartilhável (tenantId == 'GLOBAL' = visível a todos) ──
@@ -163,7 +181,10 @@ service cloud.firestore {
       allow write: if isSuperAdmin();
     }
     match /tenants/{docId} {
-      allow read: if isAuthenticated();
+      // TODO(seguranca): varias telas (TenantsView, DashboardMasterView, dropdown em UsersView)
+      // fazem list() sem filtro nessa colecao — confirmar que sao SUPERADMIN-only antes de
+      // restringir por tenant, senao quebra essas telas para gestores comuns.
+      allow read: if isActive();
       allow write: if isSuperAdmin();
     }
 

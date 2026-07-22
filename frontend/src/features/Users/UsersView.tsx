@@ -154,7 +154,7 @@ const UsersView: React.FC = () => {
         await updateDoc(doc(db, 'users', editUser.id), { ...form });
         showToast('Colaborador atualizado!', 'success');
       } else {
-        const tempPassword = 'Acesso@' + Math.floor(1000 + Math.random() * 9000);
+        const tempPassword = 'Acesso@' + crypto.randomUUID().replace(/-/g, '').slice(0, 12);
         const result = await AuthService.createUser(form.email, tempPassword, {
           ...form,
           active: true,
