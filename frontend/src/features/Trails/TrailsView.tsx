@@ -5,6 +5,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
+import VisibilidadeCartorioPicker from '../../components/VisibilidadeCartorioPicker';
 
 // â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -27,7 +28,7 @@ interface Trilha {
   perfis: Perfil[];
   modulos: Modulo[];
   ativa: boolean;
-  tenantId: string;
+  tenantIds: string[];
   createdAt: any;
 }
 
@@ -186,10 +187,13 @@ const TrilhaCard: React.FC<{
         </div>
         {isGestor && (
           <div style={{ display: 'flex', gap: 6, flexShrink: 0, marginLeft: 12 }}>
-            <button onClick={onEdit} style={{ background: '#e2e8f0', border: 'none', color: '#3b82f6', padding: '6px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}>
+            <button onClick={onView} style={{ background: '#e2e8f0', border: 'none', color: '#059669', padding: '6px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 13 }} title="Visualizar/assistir">
+              <i className="fa-solid fa-eye"></i>
+            </button>
+            <button onClick={onEdit} style={{ background: '#e2e8f0', border: 'none', color: '#3b82f6', padding: '6px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 13 }} title="Editar">
               <i className="fa-solid fa-pen"></i>
             </button>
-            <button onClick={onDelete} style={{ background: '#e2e8f0', border: 'none', color: '#dc2626', padding: '6px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}>
+            <button onClick={onDelete} style={{ background: '#e2e8f0', border: 'none', color: '#dc2626', padding: '6px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 13 }} title="Excluir">
               <i className="fa-solid fa-trash"></i>
             </button>
           </div>
@@ -516,7 +520,7 @@ const TrailsView: React.FC = () => {
   const user = state.user!;
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(user.role);
   const isSuperAdmin = user.role === 'SUPERADMIN';
-  const [createAsGlobal, setCreateAsGlobal] = useState(false);
+  const [tenantIdsForm, setTenantIdsForm] = useState<string[]>([tenantId]);
 
   const [tab, setTab] = useState<'minhas' | 'todas' | 'criar' | 'progresso'>(isGestor ? 'todas' : 'minhas');
   const [trilhas, setTrilhas] = useState<Trilha[]>([]);
@@ -533,7 +537,7 @@ const TrailsView: React.FC = () => {
 
   // Load trilhas
   useEffect(() => {
-    const q = query(collection(db, 'trilhas'), where('tenantId', 'in', [tenantId, 'GLOBAL']));
+    const q = query(collection(db, 'trilhas'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']));
     return onSnapshot(q, snap => {
       setTrilhas(snap.docs.map(d => ({ id: d.id, ...d.data() } as Trilha)));
     });
@@ -564,9 +568,11 @@ const TrailsView: React.FC = () => {
     if (trilha) {
       setEditando(trilha);
       setForm({ titulo: trilha.titulo, descricao: trilha.descricao, perfis: trilha.perfis, modulos: trilha.modulos, ativa: trilha.ativa });
+      setTenantIdsForm(trilha.tenantIds || [tenantId]);
     } else {
       setEditando(null);
       setForm({ titulo: '', descricao: '', perfis: [], modulos: [], ativa: true });
+      setTenantIdsForm([tenantId]);
     }
     setTab('criar');
   };
@@ -579,8 +585,7 @@ const TrailsView: React.FC = () => {
     if (!form.titulo || form.modulos.length === 0 || form.perfis.length === 0) return;
     setSaving(true);
     try {
-      const effectiveTenantId = isSuperAdmin && createAsGlobal ? 'GLOBAL' : tenantId;
-      const data = { ...form, tenantId: effectiveTenantId, updatedAt: serverTimestamp() };
+      const data = { ...form, tenantIds: isSuperAdmin ? tenantIdsForm : [tenantId], updatedAt: serverTimestamp() };
       if (editando) {
         await updateDoc(doc(db, 'trilhas', editando.id), data);
       } else {
@@ -701,7 +706,7 @@ const TrailsView: React.FC = () => {
                 const stats = statsProgresso(t.id);
                 return (
                   <div key={t.id} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 20, padding: 24 }}>
-                    <TrilhaCard trilha={t} isGestor={true} onEdit={() => iniciarEditar(t)} onDelete={() => deletarTrilha(t.id)} />
+                    <TrilhaCard trilha={t} isGestor={true} onEdit={() => iniciarEditar(t)} onDelete={() => deletarTrilha(t.id)} onView={() => abrirTrilha(t)} />
                     <div style={{ marginTop: 16, padding: '12px 16px', background: '#f8fafc', borderRadius: 12, display: 'flex', justifyContent: 'space-between' }}>
                       <span style={{ fontSize: 11, color: '#475569' }}>
                         <i className="fa-solid fa-users" style={{ marginRight: 6 }}></i>{stats.total} participante{stats.total !== 1 ? 's' : ''}
@@ -759,6 +764,15 @@ const TrailsView: React.FC = () => {
                   Trilha ativa (visível para os colaboradores)
                 </label>
               </div>
+
+              {isSuperAdmin && (
+                <VisibilidadeCartorioPicker
+                  isSuperAdmin={isSuperAdmin}
+                  ownTenantId={tenantId}
+                  value={tenantIdsForm}
+                  onChange={setTenantIdsForm}
+                />
+              )}
             </div>
 
             {/* Módulos */}
@@ -790,16 +804,6 @@ const TrailsView: React.FC = () => {
 
             {/* Salvar */}
             <div style={{ display: 'flex', gap: 10, marginTop: 24, justifyContent: 'flex-end', alignItems: 'center' }}>
-              {isSuperAdmin && (
-                <button
-                  type="button"
-                  onClick={() => setCreateAsGlobal(v => !v)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 10, border: createAsGlobal ? '1px solid #f59e0b' : '1px solid #e2e8f0', background: createAsGlobal ? '#fffbeb' : 'white', color: createAsGlobal ? '#b45309' : '#64748b', cursor: 'pointer', fontWeight: 900, fontSize: 10, textTransform: 'uppercase', marginRight: 'auto' }}
-                >
-                  <i className={`fa-solid ${createAsGlobal ? 'fa-globe' : 'fa-building'}`}></i>
-                  {createAsGlobal ? 'Todos os cartórios' : 'Este cartório'}
-                </button>
-              )}
               <button onClick={() => setTab(isGestor ? 'todas' : 'minhas')} style={{ padding: '12px 24px', borderRadius: 12, border: '1px solid #e2e8f0', background: 'none', color: '#475569', cursor: 'pointer', fontWeight: 900, fontSize: 12, textTransform: 'uppercase' }}>
                 Cancelar
               </button>

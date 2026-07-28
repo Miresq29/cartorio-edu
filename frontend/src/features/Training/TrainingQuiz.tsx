@@ -6,6 +6,7 @@ import {
 } from 'firebase/firestore';
 import { useApp } from '../../context/AppContext';
 import { GeminiService } from '../../services/geminiService';
+import VisibilidadeCartorioPicker from '../../components/VisibilidadeCartorioPicker';
 
 interface Question {
   id: string;
@@ -21,6 +22,7 @@ interface Quiz {
   titulo: string;
   questoes: Question[];
   geradoPorIA: boolean;
+  tenantIds?: string[];
   createdAt?: any;
 }
 
@@ -70,6 +72,8 @@ const formatCountdown = (liberadoEm: Date): string => {
 
 const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
   const { state, tenantId } = useApp();
+  const isSuperAdmin = state.user?.role === 'SUPERADMIN';
+  const [tenantIdsForm, setTenantIdsForm] = useState<string[]>([tenantId]);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [results, setResults] = useState<QuizResult[]>([]);
   const [mode, setMode] = useState<'list' | 'create' | 'take' | 'result' | 'blocked'>('list');
@@ -94,7 +98,7 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
   const [createMode, setCreateMode] = useState<'ia' | 'manual'>('ia');
 
   useEffect(() => {
-    const q = query(collection(db, 'treinamentosQuizzes'), where('tenantId', 'in', [tenantId, 'GLOBAL']), orderBy('createdAt', 'desc'));
+    const q = query(collection(db, 'treinamentosQuizzes'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']), orderBy('createdAt', 'desc'));
     const unsub = onSnapshot(q, snap => setQuizzes(snap.docs.map(d => ({ id: d.id, ...d.data() } as Quiz))));
     return () => unsub();
   }, [tenantId]);
@@ -135,7 +139,7 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
         titulo: `Avaliacao: ${titulo}`,
         questoes: questoesComId,
         geradoPorIA: true,
-        tenantId,
+        tenantIds: isSuperAdmin ? tenantIdsForm : [tenantId],
         createdAt: serverTimestamp(),
       });
 
@@ -154,7 +158,7 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
     if (!form.treinamento || !form.titulo) return;
     const questoesComId = questoes.map((q, i) => ({ ...q, id: `q${i + 1}` }));
     await addDoc(collection(db, 'treinamentosQuizzes'), {
-      ...form, questoes: questoesComId, geradoPorIA: false, tenantId, createdAt: serverTimestamp(),
+      ...form, questoes: questoesComId, geradoPorIA: false, tenantIds: isSuperAdmin ? tenantIdsForm : [tenantId], createdAt: serverTimestamp(),
     });
     setForm({ treinamento: '', titulo: '' });
     setQuestoes([{ texto: '', opcoes: ['', '', '', ''], correta: 0, explicacao: '' }]);
@@ -443,6 +447,15 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
             </button>
           ))}
         </div>
+
+        {isSuperAdmin && (
+          <VisibilidadeCartorioPicker
+            isSuperAdmin={isSuperAdmin}
+            ownTenantId={tenantId}
+            value={tenantIdsForm}
+            onChange={setTenantIdsForm}
+          />
+        )}
 
         {/* MODO IA */}
         {createMode === 'ia' && (

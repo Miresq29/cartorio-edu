@@ -12,6 +12,10 @@ import { useToast } from '../../context/ToastContext';
 
 // ─── Coleções que fazem parte do backup por tenant ────────────────────────────
 
+// Coleções que usam tenantIds (array) em vez de tenantId (string) — ver plano de
+// visibilidade multi-cartório.
+const COLECOES_ARRAY_TENANT = new Set(['trilhas', 'repositorio', 'comunicados', 'checklists', 'knowledgeBase']);
+
 const COLECOES_TENANT = [
   { id: 'users',                   label: 'Colaboradores',        icon: 'fa-users'             },
   { id: 'trilhas',                 label: 'Trilhas',              icon: 'fa-road'              },
@@ -95,7 +99,9 @@ const BackupView: React.FC = () => {
         // Busca filtrada por tenantId — NUNCA acessa dados de outros cartórios
         const q = query(
           collection(db, col.id),
-          where('tenantId', '==', tenantId)
+          COLECOES_ARRAY_TENANT.has(col.id)
+            ? where('tenantIds', 'array-contains', tenantId)
+            : where('tenantId', '==', tenantId)
         );
         const snap = await getDocs(q);
         const docs = snap.docs.map(d => ({ _id: d.id, ...d.data() }));

@@ -58,7 +58,7 @@ const TrainingParticipants: React.FC = () => {
 
   // Carrega checklists (treinamentos mapeados)
   useEffect(() => {
-    const q = query(collection(db, 'checklists'), where('tenantId', 'in', [tenantId, 'GLOBAL']), orderBy('createdAt', 'desc'));
+    const q = query(collection(db, 'checklists'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']), orderBy('createdAt', 'desc'));
     const unsub = onSnapshot(q, snap =>
       setChecklists(snap.docs.map(d => ({ id: d.id, ...d.data() } as Checklist)))
     );

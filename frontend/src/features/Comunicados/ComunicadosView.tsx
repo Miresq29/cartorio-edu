@@ -3,6 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { db } from '../../services/firebase';
 import { collection, onSnapshot, query, orderBy, where, addDoc, updateDoc, doc, serverTimestamp, setDoc, getDoc } from 'firebase/firestore';
+import VisibilidadeCartorioPicker from '../../components/VisibilidadeCartorioPicker';
 
 interface Comunicado {
   id: string;
@@ -12,7 +13,7 @@ interface Comunicado {
   anexoUrl: string;
   prioridade: 'normal' | 'urgente' | 'informativo';
   publicadoPorNome: string;
-  tenantId: string;
+  tenantIds: string[];
   ativo: boolean;
   fixado: boolean;
   criadoEm: any;
@@ -29,7 +30,7 @@ const ComunicadosView: React.FC = () => {
   const { showToast } = useToast();
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(state.user?.role || '');
   const isSuperAdmin = state.user?.role === 'SUPERADMIN';
-  const [createAsGlobal, setCreateAsGlobal] = useState(false);
+  const [tenantIdsForm, setTenantIdsForm] = useState<string[]>([tenantId]);
 
   const [comunicados, setComunicados] = useState<Comunicado[]>([]);
   const [lidos, setLidos] = useState<Set<string>>(new Set());
@@ -40,7 +41,7 @@ const ComunicadosView: React.FC = () => {
   const [form, setForm] = useState({ titulo: '', corpo: '', prazo: '', anexoUrl: '', prioridade: 'normal' as const, fixado: false });
 
   useEffect(() => {
-    const q = query(collection(db, 'comunicados'), where('tenantId', 'in', [tenantId, 'GLOBAL']), orderBy('criadoEm', 'desc'));
+    const q = query(collection(db, 'comunicados'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']), orderBy('criadoEm', 'desc'));
     return onSnapshot(q, s => setComunicados(s.docs.map(d => ({ id: d.id, ...d.data() } as Comunicado)).filter(c => c.ativo !== false)));
   }, [tenantId]);
 
@@ -67,7 +68,7 @@ const ComunicadosView: React.FC = () => {
     setLoading(true);
     try {
       await addDoc(collection(db, 'comunicados'), {
-        ...form, ativo: true, tenantId: isSuperAdmin && createAsGlobal ? 'GLOBAL' : tenantId,
+        ...form, ativo: true, tenantIds: isSuperAdmin ? tenantIdsForm : [tenantId],
         publicadoPor: state.user?.id || '', publicadoPorNome: state.user?.name || '',
         criadoEm: serverTimestamp(),
       });
@@ -170,6 +171,16 @@ const ComunicadosView: React.FC = () => {
               <label htmlFor="fixado" className="text-sm text-slate-700 font-bold cursor-pointer">Fixar comunicado no topo</label>
             </div>
           </div>
+
+          {isSuperAdmin && (
+            <VisibilidadeCartorioPicker
+              isSuperAdmin={isSuperAdmin}
+              ownTenantId={tenantId}
+              value={tenantIdsForm}
+              onChange={setTenantIdsForm}
+            />
+          )}
+
           <div className="flex items-center gap-3 flex-wrap">
             <button onClick={salvar} disabled={loading}
               className="bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-[#0A1628] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
@@ -178,16 +189,6 @@ const ComunicadosView: React.FC = () => {
             <button onClick={() => setShowForm(false)} className="bg-slate-200 hover:bg-slate-700 text-slate-700 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
               Cancelar
             </button>
-            {isSuperAdmin && (
-              <button
-                type="button"
-                onClick={() => setCreateAsGlobal(v => !v)}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-black uppercase transition-all border ml-auto ${createAsGlobal ? 'bg-amber-50 border-amber-400 text-amber-700' : 'bg-white border-slate-200 text-slate-500'}`}
-              >
-                <i className={`fa-solid ${createAsGlobal ? 'fa-globe' : 'fa-building'}`}></i>
-                {createAsGlobal ? 'Todos os cartórios' : 'Este cartório'}
-              </button>
-            )}
           </div>
         </div>
       )}

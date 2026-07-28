@@ -29,9 +29,20 @@ service cloud.firestore {
     }
 
     // Content: SUPERADMIN vê tudo; demais usuários: mesmo tenant ou global
-    function canReadContent() { return isSuperAdmin() || (isActive() && (sameTenant() || isGlobalContent())); }
     function canWriteContent() { return isSuperAdmin() || (isGestor() && newSameTenant()); }
     function canEditContent() { return isSuperAdmin() || (isGestor() && sameTenant() && tenantUnchanged()); }
+
+    // Content compartilhavel entre multiplos cartorios (campo tenantIds: array, em vez de
+    // tenantId escalar) — usado pelas 9 colecoes de conteudo com o seletor de visibilidade
+    // "Este cartorio / Todos os cartorios / Cartorios especificos". So o SUPERADMIN pode gravar
+    // um array com 'GLOBAL' ou mais de um cartorio; gestor/admin sempre grava so o proprio tenant.
+    function sameTenantArray() { return myTenant() in resource.data.get('tenantIds', []); }
+    function newSameTenantArray() { return request.resource.data.get('tenantIds', []) == [myTenant()]; }
+    function tenantArrayUnchanged() { return request.resource.data.get('tenantIds', []) == resource.data.get('tenantIds', []); }
+    function isGlobalContentArray() { return 'GLOBAL' in resource.data.get('tenantIds', []); }
+    function canReadContentArray() { return isSuperAdmin() || (isActive() && (sameTenantArray() || isGlobalContentArray())); }
+    function canWriteContentArray() { return isSuperAdmin() || (isGestor() && newSameTenantArray()); }
+    function canEditContentArray() { return isSuperAdmin() || (isGestor() && sameTenantArray() && tenantArrayUnchanged()); }
 
     // Private: strictly per tenant, SUPERADMIN sees all
     function canReadPrivate() { return isSuperAdmin() || (isActive() && sameTenant()); }
@@ -80,49 +91,49 @@ service cloud.firestore {
     // ── Conteúdo compartilhável (tenantId == 'GLOBAL' = visível a todos) ──
 
     match /treinamentos/{docId} {
-      allow read: if canReadContent();
-      allow create: if canWriteContent();
-      allow update, delete: if canEditContent();
+      allow read: if canReadContentArray();
+      allow create: if canWriteContentArray();
+      allow update, delete: if canEditContentArray();
     }
     match /treinamentosQuizzes/{docId} {
-      allow read: if canReadContent();
-      allow create: if canWriteContent();
-      allow update, delete: if canEditContent();
+      allow read: if canReadContentArray();
+      allow create: if canWriteContentArray();
+      allow update, delete: if canEditContentArray();
     }
     match /trilhas/{docId} {
-      allow read: if canReadContent();
-      allow create: if canWriteContent();
-      allow update, delete: if canEditContent();
+      allow read: if canReadContentArray();
+      allow create: if canWriteContentArray();
+      allow update, delete: if canEditContentArray();
     }
     match /knowledgeBase/{docId} {
-      allow read: if canReadContent();
-      allow create: if canWriteContent();
-      allow update, delete: if canEditContent();
+      allow read: if canReadContentArray();
+      allow create: if canWriteContentArray();
+      allow update, delete: if canEditContentArray();
     }
     match /checklists/{docId} {
-      allow read: if canReadContent();
-      allow create: if canWriteContent();
-      allow update, delete: if canEditContent();
+      allow read: if canReadContentArray();
+      allow create: if canWriteContentArray();
+      allow update, delete: if canEditContentArray();
     }
     match /videos/{docId} {
-      allow read: if canReadContent();
-      allow create: if canWriteContent();
-      allow update, delete: if canEditContent();
+      allow read: if canReadContentArray();
+      allow create: if canWriteContentArray();
+      allow update, delete: if canEditContentArray();
     }
     match /materiaisbanner/{docId} {
-      allow read: if canReadContent();
-      allow create: if canWriteContent();
-      allow update, delete: if canEditContent();
+      allow read: if canReadContentArray();
+      allow create: if canWriteContentArray();
+      allow update, delete: if canEditContentArray();
     }
     match /comunicados/{docId} {
-      allow read: if canReadContent();
-      allow create: if canWriteContent();
-      allow update, delete: if canEditContent();
+      allow read: if canReadContentArray();
+      allow create: if canWriteContentArray();
+      allow update, delete: if canEditContentArray();
     }
     match /repositorio/{docId} {
-      allow read: if canReadContent();
-      allow create: if canWriteContent();
-      allow update, delete: if canEditContent();
+      allow read: if canReadContentArray();
+      allow create: if canWriteContentArray();
+      allow update, delete: if canEditContentArray();
     }
 
     // ── Dados privados (estritamente por cartório) ──

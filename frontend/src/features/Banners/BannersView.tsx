@@ -7,6 +7,7 @@ import {
   addDoc, deleteDoc, doc, serverTimestamp,
 } from 'firebase/firestore';
 import { GeminiService } from '../../services/geminiService';
+import VisibilidadeCartorioPicker from '../../components/VisibilidadeCartorioPicker';
 
 interface Material {
   id: string;
@@ -14,7 +15,7 @@ interface Material {
   tipo: 'banner' | 'pdf' | 'imagem' | 'apresentacao' | 'link';
   linkUrl: string;
   textoBanner: string;
-  tenantId: string;
+  tenantIds: string[];
   criadoEm: any;
 }
 
@@ -30,6 +31,8 @@ const BannersView: React.FC = () => {
   const { state, tenantId } = useApp();
   const { showToast } = useToast();
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(state.user?.role || '');
+  const isSuperAdmin = state.user?.role === 'SUPERADMIN';
+  const [tenantIdsForm, setTenantIdsForm] = useState<string[]>([tenantId]);
 
   const [materiais, setMateriais] = useState<Material[]>([]);
   const [filtroTipo, setFiltroTipo] = useState('');
@@ -46,7 +49,7 @@ const BannersView: React.FC = () => {
   const [previewBanner, setPreviewBanner] = useState(false);
 
   useEffect(() => {
-    const q = query(collection(db, 'materiaisbanner'), where('tenantId', 'in', [tenantId, 'GLOBAL']), orderBy('criadoEm', 'desc'));
+    const q = query(collection(db, 'materiaisbanner'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']), orderBy('criadoEm', 'desc'));
     return onSnapshot(q, s =>
       setMateriais(s.docs.map(d => ({ id: d.id, ...d.data() } as Material)))
     );
@@ -65,7 +68,7 @@ const BannersView: React.FC = () => {
         tipo: formLink.tipo,
         linkUrl: formLink.url.trim(),
         textoBanner: '',
-        tenantId,
+        tenantIds: isSuperAdmin ? tenantIdsForm : [tenantId],
         publicadoPor: state.user?.id || '',
         criadoEm: serverTimestamp(),
       });
@@ -118,7 +121,7 @@ CTA: [chamada para ação aqui]`;
       tipo: 'banner',
       linkUrl: '',
       textoBanner: textoBannerGerado,
-      tenantId: state.user?.tenantId || '',
+      tenantIds: isSuperAdmin ? tenantIdsForm : [tenantId],
       publicadoPor: state.user?.id || '',
       criadoEm: serverTimestamp(),
     });
@@ -179,6 +182,15 @@ CTA: [chamada para ação aqui]`;
           Crie, gerencie e compartilhe materiais de treinamento
         </p>
       </header>
+
+      {isGestor && isSuperAdmin && (
+        <VisibilidadeCartorioPicker
+          isSuperAdmin={isSuperAdmin}
+          ownTenantId={tenantId}
+          value={tenantIdsForm}
+          onChange={setTenantIdsForm}
+        />
+      )}
 
       {isGestor && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -56,7 +56,7 @@ const IAAnaliticaView: React.FC = () => {
       ? query(collection(db, 'auditLogs'), orderBy('createdAt', 'desc'), limit(200))
       : query(collection(db, 'auditLogs'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'), limit(200));
     const u1 = onSnapshot(q1, s => setAuditLogs(s.docs.map(d => ({ id: d.id, ...d.data() } as AuditLog))));
-    const q2 = query(collection(db, 'knowledgeBase'), where('tenantId', 'in', [tenantId, 'GLOBAL']), orderBy('createdAt', 'desc'));
+    const q2 = query(collection(db, 'knowledgeBase'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']), orderBy('createdAt', 'desc'));
     const u2 = onSnapshot(q2, s => setKnowledgeDocs(s.docs.map(d => ({ id: d.id, ...d.data() } as KnowledgeDoc))));
     return () => { u1(); u2(); };
   }, [tenantId, state.user?.role]);

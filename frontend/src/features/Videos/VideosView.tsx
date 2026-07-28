@@ -3,6 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { db } from '../../services/firebase';
 import { collection, onSnapshot, query, orderBy, where, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, setDoc } from 'firebase/firestore';
+import VisibilidadeCartorioPicker from '../../components/VisibilidadeCartorioPicker';
 
 interface Video {
   id: string;
@@ -14,7 +15,7 @@ interface Video {
   trilhaTitulo: string;
   duracaoMin: number;
   ativo: boolean;
-  tenantId: string;
+  tenantIds: string[];
   createdAt: any;
 }
 
@@ -43,7 +44,7 @@ const VideosView: React.FC = () => {
   const { showToast } = useToast();
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(state.user?.role || '');
   const isSuperAdmin = state.user?.role === 'SUPERADMIN';
-  const [createAsGlobal, setCreateAsGlobal] = useState(false);
+  const [tenantIdsForm, setTenantIdsForm] = useState<string[]>([tenantId]);
 
   const [videos, setVideos] = useState<Video[]>([]);
   const [filtroCategoria, setFiltroCategoria] = useState('');
@@ -59,7 +60,7 @@ const VideosView: React.FC = () => {
   });
 
   useEffect(() => {
-    const q = query(collection(db, 'videos'), where('tenantId', 'in', [tenantId, 'GLOBAL']), orderBy('createdAt', 'desc'));
+    const q = query(collection(db, 'videos'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']), orderBy('createdAt', 'desc'));
     return onSnapshot(q, s => setVideos(s.docs.map(d => ({ id: d.id, ...d.data() } as Video)).filter(v => v.ativo !== false)));
   }, [tenantId]);
 
@@ -96,7 +97,7 @@ const VideosView: React.FC = () => {
     try {
       await addDoc(collection(db, 'videos'), {
         ...form, youtubeId: yid, ativo: true,
-        tenantId: isSuperAdmin && createAsGlobal ? 'GLOBAL' : tenantId, publicadoPor: state.user?.id || '',
+        tenantIds: isSuperAdmin ? tenantIdsForm : [tenantId], publicadoPor: state.user?.id || '',
         createdAt: serverTimestamp(),
       });
       showToast('Vídeo adicionado!', 'success');
@@ -172,6 +173,16 @@ const VideosView: React.FC = () => {
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-red-500" />
             </div>
           </div>
+
+          {isSuperAdmin && (
+            <VisibilidadeCartorioPicker
+              isSuperAdmin={isSuperAdmin}
+              ownTenantId={tenantId}
+              value={tenantIdsForm}
+              onChange={setTenantIdsForm}
+            />
+          )}
+
           <div className="flex gap-3">
             <button onClick={salvarVideo} disabled={loading || !form.titulo || !form.youtubeUrl}
               className="bg-red-600 hover:bg-red-500 disabled:opacity-50 text-[#0A1628] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">

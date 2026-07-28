@@ -390,7 +390,7 @@ const DashboardView:React.FC = () => {
 
   useEffect(()=>{
     const u:Array<()=>void> = [];
-    u.push(onSnapshot(query(collection(db,'trilhas'),where('tenantId','==',tenantId)),s=>setTrilhas(s.docs.map(d=>({id:d.id,...d.data()} as Trilha)))));
+    u.push(onSnapshot(query(collection(db,'trilhas'),where('tenantIds','array-contains-any',[tenantId,'GLOBAL'])),s=>setTrilhas(s.docs.map(d=>({id:d.id,...d.data()} as Trilha)))));
     u.push(onSnapshot(query(collection(db,'trilhasProgresso'),where('tenantId','==',tenantId)),s=>setProgresso(s.docs.map(d=>({id:d.id,...d.data()} as TrilhaProg)))));
     u.push(onSnapshot(query(collection(db,'treinamentosQuizResults'),where('tenantId','==',tenantId),orderBy('createdAt','desc')),s=>{setQuizResults(s.docs.map(d=>({id:d.id,...d.data()} as QuizResult)));setLoading(false);}));
     u.push(onSnapshot(query(collection(db,'users'),where('tenantId','==',tenantId)),s=>setUsuarios(s.docs.map(d=>({id:d.id,...d.data()} as UserData)))));

@@ -77,7 +77,7 @@ const ExamesView: React.FC = () => {
 
     const tenantFilter = [tenantId, 'GLOBAL'];
     const carrega = (colecao: string, tipo: FonteConteudo['tipo'], campoConteudo: string, campoTitulo: string) => {
-      const u = onSnapshot(query(collection(db, colecao), where('tenantId', 'in', tenantFilter)), snap => {
+      const u = onSnapshot(query(collection(db, colecao), where('tenantIds', 'array-contains-any', tenantFilter)), snap => {
         const novos = snap.docs.map(d => ({
           id: d.id,
           titulo: d.data()[campoTitulo] || d.data()['title'] || d.data()['nome'] || 'Sem título',

@@ -84,9 +84,9 @@ const TrainingView: React.FC = () => {
 
   useEffect(() => {
     const tenantFilter = [tenantId, 'GLOBAL'];
-    const q1 = query(collection(db, 'checklists'), where('tenantId', 'in', tenantFilter), orderBy('createdAt', 'desc'));
+    const q1 = query(collection(db, 'checklists'), where('tenantIds', 'array-contains-any', tenantFilter), orderBy('createdAt', 'desc'));
     const u1 = onSnapshot(q1, s => setChecklists(s.docs.map(d => ({ id: d.id, ...d.data() }))));
-    const q2 = query(collection(db, 'knowledgeBase'), where('tenantId', 'in', tenantFilter), orderBy('createdAt', 'desc'));
+    const q2 = query(collection(db, 'knowledgeBase'), where('tenantIds', 'array-contains-any', tenantFilter), orderBy('createdAt', 'desc'));
     const u2 = onSnapshot(q2, s => setKnowledgeDocs(s.docs.map(d => ({ id: d.id, ...d.data() }))));
     return () => { u1(); u2(); };
   }, [tenantId]);

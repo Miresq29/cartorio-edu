@@ -10,6 +10,7 @@ import {
 import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
+import VisibilidadeCartorioPicker from '../../components/VisibilidadeCartorioPicker';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -24,7 +25,7 @@ interface Midia {
   trilhaTitulo: string;
   duracaoMin: number;
   ativo: boolean;
-  tenantId: string;
+  tenantIds: string[];
   createdAt: any;
   // YouTube
   youtubeId?: string;
@@ -305,9 +306,11 @@ const MidiaCard: React.FC<{
 // ─── Formulário de Adição ─────────────────────────────────────────────────────
 
 const FormMidia: React.FC<{
-  onSave: (data: Omit<Midia, 'id' | 'tenantId' | 'createdAt' | 'ativo'>) => Promise<void>;
+  onSave: (data: Omit<Midia, 'id' | 'tenantIds' | 'createdAt' | 'ativo'>, tenantIds: string[]) => Promise<void>;
   onCancel: () => void;
-}> = ({ onSave, onCancel }) => {
+  isSuperAdmin: boolean;
+  ownTenantId: string;
+}> = ({ onSave, onCancel, isSuperAdmin, ownTenantId }) => {
   const [tipo, setTipo] = useState<MidiaTipo>('youtube');
   const [form, setForm] = useState({
     titulo: '', descricao: '', categoria: 'onboarding',
@@ -315,6 +318,7 @@ const FormMidia: React.FC<{
   });
   const [linkErro, setLinkErro] = useState('');
   const [saving, setSaving] = useState(false);
+  const [tenantIdsForm, setTenantIdsForm] = useState<string[]>([ownTenantId]);
 
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
 
@@ -341,7 +345,7 @@ const FormMidia: React.FC<{
         youtubeId: result.youtubeId,
         driveId: result.driveId,
         driveUrl: tipo !== 'youtube' ? form.link.trim() : undefined,
-      });
+      }, tenantIdsForm);
     } finally {
       setSaving(false);
     }
@@ -443,6 +447,15 @@ const FormMidia: React.FC<{
         </div>
       </div>
 
+      {isSuperAdmin && (
+        <VisibilidadeCartorioPicker
+          isSuperAdmin={isSuperAdmin}
+          ownTenantId={ownTenantId}
+          value={tenantIdsForm}
+          onChange={setTenantIdsForm}
+        />
+      )}
+
       <div className="flex gap-3">
         <button onClick={onCancel}
           className="px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 border border-slate-200 hover:border-slate-600 transition-all">
@@ -467,6 +480,7 @@ const RepositorioView: React.FC = () => {
   const { showToast } = useToast();
   const user = state.user!;
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(user.role);
+  const isSuperAdmin = user.role === 'SUPERADMIN';
 
   const [midias, setMidias] = useState<Midia[]>([]);
   const [assistidas, setAssistidas] = useState<Set<string>>(new Set());
@@ -478,7 +492,7 @@ const RepositorioView: React.FC = () => {
 
   // Load mídias
   useEffect(() => {
-    const q = query(collection(db, 'repositorio'), where('tenantId', 'in', [tenantId, 'GLOBAL']), orderBy('createdAt', 'desc'));
+    const q = query(collection(db, 'repositorio'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']), orderBy('createdAt', 'desc'));
     return onSnapshot(q, s =>
       setMidias(s.docs.map(d => ({ id: d.id, ...d.data() } as Midia)).filter(m => m.ativo !== false))
     );
@@ -510,14 +524,14 @@ const RepositorioView: React.FC = () => {
     }, { merge: true });
   };
 
-  const handleSave = async (data: Omit<Midia, 'id' | 'tenantId' | 'createdAt' | 'ativo'>) => {
+  const handleSave = async (data: Omit<Midia, 'id' | 'tenantIds' | 'createdAt' | 'ativo'>, tenantIdsForm: string[]) => {
     // Firestore rejeita campos undefined — remove antes de salvar
     const cleanData = Object.fromEntries(
       Object.entries(data).filter(([, v]) => v !== undefined)
     );
     await addDoc(collection(db, 'repositorio'), {
       ...cleanData, ativo: true,
-      tenantId, criadoPor: user.id,
+      tenantIds: isSuperAdmin ? tenantIdsForm : [tenantId], criadoPor: user.id,
       createdAt: serverTimestamp(),
     });
     showToast('Conteúdo adicionado ao repositório!', 'success');
@@ -591,7 +605,7 @@ const RepositorioView: React.FC = () => {
 
       {/* Formulário */}
       {showForm && (
-        <FormMidia onSave={handleSave} onCancel={() => setShowForm(false)} />
+        <FormMidia onSave={handleSave} onCancel={() => setShowForm(false)} isSuperAdmin={isSuperAdmin} ownTenantId={tenantId} />
       )}
 
       {/* Filtros */}

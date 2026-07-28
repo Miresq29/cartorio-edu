@@ -148,14 +148,14 @@ const TrainingDashboard: React.FC = () => {
     const unsubs = [
       onSnapshot(query(collection(db, 'treinamentosQuizResults'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc')),
         s => setQuizResults(s.docs.map(d => ({ id: d.id, ...d.data() } as QuizResult)))),
-      onSnapshot(query(collection(db, 'treinamentosQuizzes'), where('tenantId', 'in', tenantFilter), orderBy('createdAt', 'desc')),
+      onSnapshot(query(collection(db, 'treinamentosQuizzes'), where('tenantIds', 'array-contains-any', tenantFilter), orderBy('createdAt', 'desc')),
         s => setQuizzes(s.docs.map(d => ({ id: d.id, ...d.data() } as Quiz)))),
       onSnapshot(query(collection(db, 'trilhasProgresso'), where('tenantId', '==', tenantId)),
         s => setTrilhasProgresso(s.docs.map(d => ({ id: d.id, ...d.data() } as TrilhaProgresso)))),
       onSnapshot(
         superAdminSeesAll
           ? query(collection(db, 'trilhas'))
-          : query(collection(db, 'trilhas'), where('tenantId', 'in', tenantFilter)),
+          : query(collection(db, 'trilhas'), where('tenantIds', 'array-contains-any', tenantFilter)),
         s => setTrilhas(s.docs.map(d => ({ id: d.id, ...d.data() } as Trilha)))),
       onSnapshot(
         superAdminSeesAll

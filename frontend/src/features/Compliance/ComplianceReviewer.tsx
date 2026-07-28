@@ -38,12 +38,12 @@ const ComplianceReviewer: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const q1 = query(collection(db, 'checklists'), where('tenantId', 'in', [tenantId, 'GLOBAL']), orderBy('createdAt', 'desc'));
+    const q1 = query(collection(db, 'checklists'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']), orderBy('createdAt', 'desc'));
     const unsub1 = onSnapshot(q1, snap => setChecklists(snap.docs.map(d => ({ id: d.id, ...d.data() } as Checklist))));
 
     const fetchKB = async () => {
       try {
-        const q2 = query(collection(db, 'knowledgeBase'), where('tenantId', 'in', [tenantId, 'GLOBAL']));
+        const q2 = query(collection(db, 'knowledgeBase'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']));
         const snap = await getDocs(q2);
         setKbDocs(snap.docs.map(d => ({ id: d.id, ...d.data() } as KBDoc)));
       } catch { /* sem base legal */ }

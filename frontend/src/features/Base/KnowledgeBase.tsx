@@ -8,10 +8,11 @@ import {
   collection, addDoc, deleteDoc, doc, onSnapshot,
   query, orderBy, serverTimestamp, where
 } from 'firebase/firestore';
+import VisibilidadeCartorioPicker from '../../components/VisibilidadeCartorioPicker';
 
 interface KBDoc {
   id: string;
-  tenantId: string;
+  tenantIds: string[];
   title: string;
   fileName: string;
   content: string;
@@ -34,7 +35,7 @@ const KnowledgeBase: React.FC = () => {
   const user = state.user;
   const isSuperAdmin = user?.role === 'SUPERADMIN';
   const canManage = isSuperAdmin || user?.role === 'gestor';
-  const [uploadAsGlobal, setUploadAsGlobal] = useState(false);
+  const [tenantIdsForm, setTenantIdsForm] = useState<string[]>([tenantId]);
 
   useEffect(() => {
     if (!user) return;
@@ -44,7 +45,7 @@ const KnowledgeBase: React.FC = () => {
     } else {
       q = query(
         collection(db, 'knowledgeBase'),
-        where('tenantId', 'in', [tenantId, 'GLOBAL']),
+        where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']),
         orderBy('createdAt', 'desc')
       );
     }
@@ -70,7 +71,7 @@ const KnowledgeBase: React.FC = () => {
 
     // âœ… CORREÇÃƒO: Validação de nome duplicado
     const isDuplicate = docs.some(
-      d => d.fileName?.toLowerCase() === file.name.toLowerCase() && d.tenantId === tenantId
+      d => d.fileName?.toLowerCase() === file.name.toLowerCase() && (d.tenantIds || []).includes(tenantId)
     );
     if (isDuplicate) {
       showToast(`Já existe um documento com o nome "${file.name}" na base legal. Renomeie o arquivo antes de enviar.`, 'error');
@@ -91,7 +92,7 @@ const KnowledgeBase: React.FC = () => {
       }
 
       await addDoc(collection(db, 'knowledgeBase'), {
-        tenantId: isSuperAdmin && uploadAsGlobal ? 'GLOBAL' : tenantId,
+        tenantIds: isSuperAdmin ? tenantIdsForm : [tenantId],
         title: file.name,
         fileName: file.name,
         content,
@@ -133,7 +134,7 @@ const KnowledgeBase: React.FC = () => {
         <div>
           <h2 className="text-4xl font-black text-[#0A1628] italic uppercase tracking-tighter">Base Legal</h2>
           <p className="text-slate-500 text-[10px] font-bold mt-2 uppercase tracking-[0.3em]">
-            {user?.tenantId || 'MJ'} // {docs.length} documento{docs.length !== 1 ? 's' : ''} indexado{docs.length !== 1 ? 's' : ''}
+            {tenantId || 'MJ'} // {docs.length} documento{docs.length !== 1 ? 's' : ''} indexado{docs.length !== 1 ? 's' : ''}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -143,27 +144,25 @@ const KnowledgeBase: React.FC = () => {
               className="bg-white border border-slate-300 rounded-xl pl-10 pr-4 py-3 text-xs text-[#0A1628] outline-none focus:border-blue-500 w-56" />
           </div>
           {canManage && (
-            <div className="flex items-center gap-2">
-              {isSuperAdmin && (
-                <button
-                  type="button"
-                  onClick={() => setUploadAsGlobal(v => !v)}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-black uppercase transition-all border ${uploadAsGlobal ? 'bg-amber-50 border-amber-400 text-amber-700' : 'bg-white border-slate-200 text-slate-500'}`}
-                  title="Visível para todos os cartórios"
-                >
-                  <i className={`fa-solid ${uploadAsGlobal ? 'fa-globe' : 'fa-building'}`}></i>
-                  {uploadAsGlobal ? 'Global' : 'Cartório'}
-                </button>
-              )}
-              <label className={`bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-2xl cursor-pointer flex items-center gap-3 text-xs font-black uppercase transition-all shadow-lg shadow-blue-900/20 ${isUploading ? 'opacity-60 pointer-events-none' : ''}`}>
-                <i className={`fa-solid ${isUploading ? 'fa-circle-notch animate-spin' : 'fa-cloud-arrow-up'}`}></i>
-                {isUploading ? 'Processando...' : 'Adicionar'}
-                <input type="file" className="hidden" onChange={handleFileUpload} disabled={isUploading} accept=".pdf,.docx,.txt,.jpg,.jpeg,.png,.webp,.bmp,.gif" />
-              </label>
-            </div>
+            <label className={`bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-2xl cursor-pointer flex items-center gap-3 text-xs font-black uppercase transition-all shadow-lg shadow-blue-900/20 ${isUploading ? 'opacity-60 pointer-events-none' : ''}`}>
+              <i className={`fa-solid ${isUploading ? 'fa-circle-notch animate-spin' : 'fa-cloud-arrow-up'}`}></i>
+              {isUploading ? 'Processando...' : 'Adicionar'}
+              <input type="file" className="hidden" onChange={handleFileUpload} disabled={isUploading} accept=".pdf,.docx,.txt,.jpg,.jpeg,.png,.webp,.bmp,.gif" />
+            </label>
           )}
         </div>
       </header>
+
+      {canManage && isSuperAdmin && (
+        <div className="px-2">
+          <VisibilidadeCartorioPicker
+            isSuperAdmin={isSuperAdmin}
+            ownTenantId={tenantId}
+            value={tenantIdsForm}
+            onChange={setTenantIdsForm}
+          />
+        </div>
+      )}
 
       {loading && <div className="text-center py-20 text-slate-600 text-xs font-bold uppercase animate-pulse">Carregando base legal...</div>}
 
