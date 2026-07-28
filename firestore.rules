@@ -14,7 +14,6 @@ service cloud.firestore {
     function sameTenant() { return resource.data.get('tenantId', myTenant()) == myTenant(); }
     function newSameTenant() { return request.resource.data.get('tenantId', myTenant()) == myTenant(); }
     function tenantUnchanged() { return request.resource.data.get('tenantId', '') == resource.data.get('tenantId', ''); }
-    function isGlobalContent() { return resource.data.get('tenantId', '') == 'GLOBAL'; }
     function isSelfData() { return request.resource.data.get('userId', '') == request.auth.uid; }
 
     // Troca de senha no primeiro acesso: o proprio usuario grava isFirstLogin/passwordHistory

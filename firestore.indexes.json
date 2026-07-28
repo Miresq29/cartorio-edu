@@ -12,7 +12,7 @@
       "collectionGroup": "treinamentosQuizzes",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "tenantId", "order": "ASCENDING" },
+        { "fieldPath": "tenantIds", "arrayConfig": "CONTAINS" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
     },
@@ -28,7 +28,7 @@
       "collectionGroup": "checklists",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "tenantId", "order": "ASCENDING" },
+        { "fieldPath": "tenantIds", "arrayConfig": "CONTAINS" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
     },
@@ -36,7 +36,7 @@
       "collectionGroup": "knowledgeBase",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "tenantId", "order": "ASCENDING" },
+        { "fieldPath": "tenantIds", "arrayConfig": "CONTAINS" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
     },
@@ -52,7 +52,7 @@
       "collectionGroup": "repositorio",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "tenantId", "order": "ASCENDING" },
+        { "fieldPath": "tenantIds", "arrayConfig": "CONTAINS" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
     },
@@ -68,7 +68,7 @@
       "collectionGroup": "videos",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "tenantId", "order": "ASCENDING" },
+        { "fieldPath": "tenantIds", "arrayConfig": "CONTAINS" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
     },
@@ -76,7 +76,7 @@
       "collectionGroup": "materiaisbanner",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "tenantId", "order": "ASCENDING" },
+        { "fieldPath": "tenantIds", "arrayConfig": "CONTAINS" },
         { "fieldPath": "criadoEm", "order": "DESCENDING" }
       ]
     },
@@ -84,7 +84,7 @@
       "collectionGroup": "comunicados",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "tenantId", "order": "ASCENDING" },
+        { "fieldPath": "tenantIds", "arrayConfig": "CONTAINS" },
         { "fieldPath": "criadoEm", "order": "DESCENDING" }
       ]
     }
