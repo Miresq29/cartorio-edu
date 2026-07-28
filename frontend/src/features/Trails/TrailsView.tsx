@@ -8,7 +8,7 @@ import { useApp } from '../../context/AppContext';
 
 // â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-type Perfil = 'gestor' | 'auditor' | 'atendente' | 'expert' | 'viewer';
+type Perfil = 'colaborador' | 'gestor' | 'admin';
 
 interface Modulo {
   id: string;
@@ -54,16 +54,13 @@ interface TrilhaProgresso {
 // â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const PERFIS: { value: Perfil; label: string; color: string }[] = [
-  { value: 'gestor',    label: 'Gestor',      color: '#3b82f6' },
-  { value: 'auditor',   label: 'Auditor',     color: '#f59e0b' },
-  { value: 'atendente', label: 'Atendente',   color: '#10b981' },
-  { value: 'expert',    label: 'Expert',      color: '#8b5cf6' },
-  { value: 'viewer',    label: 'Viewer',      color: '#475569' },
+  { value: 'colaborador', label: 'Colaborador', color: '#10b981' },
+  { value: 'gestor',      label: 'Gestor',      color: '#3b82f6' },
+  { value: 'admin',       label: 'Admin',       color: '#f59e0b' },
 ];
 
 const PERFIL_LABEL: Record<string, string> = {
-  gestor: 'Gestor', auditor: 'Auditor', atendente: 'Atendente',
-  expert: 'Expert', viewer: 'Viewer', SUPERADMIN: 'Super Admin', admin: 'Admin',
+  colaborador: 'Colaborador', gestor: 'Gestor', admin: 'Admin', SUPERADMIN: 'Super Admin',
 };
 
 function uid() {
@@ -515,9 +512,8 @@ Nota mínima para aprovação: ${modulo.notaMinima}/10`
 // â”€â”€â”€ Main View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const TrailsView: React.FC = () => {
-  const { state } = useApp();
+  const { state, tenantId } = useApp();
   const user = state.user!;
-  const tenantId = user.tenantId;
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(user.role);
   const isSuperAdmin = user.role === 'SUPERADMIN';
   const [createAsGlobal, setCreateAsGlobal] = useState(false);
@@ -537,7 +533,7 @@ const TrailsView: React.FC = () => {
 
   // Load trilhas
   useEffect(() => {
-    const q = query(collection(db, 'trilhas'), where('tenantId', '==', tenantId));
+    const q = query(collection(db, 'trilhas'), where('tenantId', 'in', [tenantId, 'GLOBAL']));
     return onSnapshot(q, snap => {
       setTrilhas(snap.docs.map(d => ({ id: d.id, ...d.data() } as Trilha)));
     });

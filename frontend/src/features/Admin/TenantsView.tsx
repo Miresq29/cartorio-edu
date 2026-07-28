@@ -2,11 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
-import { db } from '../../services/firebase';
+import { db, functions } from '../../services/firebase';
+import { httpsCallable } from 'firebase/functions';
 import {
-  collection, onSnapshot, query, orderBy,
-  setDoc, doc, serverTimestamp
+  collection, onSnapshot, query, orderBy
 } from 'firebase/firestore';
+
+const createTenantFn = httpsCallable(functions, 'createTenant');
 
 interface Tenant {
   id: string;
@@ -16,7 +18,7 @@ interface Tenant {
 }
 
 const TenantsView: React.FC = () => {
-  const { state, setActiveTenant, setActiveTab } = useApp();
+  const { setActiveTenant, setActiveTab } = useApp();
   const { showToast } = useToast();
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
@@ -38,17 +40,15 @@ const TenantsView: React.FC = () => {
     if (!tenantId || !name.trim()) return;
     setSaving(true);
     try {
-      await setDoc(doc(db, 'tenants', tenantId), {
-        name: name.trim(),
-        active: true,
-        createdAt: serverTimestamp(),
-        createdBy: state.user?.id || '',
-      });
+      await createTenantFn({ name: name.trim(), slug: tenantId });
       showToast(`Cartório "${name.trim()}" ativado com sucesso!`, 'success');
       setName('');
       setSlug('');
     } catch (err: any) {
-      showToast(err.message || 'Erro ao criar cartório.', 'error');
+      const msg = err.code === 'functions/already-exists'
+        ? `Já existe um cartório com o ID "${tenantId}".`
+        : err.message || 'Erro ao criar cartório.';
+      showToast(msg, 'error');
     }
     setSaving(false);
   };

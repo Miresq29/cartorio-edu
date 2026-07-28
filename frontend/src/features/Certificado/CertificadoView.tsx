@@ -399,17 +399,16 @@ const ModalEmitir: React.FC<{
 // ─── Main View ────────────────────────────────────────────────────────────────
 
 const CertificadoView: React.FC = () => {
-  const { state } = useApp();
+  const { state, tenantId } = useApp();
   const { showToast } = useToast();
   const user = state.user!;
-  const tenantId = user.tenantId;
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(user.role);
 
   const [certificados, setCertificados] = useState<Certificado[]>([]);
   const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
   const [trilhasProgresso, setTrilhasProgresso] = useState<TrilhaProgresso[]>([]);
   const [usuarios, setUsuarios] = useState<UserData[]>([]);
-  const [cartorioNome, setCartorioNome] = useState(user.tenantId);
+  const [cartorioNome, setCartorioNome] = useState(tenantId);
   const [showModal, setShowModal] = useState(false);
   const [imprimindo, setImprimindo] = useState<Certificado | null>(null);
 

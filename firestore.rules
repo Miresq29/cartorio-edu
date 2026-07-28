@@ -17,6 +17,17 @@ service cloud.firestore {
     function isGlobalContent() { return resource.data.get('tenantId', '') == 'GLOBAL'; }
     function isSelfData() { return request.resource.data.get('userId', '') == request.auth.uid; }
 
+    // Troca de senha no primeiro acesso: o proprio usuario grava isFirstLogin/passwordHistory
+    // no seu doc. Restrito a esses campos e proibido alterar role/tenantId/active/email.
+    function selfPasswordUpdate(userId) {
+      return isAuthenticated() && request.auth.uid == userId
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['isFirstLogin', 'mustChangePassword', 'passwordHistory', 'passwordUpdatedAt'])
+        && request.resource.data.get('role', '') == resource.data.get('role', '')
+        && request.resource.data.get('tenantId', '') == resource.data.get('tenantId', '')
+        && request.resource.data.get('active', true) == resource.data.get('active', true);
+    }
+
     // Content: SUPERADMIN vê tudo; demais usuários: mesmo tenant ou global
     function canReadContent() { return isSuperAdmin() || (isActive() && (sameTenant() || isGlobalContent())); }
     function canWriteContent() { return isSuperAdmin() || (isGestor() && newSameTenant()); }
@@ -36,7 +47,8 @@ service cloud.firestore {
       allow create: if isSuperAdmin() || (isGestor() && newSameTenant());
       allow update: if isSuperAdmin()
         || (isGestor() && sameTenant() && tenantUnchanged()
-            && request.resource.data.get('role', '') == resource.data.get('role', ''));
+            && request.resource.data.get('role', '') == resource.data.get('role', ''))
+        || selfPasswordUpdate(userId);
       allow delete: if isSuperAdmin();
     }
 

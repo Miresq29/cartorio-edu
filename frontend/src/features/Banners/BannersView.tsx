@@ -27,7 +27,7 @@ const TIPO_CONFIG = {
 };
 
 const BannersView: React.FC = () => {
-  const { state } = useApp();
+  const { state, tenantId } = useApp();
   const { showToast } = useToast();
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(state.user?.role || '');
 
@@ -46,12 +46,11 @@ const BannersView: React.FC = () => {
   const [previewBanner, setPreviewBanner] = useState(false);
 
   useEffect(() => {
-    const tenantId = state.user?.tenantId || '';
     const q = query(collection(db, 'materiaisbanner'), where('tenantId', 'in', [tenantId, 'GLOBAL']), orderBy('criadoEm', 'desc'));
     return onSnapshot(q, s =>
       setMateriais(s.docs.map(d => ({ id: d.id, ...d.data() } as Material)))
     );
-  }, [state.user?.tenantId]);
+  }, [tenantId]);
 
   /* ── salva link externo ──────────────────────────── */
   const salvarLink = async () => {
@@ -66,7 +65,7 @@ const BannersView: React.FC = () => {
         tipo: formLink.tipo,
         linkUrl: formLink.url.trim(),
         textoBanner: '',
-        tenantId: state.user?.tenantId || '',
+        tenantId,
         publicadoPor: state.user?.id || '',
         criadoEm: serverTimestamp(),
       });

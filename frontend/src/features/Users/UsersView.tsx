@@ -4,12 +4,14 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
-import { db } from '../../services/firebase';
-import { AuthService } from '../../services/authService';
+import { db, functions } from '../../services/firebase';
+import { httpsCallable } from 'firebase/functions';
 import {
   collection, onSnapshot, query, orderBy, where,
-  doc, updateDoc, deleteDoc, serverTimestamp
+  doc, updateDoc, deleteDoc, addDoc, serverTimestamp
 } from 'firebase/firestore';
+
+const createCollaboratorFn = httpsCallable(functions, 'createCollaborator');
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -155,20 +157,20 @@ const UsersView: React.FC = () => {
         showToast('Colaborador atualizado!', 'success');
       } else {
         const tempPassword = 'Acesso@' + crypto.randomUUID().replace(/-/g, '').slice(0, 12);
-        const result = await AuthService.createUser(form.email, tempPassword, {
-          ...form,
-          active: true,
-          ativo: true,
-          isFirstLogin: true,
-          createdAt: serverTimestamp(),
-        });
-        if (!result.success) throw new Error(result.message || 'Erro ao criar conta.');
-        alert(`Colaborador ${form.name} adicionado!\n\nSenha temporária: ${tempPassword}\n\nComunique ao colaborador — ele deverá alterá-la no primeiro acesso.`);
+        const result: any = await createCollaboratorFn({ ...form, password: tempPassword });
+        await addDoc(collection(db, 'auditLogs'), {
+          tipo: 'USER_CREATED', descricao: 'Usuario criado pelo gestor', usuario: form.email,
+          usuarioId: user.id, tenantId: form.tenantId, severity: 'INFO', createdAt: serverTimestamp(),
+        }).catch(() => {});
+        const msg = result.data?.reused
+          ? `Colaborador ${form.name} vinculado! A conta de acesso já existia e o perfil foi completado.\n\nSenha temporária: ${tempPassword}\n\nComunique ao colaborador — ele deverá alterá-la no primeiro acesso.`
+          : `Colaborador ${form.name} adicionado!\n\nSenha temporária: ${tempPassword}\n\nComunique ao colaborador — ele deverá alterá-la no primeiro acesso.`;
+        alert(msg);
       }
       setShowForm(false);
     } catch (err: any) {
-      const msg = err.message?.includes('email-already-in-use')
-        ? 'Este e-mail já possui conta no sistema.'
+      const msg = err.code === 'functions/permission-denied'
+        ? 'Você não tem permissão para criar este colaborador.'
         : err.message || 'Erro ao salvar.';
       showToast(msg, 'error');
     }

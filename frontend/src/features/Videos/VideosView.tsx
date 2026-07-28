@@ -39,7 +39,7 @@ function extractYouTubeId(url: string): string | null {
 }
 
 const VideosView: React.FC = () => {
-  const { state } = useApp();
+  const { state, tenantId } = useApp();
   const { showToast } = useToast();
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(state.user?.role || '');
   const isSuperAdmin = state.user?.role === 'SUPERADMIN';
@@ -59,21 +59,19 @@ const VideosView: React.FC = () => {
   });
 
   useEffect(() => {
-    const tenantId = state.user?.tenantId || '';
     const q = query(collection(db, 'videos'), where('tenantId', 'in', [tenantId, 'GLOBAL']), orderBy('createdAt', 'desc'));
     return onSnapshot(q, s => setVideos(s.docs.map(d => ({ id: d.id, ...d.data() } as Video)).filter(v => v.ativo !== false)));
-  }, [state.user?.tenantId]);
+  }, [tenantId]);
 
   useEffect(() => {
     if (!state.user?.id) return;
-    const tenantId = state.user?.tenantId || '';
     const q = query(collection(db, 'videosProgresso'), where('tenantId', '==', tenantId));
     return onSnapshot(q, s => {
       const ids = new Set<string>();
       s.docs.forEach(d => { if (d.data().userId === state.user!.id && d.data().assistido) ids.add(d.data().videoId); });
       setAssistidos(ids);
     });
-  }, [state.user?.id, state.user?.tenantId]);
+  }, [state.user?.id, tenantId]);
 
   const videosFiltrados = videos.filter(v => {
     const matchCat = !filtroCategoria || v.categoria === filtroCategoria;
@@ -87,7 +85,7 @@ const VideosView: React.FC = () => {
     const key = `${state.user.id}_${video.id}`;
     await setDoc(doc(db, 'videosProgresso', key), {
       userId: state.user.id, videoId: video.id, videoTitulo: video.titulo,
-      tenantId: state.user.tenantId, assistido: true, assistidoEm: serverTimestamp(),
+      tenantId, assistido: true, assistidoEm: serverTimestamp(),
     }, { merge: true });
   };
 
@@ -98,7 +96,7 @@ const VideosView: React.FC = () => {
     try {
       await addDoc(collection(db, 'videos'), {
         ...form, youtubeId: yid, ativo: true,
-        tenantId: isSuperAdmin && createAsGlobal ? 'GLOBAL' : (state.user?.tenantId || ''), publicadoPor: state.user?.id || '',
+        tenantId: isSuperAdmin && createAsGlobal ? 'GLOBAL' : tenantId, publicadoPor: state.user?.id || '',
         createdAt: serverTimestamp(),
       });
       showToast('Vídeo adicionado!', 'success');

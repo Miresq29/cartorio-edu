@@ -56,7 +56,7 @@ const TIPO_ICON: Record<string, string> = {
 };
 
 const TrainingView: React.FC = () => {
-  const { state } = useApp();
+  const { state, tenantId } = useApp();
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<Tab>('ia');
   const [checklists, setChecklists] = useState<any[]>([]);
@@ -83,26 +83,24 @@ const TrainingView: React.FC = () => {
 
 
   useEffect(() => {
-    const tenantId = state.user?.tenantId || '';
     const tenantFilter = [tenantId, 'GLOBAL'];
     const q1 = query(collection(db, 'checklists'), where('tenantId', 'in', tenantFilter), orderBy('createdAt', 'desc'));
     const u1 = onSnapshot(q1, s => setChecklists(s.docs.map(d => ({ id: d.id, ...d.data() }))));
     const q2 = query(collection(db, 'knowledgeBase'), where('tenantId', 'in', tenantFilter), orderBy('createdAt', 'desc'));
     const u2 = onSnapshot(q2, s => setKnowledgeDocs(s.docs.map(d => ({ id: d.id, ...d.data() }))));
     return () => { u1(); u2(); };
-  }, [state.user?.tenantId]);
+  }, [tenantId]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   useEffect(() => {
-    const tenantId = state.user?.tenantId;
     if (!tenantId) return;
     const q = query(collection(db, 'resumos'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'));
     const unsub = onSnapshot(q, snap => setSavedSummaries(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
     return () => unsub();
-  }, [state.user?.tenantId]);
+  }, [tenantId]);
 
   const totalItems = checklists.reduce((acc, c) => acc + (c.items?.length || 0), 0);
 
@@ -228,7 +226,7 @@ ${opt.justificativa}
       );
       setSummary(result);
       await addDoc(collection(db, 'resumos'), {
-        tenantId: state.user?.tenantId || '',
+        tenantId,
         docId: selectedDoc.id || '',
         docTitle,
         summaryType,

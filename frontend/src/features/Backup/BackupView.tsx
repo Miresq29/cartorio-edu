@@ -59,10 +59,9 @@ function downloadJSON(data: any, filename: string) {
 // ─── Main View ────────────────────────────────────────────────────────────────
 
 const BackupView: React.FC = () => {
-  const { state } = useApp();
+  const { state, tenantId } = useApp();
   const { showToast } = useToast();
   const user = state.user!;
-  const tenantId = user.tenantId;
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(user.role);
 
   const [rodando, setRodando] = useState(false);

@@ -463,7 +463,7 @@ const FormMidia: React.FC<{
 // ─── Main View ────────────────────────────────────────────────────────────────
 
 const RepositorioView: React.FC = () => {
-  const { state } = useApp();
+  const { state, tenantId } = useApp();
   const { showToast } = useToast();
   const user = state.user!;
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(user.role);
@@ -478,19 +478,18 @@ const RepositorioView: React.FC = () => {
 
   // Load mídias
   useEffect(() => {
-    const tenantId = user.tenantId || '';
     const q = query(collection(db, 'repositorio'), where('tenantId', 'in', [tenantId, 'GLOBAL']), orderBy('createdAt', 'desc'));
     return onSnapshot(q, s =>
       setMidias(s.docs.map(d => ({ id: d.id, ...d.data() } as Midia)).filter(m => m.ativo !== false))
     );
-  }, [user.tenantId]);
+  }, [tenantId]);
 
   // Load progresso (assistidas) — filtro por tenantId obrigatório nas rules
   useEffect(() => {
     if (!user?.id) return;
     const q = query(
       collection(db, 'repositorioProgresso'),
-      where('tenantId', '==', user.tenantId)
+      where('tenantId', '==', tenantId)
     );
     return onSnapshot(q, s => {
       const ids = new Set<string>();
@@ -499,7 +498,7 @@ const RepositorioView: React.FC = () => {
       });
       setAssistidas(ids);
     });
-  }, [user?.id, user.tenantId]);
+  }, [user?.id, tenantId]);
 
   const abrirPlayer = async (midia: Midia) => {
     setPlayerMidia(midia);
@@ -507,7 +506,7 @@ const RepositorioView: React.FC = () => {
     const key = `${user.id}_${midia.id}`;
     await setDoc(doc(db, 'repositorioProgresso', key), {
       userId: user.id, midiaId: midia.id, midiaTitle: midia.titulo,
-      tenantId: user.tenantId, visto: true, vistoEm: serverTimestamp(),
+      tenantId, visto: true, vistoEm: serverTimestamp(),
     }, { merge: true });
   };
 
@@ -518,7 +517,7 @@ const RepositorioView: React.FC = () => {
     );
     await addDoc(collection(db, 'repositorio'), {
       ...cleanData, ativo: true,
-      tenantId: user.tenantId, criadoPor: user.id,
+      tenantId, criadoPor: user.id,
       createdAt: serverTimestamp(),
     });
     showToast('Conteúdo adicionado ao repositório!', 'success');

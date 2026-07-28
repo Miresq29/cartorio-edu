@@ -14,7 +14,7 @@ interface ChecklistItem { id: string; text: string; }
 interface Checklist { id: string; title: string; items: ChecklistItem[]; tenantId: string; createdAt: any; }
 
 const ChecklistView: React.FC = () => {
-  const { state } = useApp();
+  const { state, tenantId } = useApp();
   const { showToast } = useToast();
   const { logAction } = useAudit();
 
@@ -46,14 +46,13 @@ const ChecklistView: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const tenantId = state.user?.tenantId || '';
     const q = query(collection(db, 'checklists'), where('tenantId', 'in', [tenantId, 'GLOBAL']), orderBy('createdAt', 'desc'));
     const unsub = onSnapshot(q, snap => {
       setChecklists(snap.docs.map(d => ({ id: d.id, ...d.data() } as Checklist)));
       setLoading(false);
     });
     return () => unsub();
-  }, [state.user?.tenantId]);
+  }, [tenantId]);
 
   const activeChecklist = checklists.find(t => t.id === activeChecklistId);
 
@@ -100,7 +99,7 @@ const ChecklistView: React.FC = () => {
       const docRef = await addDoc(collection(db, 'checklists'), {
         title: formName.trim(),
         items: validItems.map(text => ({ id: Math.random().toString(36).substring(7), text: text.trim() })),
-        tenantId: isSuperAdmin && createAsGlobal ? 'GLOBAL' : (state.user?.tenantId || ''),
+        tenantId: isSuperAdmin && createAsGlobal ? 'GLOBAL' : tenantId,
         createdAt: serverTimestamp(),
         createdBy: state.user?.id
       });
@@ -150,12 +149,11 @@ const ChecklistView: React.FC = () => {
 
     try {
       // 1. Buscar base legal do Firestore (RAG)
-      const tenantId = state.user?.tenantId || '';
       let kbContext = '';
       try {
         const kbQuery = query(
           collection(db, 'knowledgeBase'),
-          where('tenantId', '==', tenantId)
+          where('tenantId', 'in', [tenantId, 'GLOBAL'])
         );
         const kbSnap = await getDocs(kbQuery);
         const kbDocs = kbSnap.docs.map(d => d.data());

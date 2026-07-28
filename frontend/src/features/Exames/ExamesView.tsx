@@ -50,7 +50,7 @@ function bloomLabel(bloom: string) {
 
 /* ══════════════════════════════════════════════════════════ */
 const ExamesView: React.FC = () => {
-  const { state } = useApp();
+  const { state, tenantId } = useApp();
   const { showToast } = useToast();
   const user = state.user!;
 
@@ -75,7 +75,6 @@ const ExamesView: React.FC = () => {
     const unsubs: (() => void)[] = [];
     const allFontes: FonteConteudo[] = [];
 
-    const tenantId = user.tenantId || '';
     const tenantFilter = [tenantId, 'GLOBAL'];
     const carrega = (colecao: string, tipo: FonteConteudo['tipo'], campoConteudo: string, campoTitulo: string) => {
       const u = onSnapshot(query(collection(db, colecao), where('tenantId', 'in', tenantFilter)), snap => {
@@ -98,7 +97,7 @@ const ExamesView: React.FC = () => {
     carrega('knowledgeBase', 'knowledgeBase', 'rawText',    'title');
 
     return () => unsubs.forEach(u => u());
-  }, []);
+  }, [tenantId]);
 
   /* ── carrega resultados do usuário ──────────────────────── */
   useEffect(() => {
@@ -106,7 +105,7 @@ const ExamesView: React.FC = () => {
     const q = query(
       collection(db, 'examesResultados'),
       where('userId', '==', user.id),
-      where('tenantId', '==', user.tenantId),
+      where('tenantId', '==', tenantId),
     );
     return onSnapshot(q, snap => {
       const docs = snap.docs.map(d => ({ id: d.id, ...d.data() } as ExameResultado));
@@ -118,7 +117,7 @@ const ExamesView: React.FC = () => {
       });
       setResultados(docs);
     });
-  }, [user?.id]);
+  }, [user?.id, tenantId]);
 
   /* ── verifica bloqueio para uma fonte ───────────────────── */
   const verificaBloqueio = useCallback((fonteId: string) => {
@@ -191,7 +190,7 @@ const ExamesView: React.FC = () => {
       await addDoc(collection(db, 'examesResultados'), {
         userId: user.id,
         userName: user.name,
-        tenantId: user.tenantId,
+        tenantId,
         fonteId: fonteEscolhida!.id,
         fonteTitulo: fonteEscolhida!.titulo,
         score,

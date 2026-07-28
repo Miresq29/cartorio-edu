@@ -69,8 +69,7 @@ const formatCountdown = (liberadoEm: Date): string => {
 };
 
 const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
-  const { state } = useApp();
-  const tenantId = state.user?.tenantId || '';
+  const { state, tenantId } = useApp();
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [results, setResults] = useState<QuizResult[]>([]);
   const [mode, setMode] = useState<'list' | 'create' | 'take' | 'result' | 'blocked'>('list');
@@ -95,16 +94,16 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
   const [createMode, setCreateMode] = useState<'ia' | 'manual'>('ia');
 
   useEffect(() => {
-    const q = query(collection(db, 'treinamentosQuizzes'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'));
+    const q = query(collection(db, 'treinamentosQuizzes'), where('tenantId', 'in', [tenantId, 'GLOBAL']), orderBy('createdAt', 'desc'));
     const unsub = onSnapshot(q, snap => setQuizzes(snap.docs.map(d => ({ id: d.id, ...d.data() } as Quiz))));
     return () => unsub();
-  }, []);
+  }, [tenantId]);
 
   useEffect(() => {
     const q = query(collection(db, 'treinamentosQuizResults'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'));
     const unsub = onSnapshot(q, snap => setResults(snap.docs.map(d => ({ id: d.id, ...d.data() } as QuizResult))));
     return () => unsub();
-  }, []);
+  }, [tenantId]);
 
   // ---- GERAR QUIZ VIA IA (Gemini) ----
   const generateQuizWithAI = async () => {

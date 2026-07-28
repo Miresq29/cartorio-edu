@@ -26,8 +26,7 @@ interface QuizResult {
 }
 
 const TrainingReport: React.FC = () => {
-  const { state } = useApp();
-  const tenantId = state.user?.tenantId || '';
+  const { tenantId } = useApp();
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
   const [filterColaborador, setFilterColaborador] = useState('');
@@ -39,13 +38,13 @@ const TrainingReport: React.FC = () => {
     const q = query(collection(db, 'treinamentosParticipantes'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'));
     const unsub = onSnapshot(q, snap => setParticipants(snap.docs.map(d => ({ id: d.id, ...d.data() } as Participant))));
     return () => unsub();
-  }, []);
+  }, [tenantId]);
 
   useEffect(() => {
     const q = query(collection(db, 'treinamentosQuizResults'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'));
     const unsub = onSnapshot(q, snap => setQuizResults(snap.docs.map(d => ({ id: d.id, ...d.data() } as QuizResult))));
     return () => unsub();
-  }, []);
+  }, [tenantId]);
 
   const treinamentosUnicos = [...new Set(participants.map(p => p.treinamento))];
 

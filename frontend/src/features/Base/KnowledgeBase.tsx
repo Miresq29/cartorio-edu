@@ -21,7 +21,7 @@ interface KBDoc {
 }
 
 const KnowledgeBase: React.FC = () => {
-  const { state } = useApp();
+  const { state, tenantId } = useApp();
   const [isUploading, setIsUploading] = useState(false);
   const [viewingDoc, setViewingDoc] = useState<KBDoc | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
@@ -44,7 +44,7 @@ const KnowledgeBase: React.FC = () => {
     } else {
       q = query(
         collection(db, 'knowledgeBase'),
-        where('tenantId', '==', user.tenantId),
+        where('tenantId', 'in', [tenantId, 'GLOBAL']),
         orderBy('createdAt', 'desc')
       );
     }
@@ -53,7 +53,7 @@ const KnowledgeBase: React.FC = () => {
       setLoading(false);
     });
     return () => unsub();
-  }, [user]);
+  }, [user, tenantId]);
 
   const filteredDocs = useMemo(() => {
     if (!searchTerm.trim()) return docs;
@@ -70,7 +70,7 @@ const KnowledgeBase: React.FC = () => {
 
     // âœ… CORREÇÃƒO: Validação de nome duplicado
     const isDuplicate = docs.some(
-      d => d.fileName?.toLowerCase() === file.name.toLowerCase() && d.tenantId === user.tenantId
+      d => d.fileName?.toLowerCase() === file.name.toLowerCase() && d.tenantId === tenantId
     );
     if (isDuplicate) {
       showToast(`Já existe um documento com o nome "${file.name}" na base legal. Renomeie o arquivo antes de enviar.`, 'error');
@@ -91,7 +91,7 @@ const KnowledgeBase: React.FC = () => {
       }
 
       await addDoc(collection(db, 'knowledgeBase'), {
-        tenantId: isSuperAdmin && uploadAsGlobal ? 'GLOBAL' : user.tenantId,
+        tenantId: isSuperAdmin && uploadAsGlobal ? 'GLOBAL' : tenantId,
         title: file.name,
         fileName: file.name,
         content,

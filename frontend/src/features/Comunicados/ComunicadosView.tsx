@@ -25,7 +25,7 @@ const PRIORIDADE_CONFIG = {
 };
 
 const ComunicadosView: React.FC = () => {
-  const { state } = useApp();
+  const { state, tenantId } = useApp();
   const { showToast } = useToast();
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(state.user?.role || '');
   const isSuperAdmin = state.user?.role === 'SUPERADMIN';
@@ -40,27 +40,25 @@ const ComunicadosView: React.FC = () => {
   const [form, setForm] = useState({ titulo: '', corpo: '', prazo: '', anexoUrl: '', prioridade: 'normal' as const, fixado: false });
 
   useEffect(() => {
-    const tenantId = state.user?.tenantId || '';
     const q = query(collection(db, 'comunicados'), where('tenantId', 'in', [tenantId, 'GLOBAL']), orderBy('criadoEm', 'desc'));
     return onSnapshot(q, s => setComunicados(s.docs.map(d => ({ id: d.id, ...d.data() } as Comunicado)).filter(c => c.ativo !== false)));
-  }, [state.user?.tenantId]);
+  }, [tenantId]);
 
   useEffect(() => {
     if (!state.user?.id) return;
-    const tenantId = state.user?.tenantId || '';
     const q = query(collection(db, 'comunicadosLeituras'), where('tenantId', '==', tenantId));
     return onSnapshot(q, s => {
       const ids = new Set<string>();
       s.docs.forEach(d => { if (d.data().userId === state.user!.id) ids.add(d.data().comunicadoId); });
       setLidos(ids);
     });
-  }, [state.user?.id, state.user?.tenantId]);
+  }, [state.user?.id, tenantId]);
 
   const marcarLido = async (id: string) => {
     if (!state.user?.id || lidos.has(id)) return;
     const key = `${state.user.id}_${id}`;
     await setDoc(doc(db, 'comunicadosLeituras', key), {
-      userId: state.user.id, comunicadoId: id, tenantId: state.user.tenantId, lidoEm: serverTimestamp(),
+      userId: state.user.id, comunicadoId: id, tenantId, lidoEm: serverTimestamp(),
     });
   };
 
@@ -69,7 +67,7 @@ const ComunicadosView: React.FC = () => {
     setLoading(true);
     try {
       await addDoc(collection(db, 'comunicados'), {
-        ...form, ativo: true, tenantId: isSuperAdmin && createAsGlobal ? 'GLOBAL' : (state.user?.tenantId || ''),
+        ...form, ativo: true, tenantId: isSuperAdmin && createAsGlobal ? 'GLOBAL' : tenantId,
         publicadoPor: state.user?.id || '', publicadoPorNome: state.user?.name || '',
         criadoEm: serverTimestamp(),
       });

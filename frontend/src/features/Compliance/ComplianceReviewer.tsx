@@ -20,7 +20,7 @@ interface KBDoc { id: string; fileName: string; content: string; rawText: string
 interface Checklist { id: string; title: string; items: { id: string; text: string }[]; tenantId: string; }
 
 const ComplianceReviewer: React.FC = () => {
-  const { state } = useApp();
+  const { state, tenantId } = useApp();
   const { logAction } = useAudit();
   const { showToast } = useToast();
 
@@ -37,15 +37,13 @@ const ComplianceReviewer: React.FC = () => {
   const [auditDate, setAuditDate] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const tenantId = state.user?.tenantId || '';
-
   useEffect(() => {
     const q1 = query(collection(db, 'checklists'), where('tenantId', 'in', [tenantId, 'GLOBAL']), orderBy('createdAt', 'desc'));
     const unsub1 = onSnapshot(q1, snap => setChecklists(snap.docs.map(d => ({ id: d.id, ...d.data() } as Checklist))));
 
     const fetchKB = async () => {
       try {
-        const q2 = query(collection(db, 'knowledgeBase'), where('tenantId', '==', tenantId));
+        const q2 = query(collection(db, 'knowledgeBase'), where('tenantId', 'in', [tenantId, 'GLOBAL']));
         const snap = await getDocs(q2);
         setKbDocs(snap.docs.map(d => ({ id: d.id, ...d.data() } as KBDoc)));
       } catch { /* sem base legal */ }

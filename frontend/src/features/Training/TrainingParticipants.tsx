@@ -30,8 +30,7 @@ const STATUS_CONFIG = {
 };
 
 const TrainingParticipants: React.FC = () => {
-  const { state } = useApp();
-  const tenantId = state.user?.tenantId || '';
+  const { tenantId } = useApp();
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [checklists, setChecklists] = useState<Checklist[]>([]);
   const [showForm, setShowForm] = useState(false);
@@ -55,16 +54,16 @@ const TrainingParticipants: React.FC = () => {
       setParticipants(snap.docs.map(d => ({ id: d.id, ...d.data() } as Participant)))
     );
     return () => unsub();
-  }, []);
+  }, [tenantId]);
 
   // Carrega checklists (treinamentos mapeados)
   useEffect(() => {
-    const q = query(collection(db, 'checklists'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'));
+    const q = query(collection(db, 'checklists'), where('tenantId', 'in', [tenantId, 'GLOBAL']), orderBy('createdAt', 'desc'));
     const unsub = onSnapshot(q, snap =>
       setChecklists(snap.docs.map(d => ({ id: d.id, ...d.data() } as Checklist)))
     );
     return () => unsub();
-  }, []);
+  }, [tenantId]);
 
   const handleSubmit = async () => {
     if (!form.nomeColaborador || !form.treinamento || !form.dataConclusao) return;

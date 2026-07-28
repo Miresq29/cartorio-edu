@@ -39,7 +39,7 @@ interface AnaliseResult {
 type Tab = 'painel' | 'analise' | 'chat';
 
 const IAAnaliticaView: React.FC = () => {
-  const { state } = useApp();
+  const { state, tenantId } = useApp();
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [knowledgeDocs, setKnowledgeDocs] = useState<KnowledgeDoc[]>([]);
   const [activeTab, setActiveTab] = useState<Tab>('painel');
@@ -51,7 +51,6 @@ const IAAnaliticaView: React.FC = () => {
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const tenantId = state.user?.tenantId || '';
     const isSuperAdmin = state.user?.role === 'SUPERADMIN';
     const q1 = isSuperAdmin
       ? query(collection(db, 'auditLogs'), orderBy('createdAt', 'desc'), limit(200))
@@ -60,7 +59,7 @@ const IAAnaliticaView: React.FC = () => {
     const q2 = query(collection(db, 'knowledgeBase'), where('tenantId', 'in', [tenantId, 'GLOBAL']), orderBy('createdAt', 'desc'));
     const u2 = onSnapshot(q2, s => setKnowledgeDocs(s.docs.map(d => ({ id: d.id, ...d.data() } as KnowledgeDoc))));
     return () => { u1(); u2(); };
-  }, [state.user?.tenantId, state.user?.role]);
+  }, [tenantId, state.user?.role]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });

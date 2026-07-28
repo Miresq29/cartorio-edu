@@ -637,10 +637,9 @@ const DesempatePlayer: React.FC<{
 // ─── Main View ────────────────────────────────────────────────────────────────
 
 const MetasView: React.FC = () => {
-  const { state } = useApp();
+  const { state, tenantId } = useApp();
   const { showToast } = useToast();
   const user = state.user!;
-  const tenantId = user.tenantId;
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(user.role);
 
   const [metas, setMetas] = useState<Meta[]>([]);
