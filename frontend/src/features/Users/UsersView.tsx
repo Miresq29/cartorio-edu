@@ -97,7 +97,7 @@ const UsersView: React.FC = () => {
   const { state, tenantId } = useApp();
   const { showToast } = useToast();
   const user = state.user!;
-  const isGestor = ['SUPERADMIN', 'gestor'].includes(user.role);
+  const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(user.role);
 
   const isSuperAdmin = user.role === 'SUPERADMIN';
 
