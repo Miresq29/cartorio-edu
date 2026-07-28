@@ -122,6 +122,10 @@ const UsersView: React.FC = () => {
     const u = onSnapshot(q, snap => {
       setUsers(snap.docs.map(d => ({ id: d.id, ...d.data() } as UserData)));
       setLoading(false);
+    }, err => {
+      console.error('Erro ao carregar colaboradores:', err);
+      showToast('Erro ao carregar colaboradores. Tente recarregar a página.', 'error');
+      setLoading(false);
     });
     return () => u();
   }, [tenantId, user.role]);
