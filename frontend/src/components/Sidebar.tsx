@@ -1,14 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { AppTab } from '../types';
 import { AuthService } from '../services/authService';
+import { db } from '../services/firebase';
+import { doc, onSnapshot } from 'firebase/firestore';
 
 const Sidebar: React.FC = () => {
-  const { state, setActiveTab, setActiveTenant, logout: appLogout } = useApp();
+  const { state, tenantId, setActiveTab, setActiveTenant, logout: appLogout } = useApp();
   const [expanded, setExpanded] = useState(false);
   const [openSections, setOpenSections] = useState<Record<number, boolean>>({
     0: true, 1: true, 2: false, 3: false, 4: false
   });
+  const [phishingHabilitado, setPhishingHabilitado] = useState(false);
+
+  useEffect(() => {
+    if (!tenantId) { setPhishingHabilitado(false); return; }
+    return onSnapshot(doc(db, 'tenants', tenantId), snap => setPhishingHabilitado(!!snap.data()?.phishingHabilitado));
+  }, [tenantId]);
 
   const toggleSection = (idx: number) => {
     setOpenSections(prev => ({ ...prev, [idx]: !prev[idx] }));
@@ -41,7 +49,7 @@ const Sidebar: React.FC = () => {
         { tab: 'audit',    icon: 'fa-clock-rotate-left', label: 'Auditoria',     desc: 'Historico de acessos e alteracoes',   roles: ['SUPERADMIN', 'gestor']          },
         { tab: 'security', icon: 'fa-lock',              label: 'Seguranca',     desc: 'Senhas, bloqueios e politicas',       roles: ['SUPERADMIN', 'gestor']          },
         { tab: 'analytics', icon: 'fa-chart-pie',        label: 'IA Analitica',  desc: 'Analise de auditoria e base legal',   roles: ['SUPERADMIN', 'gestor']          },
-        { tab: 'phishing',  icon: 'fa-shield-halved',     label: 'Simulacao Phishing', desc: 'Teste de conscientizacao por e-mail', roles: ['SUPERADMIN', 'gestor', 'admin'], color: 'text-red-400' },
+        { tab: 'phishing',  icon: 'fa-shield-halved',     label: 'Simulacao Phishing', desc: 'Recurso opcional: teste de conscientizacao por e-mail', roles: ['SUPERADMIN', 'gestor', 'admin'], color: 'text-red-400' },
       ]
     },
     {
@@ -140,9 +148,10 @@ const Sidebar: React.FC = () => {
       {/* Nav */}
       <nav className="flex-1 px-2 py-3 space-y-1 overflow-y-auto custom-scrollbar pb-8">
         {sections.map((section, sIdx) => {
-          const visibleItems = section.items.filter(item =>
-            !item.roles || item.roles.includes(state.user?.role || '') || state.user?.role === 'SUPERADMIN'
-          );
+          const visibleItems = section.items.filter(item => {
+            if (item.tab === 'phishing' && state.user?.role !== 'SUPERADMIN' && !phishingHabilitado) return false;
+            return !item.roles || item.roles.includes(state.user?.role || '') || state.user?.role === 'SUPERADMIN';
+          });
           if (visibleItems.length === 0) return null;
 
           const isOpen = openSections[sIdx];

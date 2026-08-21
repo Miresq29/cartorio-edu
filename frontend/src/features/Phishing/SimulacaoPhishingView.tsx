@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { db } from '../../services/firebase';
-import { collection, onSnapshot, query, orderBy, where, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, where, addDoc, serverTimestamp, doc } from 'firebase/firestore';
 import VisibilidadeCartorioPicker from '../../components/VisibilidadeCartorioPicker';
 
 interface Simulacao {
@@ -54,6 +54,12 @@ const SimulacaoPhishingView: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [expandido, setExpandido] = useState<string | null>(null);
   const [form, setForm] = useState({ titulo: '', assuntoEmail: '', corpoEmail: '' });
+  const [phishingHabilitado, setPhishingHabilitado] = useState(false);
+
+  useEffect(() => {
+    if (!tenantId) return;
+    return onSnapshot(doc(db, 'tenants', tenantId), snap => setPhishingHabilitado(!!snap.data()?.phishingHabilitado));
+  }, [tenantId]);
 
   useEffect(() => {
     const q = query(collection(db, 'simulacoesPhishing'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']), orderBy('criadoEm', 'desc'));
@@ -71,6 +77,9 @@ const SimulacaoPhishingView: React.FC = () => {
   };
 
   const salvar = async () => {
+    if (!isSuperAdmin && !phishingHabilitado) {
+      showToast('Este recurso opcional não está habilitado para o seu cartório. Solicite a ativação à MJ Consultoria.', 'error'); return;
+    }
     if (!form.titulo.trim() || !form.assuntoEmail.trim() || !form.corpoEmail.trim()) {
       showToast('Título, assunto e corpo do e-mail são obrigatórios.', 'error'); return;
     }
@@ -109,19 +118,30 @@ const SimulacaoPhishingView: React.FC = () => {
             Teste de conscientização em segurança — mede quem clica em e-mails simulados
           </p>
         </div>
-        <button onClick={() => setShowForm(!showForm)}
-          className="bg-amber-600 hover:bg-amber-500 text-[#0A1628] px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
-          <i className="fa-solid fa-plus mr-2"></i>Nova Simulação
-        </button>
+        {(isSuperAdmin || phishingHabilitado) && (
+          <button onClick={() => setShowForm(!showForm)}
+            className="bg-amber-600 hover:bg-amber-500 text-[#0A1628] px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+            <i className="fa-solid fa-plus mr-2"></i>Nova Simulação
+          </button>
+        )}
       </header>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 text-xs text-blue-800">
-        <i className="fa-solid fa-circle-info mr-2"></i>
-        Cada colaborador recebe um link individual e rastreável. Ao clicar, ele é redirecionado para uma página educativa
-        explicando que se tratava de um teste — o clique é registrado aqui como evidência de risco, sem coletar senha ou dado sensível.
-      </div>
+      {!isSuperAdmin && !phishingHabilitado ? (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-sm text-amber-800 space-y-2">
+          <p className="font-black uppercase text-xs tracking-widest">
+            <i className="fa-solid fa-lock mr-2"></i>Recurso opcional não habilitado
+          </p>
+          <p>Este é um módulo opcional — sua ativação para o cartório precisa ser feita pela MJ Consultoria. Fale com o suporte para habilitar a simulação de phishing.</p>
+        </div>
+      ) : (
+        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 text-xs text-blue-800">
+          <i className="fa-solid fa-circle-info mr-2"></i>
+          Cada colaborador recebe um link individual e rastreável. Ao clicar, ele é redirecionado para uma página educativa
+          explicando que se tratava de um teste — o clique é registrado aqui como evidência de risco, sem coletar senha ou dado sensível.
+        </div>
+      )}
 
-      {showForm && (
+      {showForm && (isSuperAdmin || phishingHabilitado) && (
         <div className="bg-white border border-amber-500/30 rounded-[24px] p-6 space-y-4">
           <h3 className="text-[#0A1628] font-black uppercase text-sm">Nova Simulação</h3>
 

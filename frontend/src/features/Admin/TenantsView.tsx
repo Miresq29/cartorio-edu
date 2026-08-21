@@ -5,7 +5,7 @@ import { useToast } from '../../context/ToastContext';
 import { db, functions } from '../../services/firebase';
 import { httpsCallable } from 'firebase/functions';
 import {
-  collection, onSnapshot, query, orderBy
+  collection, onSnapshot, query, orderBy, doc, updateDoc
 } from 'firebase/firestore';
 
 const createTenantFn = httpsCallable(functions, 'createTenant');
@@ -14,6 +14,7 @@ interface Tenant {
   id: string;
   name: string;
   active: boolean;
+  phishingHabilitado?: boolean;
   createdAt: any;
 }
 
@@ -53,6 +54,14 @@ const TenantsView: React.FC = () => {
     setSaving(false);
   };
 
+  const togglePhishing = async (t: Tenant) => {
+    await updateDoc(doc(db, 'tenants', t.id), { phishingHabilitado: !t.phishingHabilitado });
+    showToast(
+      !t.phishingHabilitado ? `Simulação de phishing habilitada para "${t.name}".` : `Simulação de phishing desabilitada para "${t.name}".`,
+      'success'
+    );
+  };
+
   return (
     <div className="p-12 min-h-full bg-slate-50 animate-in fade-in space-y-12">
       <header>
@@ -89,6 +98,10 @@ const TenantsView: React.FC = () => {
         </form>
 
         <div className="bg-white border border-slate-200 rounded-[40px] p-10 space-y-6 shadow-lg">
+          <p className="text-[10px] text-slate-400 px-2">
+            <i className="fa-solid fa-circle-info mr-1"></i>
+            "Phishing ON/OFF" habilita ou desabilita, por cartório, o módulo opcional de simulação de phishing (menu Gestão).
+          </p>
           <div className="flex items-center justify-between">
             <h3 className="text-slate-500 font-bold uppercase text-[10px] tracking-[0.3em] px-2">Instâncias Ativas</h3>
             <span className="text-[10px] font-black text-blue-500 bg-blue-50 px-3 py-1 rounded-lg border border-blue-100">
@@ -111,15 +124,30 @@ const TenantsView: React.FC = () => {
                     <p className="text-[10px] font-mono text-slate-400">{t.id}</p>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => { setActiveTenant(t.id, t.name); setActiveTab('unit'); }}
-                  className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white border border-blue-200 hover:border-blue-600 transition-all"
-                  title={`Acessar ${t.name}`}
-                >
-                  <i className="fa-solid fa-arrow-right-to-bracket text-[9px]"></i>
-                  Acessar
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => togglePhishing(t)}
+                    className={`flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl border transition-all ${
+                      t.phishingHabilitado
+                        ? 'bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100'
+                        : 'bg-slate-50 text-slate-400 border-slate-200 hover:bg-slate-100'
+                    }`}
+                    title={t.phishingHabilitado ? 'Recurso opcional habilitado — clique para desabilitar' : 'Recurso opcional desabilitado — clique para habilitar'}
+                  >
+                    <i className="fa-solid fa-shield-halved text-[9px]"></i>
+                    Phishing {t.phishingHabilitado ? 'ON' : 'OFF'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setActiveTenant(t.id, t.name); setActiveTab('unit'); }}
+                    className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white border border-blue-200 hover:border-blue-600 transition-all"
+                    title={`Acessar ${t.name}`}
+                  >
+                    <i className="fa-solid fa-arrow-right-to-bracket text-[9px]"></i>
+                    Acessar
+                  </button>
+                </div>
               </div>
             ))}
           </div>
