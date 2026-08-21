@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { GeminiService } from '../../services/geminiService';
+import { db } from '../../services/firebase';
+import { collection, addDoc, onSnapshot, query, where, orderBy, serverTimestamp, limit } from 'firebase/firestore';
 
 type Platform = 'linkedin' | 'instagram' | 'whatsapp' | 'email';
 type Tone = 'formal' | 'informativo' | 'motivacional' | 'educativo' | 'comemorativo';
@@ -46,8 +48,18 @@ const TOPIC_SUGGESTIONS = [
   'Inventário extrajudicial: quando usar',
 ];
 
+interface Campanha {
+  id: string;
+  topic: string;
+  plataformas: Platform[];
+  tom: Tone;
+  posts: Record<string, string>;
+  criadoPorNome: string;
+  criadoEm: any;
+}
+
 const CampanhasView: React.FC = () => {
-  const { state } = useApp();
+  const { state, tenantId } = useApp();
   const { showToast } = useToast();
 
   const [topic, setTopic] = useState('');
@@ -58,6 +70,13 @@ const CampanhasView: React.FC = () => {
   const [posts, setPosts] = useState<Record<string, string>>({});
   const [activePlatformTab, setActivePlatformTab] = useState<Platform | null>(null);
   const [copiedPlatform, setCopiedPlatform] = useState<string | null>(null);
+  const [historico, setHistorico] = useState<Campanha[]>([]);
+  const [salvando, setSalvando] = useState(false);
+
+  useEffect(() => {
+    const q = query(collection(db, 'campanhas'), where('tenantId', '==', tenantId), orderBy('criadoEm', 'desc'), limit(20));
+    return onSnapshot(q, s => setHistorico(s.docs.map(d => ({ id: d.id, ...d.data() } as Campanha))));
+  }, [tenantId]);
 
   const togglePlatform = (platform: Platform) => {
     setSelectedPlatforms(prev =>
@@ -87,6 +106,15 @@ const CampanhasView: React.FC = () => {
         setPosts(result);
         setActivePlatformTab(selectedPlatforms[0]);
         showToast('Posts gerados com sucesso!', 'success');
+        setSalvando(true);
+        try {
+          await addDoc(collection(db, 'campanhas'), {
+            topic, plataformas: selectedPlatforms, tom: selectedTone, posts: result,
+            tenantId, criadoPor: state.user?.id || '', criadoPorNome: state.user?.name || '',
+            criadoEm: serverTimestamp(),
+          });
+        } catch { showToast('Posts gerados, mas houve erro ao salvar no histórico.', 'error'); }
+        setSalvando(false);
       } else {
         showToast('Não foi possível gerar os posts. Tente novamente.', 'error');
       }
@@ -95,6 +123,13 @@ const CampanhasView: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const abrirDoHistorico = (c: Campanha) => {
+    setPosts(c.posts);
+    setSelectedPlatforms(c.plataformas);
+    setActivePlatformTab(c.plataformas[0] || null);
+    setTopic(c.topic);
   };
 
   const copyPost = (platform: string, text: string) => {
@@ -338,6 +373,29 @@ const CampanhasView: React.FC = () => {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Histórico de campanhas */}
+      <div className="bg-white border border-slate-200 rounded-[24px] p-5 space-y-3">
+        <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
+          Histórico de campanhas {salvando && <span className="text-slate-400">(salvando...)</span>}
+        </h4>
+        {historico.length === 0 ? (
+          <p className="text-[11px] text-slate-400">Nenhuma campanha gerada ainda neste cartório.</p>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {historico.map(c => (
+              <button key={c.id} type="button" onClick={() => abrirDoHistorico(c)}
+                className="flex items-center gap-2 text-[11px] bg-slate-50 hover:bg-slate-100 border border-slate-200 px-3 py-2 rounded-xl transition-all text-left">
+                <i className="fa-solid fa-bullhorn text-pink-400"></i>
+                <span className="font-bold text-[#0A1628] max-w-[220px] truncate">{c.topic}</span>
+                <span className="text-slate-400">
+                  {c.criadoEm?.toDate?.()?.toLocaleDateString('pt-BR') || ''} · {c.criadoPorNome}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

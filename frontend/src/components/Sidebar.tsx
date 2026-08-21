@@ -60,6 +60,7 @@ const Sidebar: React.FC = () => {
         { tab: 'videos',       icon: 'fa-video',         label: 'Videos',         desc: 'Videos de treinamento (YouTube)',   color: 'text-rose-400'   },
         { tab: 'knowledge',    icon: 'fa-scale-balanced', label: 'Base Legal',    desc: 'Documentos normativos indexados',   color: 'text-amber-400'  },
         { tab: 'comunicados',  icon: 'fa-bullhorn',      label: 'Comunicados',   desc: 'Mural de avisos da empresa',         color: 'text-amber-400'  },
+        { tab: 'checklists',   icon: 'fa-list-check',    label: 'Checklists',    desc: 'Roteiros e protocolos operacionais', color: 'text-blue-400', roles: ['SUPERADMIN', 'gestor', 'admin'] },
         { tab: 'banners',      icon: 'fa-images',        label: 'Banners',       desc: 'Banners e materiais de divulgacao',  color: 'text-pink-400', roles: ['SUPERADMIN', 'gestor', 'admin'] },
       ]
     },

@@ -58,6 +58,7 @@ const TIPO_ICON: Record<string, string> = {
 const TrainingView: React.FC = () => {
   const { state, tenantId } = useApp();
   const { showToast } = useToast();
+  const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(state.user?.role || '');
   const [activeTab, setActiveTab] = useState<Tab>('ia');
   const [checklists, setChecklists] = useState<any[]>([]);
   const [knowledgeDocs, setKnowledgeDocs] = useState<any[]>([]);
@@ -68,6 +69,8 @@ const TrainingView: React.FC = () => {
   const [trainingOptions, setTrainingOptions] = useState<TrainingOption[]>([]);
   const [selectedOption, setSelectedOption] = useState<TrainingOption | null>(null);
   const [customRequest, setCustomRequest] = useState('');
+  const [savingTreinamento, setSavingTreinamento] = useState(false);
+  const [treinamentoSalvo, setTreinamentoSalvo] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const [selectedDoc, setSelectedDoc] = useState<any | null>(null);
@@ -135,6 +138,7 @@ const TrainingView: React.FC = () => {
     setIsLoading(true);
     setTrainingOptions([]);
     setSelectedOption(null);
+    setTreinamentoSalvo(false);
     setMessages([]);
     try {
       const options = await GeminiService.generateTrainingOptions(buildContext(), customRequest || undefined);
@@ -197,6 +201,22 @@ ${opt.justificativa}
 [obrigatorio] = Modulo obrigatorio
 `;
     return result;
+  };
+
+  const salvarComoTreinamento = async () => {
+    if (!selectedOption || savingTreinamento) return;
+    setSavingTreinamento(true);
+    try {
+      await addDoc(collection(db, 'treinamentos'), {
+        titulo: selectedOption.titulo,
+        descricao: formatSelectedOption(selectedOption),
+        tenantIds: [tenantId],
+        criadoPorNome: state.user?.name || '',
+        createdAt: serverTimestamp(),
+      });
+      setTreinamentoSalvo(true);
+      showToast('Treinamento salvo! Já pode ser usado como fonte de conteúdo em Exames.', 'success');
+    } catch { showToast('Erro ao salvar o treinamento.', 'error'); } finally { setSavingTreinamento(false); }
   };
 
   const deleteSummary = async (id: string) => {
@@ -364,6 +384,18 @@ ${opt.justificativa}
                 className="text-[9px] bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
                 <i className="fa-solid fa-copy mr-1"></i>Copiar roteiro
               </button>
+              {isGestor && (
+                <button onClick={salvarComoTreinamento} disabled={savingTreinamento || treinamentoSalvo}
+                  className={`text-[9px] px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all ${
+                    treinamentoSalvo ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-50'
+                  }`}>
+                  {treinamentoSalvo
+                    ? <><i className="fa-solid fa-check mr-1"></i>Salvo como treinamento</>
+                    : savingTreinamento
+                      ? <><i className="fa-solid fa-circle-notch animate-spin mr-1"></i>Salvando...</>
+                      : <><i className="fa-solid fa-floppy-disk mr-1"></i>Salvar como treinamento</>}
+                </button>
+              )}
             </div>
           )}
           <div ref={chatEndRef} />

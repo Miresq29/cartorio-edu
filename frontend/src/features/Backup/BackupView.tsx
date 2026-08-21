@@ -38,6 +38,7 @@ const COLECOES_TENANT = [
   { id: 'materiaisbanner',         label: 'Banners e Materiais',  icon: 'fa-images'            },
   { id: 'treinamentos',            label: 'Treinamentos',         icon: 'fa-graduation-cap'    },
   { id: 'treinamentosQuizzes',     label: 'Quizzes',              icon: 'fa-clipboard-question'},
+  { id: 'campanhas',               label: 'Campanhas',            icon: 'fa-bullhorn'          },
 ];
 
 interface BackupStatus {
