@@ -218,10 +218,12 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
     setQuizResult({ ...result, id: docRef.id });
     setMode('result');
 
-    // Após a 2ª reprovação no mesmo teste, dispara reforço automático por e-mail (uma única vez).
+    // Após 2 reprovações consecutivas no mesmo teste, dispara reforço automático por e-mail.
+    // "results" já vem ordenado por createdAt desc, então o primeiro item é a tentativa anterior mais recente.
     if (!result.aprovado) {
-      const falhasAnteriores = results.filter(r => r.quizId === selectedQuiz.id && r.colaborador === respondente.nome && !r.aprovado).length;
-      if (falhasAnteriores + 1 === 2 && state.user?.email) {
+      const tentativaAnterior = results.find(r => r.quizId === selectedQuiz.id && r.colaborador === respondente.nome);
+      const reprovacaoConsecutiva = !!tentativaAnterior && !tentativaAnterior.aprovado;
+      if (reprovacaoConsecutiva && state.user?.email) {
         await addDoc(collection(db, 'reforcosPendentes'), {
           userId: state.user.id, colaboradorNome: respondente.nome, colaboradorEmail: state.user.email,
           quizId: selectedQuiz.id, quizTitulo: selectedQuiz.titulo, treinamento: selectedQuiz.treinamento,

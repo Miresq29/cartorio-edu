@@ -246,6 +246,10 @@ Colaboradores com mais cliques: ${rankingRisco.slice(0, 5).map(r => `${r.nome} (
       const prompt = `Você é um analista de segurança da informação de um cartório notarial brasileiro. Com base nestes dados de simulações internas de phishing, escreva um plano de ação objetivo em português, em tópicos curtos, com: 1) diagnóstico resumido, 2) até 5 ações prioritárias de treinamento/reforço (mencionando temas ou cargos mais vulneráveis quando fizer sentido), 3) uma recomendação de frequência para novas simulações. Seja direto, sem introduções genéricas.\n\nDados:\n${resumo}`;
 
       const texto = await GeminiService.getGeminiResponse(prompt);
+      if (!texto || texto.startsWith('Erro ')) {
+        showToast(texto || 'Erro ao gerar o plano de ação. Tente novamente.', 'error');
+        return;
+      }
       await addDoc(collection(db, 'planosAcaoPhishing'), {
         texto, resumo, tenantId, geradoPor: state.user?.id || '', geradoPorNome: state.user?.name || '',
         criadoEm: serverTimestamp(),
