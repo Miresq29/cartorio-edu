@@ -33,6 +33,8 @@ const SECTIONS: Section[] = [
       { title: 'Visão Geral', desc: 'A primeira aba exibe a atividade mensal e distribuição de notas da equipe. Acompanhe tendências de desempenho ao longo do tempo.' },
       { title: 'Por Colaborador', desc: 'Veja quantos treinamentos, exames e certificados cada colaborador concluiu. Identifique usuários engajados e os que precisam de atenção.' },
       { title: 'Por Trilha', desc: 'Acompanhe a taxa de conclusão e aprovação por trilha de aprendizado. Útil para avaliar quais conteúdos têm maior aderência.' },
+      { title: 'Evidências de Trilhas', desc: 'Lista, um registro por colaborador × trilha, o percentual concluído, status e data da última atualização — evidência direta de quem concluiu o quê e quando, exportável em CSV para fiscalizações.' },
+      { title: 'Ficha de Capacitação individual', desc: 'Na aba "Colaboradores", clique em "Gerar" na coluna Ficha para baixar um PDF individual com trilhas, testes, exames e certificados daquele colaborador — pronto para apresentar em inspeção.' },
       { title: 'Risco', desc: 'Aba com um índice de risco/maturidade por colaborador, combinando média de notas, atividade recente e validade de certificados — destaca quem precisa de atenção prioritária.' },
       { title: 'Exportação', desc: 'Use "Imprimir" para gerar relatório em PDF ou "Exportar Excel" para análise em planilha. Filtre por período usando o seletor no topo.' },
     ]

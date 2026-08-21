@@ -33,8 +33,20 @@ interface TrilhaProgresso {
   userName: string;
   trilhaId: string;
   trilhaTitulo?: string;
-  concluido: boolean;
+  concluida: boolean;
+  percentualObrigatorios?: number;
+  updatedAt?: any;
   tenantId: string;
+}
+
+interface ExameResultado {
+  id: string;
+  userId: string;
+  fonteTitulo: string;
+  score: number;
+  aprovado: boolean;
+  createdAt: any;
+  tenantId?: string;
 }
 
 interface UserData {
@@ -55,7 +67,7 @@ interface Certificado {
   tenantId: string;
 }
 
-type Tab = 'visao_geral' | 'colaboradores' | 'trilhas' | 'risco' | 'evidencias';
+type Tab = 'visao_geral' | 'colaboradores' | 'trilhas' | 'trilhas_evidencias' | 'risco' | 'evidencias';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -72,6 +84,18 @@ function getMonth(ts: any): string {
   if (!ts) return '';
   const d = ts?.toDate ? ts.toDate() : new Date(ts);
   return d.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
+}
+
+function tsToMillis(ts: any): number {
+  if (!ts) return 0;
+  return ts?.toDate ? ts.toDate().getTime() : new Date(ts).getTime();
+}
+
+// Escapa conteúdo digitado por gestores/IA antes de embutir em HTML impresso — sem isso,
+// um "<" ou "&" no nome/título quebra visualmente o PDF gerado.
+function escapeHtml(s: string): string {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 const COLORS = ['#4F46E5', '#059669', '#D97706', '#DC2626', '#7C3AED', '#0891B2'];
@@ -132,8 +156,10 @@ const RelatoriosView: React.FC = () => {
   const [progresso, setProgresso] = useState<TrilhaProgresso[]>([]);
   const [usuarios, setUsuarios] = useState<UserData[]>([]);
   const [certificados, setCertificados] = useState<Certificado[]>([]);
+  const [exames, setExames] = useState<ExameResultado[]>([]);
   const [periodo, setPeriodo] = useState('90');
   const [buscaColab, setBuscaColab] = useState('');
+  const [buscaTrilha, setBuscaTrilha] = useState('');
 
   useEffect(() => {
     const q1 = query(collection(db, 'treinamentosQuizResults'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'));
@@ -148,7 +174,10 @@ const RelatoriosView: React.FC = () => {
     const q4 = query(collection(db, 'certificados'), where('tenantId', '==', tenantId));
     const u4 = onSnapshot(q4, s => setCertificados(s.docs.map(d => ({ id: d.id, ...d.data() } as Certificado))));
 
-    return () => { u1(); u2(); u3(); u4(); };
+    const q5 = query(collection(db, 'examesResultados'), where('tenantId', '==', tenantId));
+    const u5 = onSnapshot(q5, s => setExames(s.docs.map(d => ({ id: d.id, ...d.data() } as ExameResultado))));
+
+    return () => { u1(); u2(); u3(); u4(); u5(); };
   }, [tenantId]);
 
   // Filtrar por período
@@ -229,7 +258,7 @@ const RelatoriosView: React.FC = () => {
       .filter(u => !buscaColab || u.name.toLowerCase().includes(buscaColab.toLowerCase()))
       .map(u => {
         const res = filteredResults.filter(r => r.userId === u.id || r.colaborador === u.name);
-        const prog = progresso.filter(p => p.userId === u.id && p.concluido);
+        const prog = progresso.filter(p => p.userId === u.id && p.concluida);
         const aprov = res.filter(r => r.aprovado).length;
         const media = res.length ? Math.round(res.reduce((a, r) => a + r.nota, 0) / res.length) : 0;
         const certs = certificados.filter(c => c.colaboradorNome === u.name).length;
@@ -277,6 +306,134 @@ const RelatoriosView: React.FC = () => {
 
   const riscoAltoCount = scoreColab.filter(c => c.nivel === 'Alto').length;
 
+  // Evidências de trilhas — um registro por colaborador × trilha, com % concluído e data,
+  // para comprovação em fiscalizações (quem concluiu o quê e quando).
+  const progressoEvidencia = useMemo(() => {
+    return progresso
+      .filter(p => !buscaTrilha || p.userName?.toLowerCase().includes(buscaTrilha.toLowerCase()) || (p.trilhaTitulo || '').toLowerCase().includes(buscaTrilha.toLowerCase()))
+      .map(p => ({
+        id: p.id,
+        colaborador: p.userName || '–',
+        trilha: p.trilhaTitulo || 'Sem título',
+        percentual: p.percentualObrigatorios ?? 0,
+        concluida: !!p.concluida,
+        atualizadoEm: p.updatedAt,
+      }))
+      .sort((a, b) => (tsToMillis(b.atualizadoEm)) - (tsToMillis(a.atualizadoEm)));
+  }, [progresso, buscaTrilha]);
+
+  const exportCSVTrilhas = () => {
+    const rows = ['Colaborador,Trilha,Percentual Concluido,Status,Ultima Atualizacao'];
+    progressoEvidencia.forEach(p => {
+      rows.push([
+        p.colaborador, p.trilha, `${p.percentual}%`,
+        p.concluida ? 'Concluída' : 'Em andamento',
+        formatDate(p.atualizadoEm),
+      ].join(','));
+    });
+    const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `evidencias_trilhas_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Ficha individual de capacitação — evidência consolidada de um único colaborador,
+  // pronta para apresentar em fiscalização (trilhas, testes, exames e certificados).
+  const gerarFichaColaborador = (colabId: string, nome: string) => {
+    const trilhasDoColab = progresso.filter(p => p.userId === colabId);
+    const testesDoColab = quizResults.filter(r => r.userId === colabId || r.colaborador === nome);
+    const examesDoColab = exames.filter(e => e.userId === colabId);
+    const certsDoColab = certificados.filter(c => c.colaboradorNome === nome);
+    const dadosUser = colab.find(u => u.id === colabId);
+
+    const win = window.open('', '_blank');
+    if (!win) return;
+
+    const linhasTrilhas = trilhasDoColab.length
+      ? trilhasDoColab.map(p => `<tr><td>${escapeHtml(p.trilhaTitulo || 'Sem título')}</td><td>${p.percentualObrigatorios ?? 0}%</td><td>${p.concluida ? 'Concluída' : 'Em andamento'}</td><td>${formatDate(p.updatedAt)}</td></tr>`).join('')
+      : '<tr><td colspan="4">Nenhuma trilha iniciada.</td></tr>';
+
+    const linhasTestes = testesDoColab.length
+      ? testesDoColab.map(r => `<tr><td>${escapeHtml(r.trailTitle || r.moduleTitle || '–')}</td><td>${r.nota}%</td><td>${r.aprovado ? 'Aprovado' : 'Reprovado'}</td><td>${formatDate(r.createdAt)}</td></tr>`).join('')
+      : '<tr><td colspan="4">Nenhum teste realizado.</td></tr>';
+
+    const linhasExames = examesDoColab.length
+      ? examesDoColab.map(e => `<tr><td>${escapeHtml(e.fonteTitulo || '–')}</td><td>${e.score}%</td><td>${e.aprovado ? 'Aprovado' : 'Reprovado'}</td><td>${formatDate(e.createdAt)}</td></tr>`).join('')
+      : '<tr><td colspan="4">Nenhum exame realizado.</td></tr>';
+
+    const linhasCerts = certsDoColab.length
+      ? certsDoColab.map(c => {
+          const vencido = c.validoAte && new Date(c.validoAte).getTime() < Date.now();
+          return `<tr><td>${escapeHtml(c.trilhaTitulo || '–')}</td><td>${formatDate(c.emitidoEm)}</td><td>${c.validoAte ? new Date(c.validoAte).toLocaleDateString('pt-BR') : '–'}</td><td>${vencido ? 'Vencido' : 'Válido'}</td></tr>`;
+        }).join('')
+      : '<tr><td colspan="4">Nenhum certificado emitido.</td></tr>';
+
+    win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Ficha de Capacitação</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: Arial, sans-serif; color:#1e293b; background:white; padding:40px; font-size:12px; }
+.cover { text-align:center; padding:40px 0 30px; border-bottom:3px solid #c9a84c; margin-bottom:32px; }
+.cover-logo { font-size:34px; font-weight:900; color:#0f172a; letter-spacing:-2px; }
+.cover-logo span { color:#c9a84c; }
+.cover-title { font-size:18px; font-weight:900; color:#1e293b; margin-top:12px; text-transform:uppercase; letter-spacing:2px; }
+.cover-sub { font-size:12px; color:#8a6e2f; margin-top:6px; text-transform:uppercase; letter-spacing:2px; }
+.info { display:flex; gap:24px; justify-content:center; margin-top:16px; font-size:11px; color:#475569; }
+.section { margin-bottom:24px; page-break-inside:avoid; }
+.section-title { background:#0f172a; color:white; padding:8px 14px; border-radius:8px 8px 0 0; font-size:12px; font-weight:900; text-transform:uppercase; letter-spacing:1px; border-left:4px solid #c9a84c; }
+table { width:100%; border-collapse:collapse; font-size:11px; }
+th, td { text-align:left; padding:6px 8px; border-bottom:1px solid #e8d9a0; }
+th { background:#fdfbf5; color:#7a5c1e; text-transform:uppercase; font-size:9px; letter-spacing:1px; }
+td { background:#fdfbf5; }
+.footer { text-align:center; margin-top:40px; padding-top:16px; border-top:1px solid #e8d9a0; font-size:9px; color:#a8882f; }
+@media print { body { padding:20px; } .section { page-break-inside:avoid; } }
+</style></head><body>
+<div class="cover">
+  <div class="cover-logo">MJ <span>Consultoria</span></div>
+  <div class="cover-title">Ficha de Capacitação</div>
+  <div class="cover-sub">Evidência individual de treinamento</div>
+  <div class="info">
+    <span><strong>Colaborador:</strong> ${escapeHtml(nome)}</span>
+    <span><strong>Cargo:</strong> ${escapeHtml(dadosUser?.cargo || '–')}</span>
+    <span><strong>Gerado em:</strong> ${new Date().toLocaleDateString('pt-BR')}</span>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Trilhas de Aprendizagem</div>
+  <table><thead><tr><th>Trilha</th><th>% Concluído</th><th>Status</th><th>Última Atualização</th></tr></thead>
+  <tbody>${linhasTrilhas}</tbody></table>
+</div>
+
+<div class="section">
+  <div class="section-title">Testes e Quizzes</div>
+  <table><thead><tr><th>Treinamento</th><th>Nota</th><th>Resultado</th><th>Data</th></tr></thead>
+  <tbody>${linhasTestes}</tbody></table>
+</div>
+
+<div class="section">
+  <div class="section-title">Exames Formais</div>
+  <table><thead><tr><th>Fonte</th><th>Nota</th><th>Resultado</th><th>Data</th></tr></thead>
+  <tbody>${linhasExames}</tbody></table>
+</div>
+
+<div class="section">
+  <div class="section-title">Certificados</div>
+  <table><thead><tr><th>Trilha</th><th>Emitido em</th><th>Válido até</th><th>Situação</th></tr></thead>
+  <tbody>${linhasCerts}</tbody></table>
+</div>
+
+<div class="footer">
+  MJ Consultoria · Ficha gerada automaticamente pela plataforma de treinamento<br>
+  Em conformidade com LGPD Lei nº 13.709/2018 · Provimento CNJ nº 149 · Provimento CNJ nº 213/2026
+</div>
+</body></html>`);
+    win.document.close();
+    setTimeout(() => win.print(), 600);
+  };
+
   // Exportar Excel
   const handlePrint = () => { window.print(); };
 
@@ -303,6 +460,7 @@ const RelatoriosView: React.FC = () => {
     { id: 'visao_geral',   label: 'Visão Geral',    icon: 'fa-chart-pie'    },
     { id: 'colaboradores', label: 'Colaboradores',  icon: 'fa-users'        },
     { id: 'trilhas',       label: 'Por Trilha',     icon: 'fa-road'         },
+    { id: 'trilhas_evidencias', label: 'Evidências de Trilhas', icon: 'fa-clipboard-list' },
     { id: 'risco',         label: 'Risco',          icon: 'fa-shield-halved' },
     { id: 'evidencias',    label: 'Evidências',     icon: 'fa-file-lines'   },
   ];
@@ -463,14 +621,14 @@ const RelatoriosView: React.FC = () => {
                   <table className="w-full text-xs">
                     <thead>
                       <tr className="bg-white border-b border-slate-200">
-                        {['Colaborador', 'Cargo', 'Testes', 'Aprovações', 'Taxa', 'Média', 'Trilhas', 'Certs', 'Último Teste'].map(h => (
+                        {['Colaborador', 'Cargo', 'Testes', 'Aprovações', 'Taxa', 'Média', 'Trilhas', 'Certs', 'Último Teste', 'Ficha'].map(h => (
                           <th key={h} className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {porColab.length === 0 && (
-                        <tr><td colSpan={9} className="text-center p-8 text-slate-500">Nenhum dado encontrado.</td></tr>
+                        <tr><td colSpan={10} className="text-center p-8 text-slate-500">Nenhum dado encontrado.</td></tr>
                       )}
                       {porColab.map(c => (
                         <tr key={c.id} className="border-b border-slate-100 hover:bg-white transition-all">
@@ -502,6 +660,12 @@ const RelatoriosView: React.FC = () => {
                                 c.ultimo.aprovado ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'
                               }`}>{c.ultimo.nota}% · {c.ultimo.aprovado ? 'Aprov.' : 'Reprov.'}</span>
                             ) : '–'}
+                          </td>
+                          <td className="p-3">
+                            <button onClick={() => gerarFichaColaborador(c.id, c.name)}
+                              className="flex items-center gap-1.5 text-[9px] bg-white border border-slate-200 hover:border-[#C9A84C] text-slate-600 hover:text-[#8a6e2f] px-3 py-1.5 rounded-lg font-black uppercase tracking-widest transition-all whitespace-nowrap">
+                              <i className="fa-solid fa-file-pdf"></i>Gerar
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -557,6 +721,62 @@ const RelatoriosView: React.FC = () => {
                           </tr>
                         );
                       })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* ── EVIDÊNCIAS DE TRILHAS ───────────────────────────────────────── */}
+            {tab === 'trilhas_evidencias' && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                  <div className="flex items-center gap-3">
+                    <input value={buscaTrilha} onChange={e => setBuscaTrilha(e.target.value)}
+                      placeholder="Buscar colaborador ou trilha..."
+                      className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-[#C9A84C] w-64" />
+                    <span className="text-xs text-slate-500 font-bold">
+                      {progressoEvidencia.length} registros
+                      <span className="text-slate-400 font-normal ml-2">— um registro por colaborador × trilha, válido como evidência de conclusão</span>
+                    </span>
+                  </div>
+                  <button onClick={exportCSVTrilhas} className="flex items-center gap-2 bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-[#C9A84C] px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-sm">
+                    <i className="fa-solid fa-file-excel"></i>CSV
+                  </button>
+                </div>
+                <div className="overflow-x-auto border border-slate-200 rounded-[14px]">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="bg-white border-b border-slate-200">
+                        {['Colaborador', 'Trilha', '% Concluído', 'Status', 'Última Atualização'].map(h => (
+                          <th key={h} className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {progressoEvidencia.length === 0 && (
+                        <tr><td colSpan={5} className="text-center p-8 text-slate-500">Nenhum registro de progresso encontrado.</td></tr>
+                      )}
+                      {progressoEvidencia.map(p => (
+                        <tr key={p.id} className="border-b border-slate-100 hover:bg-white transition-all">
+                          <td className="p-3 font-bold text-[#0A1628]">{p.colaborador}</td>
+                          <td className="p-3 text-slate-600 max-w-[220px] truncate">{p.trilha}</td>
+                          <td className="p-3">
+                            <div className="flex items-center gap-2">
+                              <div className="w-16 bg-slate-200 rounded-full h-1.5">
+                                <div className="h-1.5 rounded-full" style={{ width: `${p.percentual}%`, background: p.concluida ? '#059669' : '#D97706' }}></div>
+                              </div>
+                              <span className="font-black text-slate-700">{p.percentual}%</span>
+                            </div>
+                          </td>
+                          <td className="p-3">
+                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg ${
+                              p.concluida ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-amber-50 text-amber-600 border border-amber-200'
+                            }`}>{p.concluida ? 'Concluída' : 'Em andamento'}</span>
+                          </td>
+                          <td className="p-3 text-slate-500 whitespace-nowrap">{formatDate(p.atualizadoEm)}</td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
