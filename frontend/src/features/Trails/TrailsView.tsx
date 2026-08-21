@@ -30,6 +30,7 @@ interface Trilha {
   modulos: Modulo[];
   ativa: boolean;
   tenantIds: string[];
+  oficial?: boolean;
   createdAt: any;
 }
 
@@ -183,7 +184,14 @@ const TrilhaCard: React.FC<{
       )}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
         <div>
-          <p style={{ fontSize: 16, fontWeight: 900, color: '#0f172a', marginBottom: 4 }}>{trilha.titulo}</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+            <p style={{ fontSize: 16, fontWeight: 900, color: '#0f172a' }}>{trilha.titulo}</p>
+            {trilha.oficial && (
+              <span style={{ background: '#fef3c7', color: '#92400e', fontSize: 9, fontWeight: 900, padding: '2px 7px', borderRadius: 6, textTransform: 'uppercase' }}>
+                <i className="fa-solid fa-certificate" style={{ marginRight: 4 }}></i>Modelo MJ Consultoria
+              </span>
+            )}
+          </div>
           <p style={{ fontSize: 12, color: '#475569', lineHeight: 1.5 }}>{trilha.descricao}</p>
         </div>
         {isGestor && (
@@ -522,7 +530,7 @@ const TrailsView: React.FC = () => {
 
   // Form state
   const [form, setForm] = useState({
-    titulo: '', descricao: '', perfis: [] as Perfil[], modulos: [] as Modulo[], ativa: true
+    titulo: '', descricao: '', perfis: [] as Perfil[], modulos: [] as Modulo[], ativa: true, oficial: false
   });
 
   // Load trilhas
@@ -557,11 +565,11 @@ const TrailsView: React.FC = () => {
   const iniciarEditar = (trilha?: Trilha) => {
     if (trilha) {
       setEditando(trilha);
-      setForm({ titulo: trilha.titulo, descricao: trilha.descricao, perfis: trilha.perfis, modulos: trilha.modulos, ativa: trilha.ativa });
+      setForm({ titulo: trilha.titulo, descricao: trilha.descricao, perfis: trilha.perfis, modulos: trilha.modulos, ativa: trilha.ativa, oficial: !!trilha.oficial });
       setTenantIdsForm(trilha.tenantIds || [tenantId]);
     } else {
       setEditando(null);
-      setForm({ titulo: '', descricao: '', perfis: [], modulos: [], ativa: true });
+      setForm({ titulo: '', descricao: '', perfis: [], modulos: [], ativa: true, oficial: false });
       setTenantIdsForm([tenantId]);
     }
     setTab('criar');
@@ -754,6 +762,15 @@ const TrailsView: React.FC = () => {
                   Trilha ativa (visível para os colaboradores)
                 </label>
               </div>
+
+              {isSuperAdmin && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', color: '#475569', fontSize: 13 }}>
+                    <input type="checkbox" checked={form.oficial} onChange={e => setForm(f => ({ ...f, oficial: e.target.checked }))} />
+                    Marcar como trilha modelo oficial MJ Consultoria
+                  </label>
+                </div>
+              )}
 
               {isSuperAdmin && (
                 <VisibilidadeCartorioPicker

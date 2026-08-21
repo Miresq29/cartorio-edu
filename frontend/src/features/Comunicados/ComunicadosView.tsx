@@ -16,6 +16,7 @@ interface Comunicado {
   tenantIds: string[];
   ativo: boolean;
   fixado: boolean;
+  exigeAceite: boolean;
   criadoEm: any;
 }
 
@@ -38,7 +39,8 @@ const ComunicadosView: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [expandido, setExpandido] = useState<string | null>(null);
-  const [form, setForm] = useState({ titulo: '', corpo: '', prazo: '', anexoUrl: '', prioridade: 'normal' as const, fixado: false });
+  const [form, setForm] = useState({ titulo: '', corpo: '', prazo: '', anexoUrl: '', prioridade: 'normal' as const, fixado: false, exigeAceite: false });
+  const [leiturasGestao, setLeiturasGestao] = useState<Record<string, { userNome: string; userEmail: string; aceiteEm: any }[]>>({});
 
   useEffect(() => {
     const q = query(collection(db, 'comunicados'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']), orderBy('criadoEm', 'desc'));
@@ -55,12 +57,38 @@ const ComunicadosView: React.FC = () => {
     });
   }, [state.user?.id, tenantId]);
 
+  useEffect(() => {
+    if (modo !== 'gestao') return;
+    const q = query(collection(db, 'comunicadosLeituras'), where('tenantId', '==', tenantId));
+    return onSnapshot(q, s => {
+      const grouped: Record<string, { userNome: string; userEmail: string; aceiteEm: any }[]> = {};
+      s.docs.forEach(d => {
+        const data = d.data();
+        if (!data.aceite) return;
+        (grouped[data.comunicadoId] ||= []).push({ userNome: data.userNome || '', userEmail: data.userEmail || '', aceiteEm: data.aceiteEm });
+      });
+      setLeiturasGestao(grouped);
+    });
+  }, [modo, tenantId]);
+
   const marcarLido = async (id: string) => {
     if (!state.user?.id || lidos.has(id)) return;
     const key = `${state.user.id}_${id}`;
     await setDoc(doc(db, 'comunicadosLeituras', key), {
       userId: state.user.id, comunicadoId: id, tenantId, lidoEm: serverTimestamp(),
+      userNome: state.user.name || '', userEmail: state.user.email || '',
     });
+  };
+
+  const confirmarAceite = async (id: string) => {
+    if (!state.user?.id || lidos.has(id)) return;
+    const key = `${state.user.id}_${id}`;
+    await setDoc(doc(db, 'comunicadosLeituras', key), {
+      userId: state.user.id, comunicadoId: id, tenantId, lidoEm: serverTimestamp(),
+      aceite: true, aceiteEm: serverTimestamp(),
+      userNome: state.user.name || '', userEmail: state.user.email || '',
+    });
+    showToast('Confirmação de leitura registrada.', 'success');
   };
 
   const salvar = async () => {
@@ -73,7 +101,7 @@ const ComunicadosView: React.FC = () => {
         criadoEm: serverTimestamp(),
       });
       showToast('Comunicado publicado!', 'success');
-      setForm({ titulo: '', corpo: '', prazo: '', anexoUrl: '', prioridade: 'normal', fixado: false });
+      setForm({ titulo: '', corpo: '', prazo: '', anexoUrl: '', prioridade: 'normal', fixado: false, exigeAceite: false });
       setShowForm(false);
     } catch { showToast('Erro ao publicar comunicado.', 'error'); } finally { setLoading(false); }
   };
@@ -170,6 +198,13 @@ const ComunicadosView: React.FC = () => {
                 className="w-4 h-4 accent-amber-500" />
               <label htmlFor="fixado" className="text-sm text-slate-700 font-bold cursor-pointer">Fixar comunicado no topo</label>
             </div>
+            <div className="flex items-center gap-3 md:col-span-2">
+              <input type="checkbox" id="exigeAceite" checked={form.exigeAceite} onChange={e => setForm(p => ({ ...p, exigeAceite: e.target.checked }))}
+                className="w-4 h-4 accent-amber-500" />
+              <label htmlFor="exigeAceite" className="text-sm text-slate-700 font-bold cursor-pointer">
+                Exigir confirmação formal de leitura ("Li e concordo") — gera evidência com nome, e-mail e data/hora
+              </label>
+            </div>
           </div>
 
           {isSuperAdmin && (
@@ -208,7 +243,7 @@ const ComunicadosView: React.FC = () => {
             <div key={c.id} className={`bg-white border rounded-[20px] overflow-hidden transition-all ${
               c.prioridade === 'urgente' ? 'border-red-500/40' : lido ? 'border-slate-200' : 'border-amber-500/30'
             }`}>
-              <div className="p-5 flex items-start gap-4 cursor-pointer" onClick={() => { setExpandido(aberto ? null : c.id); marcarLido(c.id); }}>
+              <div className="p-5 flex items-start gap-4 cursor-pointer" onClick={() => { setExpandido(aberto ? null : c.id); if (!c.exigeAceite) marcarLido(c.id); }}>
                 <div className={`w-10 h-10 rounded-xl bg-${prio.color}-500/20 flex items-center justify-center flex-shrink-0`}>
                   <i className={`fa-solid ${prio.icon} text-${prio.color}-400`}></i>
                 </div>
@@ -237,8 +272,25 @@ const ComunicadosView: React.FC = () => {
                       <i className="fa-solid fa-paperclip"></i>Ver Anexo
                     </a>
                   )}
+                  {c.exigeAceite && !lido && (
+                    <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 space-y-2">
+                      <p className="text-xs text-amber-800 font-bold">
+                        <i className="fa-solid fa-signature mr-1"></i>Este comunicado exige confirmação formal de leitura.
+                      </p>
+                      <button onClick={() => confirmarAceite(c.id)}
+                        className="text-[9px] bg-amber-600 hover:bg-amber-500 text-[#0A1628] px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
+                        <i className="fa-solid fa-signature mr-1"></i>Li e concordo
+                      </button>
+                    </div>
+                  )}
+                  {c.exigeAceite && lido && (
+                    <p className="text-[10px] text-emerald-600 font-bold">
+                      <i className="fa-solid fa-circle-check mr-1"></i>Confirmação de leitura registrada.
+                    </p>
+                  )}
+
                   <div className="flex gap-2 pt-1">
-                    {!lido && (
+                    {!c.exigeAceite && !lido && (
                       <button onClick={() => marcarLido(c.id)}
                         className="text-[9px] bg-emerald-600 hover:bg-emerald-500 text-[#0A1628] px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
                         <i className="fa-solid fa-check mr-1"></i>Marcar como lido
@@ -251,6 +303,25 @@ const ComunicadosView: React.FC = () => {
                       </button>
                     )}
                   </div>
+
+                  {isGestor && modo === 'gestao' && c.exigeAceite && (
+                    <div className="mt-3 pt-3 border-t border-slate-100">
+                      <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">
+                        Confirmações registradas ({(leiturasGestao[c.id] || []).length})
+                      </p>
+                      <div className="space-y-1 max-h-40 overflow-y-auto">
+                        {(leiturasGestao[c.id] || []).length === 0 ? (
+                          <p className="text-[11px] text-slate-400">Nenhuma confirmação ainda.</p>
+                        ) : (leiturasGestao[c.id] || []).map((l, i) => (
+                          <p key={i} className="text-[11px] text-slate-600">
+                            <i className="fa-solid fa-circle-check text-emerald-500 mr-1"></i>
+                            {l.userNome} <span className="text-slate-400">({l.userEmail})</span>
+                            {l.aceiteEm?.toDate && <span className="text-slate-400"> — {l.aceiteEm.toDate().toLocaleString('pt-BR')}</span>}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

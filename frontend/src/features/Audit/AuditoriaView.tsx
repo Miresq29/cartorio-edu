@@ -24,6 +24,7 @@ type LogTipo =
   | 'permissao_alterada'
   | 'documento_inserido' | 'documento_excluido'
   | 'email_enviado' | 'email_erro'
+  | 'phishing_clique'
   | 'acesso';
 
 interface AuditLog {
@@ -56,6 +57,7 @@ const TIPO_CONFIG: Record<string, { icon: string; color: string; bg: string; lab
   documento_excluido: { icon: 'fa-file-circle-xmark',  color: '#DC2626', bg: '#fee2e2', label: 'Doc. Excluído',      grupo: 'documentos' },
   email_enviado:      { icon: 'fa-envelope-circle-check', color: '#059669', bg: '#d1fae5', label: 'E-mail Enviado',  grupo: 'comunicacao'},
   email_erro:         { icon: 'fa-envelope-circle-exclamation', color: '#DC2626', bg: '#fee2e2', label: 'Falha no E-mail', grupo: 'comunicacao'},
+  phishing_clique:    { icon: 'fa-triangle-exclamation', color: '#DC2626', bg: '#fee2e2', label: 'Clique em Phishing (simulado)', grupo: 'seguranca' },
   acesso:             { icon: 'fa-eye',                color: '#4F46E5', bg: '#eef2ff', label: 'Acesso',             grupo: 'acesso'     },
 };
 
@@ -66,6 +68,7 @@ const GRUPOS = [
   { id: 'usuarios',    label: 'Usuários'    },
   { id: 'documentos',  label: 'Documentos'  },
   { id: 'comunicacao', label: 'E-mails'     },
+  { id: 'seguranca',   label: 'Segurança'   },
 ];
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

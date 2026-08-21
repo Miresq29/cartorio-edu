@@ -217,6 +217,18 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
     const docRef = await addDoc(collection(db, 'treinamentosQuizResults'), result);
     setQuizResult({ ...result, id: docRef.id });
     setMode('result');
+
+    // Após a 2ª reprovação no mesmo teste, dispara reforço automático por e-mail (uma única vez).
+    if (!result.aprovado) {
+      const falhasAnteriores = results.filter(r => r.quizId === selectedQuiz.id && r.colaborador === respondente.nome && !r.aprovado).length;
+      if (falhasAnteriores + 1 === 2 && state.user?.email) {
+        await addDoc(collection(db, 'reforcosPendentes'), {
+          userId: state.user.id, colaboradorNome: respondente.nome, colaboradorEmail: state.user.email,
+          quizId: selectedQuiz.id, quizTitulo: selectedQuiz.titulo, treinamento: selectedQuiz.treinamento,
+          nota, tenantId, createdAt: serverTimestamp(),
+        });
+      }
+    }
   };
 
   const deleteQuiz = async (id: string) => {

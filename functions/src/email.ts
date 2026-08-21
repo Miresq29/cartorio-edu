@@ -1,18 +1,19 @@
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
-import { defineSecret, defineString } from "firebase-functions/params";
+import { defineSecret } from "firebase-functions/params";
 import * as admin from "firebase-admin";
 import * as nodemailer from "nodemailer";
 
-// Conta Gmail usada para enviar os avisos. A senha de app fica em Secret
-// Manager (GMAIL_APP_PASSWORD) — nunca no código/repositório.
-const GMAIL_USER = defineString("GMAIL_USER", { default: "dpoagconsultoria@gmail.com" });
-const GMAIL_APP_PASSWORD = defineSecret("GMAIL_APP_PASSWORD");
+// Conta Gmail usada para enviar os avisos. Não é segredo — é o próprio
+// remetente visível em todo e-mail enviado. A senha de app, sim, fica em
+// Secret Manager (GMAIL_APP_PASSWORD) e nunca aparece no código/repositório.
+export const GMAIL_USER = "dpoagconsultoria@gmail.com";
+export const GMAIL_APP_PASSWORD = defineSecret("GMAIL_APP_PASSWORD");
 
 const DIAS_ANTES_EXPIRACAO = 7;
 
-function db() {
+export function db() {
   return admin.firestore();
 }
 
@@ -28,7 +29,7 @@ function getTransporter(user: string, appPassword: string): nodemailer.Transport
   return transporter;
 }
 
-async function sendEmail(user: string, appPassword: string, to: string, subject: string, html: string): Promise<{ ok: boolean; id?: string; error?: string }> {
+export async function sendEmail(user: string, appPassword: string, to: string, subject: string, html: string): Promise<{ ok: boolean; id?: string; error?: string }> {
   try {
     const transporter = getTransporter(user, appPassword);
     const info = await transporter.sendMail({
@@ -43,7 +44,7 @@ async function sendEmail(user: string, appPassword: string, to: string, subject:
   }
 }
 
-async function logEmailEvidencia(params: {
+export async function logEmailEvidencia(params: {
   tenantId: string;
   destinatarioEmail: string;
   destinatarioNome: string;
@@ -71,7 +72,7 @@ async function logEmailEvidencia(params: {
   });
 }
 
-async function resolveRecipients(tenantIds: string[]): Promise<{ id: string; email: string; name: string; tenantId: string }[]> {
+export async function resolveRecipients(tenantIds: string[]): Promise<{ id: string; email: string; name: string; tenantId: string }[]> {
   const isGlobal = tenantIds.includes("GLOBAL");
   const snap = isGlobal
     ? await db().collection("users").where("active", "==", true).get()
@@ -99,7 +100,7 @@ async function resolveRecipientsComPerfil(tenantIds: string[], perfis: string[])
     .filter((u) => u.email && perfis.includes(u.role));
 }
 
-function htmlAviso(titulo: string, corpo: string, rodape: string): string {
+export function htmlAviso(titulo: string, corpo: string, rodape: string): string {
   return `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;color:#0f172a">
     <h2 style="color:#0A1628;margin-bottom:4px">${titulo}</h2>
     <div style="font-size:14px;line-height:1.6;white-space:pre-wrap">${corpo}</div>
@@ -115,7 +116,7 @@ export const notificarComunicado = onDocumentCreated(
     const data = event.data?.data();
     if (!data) return;
     const tenantIds: string[] = data.tenantIds || [];
-    const user = GMAIL_USER.value();
+    const user = GMAIL_USER;
     const pass = GMAIL_APP_PASSWORD.value();
     const assunto = `[Aviso] ${data.titulo || "Novo comunicado"}`;
 
@@ -140,7 +141,7 @@ export const notificarTrilha = onDocumentCreated(
     if (!data || data.ativa === false) return;
     const tenantIds: string[] = data.tenantIds || [];
     const perfis: string[] = data.perfis || [];
-    const user = GMAIL_USER.value();
+    const user = GMAIL_USER;
     const pass = GMAIL_APP_PASSWORD.value();
     const assunto = `Nova trilha de treinamento: ${data.titulo || ""}`;
 
@@ -158,11 +159,34 @@ export const notificarTrilha = onDocumentCreated(
   }
 );
 
+// ─── Trigger: 2ª reprovação num mesmo teste → e-mail de reforço para o colaborador ──
+export const notificarReforco = onDocumentCreated(
+  { document: "reforcosPendentes/{docId}", secrets: [GMAIL_APP_PASSWORD] },
+  async (event) => {
+    const data = event.data?.data();
+    if (!data?.colaboradorEmail) return;
+    const user = GMAIL_USER;
+    const pass = GMAIL_APP_PASSWORD.value();
+    const assunto = `Treinamento de reforço recomendado: ${data.treinamento || data.quizTitulo || ""}`;
+
+    const result = await sendEmail(user, pass, data.colaboradorEmail, assunto,
+      htmlAviso("Treinamento de reforço recomendado",
+        `Identificamos duas ou mais reprovações no teste "${data.quizTitulo}" (treinamento: "${data.treinamento}"). Última nota: ${data.nota}%.\n\nRecomendamos revisar o material antes de tentar novamente.`,
+        "Aviso automático da plataforma MJ Consultoria."));
+
+    await logEmailEvidencia({
+      tenantId: data.tenantId || "", destinatarioEmail: data.colaboradorEmail, destinatarioNome: data.colaboradorNome || data.colaboradorEmail,
+      tipoNotificacao: "reforco_treinamento", assunto, ok: result.ok, erro: result.error, messageId: result.id,
+      relatedId: event.params.docId,
+    });
+  }
+);
+
 // ─── Agendado diário: certificados perto de expirar → e-mail de aviso ao colaborador ──
 export const verificarExpiracoes = onSchedule(
   { schedule: "every day 08:00", timeZone: "America/Sao_Paulo", secrets: [GMAIL_APP_PASSWORD] },
   async () => {
-    const user = GMAIL_USER.value();
+    const user = GMAIL_USER;
     const pass = GMAIL_APP_PASSWORD.value();
     const limite = new Date();
     limite.setDate(limite.getDate() + DIAS_ANTES_EXPIRACAO);
@@ -212,7 +236,7 @@ export const testarEnvioEmail = onCall({ secrets: [GMAIL_APP_PASSWORD] }, async 
   const email = String(caller.email || "");
   if (!email) throw new HttpsError("failed-precondition", "Sua conta não tem e-mail cadastrado.");
 
-  const user = GMAIL_USER.value();
+  const user = GMAIL_USER;
   const pass = GMAIL_APP_PASSWORD.value();
   const result = await sendEmail(user, pass, email, "Teste de envio — MJ Consultoria",
     htmlAviso("Teste de configuração", "Se você recebeu este e-mail, o envio de notificações está funcionando corretamente.", "Disparado manualmente via botão de teste."));

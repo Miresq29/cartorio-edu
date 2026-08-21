@@ -129,6 +129,16 @@ service cloud.firestore {
       allow create: if canWriteContentArray();
       allow update, delete: if canEditContentArray();
     }
+    match /simulacoesPhishing/{docId} {
+      allow read: if canReadContentArray();
+      allow create: if canWriteContentArray();
+      allow update, delete: if canEditContentArray();
+    }
+    match /simulacoesPhishingCliques/{docId} {
+      // Escrito somente pelas Cloud Functions (Admin SDK, ignora as regras). Clientes só leem, para evidência de auditoria.
+      allow read: if isSuperAdmin() || (isGestor() && sameTenant());
+      allow write: if false;
+    }
     match /repositorio/{docId} {
       allow read: if canReadContentArray();
       allow create: if canWriteContentArray();
@@ -162,6 +172,11 @@ service cloud.firestore {
       allow read: if canReadPrivate();
       allow create, update: if canWriteOwnPrivate();
       allow delete: if isSuperAdmin() || (isGestor() && sameTenant());
+    }
+    match /reforcosPendentes/{docId} {
+      allow read: if canReadPrivate();
+      allow create: if canWriteOwnPrivate();
+      allow update, delete: if isSuperAdmin() || (isGestor() && sameTenant());
     }
     match /examesResultados/{docId} {
       allow read: if canReadPrivate();

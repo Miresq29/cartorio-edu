@@ -2,22 +2,14 @@
 // Relatórios completos — KPIs, gráficos recharts, evidências exportáveis
 
 import React, { useState, useEffect, useMemo } from 'react';
-import * as XLSX from 'xlsx';
-import * as XLSX from 'xlsx';
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend
 } from 'recharts';
-import * as XLSX from 'xlsx';
-import * as XLSX from 'xlsx';
 import {
   collection, query, orderBy, onSnapshot, where
 } from 'firebase/firestore';
-import * as XLSX from 'xlsx';
-import * as XLSX from 'xlsx';
 import { db } from '../../services/firebase';
-import * as XLSX from 'xlsx';
-import * as XLSX from 'xlsx';
 import { useApp } from '../../context/AppContext';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -59,10 +51,11 @@ interface Certificado {
   trilhaTitulo: string;
   notaFinal: number;
   emitidoEm: any;
+  validoAte?: string;
   tenantId: string;
 }
 
-type Tab = 'visao_geral' | 'colaboradores' | 'trilhas' | 'evidencias';
+type Tab = 'visao_geral' | 'colaboradores' | 'trilhas' | 'risco' | 'evidencias';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -251,6 +244,39 @@ const RelatoriosView: React.FC = () => {
       .sort((a, b) => b.taxa - a.taxa);
   }, [colab, filteredResults, progresso, certificados, buscaColab]);
 
+  // Score de risco/maturidade por colaborador — combina desempenho, atividade recente e situação do certificado.
+  // Pesos: 40% (100 - média das notas), 30% ausência de atividade no período, 30% certificado vencido.
+  const scoreColab = useMemo(() => {
+    return colab
+      .filter(u => !buscaColab || u.name.toLowerCase().includes(buscaColab.toLowerCase()))
+      .map(u => {
+        const res = filteredResults.filter(r => r.userId === u.id || r.colaborador === u.name);
+        const media = res.length ? Math.round(res.reduce((a, r) => a + r.nota, 0) / res.length) : null;
+        const certsUsuario = certificados.filter(c => c.colaboradorNome === u.name);
+        const certVencido = certsUsuario.length > 0 && certsUsuario.every(c => c.validoAte && new Date(c.validoAte).getTime() < Date.now());
+        const semAtividade = res.length === 0;
+
+        let risco = 0;
+        risco += media !== null ? Math.max(0, 100 - media) * 0.4 : 40;
+        risco += semAtividade ? 30 : 0;
+        risco += certVencido ? 30 : 0;
+        risco = Math.min(100, Math.round(risco));
+        const nivel: 'Alto' | 'Médio' | 'Baixo' = risco >= 60 ? 'Alto' : risco >= 30 ? 'Médio' : 'Baixo';
+
+        const motivos: string[] = [];
+        if (media === null) motivos.push('Sem testes registrados');
+        else if (media < 70) motivos.push(`Média baixa (${media}%)`);
+        if (semAtividade) motivos.push('Sem atividade no período');
+        if (certVencido) motivos.push('Certificado vencido');
+        if (motivos.length === 0) motivos.push('Sem pendências');
+
+        return { id: u.id, name: u.name, cargo: u.cargo || '', media, risco, nivel, motivos };
+      })
+      .sort((a, b) => b.risco - a.risco);
+  }, [colab, filteredResults, certificados, buscaColab]);
+
+  const riscoAltoCount = scoreColab.filter(c => c.nivel === 'Alto').length;
+
   // Exportar Excel
   const handlePrint = () => { window.print(); };
 
@@ -277,6 +303,7 @@ const RelatoriosView: React.FC = () => {
     { id: 'visao_geral',   label: 'Visão Geral',    icon: 'fa-chart-pie'    },
     { id: 'colaboradores', label: 'Colaboradores',  icon: 'fa-users'        },
     { id: 'trilhas',       label: 'Por Trilha',     icon: 'fa-road'         },
+    { id: 'risco',         label: 'Risco',          icon: 'fa-shield-halved' },
     { id: 'evidencias',    label: 'Evidências',     icon: 'fa-file-lines'   },
   ];
 
@@ -307,11 +334,12 @@ const RelatoriosView: React.FC = () => {
         </div>
 
         {/* KPIs */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
           <StatCard label="Total de Testes"   value={totalTestes}      icon="fa-clipboard-check"  color="#4F46E5" sub={`no período selecionado`} />
           <StatCard label="Taxa de Aprovação" value={`${taxaAprovacao}%`} icon="fa-circle-check"  color="#059669" sub={`${totalAprovados} aprovações`} />
           <StatCard label="Média Geral"       value={`${mediaGeral}%`} icon="fa-chart-bar"        color="#D97706" sub="média das notas" />
           <StatCard label="Certificados"      value={totalCerts}       icon="fa-certificate"      color="#7C3AED" sub="emitidos no total" />
+          <StatCard label="Risco Alto"        value={riscoAltoCount}   icon="fa-shield-halved"    color="#DC2626" sub="colaboradores em atenção" />
         </div>
 
         {/* Abas */}
@@ -526,6 +554,60 @@ const RelatoriosView: React.FC = () => {
                                 ? <span className="bg-white text-[#C9A84C] text-[10px] font-black px-2 py-0.5 rounded-lg border border-indigo-100">✨ {ia}</span>
                                 : <span className="text-slate-500">–</span>}
                             </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* ── RISCO ────────────────────────────────────────────────────── */}
+            {tab === 'risco' && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <input value={buscaColab} onChange={e => setBuscaColab(e.target.value)}
+                    placeholder="Buscar colaborador..."
+                    className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-[#C9A84C] w-64" />
+                  <p className="text-xs text-slate-500">
+                    Índice combinando desempenho em testes, atividade recente e validade de certificados — quanto maior, mais atenção o colaborador exige.
+                  </p>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="bg-white border-b border-slate-200">
+                        {['Colaborador', 'Cargo', 'Média', 'Nível de Risco', 'Score', 'Motivos'].map(h => (
+                          <th key={h} className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {scoreColab.length === 0 && (
+                        <tr><td colSpan={6} className="text-center p-8 text-slate-500">Nenhum dado encontrado.</td></tr>
+                      )}
+                      {scoreColab.map(c => {
+                        const cor = c.nivel === 'Alto' ? '#DC2626' : c.nivel === 'Médio' ? '#D97706' : '#059669';
+                        return (
+                          <tr key={c.id} className="border-b border-slate-100 hover:bg-white transition-all">
+                            <td className="p-3 font-bold text-[#0A1628]">{c.name}</td>
+                            <td className="p-3 text-slate-500">{c.cargo || '–'}</td>
+                            <td className="p-3 text-slate-700 font-bold">{c.media !== null ? `${c.media}%` : '–'}</td>
+                            <td className="p-3">
+                              <span className="text-[10px] font-black px-2 py-0.5 rounded-lg" style={{ background: cor + '15', color: cor }}>
+                                {c.nivel}
+                              </span>
+                            </td>
+                            <td className="p-3">
+                              <div className="flex items-center gap-2">
+                                <div className="w-16 bg-slate-200 rounded-full h-1.5">
+                                  <div className="h-1.5 rounded-full" style={{ width: `${c.risco}%`, background: cor }}></div>
+                                </div>
+                                <span className="font-black" style={{ color: cor }}>{c.risco}</span>
+                              </div>
+                            </td>
+                            <td className="p-3 text-slate-500">{c.motivos.join(' · ')}</td>
                           </tr>
                         );
                       })}
