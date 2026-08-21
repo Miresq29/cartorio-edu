@@ -16,7 +16,7 @@ import { useToast } from '../../context/ToastContext';
 // visibilidade multi-cartório.
 const COLECOES_ARRAY_TENANT = new Set([
   'trilhas', 'repositorio', 'comunicados', 'checklists', 'knowledgeBase',
-  'videos', 'materiaisbanner', 'treinamentos', 'treinamentosQuizzes',
+  'videos', 'materiaisbanner', 'treinamentos', 'treinamentosQuizzes', 'simulacoesPhishing',
 ]);
 
 const COLECOES_TENANT = [
@@ -39,6 +39,11 @@ const COLECOES_TENANT = [
   { id: 'treinamentos',            label: 'Treinamentos',         icon: 'fa-graduation-cap'    },
   { id: 'treinamentosQuizzes',     label: 'Quizzes',              icon: 'fa-clipboard-question'},
   { id: 'campanhas',               label: 'Campanhas',            icon: 'fa-bullhorn'          },
+  { id: 'comunicadosLeituras',     label: 'Leituras de Comunicados', icon: 'fa-check-double'   },
+  { id: 'simulacoesPhishing',      label: 'Simulações de Phishing', icon: 'fa-shield-halved'   },
+  { id: 'simulacoesPhishingCliques', label: 'Cliques em Phishing', icon: 'fa-triangle-exclamation' },
+  { id: 'planosAcaoPhishing',      label: 'Planos de Ação (Phishing)', icon: 'fa-wand-magic-sparkles' },
+  { id: 'dossiesConformidade',     label: 'Dossiês de Conformidade', icon: 'fa-file-shield'    },
 ];
 
 interface BackupStatus {

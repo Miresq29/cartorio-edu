@@ -1,7 +1,7 @@
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { onRequest } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
-import { GMAIL_USER, GMAIL_APP_PASSWORD, db, sendEmail, logEmailEvidencia, resolveRecipients } from "./email";
+import { GMAIL_USER, GMAIL_APP_PASSWORD, db, sendEmail, logEmailEvidencia, resolveRecipients, escapeHtml } from "./email";
 
 // URL fixa da função phishClick (2ª geração, região padrão us-central1).
 const PHISH_CLICK_URL = "https://us-central1-cartorio-edu.cloudfunctions.net/phishClick";
@@ -27,9 +27,11 @@ export const notificarSimulacaoPhishing = onDocumentCreated(
       });
 
       const link = `${PHISH_CLICK_URL}?token=${tokenRef.id}`;
-      const corpo = String(data.corpoEmail || "")
-        .replace(/{{NOME}}/g, dest.name)
-        .replace(/{{LINK}}/g, link);
+      // Escapa o template ANTES de substituir os marcadores, para que um "<"/"&" digitado
+      // pelo gestor não quebre o e-mail — o link, substituído depois, continua uma âncora real.
+      const corpo = escapeHtml(data.corpoEmail || "")
+        .replace(/\{\{NOME\}\}/g, escapeHtml(dest.name))
+        .replace(/\{\{LINK\}\}/g, `<a href="${link}" style="color:#2563eb">${link}</a>`);
 
       const result = await sendEmail(user, pass, dest.email, data.assuntoEmail || "Ação necessária",
         corpo.split("\n").map((l) => `<p style="margin:0 0 12px">${l}</p>`).join(""));

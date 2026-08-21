@@ -17,6 +17,14 @@ interface Historico {
 
 function pct(a: number, b: number) { return b === 0 ? 0 : Math.round((a / b) * 100); }
 
+function escapeHtml(s: string): string {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 function tsToDate(ts: any): Date | null {
   if (!ts) return null;
   return ts?.toDate ? ts.toDate() : new Date(ts);
@@ -54,9 +62,9 @@ const DossieConformidadeView: React.FC = () => {
       onSnapshot(query(collection(db, 'treinamentosQuizResults'), where('tenantId', '==', tenantId)), s => setQuizResults(s.docs.map(d => ({ id: d.id, ...d.data() })))),
       onSnapshot(query(collection(db, 'trilhasProgresso'), where('tenantId', '==', tenantId)), s => setProgresso(s.docs.map(d => ({ id: d.id, ...d.data() })))),
       onSnapshot(query(collection(db, 'certificados'), where('tenantId', '==', tenantId)), s => setCertificados(s.docs.map(d => ({ id: d.id, ...d.data() })))),
-      onSnapshot(query(collection(db, 'comunicados'), where('tenantIds', 'array-contains', tenantId)), s => setComunicados(s.docs.map(d => ({ id: d.id, ...d.data() })))),
+      onSnapshot(query(collection(db, 'comunicados'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL'])), s => setComunicados(s.docs.map(d => ({ id: d.id, ...d.data() })))),
       onSnapshot(query(collection(db, 'comunicadosLeituras'), where('tenantId', '==', tenantId)), s => setLeituras(s.docs.map(d => ({ id: d.id, ...d.data() })))),
-      onSnapshot(query(collection(db, 'simulacoesPhishing'), where('tenantIds', 'array-contains', tenantId)), s => setSimulacoes(s.docs.map(d => ({ id: d.id, ...d.data() })))),
+      onSnapshot(query(collection(db, 'simulacoesPhishing'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL'])), s => setSimulacoes(s.docs.map(d => ({ id: d.id, ...d.data() })))),
       onSnapshot(query(collection(db, 'simulacoesPhishingCliques'), where('tenantId', '==', tenantId)), s => setCliques(s.docs.map(d => ({ id: d.id, ...d.data() })))),
       onSnapshot(query(collection(db, 'auditLogs'), where('tenantId', '==', tenantId)), s => setEmailLogs(s.docs.map(d => ({ id: d.id, ...d.data() })).filter(l => l.tipo === 'email_enviado' || l.tipo === 'email_erro'))),
       onSnapshot(query(collection(db, 'dossiesConformidade'), where('tenantId', '==', tenantId)), s => {
@@ -151,7 +159,7 @@ E-mails de notificação: ${dados.emailsOk} entregues, ${dados.emailsErro} com f
     const dataGeracao = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
 
     const linhasComunicados = dados.confirmacoesPorComunicado.length
-      ? dados.confirmacoesPorComunicado.map(c => `<tr><td>${c.titulo}</td><td>${c.confirmados}/${c.total}</td><td>${c.taxa}%</td></tr>`).join('')
+      ? dados.confirmacoesPorComunicado.map(c => `<tr><td>${escapeHtml(c.titulo)}</td><td>${c.confirmados}/${c.total}</td><td>${c.taxa}%</td></tr>`).join('')
       : '<tr><td colspan="3">Nenhum comunicado com aceite obrigatório no período.</td></tr>';
 
     win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Dossiê de Conformidade</title>
@@ -181,8 +189,8 @@ th { color:#7a5c1e; text-transform:uppercase; font-size:9px; letter-spacing:1px;
 <div class="cover">
   <div class="cover-logo">MJ <span>Consultoria</span></div>
   <div class="cover-title">Dossiê de Conformidade</div>
-  <div class="cover-sub">${state.activeTenantName || tenantId} — ${periodoLabel}</div>
-  <div class="cover-date">Gerado em ${dataGeracao} por ${state.user?.name || ''}</div>
+  <div class="cover-sub">${escapeHtml(state.activeTenantName || tenantId)} — ${escapeHtml(periodoLabel)}</div>
+  <div class="cover-date">Gerado em ${dataGeracao} por ${escapeHtml(state.user?.name || '')}</div>
 </div>
 
 <div class="section">
@@ -201,7 +209,7 @@ th { color:#7a5c1e; text-transform:uppercase; font-size:9px; letter-spacing:1px;
 
 ${resumoAtual ? `<div class="section">
   <div class="section-title">Resumo Executivo</div>
-  <div class="section-body"><p class="resumo">${resumoAtual}</p></div>
+  <div class="section-body"><p class="resumo">${escapeHtml(resumoAtual)}</p></div>
 </div>` : ''}
 
 <div class="section">

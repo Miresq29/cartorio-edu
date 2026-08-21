@@ -130,8 +130,14 @@ CTA: [chamada para ação aqui]`;
   };
 
   /* ── imprime banner ───────────────────────────────── */
+  const escapeHtml = (s: string): string => String(s ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
   const imprimirBanner = (texto: string) => {
-    const { titulo, subtitulo, cta } = parseBannerText(texto);
+    const parsed = parseBannerText(texto);
+    const titulo = escapeHtml(parsed.titulo);
+    const subtitulo = escapeHtml(parsed.subtitulo);
+    const cta = escapeHtml(parsed.cta);
     const win = window.open('', '_blank');
     if (!win) return;
     win.document.write(`<!DOCTYPE html><html><head><title>Banner</title>
@@ -165,10 +171,20 @@ CTA: [chamada para ação aqui]`;
     }
   };
 
+  // Extrai um campo multi-linha entre "RÓTULO:" e o próximo rótulo conhecido (ou o fim do texto).
+  // Usa "^" com a flag "m" para não confundir "TÍTULO:" com o sufixo de "SUBTÍTULO:", e "[\s\S]*?"
+  // (em vez de ".+") para não truncar o valor no primeiro salto de linha que a IA inserir.
+  const extrairCampo = (texto: string, rotulo: string): string => {
+    // Sem a flag "m": "$" so casa no fim real da string (com "m", "$" casaria no fim de
+    // CADA linha, cortando o campo na primeira quebra de linha que a IA inserir).
+    const m = texto.match(new RegExp(`(?:^|\\n)\\s*${rotulo}:\\s*([\\s\\S]*?)(?=\\n\\s*(?:T[ÍI]TULO|SUBT[ÍI]TULO|CTA):|$)`, 'i'));
+    return m?.[1]?.trim() || '';
+  };
+
   const parseBannerText = (texto: string) => ({
-    titulo:    texto.match(/TÍTULO:\s*(.+)/)?.[1]?.trim()    || '',
-    subtitulo: texto.match(/SUBTÍTULO:\s*(.+)/)?.[1]?.trim() || '',
-    cta:       texto.match(/CTA:\s*(.+)/)?.[1]?.trim()       || '',
+    titulo: extrairCampo(texto, 'T[ÍI]TULO'),
+    subtitulo: extrairCampo(texto, 'SUBT[ÍI]TULO'),
+    cta: extrairCampo(texto, 'CTA'),
   });
 
   const filtrados = materiais.filter(m => !filtroTipo || m.tipo === filtroTipo);

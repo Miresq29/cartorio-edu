@@ -100,10 +100,21 @@ async function resolveRecipientsComPerfil(tenantIds: string[], perfis: string[])
     .filter((u) => u.email && perfis.includes(u.role));
 }
 
+// Escapa HTML de conteúdo digitado por gestores/colaboradores (título, corpo) antes de
+// embutir em e-mails — sem isso, um "<" ou "&" no texto quebra visualmente o e-mail
+// renderizado mesmo com o dado intacto no Firestore.
+export function escapeHtml(s: string): string {
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 export function htmlAviso(titulo: string, corpo: string, rodape: string): string {
   return `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;color:#0f172a">
-    <h2 style="color:#0A1628;margin-bottom:4px">${titulo}</h2>
-    <div style="font-size:14px;line-height:1.6;white-space:pre-wrap">${corpo}</div>
+    <h2 style="color:#0A1628;margin-bottom:4px">${escapeHtml(titulo)}</h2>
+    <div style="font-size:14px;line-height:1.6;white-space:pre-wrap">${escapeHtml(corpo)}</div>
     <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0" />
     <p style="font-size:11px;color:#94a3b8">${rodape}</p>
   </div>`;
