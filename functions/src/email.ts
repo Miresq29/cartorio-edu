@@ -3,12 +3,12 @@ import { onSchedule } from "firebase-functions/v2/scheduler";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { defineSecret, defineString } from "firebase-functions/params";
 import * as admin from "firebase-admin";
+import * as nodemailer from "nodemailer";
 
-const RESEND_API_KEY = defineSecret("RESEND_API_KEY");
-// E-mail remetente verificado no Resend. Ex: "MJ Consultoria <avisos@seudominio.com.br>".
-// Configure com: firebase functions:config isn't used in v2 — defina via
-// `firebase functions:secrets:set` ou variável de ambiente EMAIL_FROM no deploy.
-const EMAIL_FROM = defineString("EMAIL_FROM", { default: "MJ Consultoria <onboarding@resend.dev>" });
+// Conta Gmail usada para enviar os avisos. A senha de app fica em Secret
+// Manager (GMAIL_APP_PASSWORD) — nunca no código/repositório.
+const GMAIL_USER = defineString("GMAIL_USER", { default: "dpoagconsultoria@gmail.com" });
+const GMAIL_APP_PASSWORD = defineSecret("GMAIL_APP_PASSWORD");
 
 const DIAS_ANTES_EXPIRACAO = 7;
 
@@ -16,23 +16,30 @@ function db() {
   return admin.firestore();
 }
 
-async function sendEmail(apiKey: string, from: string, to: string, subject: string, html: string): Promise<{ ok: boolean; id?: string; error?: string }> {
+let transporterCache: { user: string; transporter: nodemailer.Transporter } | null = null;
+
+function getTransporter(user: string, appPassword: string): nodemailer.Transporter {
+  if (transporterCache && transporterCache.user === user) return transporterCache.transporter;
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: { user, pass: appPassword },
+  });
+  transporterCache = { user, transporter };
+  return transporter;
+}
+
+async function sendEmail(user: string, appPassword: string, to: string, subject: string, html: string): Promise<{ ok: boolean; id?: string; error?: string }> {
   try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({ from, to, subject, html }),
+    const transporter = getTransporter(user, appPassword);
+    const info = await transporter.sendMail({
+      from: `"MJ Consultoria" <${user}>`,
+      to,
+      subject,
+      html,
     });
-    const data: any = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      return { ok: false, error: data?.message || `HTTP ${res.status}` };
-    }
-    return { ok: true, id: data?.id };
+    return { ok: true, id: info.messageId };
   } catch (err: any) {
-    return { ok: false, error: err.message || "Erro de rede ao enviar e-mail." };
+    return { ok: false, error: err.message || "Erro ao enviar e-mail." };
   }
 }
 
@@ -44,7 +51,7 @@ async function logEmailEvidencia(params: {
   assunto: string;
   ok: boolean;
   erro?: string;
-  resendId?: string;
+  messageId?: string;
   relatedId?: string;
 }) {
   await db().collection("auditLogs").add({
@@ -56,7 +63,7 @@ async function logEmailEvidencia(params: {
       destinatarioEmail: params.destinatarioEmail,
       tipoNotificacao: params.tipoNotificacao,
       assunto: params.assunto,
-      ...(params.resendId ? { resendId: params.resendId } : {}),
+      ...(params.messageId ? { messageId: params.messageId } : {}),
       ...(params.erro ? { erro: params.erro } : {}),
       ...(params.relatedId ? { relatedId: params.relatedId } : {}),
     },
@@ -103,22 +110,22 @@ function htmlAviso(titulo: string, corpo: string, rodape: string): string {
 
 // ─── Trigger: novo comunicado publicado → e-mail para os colaboradores do(s) cartório(s) ──
 export const notificarComunicado = onDocumentCreated(
-  { document: "comunicados/{docId}", secrets: [RESEND_API_KEY] },
+  { document: "comunicados/{docId}", secrets: [GMAIL_APP_PASSWORD] },
   async (event) => {
     const data = event.data?.data();
     if (!data) return;
     const tenantIds: string[] = data.tenantIds || [];
-    const apiKey = RESEND_API_KEY.value();
-    const from = EMAIL_FROM.value();
+    const user = GMAIL_USER.value();
+    const pass = GMAIL_APP_PASSWORD.value();
     const assunto = `[Aviso] ${data.titulo || "Novo comunicado"}`;
 
     const destinatarios = await resolveRecipients(tenantIds);
     for (const dest of destinatarios) {
-      const result = await sendEmail(apiKey, from, dest.email, assunto,
+      const result = await sendEmail(user, pass, dest.email, assunto,
         htmlAviso(data.titulo || "Comunicado", data.corpo || "", "Você recebeu este e-mail porque é colaborador cadastrado na plataforma MJ Consultoria."));
       await logEmailEvidencia({
         tenantId: dest.tenantId, destinatarioEmail: dest.email, destinatarioNome: dest.name,
-        tipoNotificacao: "comunicado", assunto, ok: result.ok, erro: result.error, resendId: result.id,
+        tipoNotificacao: "comunicado", assunto, ok: result.ok, erro: result.error, messageId: result.id,
         relatedId: event.params.docId,
       });
     }
@@ -127,24 +134,24 @@ export const notificarComunicado = onDocumentCreated(
 
 // ─── Trigger: nova trilha de treinamento → e-mail para os perfis alvo do(s) cartório(s) ──
 export const notificarTrilha = onDocumentCreated(
-  { document: "trilhas/{docId}", secrets: [RESEND_API_KEY] },
+  { document: "trilhas/{docId}", secrets: [GMAIL_APP_PASSWORD] },
   async (event) => {
     const data = event.data?.data();
     if (!data || data.ativa === false) return;
     const tenantIds: string[] = data.tenantIds || [];
     const perfis: string[] = data.perfis || [];
-    const apiKey = RESEND_API_KEY.value();
-    const from = EMAIL_FROM.value();
+    const user = GMAIL_USER.value();
+    const pass = GMAIL_APP_PASSWORD.value();
     const assunto = `Nova trilha de treinamento: ${data.titulo || ""}`;
 
     const destinatarios = await resolveRecipientsComPerfil(tenantIds, perfis);
     for (const dest of destinatarios) {
-      const result = await sendEmail(apiKey, from, dest.email, assunto,
+      const result = await sendEmail(user, pass, dest.email, assunto,
         htmlAviso("Nova trilha disponível", `A trilha "${data.titulo}" foi liberada para o seu perfil.\n\n${data.descricao || ""}`,
           "Acesse a plataforma MJ Consultoria para iniciar a trilha."));
       await logEmailEvidencia({
         tenantId: dest.tenantId, destinatarioEmail: dest.email, destinatarioNome: dest.name,
-        tipoNotificacao: "trilha", assunto, ok: result.ok, erro: result.error, resendId: result.id,
+        tipoNotificacao: "trilha", assunto, ok: result.ok, erro: result.error, messageId: result.id,
         relatedId: event.params.docId,
       });
     }
@@ -153,10 +160,10 @@ export const notificarTrilha = onDocumentCreated(
 
 // ─── Agendado diário: certificados perto de expirar → e-mail de aviso ao colaborador ──
 export const verificarExpiracoes = onSchedule(
-  { schedule: "every day 08:00", timeZone: "America/Sao_Paulo", secrets: [RESEND_API_KEY] },
+  { schedule: "every day 08:00", timeZone: "America/Sao_Paulo", secrets: [GMAIL_APP_PASSWORD] },
   async () => {
-    const apiKey = RESEND_API_KEY.value();
-    const from = EMAIL_FROM.value();
+    const user = GMAIL_USER.value();
+    const pass = GMAIL_APP_PASSWORD.value();
     const limite = new Date();
     limite.setDate(limite.getDate() + DIAS_ANTES_EXPIRACAO);
 
@@ -178,14 +185,14 @@ export const verificarExpiracoes = onSchedule(
 
       const diasRestantes = Math.max(0, Math.ceil((validoAte.getTime() - Date.now()) / 86_400_000));
       const assunto = `Seu certificado "${cert.trilhaTitulo || cert.moduloTitulo || ""}" vence em ${diasRestantes} dia(s)`;
-      const result = await sendEmail(apiKey, from, email, assunto,
+      const result = await sendEmail(user, pass, email, assunto,
         htmlAviso("Certificado próximo de expirar",
           `O certificado "${cert.trilhaTitulo || cert.moduloTitulo}" emitido em favor de ${cert.colaboradorNome} vence em ${diasRestantes} dia(s) (${validoAte.toLocaleDateString("pt-BR")}). Procure seu gestor para renovação.`,
           "Aviso automático da plataforma MJ Consultoria."));
 
       await logEmailEvidencia({
         tenantId: cert.tenantId, destinatarioEmail: email, destinatarioNome: cert.colaboradorNome || email,
-        tipoNotificacao: "expiracao_certificado", assunto, ok: result.ok, erro: result.error, resendId: result.id,
+        tipoNotificacao: "expiracao_certificado", assunto, ok: result.ok, erro: result.error, messageId: result.id,
         relatedId: doc.id,
       });
 
@@ -195,7 +202,7 @@ export const verificarExpiracoes = onSchedule(
 );
 
 // ─── Callable de teste: SUPERADMIN dispara um e-mail de teste pra si mesmo ──
-export const testarEnvioEmail = onCall({ secrets: [RESEND_API_KEY] }, async (request) => {
+export const testarEnvioEmail = onCall({ secrets: [GMAIL_APP_PASSWORD] }, async (request) => {
   if (!request.auth) throw new HttpsError("unauthenticated", "Login necessário.");
   const callerSnap = await db().collection("users").doc(request.auth.uid).get();
   const caller = callerSnap.data();
@@ -205,14 +212,14 @@ export const testarEnvioEmail = onCall({ secrets: [RESEND_API_KEY] }, async (req
   const email = String(caller.email || "");
   if (!email) throw new HttpsError("failed-precondition", "Sua conta não tem e-mail cadastrado.");
 
-  const apiKey = RESEND_API_KEY.value();
-  const from = EMAIL_FROM.value();
-  const result = await sendEmail(apiKey, from, email, "Teste de envio — MJ Consultoria",
+  const user = GMAIL_USER.value();
+  const pass = GMAIL_APP_PASSWORD.value();
+  const result = await sendEmail(user, pass, email, "Teste de envio — MJ Consultoria",
     htmlAviso("Teste de configuração", "Se você recebeu este e-mail, o envio de notificações está funcionando corretamente.", "Disparado manualmente via botão de teste."));
 
   await logEmailEvidencia({
     tenantId: caller.tenantId || "", destinatarioEmail: email, destinatarioNome: caller.name || email,
-    tipoNotificacao: "teste", assunto: "Teste de envio — MJ Consultoria", ok: result.ok, erro: result.error, resendId: result.id,
+    tipoNotificacao: "teste", assunto: "Teste de envio — MJ Consultoria", ok: result.ok, erro: result.error, messageId: result.id,
   });
 
   if (!result.ok) throw new HttpsError("internal", result.error || "Falha ao enviar e-mail de teste.");
