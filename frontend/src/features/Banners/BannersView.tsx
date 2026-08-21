@@ -138,12 +138,14 @@ CTA: [chamada para ação aqui]`;
       <style>
         body { margin: 0; font-family: Arial, sans-serif; background: linear-gradient(135deg,#1e3a5f 0%,#0a1628 100%); color: white; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
         .banner { text-align: center; padding: 60px 80px; max-width: 800px; }
-        .banner h1 { font-size: 48px; font-weight: 900; margin-bottom: 20px; text-transform: uppercase; letter-spacing: -1px; }
-        .banner p { font-size: 20px; opacity: 0.85; margin-bottom: 30px; line-height: 1.6; }
-        .banner .cta { background: #2563eb; padding: 16px 40px; border-radius: 12px; font-size: 18px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; display: inline-block; }
+        .banner .eyebrow { color: #C9A84C; font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 18px; }
+        .banner h1 { font-size: 48px; font-weight: 900; margin: 0 0 20px; text-transform: uppercase; letter-spacing: -1px; color: #ffffff; }
+        .banner p { font-size: 20px; color: #e2e8f0; margin-bottom: 30px; line-height: 1.6; }
+        .banner .cta { background: #C9A84C; color: #0A1628; padding: 16px 40px; border-radius: 12px; font-size: 18px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; display: inline-block; }
         @media print { body { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
       </style></head><body>
       <div class="banner">
+        <div class="eyebrow">MJ Consultoria // Treinamento Corporativo</div>
         <h1>${titulo}</h1>
         <p>${subtitulo}</p>
         ${cta ? `<div class="cta">${cta}</div>` : ''}
@@ -271,20 +273,33 @@ CTA: [chamada para ação aqui]`;
       {previewBanner && textoBannerGerado && (() => {
         const { titulo, subtitulo, cta } = parseBannerText(textoBannerGerado);
         return (
-          <div className="bg-white border border-pink-500/30 rounded-[24px] p-6 space-y-4">
+          <div className="bg-white border border-slate-200 rounded-[24px] p-6 space-y-4 shadow-sm">
             <div className="flex items-center justify-between flex-wrap gap-3">
               <h3 className="text-[#0A1628] font-black uppercase text-sm">Preview do Banner</h3>
               <button type="button" onClick={() => imprimirBanner(textoBannerGerado)}
-                className="text-[9px] bg-slate-200 hover:bg-slate-700 text-slate-700 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
+                className="text-[9px] bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all border border-slate-200">
                 <i className="fa-solid fa-print mr-1"></i>Imprimir / PDF
               </button>
             </div>
 
-            <div className="bg-gradient-to-br from-blue-900 to-slate-900 rounded-2xl p-10 text-center space-y-4 border border-blue-500/20">
-              <h1 className="text-2xl md:text-4xl font-black text-[#0A1628] uppercase tracking-tight">{titulo || 'Título'}</h1>
-              <p className="text-slate-700 text-sm md:text-base leading-relaxed max-w-lg mx-auto">{subtitulo}</p>
+            <div className="relative overflow-hidden bg-gradient-to-br from-[#0A1628] via-[#132a4a] to-[#1e3a5f] rounded-[24px] p-12 text-center space-y-5 border border-[#C9A84C]/30 shadow-xl">
+              {/* Glow decorativo */}
+              <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#C9A84C]/10 rounded-full blur-3xl pointer-events-none"></div>
+              <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+              <p className="relative text-[#C9A84C] text-[10px] font-black uppercase tracking-[0.35em]">
+                MJ Consultoria // Treinamento Corporativo
+              </p>
+              <h1 className="relative text-2xl md:text-4xl font-black text-white uppercase tracking-tight leading-tight drop-shadow-sm">
+                {titulo || 'Título'}
+              </h1>
+              <p className="relative text-slate-200 text-sm md:text-base leading-relaxed max-w-lg mx-auto">
+                {subtitulo}
+              </p>
               {cta && (
-                <div className="inline-block bg-blue-600 text-[#0A1628] px-8 py-3 rounded-xl font-black text-sm uppercase tracking-widest">{cta}</div>
+                <div className="relative inline-block bg-[#C9A84C] text-[#0A1628] px-8 py-3.5 rounded-xl font-black text-sm uppercase tracking-widest shadow-lg">
+                  {cta}
+                </div>
               )}
             </div>
 
@@ -293,14 +308,14 @@ CTA: [chamada para ação aqui]`;
                 value={tituloBanner}
                 onChange={e => setTituloBanner(e.target.value)}
                 placeholder="Nome para salvar este banner..."
-                className="flex-1 min-w-0 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-pink-500"
+                className="flex-1 min-w-0 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-[#C9A84C] transition-colors"
               />
               <button type="button" onClick={salvarBannerGerado} disabled={!tituloBanner.trim()}
-                className="bg-pink-600 hover:bg-pink-500 disabled:opacity-50 text-[#0A1628] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                className="bg-[#C9A84C] hover:brightness-110 disabled:opacity-40 disabled:hover:brightness-100 text-[#0A1628] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm">
                 <i className="fa-solid fa-floppy-disk mr-2"></i>Salvar
               </button>
               <button type="button" onClick={() => setPreviewBanner(false)}
-                className="bg-slate-200 hover:bg-slate-700 text-slate-700 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                className="bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
                 Fechar
               </button>
             </div>
