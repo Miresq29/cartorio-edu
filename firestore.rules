@@ -144,6 +144,11 @@ service cloud.firestore {
       allow create: if canWriteOwnPrivate();
       allow update, delete: if isSuperAdmin() || (isGestor() && sameTenant());
     }
+    match /dossiesConformidade/{docId} {
+      allow read: if isSuperAdmin() || (isGestor() && sameTenant());
+      allow create: if isSuperAdmin() || (isGestor() && newSameTenant());
+      allow update, delete: if isSuperAdmin() || (isGestor() && sameTenant());
+    }
     match /planosAcaoPhishing/{docId} {
       allow read: if isSuperAdmin() || (isGestor() && sameTenant());
       allow create: if isSuperAdmin() || (isGestor() && newSameTenant());

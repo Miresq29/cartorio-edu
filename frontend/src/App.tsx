@@ -34,6 +34,7 @@ const RepositorioView    = lazy(() => import('./features/Repositorio/Repositorio
 const CertificadoView   = lazy(() => import('./features/Certificado/CertificadoView'));
 const BackupView        = lazy(() => import('./features/Backup/BackupView'));
 const SimulacaoPhishingView = lazy(() => import('./features/Phishing/SimulacaoPhishingView'));
+const DossieConformidadeView = lazy(() => import('./features/Compliance/DossieConformidadeView'));
 
 // ðŸ›¡ï¸ Admin Views
 const TenantsView          = lazy(() => import('./features/Admin/TenantsView'));
@@ -88,6 +89,7 @@ const MainLayout: React.FC = () => {
       case 'certificado':   return <CertificadoView />;
       case 'backup':        return <BackupView />;
       case 'phishing':      return <SimulacaoPhishingView />;
+      case 'dossie':        return <DossieConformidadeView />;
       default:
         return state.user?.role === 'SUPERADMIN' ? <DashboardMasterView /> : <DashboardView />;
     }

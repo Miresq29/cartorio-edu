@@ -107,6 +107,8 @@ export type AppTab =
   | 'campanhas' | 'banners'
   // Segurança
   | 'phishing'
+  // Compliance
+  | 'dossie'
   // Plataforma
   | 'support' | 'tutorial' | 'terms' | 'privacy' | 'policy'
   // Legados (manter compatibilidade)

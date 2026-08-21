@@ -75,12 +75,21 @@ const SECTIONS: Section[] = [
     ]
   },
   {
+    id: 'dossie', icon: 'fa-file-shield', title: 'Dossiê de Conformidade', subtitle: 'Evidências consolidadas para inspeção CNJ e LGPD',
+    steps: [
+      { title: 'O que reúne o dossiê', desc: 'Consolida, para o período escolhido, colaboradores ativos, aprovação em testes, conclusão de trilhas, certificados válidos/vencidos, confirmações de comunicados críticos e resultado de simulações de phishing.' },
+      { title: 'Resumo executivo com IA', desc: 'O botão "Gerar resumo executivo com IA" redige um parágrafo formal citando os Provimentos CNJ 149 e 213/2026, com base apenas nos números reais do período — cada geração fica salva como evidência no histórico.' },
+      { title: 'Exportando o PDF', desc: '"Exportar PDF" gera um documento com capa, indicadores, tabela de confirmações de comunicados e o resumo executivo — pronto para apresentar em inspeções ou auditorias externas.' },
+    ]
+  },
+  {
     id: 'trails', icon: 'fa-road', title: 'Trilhas', subtitle: 'Trilhas de aprendizagem por perfil',
     steps: [
       { title: 'O que são Trilhas?', desc: 'Trilhas são sequências de conteúdos organizados por perfil profissional (atendente, escrevente, oficial substituto). Cada trilha guia o colaborador do básico ao avançado.' },
       { title: 'Navegando em uma trilha', desc: 'Selecione uma trilha para ver os módulos disponíveis. Complete os módulos em sequência para liberar o próximo nível.' },
       { title: 'Progresso', desc: 'O progresso de cada trilha é salvo automaticamente. Acompanhe o avanço em "Meu Progresso" no menu CAPACITAÇÃO.' },
       { title: 'Trilhas modelo MJ Consultoria', desc: 'SUPERADMIN pode marcar uma trilha como "modelo oficial MJ Consultoria" (badge dourado) e distribuí-la para todos os cartórios ou para uma lista específica de clientes.' },
+      { title: 'Trilhas de segurança inclusas', desc: 'Toda a base de clientes já recebe 4 trilhas oficiais de cyber-higiene: Senhas e Autenticação, Engenharia Social e Phishing, Dispositivos Móveis e Trabalho Remoto, e LGPD no Dia a Dia — disponíveis para todos os perfis.' },
       { title: 'Visibilidade', desc: 'Toda trilha pode ser publicada para "este cartório", "todos os cartórios" ou uma lista de "cartórios específicos" escolhida pelo SUPERADMIN.' },
     ]
   },
