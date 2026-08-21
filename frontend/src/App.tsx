@@ -77,7 +77,7 @@ const MainLayout: React.FC = () => {
       case 'policy':     return <PolicyView />;
       case 'tutorial':   return <TutorialView />;
       case 'campanhas':     return <CampanhasView />;
-      case 'videos':        return <RepositorioView />;
+      case 'videos':        return <VideosView />;
       case 'comunicados':   return <ComunicadosView />;
       case 'banners':       return <BannersView />;
       case 'meu-progresso': return <MeuProgressoView />;

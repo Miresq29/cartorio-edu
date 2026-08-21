@@ -6,6 +6,7 @@ import {
 import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
 import VisibilidadeCartorioPicker from '../../components/VisibilidadeCartorioPicker';
+import { GeminiService } from '../../services/geminiService';
 
 // â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -289,28 +290,17 @@ const ModuloPlayer: React.FC<{
     if (!modulo) return;
     setGerandoQuiz(true);
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          system: `Você é um gerador de quiz para treinamento notarial. 
+      const prompt = `Você é um gerador de quiz para treinamento notarial.
 Retorne APENAS um JSON válido, sem texto adicional, sem markdown, sem explicações.
 Formato exato:
 {"questoes":[{"pergunta":"...","opcoes":["A","B","C","D"],"correta":0,"explicacao":"..."}]}
-correta é o índice (0-3) da opção correta.`,
-          messages: [{
-            role: 'user',
-            content: `Gere 4 questões de múltipla escolha sobre este conteúdo:
+correta é o índice (0-3) da opção correta.
+
+Gere 4 questões de múltipla escolha sobre este conteúdo:
 Módulo: ${modulo.titulo}
 Conteúdo: ${modulo.conteudo || modulo.descricao}
-Nota mínima para aprovação: ${modulo.notaMinima}/10`
-          }]
-        })
-      });
-      const data = await res.json();
-      const text = data.content?.[0]?.text || '{}';
+Nota mínima para aprovação: ${modulo.notaMinima}/10`;
+      const text = await GeminiService.generateJSON(prompt, 1500);
       const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
       setQuizQuestoes(parsed.questoes || []);
     } catch {

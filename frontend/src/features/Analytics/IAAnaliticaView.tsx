@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { db } from '../../services/firebase';
 import { collection, onSnapshot, query, orderBy, limit, where } from 'firebase/firestore';
 import { useApp } from '../../context/AppContext';
+import { GeminiService } from '../../services/geminiService';
 
 interface AuditLog {
   id: string;
@@ -174,18 +175,7 @@ Gere uma análise de gestão operacional respondendo APENAS com JSON válido, se
 }`;
 
     try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 2000,
-          messages: [{ role: 'user', content: contexto }]
-        })
-      });
-
-      const data = await response.json();
-      const raw = data.content?.[0]?.text || '';
+      const raw = await GeminiService.generateJSON(contexto, 2000);
       const jsonMatch = raw.match(/\{[\s\S]*\}/);
       if (!jsonMatch) throw new Error('Resposta inválida');
       const parsed: AnaliseResult = JSON.parse(jsonMatch[0]);
@@ -238,17 +228,7 @@ CONTEXTO ATUAL DA PLATAFORMA:
 Responda de forma objetiva e prática. Pergunta: ${msg}`;
 
     try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          messages: [{ role: 'user', content: contexto }]
-        })
-      });
-      const data = await response.json();
-      const text = data.content?.[0]?.text || 'Sem resposta.';
+      const text = await GeminiService.getGeminiResponse(contexto);
       setChatMessages(p => [...p, { role: 'ai', text }]);
     } catch {
       setChatMessages(p => [...p, { role: 'ai', text: 'Erro ao processar. Tente novamente.' }]);

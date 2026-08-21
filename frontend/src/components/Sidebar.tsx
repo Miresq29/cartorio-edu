@@ -40,14 +40,18 @@ const Sidebar: React.FC = () => {
         { tab: 'reports',  icon: 'fa-chart-column',      label: 'Relatorios',    desc: 'Metricas de treinamento e engajamento'                                        },
         { tab: 'audit',    icon: 'fa-clock-rotate-left', label: 'Auditoria',     desc: 'Historico de acessos e alteracoes',   roles: ['SUPERADMIN', 'gestor']          },
         { tab: 'security', icon: 'fa-lock',              label: 'Seguranca',     desc: 'Senhas, bloqueios e politicas',       roles: ['SUPERADMIN', 'gestor']          },
+        { tab: 'analytics', icon: 'fa-chart-pie',        label: 'IA Analitica',  desc: 'Analise de auditoria e base legal',   roles: ['SUPERADMIN', 'gestor']          },
       ]
     },
     {
       label: 'CONTEUDO', icon: 'fa-layer-group',
       items: [
-        { tab: 'trails',      icon: 'fa-road',       label: 'Trilhas',     desc: 'Trilhas de aprendizagem por perfil', color: 'text-teal-400'  },
-        { tab: 'repositorio', icon: 'fa-photo-film', label: 'Repositorio', desc: 'Videos, audios e PDFs',             color: 'text-sky-400'   },
-        { tab: 'knowledge',   icon: 'fa-scale-balanced', label: 'Base Legal',  desc: 'Documentos normativos indexados', color: 'text-amber-400' },
+        { tab: 'trails',       icon: 'fa-road',          label: 'Trilhas',        desc: 'Trilhas de aprendizagem por perfil', color: 'text-teal-400'   },
+        { tab: 'repositorio',  icon: 'fa-photo-film',    label: 'Repositorio',    desc: 'Audios e PDFs',                     color: 'text-sky-400'    },
+        { tab: 'videos',       icon: 'fa-video',         label: 'Videos',         desc: 'Videos de treinamento (YouTube)',   color: 'text-rose-400'   },
+        { tab: 'knowledge',    icon: 'fa-scale-balanced', label: 'Base Legal',    desc: 'Documentos normativos indexados',   color: 'text-amber-400'  },
+        { tab: 'comunicados',  icon: 'fa-bullhorn',      label: 'Comunicados',   desc: 'Mural de avisos da empresa',         color: 'text-amber-400'  },
+        { tab: 'banners',      icon: 'fa-images',        label: 'Banners',       desc: 'Banners e materiais de divulgacao',  color: 'text-pink-400', roles: ['SUPERADMIN', 'gestor', 'admin'] },
       ]
     },
     {
@@ -56,6 +60,7 @@ const Sidebar: React.FC = () => {
         { tab: 'training',      icon: 'fa-graduation-cap', label: 'Treinamento AI',  desc: 'Roteiros, quizzes e certificados com IA', color: 'text-emerald-400' },
         { tab: 'exames',        icon: 'fa-file-pen',       label: 'Exames',          desc: 'Avaliacoes com IA e Bloom',               color: 'text-sky-400'    },
         { tab: 'metas',         icon: 'fa-trophy',         label: 'Metas & Premiacao', desc: 'Rankings e desempate Bloom Alto',        color: 'text-amber-400'  },
+        { tab: 'campanhas',     icon: 'fa-rocket',         label: 'Campanhas',       desc: 'Campanhas motivacionais com IA',           color: 'text-pink-400', roles: ['SUPERADMIN', 'gestor', 'admin'] },
         { tab: 'meu-progresso', icon: 'fa-chart-line',     label: 'Meu Progresso',   desc: 'Trilhas, quizzes e certificados pessoais', color: 'text-teal-400'  },
         { tab: 'certificado',   icon: 'fa-certificate',    label: 'Certificados',    desc: 'Emitir e baixar certificados PDF',         color: 'text-amber-400' },
       ]
@@ -68,6 +73,7 @@ const Sidebar: React.FC = () => {
         { tab: 'tutorial', icon: 'fa-book-open',     label: 'Tutorial',     desc: 'Guia completo de uso da plataforma' },
         { tab: 'terms',    icon: 'fa-file-contract', label: 'Termos de Uso', desc: 'Politicas e conformidade'          },
         { tab: 'privacy',  icon: 'fa-shield-heart',  label: 'Privacidade',  desc: 'LGPD e dados pessoais'              },
+        { tab: 'policy',   icon: 'fa-clipboard-list', label: 'Politicas',    desc: 'Politicas internas da empresa'     },
       ]
     }
   ];

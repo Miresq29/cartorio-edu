@@ -14,7 +14,10 @@ import { useToast } from '../../context/ToastContext';
 
 // Coleções que usam tenantIds (array) em vez de tenantId (string) — ver plano de
 // visibilidade multi-cartório.
-const COLECOES_ARRAY_TENANT = new Set(['trilhas', 'repositorio', 'comunicados', 'checklists', 'knowledgeBase']);
+const COLECOES_ARRAY_TENANT = new Set([
+  'trilhas', 'repositorio', 'comunicados', 'checklists', 'knowledgeBase',
+  'videos', 'materiaisbanner', 'treinamentos', 'treinamentosQuizzes',
+]);
 
 const COLECOES_TENANT = [
   { id: 'users',                   label: 'Colaboradores',        icon: 'fa-users'             },
@@ -31,6 +34,10 @@ const COLECOES_TENANT = [
   { id: 'auditLogs',               label: 'Trilha de Auditoria',  icon: 'fa-clock-rotate-left' },
   { id: 'checklists',              label: 'Checklists',           icon: 'fa-list-check'        },
   { id: 'knowledgeBase',           label: 'Base de Conhecimento', icon: 'fa-book-open'         },
+  { id: 'videos',                  label: 'Videos',               icon: 'fa-video'             },
+  { id: 'materiaisbanner',         label: 'Banners e Materiais',  icon: 'fa-images'            },
+  { id: 'treinamentos',            label: 'Treinamentos',         icon: 'fa-graduation-cap'    },
+  { id: 'treinamentosQuizzes',     label: 'Quizzes',              icon: 'fa-clipboard-question'},
 ];
 
 interface BackupStatus {
@@ -168,7 +175,12 @@ const BackupView: React.FC = () => {
   // Backup somente de uma coleção específica
   const backupColecao = async (colId: string, colLabel: string) => {
     try {
-      const q = query(collection(db, colId), where('tenantId', '==', tenantId));
+      const q = query(
+        collection(db, colId),
+        COLECOES_ARRAY_TENANT.has(colId)
+          ? where('tenantIds', 'array-contains', tenantId)
+          : where('tenantId', '==', tenantId)
+      );
       const snap = await getDocs(q);
       const docs = snap.docs.map(d => {
         const obj: any = { _id: d.id, ...d.data() };

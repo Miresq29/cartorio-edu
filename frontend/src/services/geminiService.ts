@@ -618,10 +618,16 @@ Retorne APENAS array JSON sem markdown:
   }
 };
 
+// ─── Geração de JSON genérico (uso livre por outras telas) ───────────────────
+export const generateJSON = async (prompt: string, maxOutputTokens: number = 3000): Promise<string> => {
+  return callGemini(prompt, maxOutputTokens, true);
+};
+
 // ─── Exportações ──────────────────────────────────────────────────────────────
 export const GeminiService = {
   chat,
   getGeminiResponse,
+  generateJSON,
   extractChecklistFromDocument,
   generateTrainingOptions,
   generateTrainingDetail,
