@@ -3,6 +3,8 @@ import * as admin from "firebase-admin";
 
 admin.initializeApp();
 
+export { notificarComunicado, notificarTrilha, verificarExpiracoes, testarEnvioEmail } from "./email";
+
 const db = admin.firestore();
 
 const GESTOR_ROLES = ["SUPERADMIN", "gestor", "admin"];

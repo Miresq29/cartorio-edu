@@ -7,10 +7,12 @@ import {
   collection, query, orderBy, onSnapshot,
   addDoc, serverTimestamp, limit, where
 } from 'firebase/firestore';
-import * as XLSX from 'xlsx';
-import { db } from '../../services/firebase';
-import * as XLSX from 'xlsx';
+import { db, functions } from '../../services/firebase';
+import { httpsCallable } from 'firebase/functions';
 import { useApp } from '../../context/AppContext';
+import { useToast } from '../../context/ToastContext';
+
+const testarEnvioEmailFn = httpsCallable(functions, 'testarEnvioEmail');
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -21,6 +23,7 @@ type LogTipo =
   | 'usuario_criado' | 'usuario_alterado' | 'usuario_removido'
   | 'permissao_alterada'
   | 'documento_inserido' | 'documento_excluido'
+  | 'email_enviado' | 'email_erro'
   | 'acesso';
 
 interface AuditLog {
@@ -51,15 +54,18 @@ const TIPO_CONFIG: Record<string, { icon: string; color: string; bg: string; lab
   permissao_alterada: { icon: 'fa-shield-halved',      color: '#0891B2', bg: '#e0f2fe', label: 'Permissão Alterada', grupo: 'usuarios'   },
   documento_inserido: { icon: 'fa-file-circle-plus',   color: '#059669', bg: '#d1fae5', label: 'Doc. Inserido',      grupo: 'documentos' },
   documento_excluido: { icon: 'fa-file-circle-xmark',  color: '#DC2626', bg: '#fee2e2', label: 'Doc. Excluído',      grupo: 'documentos' },
+  email_enviado:      { icon: 'fa-envelope-circle-check', color: '#059669', bg: '#d1fae5', label: 'E-mail Enviado',  grupo: 'comunicacao'},
+  email_erro:         { icon: 'fa-envelope-circle-exclamation', color: '#DC2626', bg: '#fee2e2', label: 'Falha no E-mail', grupo: 'comunicacao'},
   acesso:             { icon: 'fa-eye',                color: '#4F46E5', bg: '#eef2ff', label: 'Acesso',             grupo: 'acesso'     },
 };
 
 const GRUPOS = [
-  { id: 'todos',      label: 'Todos'       },
-  { id: 'acesso',     label: 'Acessos'     },
-  { id: 'treinamento',label: 'Treinamento' },
-  { id: 'usuarios',   label: 'Usuários'    },
-  { id: 'documentos', label: 'Documentos'  },
+  { id: 'todos',       label: 'Todos'       },
+  { id: 'acesso',      label: 'Acessos'     },
+  { id: 'treinamento', label: 'Treinamento' },
+  { id: 'usuarios',    label: 'Usuários'    },
+  { id: 'documentos',  label: 'Documentos'  },
+  { id: 'comunicacao', label: 'E-mails'     },
 ];
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -94,7 +100,21 @@ export async function registrarLog(
 
 const AuditoriaView: React.FC = () => {
   const { state, tenantId } = useApp();
+  const { showToast } = useToast();
   const user = state.user!;
+  const isSuperAdmin = user.role === 'SUPERADMIN';
+  const [testandoEmail, setTestandoEmail] = useState(false);
+
+  const testarEmail = async () => {
+    setTestandoEmail(true);
+    try {
+      await testarEnvioEmailFn();
+      showToast('E-mail de teste enviado! Confira sua caixa de entrada.', 'success');
+    } catch (e: any) {
+      showToast(e?.message || 'Erro ao enviar e-mail de teste.', 'error');
+    }
+    setTestandoEmail(false);
+  };
 
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -179,10 +199,19 @@ const AuditoriaView: React.FC = () => {
             <h2 className="text-2xl font-black text-[#0A1628]">Trilha de Auditoria</h2>
             <p className="text-sm text-slate-500 mt-0.5">Registro completo de acessos e ações na plataforma</p>
           </div>
-          <button onClick={exportCSV}
-            className="flex items-center gap-2 bg-[#C9A84C] hover:bg-[#A8863C] text-[#0A1628] px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm">
-            <i className="fa-solid fa-download text-xs"></i>Exportar Excel
-          </button>
+          <div className="flex items-center gap-2">
+            {isSuperAdmin && (
+              <button onClick={testarEmail} disabled={testandoEmail}
+                className="flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-100 disabled:opacity-50 text-slate-700 px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm">
+                <i className={`fa-solid ${testandoEmail ? 'fa-circle-notch animate-spin' : 'fa-paper-plane'} text-xs`}></i>
+                {testandoEmail ? 'Enviando...' : 'Testar E-mail'}
+              </button>
+            )}
+            <button onClick={exportCSV}
+              className="flex items-center gap-2 bg-[#C9A84C] hover:bg-[#A8863C] text-[#0A1628] px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm">
+              <i className="fa-solid fa-download text-xs"></i>Exportar Excel
+            </button>
+          </div>
         </div>
 
         {/* KPIs */}

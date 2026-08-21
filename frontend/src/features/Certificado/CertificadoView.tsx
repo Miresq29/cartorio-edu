@@ -28,6 +28,7 @@ interface Certificado {
   emitidoEm: any;
   emitidoPor: string;
   tenantId: string;
+  validoAte?: any;
 }
 
 interface QuizResult {
@@ -446,12 +447,15 @@ const CertificadoView: React.FC = () => {
   // Emitir certificado
   const handleEmitir = async (data: Omit<Certificado, 'id' | 'codigoVerificacao' | 'emitidoEm' | 'tenantId' | 'emitidoPor'>) => {
     try {
+      const validoAte = new Date();
+      validoAte.setFullYear(validoAte.getFullYear() + 1);
       const novo: Omit<Certificado, 'id'> = {
         ...data,
         codigoVerificacao: gerarCodigo(),
         emitidoEm: serverTimestamp(),
         emitidoPor: user.name,
         tenantId,
+        validoAte: validoAte.toISOString(),
       };
       await addDoc(collection(db, 'certificados'), novo);
       await addDoc(collection(db, 'auditLogs'), { tipo: 'certificado_emitido', descricao: 'Certificado emitido: ' + (novo.trilhaTitulo || '') + ' | Nota: ' + (novo.notaFinal || '') + '%', usuario: user.name, usuarioId: user.id, tenantId, createdAt: serverTimestamp() });
