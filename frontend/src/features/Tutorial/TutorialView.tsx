@@ -28,11 +28,12 @@ const SECTIONS: Section[] = [
     ]
   },
   {
-    id: 'reports', icon: 'fa-chart-column', title: 'Relatórios', subtitle: 'Métricas de treinamento e engajamento',
+    id: 'reports', icon: 'fa-chart-column', title: 'Relatórios', subtitle: 'Métricas de treinamento, engajamento e risco',
     steps: [
       { title: 'Visão Geral', desc: 'A primeira aba exibe a atividade mensal e distribuição de notas da equipe. Acompanhe tendências de desempenho ao longo do tempo.' },
       { title: 'Por Colaborador', desc: 'Veja quantos treinamentos, exames e certificados cada colaborador concluiu. Identifique usuários engajados e os que precisam de atenção.' },
       { title: 'Por Trilha', desc: 'Acompanhe a taxa de conclusão e aprovação por trilha de aprendizado. Útil para avaliar quais conteúdos têm maior aderência.' },
+      { title: 'Risco', desc: 'Aba com um índice de risco/maturidade por colaborador, combinando média de notas, atividade recente e validade de certificados — destaca quem precisa de atenção prioritária.' },
       { title: 'Exportação', desc: 'Use "Imprimir" para gerar relatório em PDF ou "Exportar Excel" para análise em planilha. Filtre por período usando o seletor no topo.' },
     ]
   },
@@ -40,7 +41,9 @@ const SECTIONS: Section[] = [
     id: 'audit', icon: 'fa-clock-rotate-left', title: 'Auditoria', subtitle: 'Histórico completo de acessos e alterações',
     steps: [
       { title: 'Log de Atividades', desc: 'Visualize todas as ações registradas na plataforma em ordem cronológica. Filtre por tipo de evento, usuário e data.' },
-      { title: 'Tipos de Evento', desc: 'Os eventos incluem: login/logout, criação e edição de usuários, acesso a módulos, geração de certificados, exportações e alterações de configuração.' },
+      { title: 'Tipos de Evento', desc: 'Os eventos incluem: login/logout, criação e edição de usuários, acesso a módulos, geração de certificados, exportações, alterações de configuração e envio/erro de e-mail.' },
+      { title: 'Evidência de comunicação', desc: 'O filtro "E-mails" mostra cada notificação enviada pela plataforma (comunicados, trilhas, expiração de certificado, reforço de treinamento) com data, destinatário e status de entrega.' },
+      { title: 'Evidência de segurança', desc: 'O filtro "Segurança" registra cliques em simulações de phishing — quem clicou, quando e em qual simulação, para uso em ações de conscientização.' },
       { title: 'Retenção de logs', desc: 'Os logs são retidos por no mínimo 5 anos conforme Provimento CNJ nº 149 e nº 213/2026, garantindo conformidade para inspeções da corregedoria.' },
       { title: 'Exportação', desc: 'Exporte os registros em CSV ou PDF para auditorias externas ou inspeções regulatórias.' },
     ]
@@ -54,19 +57,70 @@ const SECTIONS: Section[] = [
     ]
   },
   {
+    id: 'analytics', icon: 'fa-chart-pie', title: 'IA Analítica', subtitle: 'Análise inteligente de auditoria e base legal',
+    steps: [
+      { title: 'O que é a IA Analítica', desc: 'Usa IA generativa para analisar os dados de auditoria e a Base Legal da sua serventia, identificando padrões e riscos que não são óbvios em uma leitura manual dos logs.' },
+      { title: 'Análises automáticas', desc: 'Clique em "Executar Análise" para que a IA gere um resumo executivo sobre volume de acessos, tendências de uso e possíveis inconsistências no período selecionado.' },
+      { title: 'Chat com a base legal', desc: 'Pergunte diretamente sobre os provimentos e normas cadastrados na Base Legal — a IA responde com base nos documentos reais da sua serventia.' },
+    ]
+  },
+  {
+    id: 'phishing', icon: 'fa-shield-halved', title: 'Simulação de Phishing', subtitle: 'Recurso opcional — teste de conscientização em segurança',
+    steps: [
+      { title: 'Recurso opcional', desc: 'Precisa ser habilitado pela MJ Consultoria para o seu cartório em "Gestão de Cartórios". Quando habilitado, o item aparece no menu Gestão dos perfis Gestor/Admin/SUPERADMIN.' },
+      { title: 'Criando um teste por tema', desc: 'Ao criar uma simulação, escolha um tema (Engenharia Social Financeira, Falsa Autoridade/Urgência, Atualização Cadastral, Documentos e Assinatura Eletrônica, Convites e Calendário, Curiosidade/Recompensa) e, se quiser, aplique um modelo pronto de e-mail para aquele tema.' },
+      { title: 'Link individual e rastreável', desc: 'Cada colaborador recebe um e-mail com um link único. Se clicar, vê uma página educativa explicando que era um teste — nenhuma senha ou dado sensível é coletado.' },
+      { title: 'Análises', desc: 'A aba "Análises & Plano de Ação" mostra a taxa de clique por tema, por cargo, a evolução entre simulações e o ranking dos colaboradores que mais clicaram.' },
+      { title: 'Plano de ação com IA', desc: 'O botão "Gerar plano de ação com IA" analisa os dados acima e sugere, em português, um diagnóstico e até 5 ações prioritárias de treinamento — com evidência salva para consulta posterior.' },
+    ]
+  },
+  {
     id: 'trails', icon: 'fa-road', title: 'Trilhas', subtitle: 'Trilhas de aprendizagem por perfil',
     steps: [
       { title: 'O que são Trilhas?', desc: 'Trilhas são sequências de conteúdos organizados por perfil profissional (atendente, escrevente, oficial substituto). Cada trilha guia o colaborador do básico ao avançado.' },
       { title: 'Navegando em uma trilha', desc: 'Selecione uma trilha para ver os módulos disponíveis. Complete os módulos em sequência para liberar o próximo nível.' },
       { title: 'Progresso', desc: 'O progresso de cada trilha é salvo automaticamente. Acompanhe o avanço em "Meu Progresso" no menu CAPACITAÇÃO.' },
+      { title: 'Trilhas modelo MJ Consultoria', desc: 'SUPERADMIN pode marcar uma trilha como "modelo oficial MJ Consultoria" (badge dourado) e distribuí-la para todos os cartórios ou para uma lista específica de clientes.' },
+      { title: 'Visibilidade', desc: 'Toda trilha pode ser publicada para "este cartório", "todos os cartórios" ou uma lista de "cartórios específicos" escolhida pelo SUPERADMIN.' },
     ]
   },
   {
-    id: 'repositorio', icon: 'fa-photo-film', title: 'Repositório', subtitle: 'Vídeos, áudios e PDFs de capacitação',
+    id: 'knowledge', icon: 'fa-scale-balanced', title: 'Base Legal', subtitle: 'Documentos normativos indexados',
     steps: [
-      { title: 'Tipos de conteúdo', desc: 'O repositório centraliza todos os materiais de capacitação: vídeos, arquivos de áudio, PDFs, apresentações e documentos normativos.' },
-      { title: 'Buscando conteúdo', desc: 'Use a busca para localizar materiais por palavra-chave, tipo de arquivo ou categoria. Filtre por relevância ou data de publicação.' },
+      { title: 'O que é a Base Legal', desc: 'Repositório de provimentos, leis e normas relevantes para a serventia (LGPD, Provimentos CNJ, normas internas), indexado para consulta e para alimentar as IAs de treinamento e análise.' },
+      { title: 'Cadastrando documentos', desc: 'Envie o PDF ou cole o texto do documento normativo. O conteúdo é extraído e indexado automaticamente para uso em roteiros de treinamento, exames e no chat da IA Analítica.' },
+      { title: 'Visibilidade', desc: 'SUPERADMIN pode publicar um documento para "todos os cartórios" ou para "cartórios específicos" — útil para normas que a MJ Consultoria mantém atualizadas centralmente.' },
+    ]
+  },
+  {
+    id: 'repositorio', icon: 'fa-photo-film', title: 'Repositório', subtitle: 'Áudios e PDFs de capacitação',
+    steps: [
+      { title: 'Tipos de conteúdo', desc: 'O repositório centraliza materiais de capacitação: arquivos de áudio, PDFs, apresentações e documentos complementares.' },
+      { title: 'Buscando conteúdo', desc: 'Use a busca para localizar materiais por palavra-chave, tipo de arquivo ou categoria.' },
       { title: 'Materiais obrigatórios', desc: 'Conteúdos marcados como obrigatórios aparecem destacados. O gestor pode definir quais materiais são de leitura/visualização obrigatória.' },
+    ]
+  },
+  {
+    id: 'videos', icon: 'fa-video', title: 'Vídeos', subtitle: 'Vídeos de treinamento (YouTube)',
+    steps: [
+      { title: 'Cadastrando um vídeo', desc: 'Cole o link do YouTube, defina título, descrição e o(s) perfil(is) que devem assistir.' },
+      { title: 'Acompanhamento', desc: 'O sistema registra quais colaboradores já assistiram a cada vídeo, permitindo cobrar a conclusão de conteúdos obrigatórios.' },
+    ]
+  },
+  {
+    id: 'comunicados', icon: 'fa-bullhorn', title: 'Comunicados', subtitle: 'Mural de avisos com evidência de leitura',
+    steps: [
+      { title: 'Publicando um comunicado', desc: 'Defina título, mensagem e prioridade (informativo, normal, urgente). Fixe no topo do mural quando necessário.' },
+      { title: 'Aceite formal (opcional)', desc: 'Marque "Exigir confirmação formal de leitura" para comunicados críticos — o colaborador precisa clicar em "Li e concordo" antes de o comunicado ser considerado lido, gerando evidência com nome, e-mail e data/hora.' },
+      { title: 'Acompanhando confirmações', desc: 'No modo Gestão, veja quantos colaboradores já confirmaram a leitura de cada comunicado com aceite obrigatório — útil para dossiês de auditoria CNJ.' },
+      { title: 'Notificação por e-mail', desc: 'Todo comunicado publicado dispara automaticamente um e-mail para os colaboradores do(s) cartório(s) selecionados, com evidência registrada em Auditoria.' },
+    ]
+  },
+  {
+    id: 'banners', icon: 'fa-images', title: 'Banners', subtitle: 'Materiais visuais de divulgação interna',
+    steps: [
+      { title: 'Publicando um banner', desc: 'Envie uma imagem ou link de campanha visual para divulgação interna (campanhas de segurança, datas comemorativas, avisos visuais).' },
+      { title: 'Visibilidade', desc: 'Assim como outros conteúdos, banners podem ser publicados para este cartório, todos os cartórios ou uma lista de cartórios específicos.' },
     ]
   },
   {
@@ -76,6 +130,7 @@ const SECTIONS: Section[] = [
       { title: 'Resumos Inteligentes', desc: 'Selecione um documento e o tipo de resumo (Executivo, Técnico, Didático ou Operacional) para que a IA gere um resumo otimizado para cada audiência.' },
       { title: 'Participantes', desc: 'Registre quais colaboradores participaram de cada treinamento, controle a presença e acompanhe o status de conclusão.' },
       { title: 'Questionários com IA', desc: 'Gere automaticamente questões de múltipla escolha baseadas no conteúdo dos treinamentos. Escolha entre 3, 5, 7 ou 10 questões por avaliação.' },
+      { title: 'Reforço automático', desc: 'Ao reprovar duas vezes seguidas no mesmo questionário, o colaborador recebe automaticamente um e-mail recomendando revisar o material antes de tentar novamente.' },
       { title: 'Dashboard de Gestão', desc: 'A aba "Dashboard Gestão" consolida o desempenho de todos os participantes com gráficos de aprovação, média de notas e evolução ao longo do tempo.' },
     ]
   },
@@ -97,6 +152,13 @@ const SECTIONS: Section[] = [
     ]
   },
   {
+    id: 'campanhas', icon: 'fa-rocket', title: 'Campanhas', subtitle: 'Campanhas motivacionais com IA',
+    steps: [
+      { title: 'Gerando uma campanha', desc: 'Descreva o objetivo (ex: incentivar a conclusão de uma trilha) e a IA gera sugestões de posts motivacionais para divulgação interna.' },
+      { title: 'Uso recomendado', desc: 'Combine campanhas com Metas & Premiação para reforçar o engajamento da equipe em períodos de baixa adesão aos treinamentos.' },
+    ]
+  },
+  {
     id: 'progresso', icon: 'fa-chart-line', title: 'Meu Progresso', subtitle: 'Trilhas, exames e certificados pessoais',
     steps: [
       { title: 'Visão pessoal', desc: 'Esta tela mostra exclusivamente o progresso do colaborador logado — trilhas iniciadas, exames realizados, certificados emitidos e pontuação acumulada.' },
@@ -109,7 +171,15 @@ const SECTIONS: Section[] = [
     steps: [
       { title: 'Elegibilidade', desc: 'Certificados são emitidos automaticamente quando o colaborador conclui uma trilha ou é aprovado em um exame com nota mínima de 75%.' },
       { title: 'Emitindo o certificado', desc: 'Na tela de Certificados, localize o certificado disponível e clique em "Emitir". O PDF é gerado com dados da serventia, nome, data e carga horária.' },
-      { title: 'Validade e autenticidade', desc: 'Cada certificado possui um código único de verificação. O gestor pode validar a autenticidade de qualquer certificado emitido pela plataforma.' },
+      { title: 'Validade e autenticidade', desc: 'Cada certificado possui um código único de verificação e validade de 1 ano a partir da emissão. O gestor pode validar a autenticidade de qualquer certificado emitido pela plataforma.' },
+      { title: 'Aviso de expiração', desc: 'Sete dias antes do vencimento, o colaborador recebe automaticamente um e-mail de aviso para providenciar a renovação.' },
+    ]
+  },
+  {
+    id: 'backup', icon: 'fa-database', title: 'Backup', subtitle: 'Exportação de dados do cartório',
+    steps: [
+      { title: 'O que é exportado', desc: 'Gera uma exportação dos dados do seu cartório — colaboradores, trilhas, resultados de exames, certificados e comunicados — em formato para arquivamento externo.' },
+      { title: 'Quando usar', desc: 'Recomendado antes de auditorias externas, migrações ou como cópia de segurança periódica independente do Firebase.' },
     ]
   },
   {

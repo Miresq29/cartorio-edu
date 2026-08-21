@@ -139,6 +139,11 @@ service cloud.firestore {
       allow read: if isSuperAdmin() || (isGestor() && sameTenant());
       allow write: if false;
     }
+    match /planosAcaoPhishing/{docId} {
+      allow read: if isSuperAdmin() || (isGestor() && sameTenant());
+      allow create: if isSuperAdmin() || (isGestor() && newSameTenant());
+      allow update, delete: if isSuperAdmin() || (isGestor() && sameTenant());
+    }
     match /repositorio/{docId} {
       allow read: if canReadContentArray();
       allow create: if canWriteContentArray();

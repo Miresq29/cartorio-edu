@@ -22,6 +22,7 @@ export const notificarSimulacaoPhishing = onDocumentCreated(
       const tokenRef = db().collection("simulacoesPhishingCliques").doc(`${simId}_${dest.id}`);
       await tokenRef.set({
         simId, userId: dest.id, email: dest.email, nome: dest.name, tenantId: dest.tenantId,
+        cargo: dest.cargo, role: dest.role, tema: data.tema || "",
         clicado: false, criadoEm: admin.firestore.FieldValue.serverTimestamp(),
       });
 

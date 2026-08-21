@@ -72,7 +72,7 @@ export async function logEmailEvidencia(params: {
   });
 }
 
-export async function resolveRecipients(tenantIds: string[]): Promise<{ id: string; email: string; name: string; tenantId: string }[]> {
+export async function resolveRecipients(tenantIds: string[]): Promise<{ id: string; email: string; name: string; tenantId: string; cargo: string; role: string }[]> {
   const isGlobal = tenantIds.includes("GLOBAL");
   const snap = isGlobal
     ? await db().collection("users").where("active", "==", true).get()
@@ -81,7 +81,7 @@ export async function resolveRecipients(tenantIds: string[]): Promise<{ id: stri
   return snap.docs
     .map((d) => {
       const u = d.data();
-      return { id: d.id, email: u.email, name: u.name || u.email, tenantId: u.tenantId };
+      return { id: d.id, email: u.email, name: u.name || u.email, tenantId: u.tenantId, cargo: u.cargo || "", role: u.role || "" };
     })
     .filter((u) => !!u.email);
 }
