@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useApp } from '../../context/AppContext';
 
 interface Section {
   id: string;
@@ -6,6 +7,10 @@ interface Section {
   title: string;
   subtitle: string;
   steps: { title: string; desc: string }[];
+  // Quando definido, restringe a seção a esses perfis — usado para não expor a
+  // colaboradores o funcionamento da simulação de phishing, que depende do
+  // fator surpresa para ser eficaz.
+  roles?: string[];
 }
 
 const SECTIONS: Section[] = [
@@ -68,6 +73,7 @@ const SECTIONS: Section[] = [
   },
   {
     id: 'phishing', icon: 'fa-shield-halved', title: 'Simulação de Phishing', subtitle: 'Recurso opcional — teste de conscientização em segurança',
+    roles: ['SUPERADMIN', 'gestor', 'admin'],
     steps: [
       { title: 'Recurso opcional', desc: 'Precisa ser habilitado pela MJ Consultoria para o seu cartório em "Gestão de Cartórios". Quando habilitado, o item aparece no menu Gestão dos perfis Gestor/Admin/SUPERADMIN.' },
       { title: 'Criando um teste por tema', desc: 'Ao criar uma simulação, escolha um tema (Engenharia Social Financeira, Falsa Autoridade/Urgência, Atualização Cadastral, Documentos e Assinatura Eletrônica, Convites e Calendário, Curiosidade/Recompensa) e, se quiser, aplique um modelo pronto de e-mail para aquele tema.' },
@@ -214,16 +220,20 @@ const SECTIONS: Section[] = [
 ];
 
 const TutorialView: React.FC = () => {
+  const { state } = useApp();
+  const role = state.user?.role || '';
+  const visibleSections = SECTIONS.filter(s => !s.roles || s.roles.includes(role));
+
   const [activeSection, setActiveSection] = useState<string>('dashboard');
 
-  const currentIdx = SECTIONS.findIndex(s => s.id === activeSection);
-  const current = SECTIONS[currentIdx] ?? SECTIONS[0];
+  const currentIdx = visibleSections.findIndex(s => s.id === activeSection);
+  const current = visibleSections[currentIdx] ?? visibleSections[0];
 
   const exportPDF = () => {
     const win = window.open('', '_blank');
     if (!win) return;
 
-    const allContent = SECTIONS.map((s, si) => `
+    const allContent = visibleSections.map((s, si) => `
       <div class="section">
         <div class="section-header">
           <span class="section-num">${String(si + 1).padStart(2, '0')}</span>
@@ -287,7 +297,7 @@ body { font-family: Arial, sans-serif; color:#1e293b; background:white; padding:
 <div class="toc">
   <div class="toc-title">Índice</div>
   <div class="toc-grid">
-    ${SECTIONS.map((s, i) => `<div class="toc-item"><b>${String(i+1).padStart(2,'0')}.</b>${s.title} — ${s.subtitle}</div>`).join('')}
+    ${visibleSections.map((s, i) => `<div class="toc-item"><b>${String(i+1).padStart(2,'0')}.</b>${s.title} — ${s.subtitle}</div>`).join('')}
   </div>
 </div>
 ${allContent}
@@ -337,7 +347,7 @@ ${allContent}
         {/* Menu lateral */}
         <div className="bg-[#0f172a] rounded-3xl border border-[#c9a84c]/20 p-4 space-y-1 h-fit">
           <p className="text-xs font-black text-[#c9a84c]/60 uppercase tracking-widest px-3 py-2">Módulos</p>
-          {SECTIONS.map(s => {
+          {visibleSections.map(s => {
             const isActive = activeSection === s.id;
             return (
               <button
@@ -372,7 +382,7 @@ ${allContent}
             </div>
             <div>
               <p className="text-[#c9a84c]/60 text-xs font-black uppercase tracking-widest">
-                Módulo {String(currentIdx + 1).padStart(2, '0')} de {SECTIONS.length}
+                Módulo {String(currentIdx + 1).padStart(2, '0')} de {visibleSections.length}
               </p>
               <h3 className="text-xl font-black text-white uppercase italic mt-1">{current.title}</h3>
               <p className="text-[#c9a84c] text-sm mt-1">{current.subtitle}</p>
@@ -401,16 +411,16 @@ ${allContent}
           <div className="flex justify-between pt-2">
             {currentIdx > 0 ? (
               <button
-                onClick={() => setActiveSection(SECTIONS[currentIdx - 1].id)}
+                onClick={() => setActiveSection(visibleSections[currentIdx - 1].id)}
                 className="flex items-center gap-2 px-5 py-2.5 bg-white border border-[#c9a84c]/30 hover:border-[#c9a84c]/60 text-[#7a5c1e] rounded-xl text-xs font-black uppercase transition-all"
               >
                 <i className="fa-solid fa-arrow-left"></i> Anterior
               </button>
             ) : <div />}
 
-            {currentIdx < SECTIONS.length - 1 ? (
+            {currentIdx < visibleSections.length - 1 ? (
               <button
-                onClick={() => setActiveSection(SECTIONS[currentIdx + 1].id)}
+                onClick={() => setActiveSection(visibleSections[currentIdx + 1].id)}
                 className="flex items-center gap-2 px-5 py-2.5 bg-[#c9a84c] hover:brightness-110 text-[#0f172a] rounded-xl text-xs font-black uppercase transition-all"
               >
                 Próximo <i className="fa-solid fa-arrow-right"></i>
