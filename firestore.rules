@@ -49,6 +49,15 @@ service cloud.firestore {
     function canEditPrivate() { return isSuperAdmin() || (isGestor() && sameTenant()); }
     // Private + dono do registro: usar nas coleções onde o campo userId reflete o uid autenticado
     function canWriteOwnPrivate() { return canWritePrivate() && (isSelfData() || isGestor()); }
+    // Impede que o próprio usuário grave um nome/e-mail de exibição diferente do seu cadastro
+    // real em registros que servem como evidência de identidade (ex.: aceite formal de
+    // comunicado). Só se aplica à própria gravação (isSelfData()) — gestor gravando em nome de
+    // outro colaborador não é restringido por esta checagem.
+    function selfIdentityMatches() {
+      return !isSelfData()
+        || ((!('userNome' in request.resource.data) || request.resource.data.userNome == getUserData().get('name', ''))
+            && (!('userEmail' in request.resource.data) || request.resource.data.userEmail == getUserData().get('email', '')));
+    }
 
     match /users/{userId} {
       allow read: if isSuperAdmin()
@@ -185,7 +194,7 @@ service cloud.firestore {
     }
     match /comunicadosLeituras/{docId} {
       allow read: if canReadPrivate();
-      allow create, update: if canWriteOwnPrivate();
+      allow create, update: if canWriteOwnPrivate() && selfIdentityMatches();
       allow delete: if isSuperAdmin() || (isGestor() && sameTenant());
     }
     match /reforcosPendentes/{docId} {
