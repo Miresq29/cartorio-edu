@@ -17,6 +17,7 @@ interface Comunicado {
   ativo: boolean;
   fixado: boolean;
   exigeAceite: boolean;
+  notificarEmail?: boolean;
   criadoEm: any;
 }
 
@@ -39,7 +40,7 @@ const ComunicadosView: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [expandido, setExpandido] = useState<string | null>(null);
-  const [form, setForm] = useState({ titulo: '', corpo: '', prazo: '', anexoUrl: '', prioridade: 'normal' as const, fixado: false, exigeAceite: false });
+  const [form, setForm] = useState({ titulo: '', corpo: '', prazo: '', anexoUrl: '', prioridade: 'normal' as const, fixado: false, exigeAceite: false, notificarEmail: false });
   const [leiturasGestao, setLeiturasGestao] = useState<Record<string, { userNome: string; userEmail: string; aceiteEm: any }[]>>({});
 
   useEffect(() => {
@@ -100,8 +101,8 @@ const ComunicadosView: React.FC = () => {
         publicadoPor: state.user?.id || '', publicadoPorNome: state.user?.name || '',
         criadoEm: serverTimestamp(),
       });
-      showToast('Comunicado publicado!', 'success');
-      setForm({ titulo: '', corpo: '', prazo: '', anexoUrl: '', prioridade: 'normal', fixado: false, exigeAceite: false });
+      showToast(form.notificarEmail ? 'Comunicado publicado e e-mail enviado aos colaboradores!' : 'Comunicado publicado no mural (sem envio de e-mail).', 'success');
+      setForm({ titulo: '', corpo: '', prazo: '', anexoUrl: '', prioridade: 'normal', fixado: false, exigeAceite: false, notificarEmail: false });
       setShowForm(false);
     } catch { showToast('Erro ao publicar comunicado.', 'error'); } finally { setLoading(false); }
   };
@@ -205,6 +206,17 @@ const ComunicadosView: React.FC = () => {
                 Exigir confirmação formal de leitura ("Li e concordo") — gera evidência com nome, e-mail e data/hora
               </label>
             </div>
+            <div className="flex items-center gap-3 md:col-span-2 bg-blue-50 border border-blue-200 rounded-xl p-3">
+              <input type="checkbox" id="notificarEmail" checked={form.notificarEmail} onChange={e => setForm(p => ({ ...p, notificarEmail: e.target.checked }))}
+                className="w-4 h-4 accent-blue-600" />
+              <label htmlFor="notificarEmail" className="text-sm text-slate-700 font-bold cursor-pointer">
+                <i className="fa-solid fa-envelope mr-1 text-blue-500"></i>
+                Notificar colaboradores por e-mail sobre este comunicado
+                <span className="block text-[10px] font-normal text-slate-500 mt-0.5">
+                  Por padrão, o comunicado fica só no mural. Marque esta opção apenas para avisos que realmente precisam chegar por e-mail.
+                </span>
+              </label>
+            </div>
           </div>
 
           {isSuperAdmin && (
@@ -255,6 +267,11 @@ const ComunicadosView: React.FC = () => {
                     <span className={`text-[9px] font-black text-${prio.color}-400 uppercase tracking-widest bg-${prio.color}-500/10 px-2 py-0.5 rounded-lg`}>
                       {prio.label}
                     </span>
+                    {c.notificarEmail && (
+                      <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest bg-blue-500/10 px-2 py-0.5 rounded-lg" title="E-mail enviado aos colaboradores">
+                        <i className="fa-solid fa-envelope mr-1"></i>E-mail
+                      </span>
+                    )}
                   </div>
                   <p className="text-[10px] text-slate-500 mt-0.5">
                     {c.publicadoPorNome} · {c.criadoEm?.toDate?.()?.toLocaleDateString('pt-BR') || 'agora'}

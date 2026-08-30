@@ -126,6 +126,10 @@ export const notificarComunicado = onDocumentCreated(
   async (event) => {
     const data = event.data?.data();
     if (!data) return;
+    // Envio por e-mail é opt-in por comunicado — o gestor decide, no momento da
+    // publicação, se aquele assunto precisa mesmo interromper a caixa de entrada
+    // de todo mundo, em vez de disparar automaticamente para todo comunicado.
+    if (data.notificarEmail !== true) return;
     const tenantIds: string[] = data.tenantIds || [];
     const user = GMAIL_USER;
     const pass = GMAIL_APP_PASSWORD.value();
@@ -150,6 +154,8 @@ export const notificarTrilha = onDocumentCreated(
   async (event) => {
     const data = event.data?.data();
     if (!data || data.ativa === false) return;
+    // Assim como em comunicados, o envio de e-mail é opt-in por trilha.
+    if (data.notificarEmail !== true) return;
     const tenantIds: string[] = data.tenantIds || [];
     const perfis: string[] = data.perfis || [];
     const user = GMAIL_USER;

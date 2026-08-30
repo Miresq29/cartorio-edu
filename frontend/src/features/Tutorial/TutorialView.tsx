@@ -124,7 +124,7 @@ const SECTIONS: Section[] = [
       { title: 'Publicando um comunicado', desc: 'Defina título, mensagem e prioridade (informativo, normal, urgente). Fixe no topo do mural quando necessário.' },
       { title: 'Aceite formal (opcional)', desc: 'Marque "Exigir confirmação formal de leitura" para comunicados críticos — o colaborador precisa clicar em "Li e concordo" antes de o comunicado ser considerado lido, gerando evidência com nome, e-mail e data/hora.' },
       { title: 'Acompanhando confirmações', desc: 'No modo Gestão, veja quantos colaboradores já confirmaram a leitura de cada comunicado com aceite obrigatório — útil para dossiês de auditoria CNJ.' },
-      { title: 'Notificação por e-mail', desc: 'Todo comunicado publicado dispara automaticamente um e-mail para os colaboradores do(s) cartório(s) selecionados, com evidência registrada em Auditoria.' },
+      { title: 'Notificação por e-mail é opcional', desc: 'Por padrão, o comunicado fica só no mural — marque "Notificar colaboradores por e-mail" apenas para avisos que realmente precisam interromper a caixa de entrada de todo mundo. Um selo azul "E-mail" identifica quais comunicados dispararam notificação.' },
     ]
   },
   {

@@ -110,6 +110,7 @@ projeto_completo.txt
 backend/cartorio-homolog-service-account.json
 backend/SENHAS_PROVISORIAS*.json
 backend/users_2tabmoc.json
+scripts/relatorio-migracao-*.csv
 *.json
 !package.json
 !tsconfig*.json

@@ -31,6 +31,7 @@ interface Trilha {
   ativa: boolean;
   tenantIds: string[];
   oficial?: boolean;
+  notificarEmail?: boolean;
   createdAt: any;
 }
 
@@ -530,7 +531,7 @@ const TrailsView: React.FC = () => {
 
   // Form state
   const [form, setForm] = useState({
-    titulo: '', descricao: '', perfis: [] as Perfil[], modulos: [] as Modulo[], ativa: true, oficial: false
+    titulo: '', descricao: '', perfis: [] as Perfil[], modulos: [] as Modulo[], ativa: true, oficial: false, notificarEmail: false
   });
 
   // Load trilhas
@@ -565,11 +566,11 @@ const TrailsView: React.FC = () => {
   const iniciarEditar = (trilha?: Trilha) => {
     if (trilha) {
       setEditando(trilha);
-      setForm({ titulo: trilha.titulo, descricao: trilha.descricao, perfis: trilha.perfis, modulos: trilha.modulos, ativa: trilha.ativa, oficial: !!trilha.oficial });
+      setForm({ titulo: trilha.titulo, descricao: trilha.descricao, perfis: trilha.perfis, modulos: trilha.modulos, ativa: trilha.ativa, oficial: !!trilha.oficial, notificarEmail: !!trilha.notificarEmail });
       setTenantIdsForm(trilha.tenantIds || [tenantId]);
     } else {
       setEditando(null);
-      setForm({ titulo: '', descricao: '', perfis: [], modulos: [], ativa: true, oficial: false });
+      setForm({ titulo: '', descricao: '', perfis: [], modulos: [], ativa: true, oficial: false, notificarEmail: false });
       setTenantIdsForm([tenantId]);
     }
     setTab('criar');
@@ -762,6 +763,21 @@ const TrailsView: React.FC = () => {
                   Trilha ativa (visível para os colaboradores)
                 </label>
               </div>
+
+              {!editando && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: 10 }}>
+                  <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer', color: '#475569', fontSize: 13 }}>
+                    <input type="checkbox" checked={form.notificarEmail} onChange={e => setForm(f => ({ ...f, notificarEmail: e.target.checked }))} style={{ marginTop: 2 }} />
+                    <span>
+                      <i className="fa-solid fa-envelope" style={{ color: '#3b82f6', marginRight: 6 }}></i>
+                      Notificar por e-mail ao publicar
+                      <span style={{ display: 'block', fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
+                        Por padrão a trilha não dispara e-mail — marque só se os colaboradores do perfil precisam ser avisados imediatamente.
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              )}
 
               {isSuperAdmin && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
