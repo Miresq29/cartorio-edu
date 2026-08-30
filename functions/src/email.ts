@@ -181,18 +181,31 @@ export const notificarReforco = onDocumentCreated(
   { document: "reforcosPendentes/{docId}", secrets: [GMAIL_APP_PASSWORD] },
   async (event) => {
     const data = event.data?.data();
-    if (!data?.colaboradorEmail) return;
+    if (!data?.userId) return;
+
+    // A regra do Firestore só valida userId/tenantId — colaboradorEmail vem do
+    // cliente e não é confiável como destinatário. Resolve o e-mail real a
+    // partir do próprio cadastro do usuário para impedir que a conta emita
+    // e-mails da plataforma para qualquer endereço arbitrário.
+    const userSnap = await db().collection("users").doc(data.userId).get();
+    const userData = userSnap.data();
+    if (!userSnap.exists || !userData?.email) return;
+    if (userData.tenantId && data.tenantId && userData.tenantId !== data.tenantId) return;
+
     const user = GMAIL_USER;
     const pass = GMAIL_APP_PASSWORD.value();
-    const assunto = `Treinamento de reforço recomendado: ${data.treinamento || data.quizTitulo || ""}`;
+    const treinamento = String(data.treinamento || "");
+    const quizTitulo = String(data.quizTitulo || "");
+    const nota = data.nota;
+    const assunto = `Treinamento de reforço recomendado: ${treinamento || quizTitulo}`;
 
-    const result = await sendEmail(user, pass, data.colaboradorEmail, assunto,
+    const result = await sendEmail(user, pass, userData.email, assunto,
       htmlAviso("Treinamento de reforço recomendado",
-        `Identificamos duas ou mais reprovações no teste "${data.quizTitulo}" (treinamento: "${data.treinamento}"). Última nota: ${data.nota}%.\n\nRecomendamos revisar o material antes de tentar novamente.`,
+        `Identificamos duas ou mais reprovações no teste "${quizTitulo}" (treinamento: "${treinamento}"). Última nota: ${nota}%.\n\nRecomendamos revisar o material antes de tentar novamente.`,
         "Aviso automático da plataforma MJ Consultoria."));
 
     await logEmailEvidencia({
-      tenantId: data.tenantId || "", destinatarioEmail: data.colaboradorEmail, destinatarioNome: data.colaboradorNome || data.colaboradorEmail,
+      tenantId: userData.tenantId || data.tenantId || "", destinatarioEmail: userData.email, destinatarioNome: userData.name || userData.email,
       tipoNotificacao: "reforco_treinamento", assunto, ok: result.ok, erro: result.error, messageId: result.id,
       relatedId: event.params.docId,
     });

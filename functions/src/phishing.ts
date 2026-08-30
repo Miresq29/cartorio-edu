@@ -19,7 +19,11 @@ export const notificarSimulacaoPhishing = onDocumentCreated(
 
     const destinatarios = await resolveRecipients(tenantIds);
     for (const dest of destinatarios) {
-      const tokenRef = db().collection("simulacoesPhishingCliques").doc(`${simId}_${dest.id}`);
+      // ID aleatório do Firestore (não derivado de simId/userId) — ambos são
+      // consultáveis por qualquer colega do mesmo tenant, então um token
+      // previsível permitiria forjar cliques de outras pessoas via o endpoint
+      // público phishClick, que atualiza via Admin SDK ignorando as regras.
+      const tokenRef = db().collection("simulacoesPhishingCliques").doc();
       await tokenRef.set({
         simId, userId: dest.id, email: dest.email, nome: dest.name, tenantId: dest.tenantId,
         cargo: dest.cargo, role: dest.role, tema: data.tema || "",
