@@ -1,7 +1,5 @@
 import { Dimensao, PrioridadeGap } from './types';
 
-export const PESO_TIPO: Record<string, number> = { sim_nao: 2, documento: 3, metrica: 1 };
-
 export const NIVEL_LABELS: Record<number, string> = {
   1: 'Nível 1 — Inicial',
   2: 'Nível 2 — Em desenvolvimento',
@@ -140,7 +138,7 @@ interface TrilhaGap {
 }
 
 export const GAP_TRILHAS: Record<string, TrilhaGap[]> = {
-  'cap.1': [{ trilha: 'LGPD no dia a dia (trilha oficial)', prioridade: 'urgente', prazo: '7 dias' }],
+  'cap.1': [{ trilha: 'LGPD no Dia a Dia do Cartório (trilha oficial)', prioridade: 'urgente', prazo: '7 dias' }],
   'cap.3': [{ trilha: 'Integração segura (gerada por IA)', prioridade: 'urgente', prazo: '3 dias' }],
   'lgpd.1': [{ trilha: 'LGPD aplicada ao cartório — ROPA e RIPD (IA)', prioridade: 'urgente', prazo: '15 dias' }],
   'lgpd.3': [{ trilha: 'Direitos dos titulares — fluxo de resposta (IA)', prioridade: 'alta', prazo: '30 dias' }],
@@ -153,6 +151,6 @@ export const GAP_TRILHAS: Record<string, TrilhaGap[]> = {
   'bkp.1': [{ trilha: 'Continuidade de negócios para cartórios (IA)', prioridade: 'alta', prazo: '45 dias' }],
   'bkp.2': [{ trilha: 'Backup e recuperação — boas práticas (IA)', prioridade: 'alta', prazo: '30 dias' }],
   'phi.1': [{ trilha: 'Engenharia Social e Phishing (trilha oficial)', prioridade: 'alta', prazo: '14 dias' }],
-  'fis.3': [{ trilha: 'Dispositivos Móveis e Trabalho Remoto (trilha oficial)', prioridade: 'baixa', prazo: '60 dias' }],
+  'fis.3': [{ trilha: 'Segurança em Dispositivos Móveis e Trabalho Remoto (trilha oficial)', prioridade: 'baixa', prazo: '60 dias' }],
   'aud.4': [{ trilha: 'Gerar Dossiê de Conformidade pela plataforma (ação direta)', prioridade: 'urgente', prazo: 'Imediato' }],
 };

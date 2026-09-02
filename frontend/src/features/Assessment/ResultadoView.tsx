@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../services/firebase';
@@ -24,10 +24,17 @@ const CORES_PRIORIDADE: Record<PrioridadeGap, { text: string; bg: string }> = {
 };
 
 const ResultadoView: React.FC<Props> = ({ assessment, onVoltar }) => {
-  const { state, tenantId } = useApp();
+  const { state, tenantId, setActiveTab } = useApp();
   const { showToast } = useToast();
   const [assessmentAtual, setAssessmentAtual] = useState<Assessment>(assessment);
   const [gerandoResumo, setGerandoResumo] = useState(false);
+
+  // A geração automática do resumo executivo (disparada em AssessmentView logo após
+  // salvar o diagnóstico) termina de forma assíncrona, depois desta tela já estar
+  // montada — sem isto, o resumo gerado nunca apareceria sem um recarregamento manual.
+  useEffect(() => {
+    setAssessmentAtual(assessment);
+  }, [assessment]);
 
   const gerarResumo = async () => {
     setGerandoResumo(true);
@@ -226,8 +233,14 @@ const ResultadoView: React.FC<Props> = ({ assessment, onVoltar }) => {
                 </span>
                 <div className="flex-1 min-w-[200px]">
                   <p className="text-sm font-bold text-[#0A1628]">{g.textoIndicador}</p>
-                  <p className="text-xs text-slate-500 mt-1">
-                    <i className="fa-solid fa-road mr-1"></i>{g.trilhaRecomendada}
+                  <p className="text-xs text-slate-500 mt-1 flex items-center gap-2 flex-wrap">
+                    <span><i className="fa-solid fa-road mr-1"></i>{g.trilhaRecomendada}</span>
+                    {g.trilhaRecomendada.includes('(trilha oficial)') && (
+                      <button onClick={() => setActiveTab('trails')}
+                        className="text-[9px] font-black text-[#0A1628] uppercase tracking-widest bg-[#C9A84C]/20 hover:bg-[#C9A84C]/40 px-2 py-0.5 rounded-lg transition-all">
+                        Ir para Trilhas <i className="fa-solid fa-arrow-right ml-1"></i>
+                      </button>
+                    )}
                   </p>
                   {assessmentAtual.recomendacoesPorDim?.[g.dimId] && (
                     <p className="text-xs text-slate-600 mt-1 italic">

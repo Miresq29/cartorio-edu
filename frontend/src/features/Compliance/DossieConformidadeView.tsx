@@ -6,6 +6,7 @@ import {
   collection, onSnapshot, query, where, addDoc, serverTimestamp,
 } from 'firebase/firestore';
 import { GeminiService } from '../../services/geminiService';
+import { labelNivel } from '../Assessment/scoring';
 
 interface Historico {
   id: string;
@@ -55,6 +56,7 @@ const DossieConformidadeView: React.FC = () => {
   const [historico, setHistorico] = useState<Historico[]>([]);
   const [gerandoResumo, setGerandoResumo] = useState(false);
   const [resumoAtual, setResumoAtual] = useState('');
+  const [assessments, setAssessments] = useState<any[]>([]);
 
   useEffect(() => {
     const unsubs = [
@@ -72,6 +74,7 @@ const DossieConformidadeView: React.FC = () => {
         docs.sort((a, b) => (tsToDate(b.criadoEm)?.getTime() || 0) - (tsToDate(a.criadoEm)?.getTime() || 0));
         setHistorico(docs);
       }),
+      onSnapshot(query(collection(db, 'assessments'), where('tenantId', '==', tenantId)), s => setAssessments(s.docs.map(d => ({ id: d.id, ...d.data() })))),
     ];
     return () => unsubs.forEach(u => u());
   }, [tenantId]);
@@ -80,6 +83,15 @@ const DossieConformidadeView: React.FC = () => {
   const noPeriodo = (ts: any) => (tsToDate(ts)?.getTime() || 0) >= cutoff;
 
   const colaboradoresAtivos = useMemo(() => usuarios.filter(u => u.ativo !== false), [usuarios]);
+
+  // Diagnóstico de Maturidade mais recente, se concluído nos últimos 90 dias.
+  const assessmentRecente = useMemo(() => {
+    const cutoff90 = Date.now() - 90 * 24 * 60 * 60 * 1000;
+    const concluidos = assessments
+      .filter(a => a.status === 'concluido' && (tsToDate(a.respondidoEm)?.getTime() || 0) >= cutoff90)
+      .sort((a, b) => (tsToDate(b.respondidoEm)?.getTime() || 0) - (tsToDate(a.respondidoEm)?.getTime() || 0));
+    return concluidos[0] || null;
+  }, [assessments]);
 
   const dados = useMemo(() => {
     const quizzesPeriodo = quizResults.filter(r => noPeriodo(r.createdAt));
@@ -128,7 +140,8 @@ Trilhas concluídas: ${dados.trilhasConcluidas} de ${dados.totalProgressos} (${d
 Certificados: ${dados.totalCertificados} emitidos, ${dados.certsValidos} válidos, ${dados.certsVencidos} vencidos.
 Comunicados com aceite obrigatório: ${dados.confirmacoesPorComunicado.map(c => `"${c.titulo}" (${c.confirmados}/${c.total} confirmaram, ${c.taxa}%)`).join('; ') || 'nenhum no período'}.
 Simulações de phishing no período: ${dados.simulacoesRealizadas}, taxa de clique ${dados.taxaCliquePhishing}% (${dados.totalClicadosPhishing}/${dados.totalEnviadosPhishing}).
-E-mails de notificação: ${dados.emailsOk} entregues, ${dados.emailsErro} com falha.`;
+E-mails de notificação: ${dados.emailsOk} entregues, ${dados.emailsErro} com falha.${assessmentRecente ? `
+Diagnóstico de Maturidade em Segurança da Informação (últimos 90 dias): ${labelNivel(assessmentRecente.nivel)} — ${assessmentRecente.scoreGlobal}% de score global, referente ao período "${assessmentRecente.periodo}".` : ''}`;
 
       const prompt = `Você é um analista de compliance de um cartório notarial brasileiro, redigindo a seção de resumo executivo de um dossiê de conformidade para apresentação à corregedoria (Provimentos CNJ 149 e 213/2026) e para fins de LGPD. Com base nos dados abaixo, escreva um parágrafo objetivo (6 a 10 linhas), em português formal, destacando o nível de conformidade do cartório em capacitação e segurança da informação, e citando pontos de atenção quando houver (ex.: baixa taxa de aceite, alta taxa de clique em phishing, certificados vencidos). Não invente números além dos fornecidos.\n\nDados do período (${PERIODOS.find(p => p.id === periodo)?.label}):\n${resumoDados}`;
 
@@ -203,7 +216,9 @@ th { color:#7a5c1e; text-transform:uppercase; font-size:9px; letter-spacing:1px;
       <div class="kpi"><b>${dados.totalCertificados}</b><span>Certificados emitidos</span></div>
       <div class="kpi"><b>${dados.certsVencidos}</b><span>Certificados vencidos</span></div>
       <div class="kpi"><b>${dados.taxaCliquePhishing}%</b><span>Cliques em phishing simulado</span></div>
+      ${assessmentRecente ? `<div class="kpi"><b>${assessmentRecente.scoreGlobal}%</b><span>Maturidade em SI (${escapeHtml(labelNivel(assessmentRecente.nivel))})</span></div>` : ''}
     </div>
+    ${assessmentRecente ? `<p style="margin-top:12px;font-size:11px;color:#7a5c1e;">Diagnóstico de Maturidade: ${escapeHtml(labelNivel(assessmentRecente.nivel))} — ${assessmentRecente.scoreGlobal}% (referência: ${escapeHtml(assessmentRecente.periodo)}, últimos 90 dias)</p>` : ''}
   </div>
 </div>
 
@@ -276,6 +291,7 @@ ${resumoAtual ? `<div class="section">
           { label: 'Certificados emitidos', value: dados.totalCertificados, icon: 'fa-certificate', color: '#7C3AED' },
           { label: 'Certificados vencidos', value: dados.certsVencidos, icon: 'fa-triangle-exclamation', color: '#DC2626' },
           { label: 'Cliques em phishing', value: `${dados.taxaCliquePhishing}%`, icon: 'fa-shield-halved', color: '#DC2626' },
+          ...(assessmentRecente ? [{ label: `Maturidade em SI (${labelNivel(assessmentRecente.nivel)})`, value: `${assessmentRecente.scoreGlobal}%`, icon: 'fa-gauge-high', color: '#C9A84C' }] : []),
         ].map((k, i) => (
           <div key={i} className="bg-white border border-slate-200 rounded-[16px] p-4 space-y-1.5">
             <i className={`fa-solid ${k.icon}`} style={{ color: k.color }}></i>

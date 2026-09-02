@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { db } from '../../services/firebase';
-import { collection, addDoc, onSnapshot, query, where, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, onSnapshot, query, where, serverTimestamp } from 'firebase/firestore';
 import { DIMENSOES } from './constants';
 import { montarAssessment, calcularScoreDim } from './scoring';
+import { gerarResumoIA } from './ia';
 import { Assessment, RespostaDim } from './types';
 import DimCard from './DimCard';
 import ResultadoView from './ResultadoView';
@@ -82,7 +83,28 @@ const AssessmentView: React.FC = () => {
         ...montado, respondidoEm: serverTimestamp(), criadoEm: serverTimestamp(),
       });
 
-      setAssessmentAtual({ ...montado, id: docRef.id, respondidoEm: new Date(), criadoEm: new Date() });
+      let assessmentSalvo: Assessment = { ...montado, id: docRef.id, respondidoEm: new Date(), criadoEm: new Date() };
+
+      // Gera o resumo executivo automaticamente — o diagnóstico não deve ficar
+      // sem análise da IA à espera de alguém lembrar de clicar em "Gerar". Faz parte
+      // do mesmo "Calculando..." para não expor um resultado sem resumo por alguns
+      // segundos nem arriscar concorrência com uma geração manual na tela seguinte.
+      try {
+        const resultado = await gerarResumoIA(assessmentSalvo);
+        if (resultado.resumoExecutivo?.analiseGeral) {
+          await updateDoc(doc(db, 'assessments', docRef.id), {
+            resumoExecutivo: resultado.resumoExecutivo,
+            recomendacoesPorDim: resultado.recomendacoesPorDim,
+            atualizadoEm: serverTimestamp(),
+          });
+          assessmentSalvo = { ...assessmentSalvo, resumoExecutivo: resultado.resumoExecutivo, recomendacoesPorDim: resultado.recomendacoesPorDim };
+        }
+      } catch {
+        // Falha na geração automática não deve bloquear o diagnóstico já salvo —
+        // o gestor pode gerar manualmente depois na tela de resultado.
+      }
+
+      setAssessmentAtual(assessmentSalvo);
       setModo('resultado');
       showToast('Diagnóstico concluído!', 'success');
     } catch {
@@ -145,7 +167,7 @@ const AssessmentView: React.FC = () => {
             ) : (
               <button onClick={finalizarAssessment} disabled={!dimensaoCompleta || salvando}
                 className="flex items-center gap-2 px-6 py-3 bg-[#C9A84C] hover:brightness-110 disabled:opacity-40 text-[#0A1628] rounded-xl text-xs font-black uppercase tracking-widest transition-all">
-                {salvando ? <><i className="fa-solid fa-circle-notch animate-spin"></i>Calculando...</> : <><i className="fa-solid fa-flag-checkered"></i>Concluir e calcular</>}
+                {salvando ? <><i className="fa-solid fa-circle-notch animate-spin"></i>Calculando e gerando resumo com IA...</> : <><i className="fa-solid fa-flag-checkered"></i>Concluir e calcular</>}
               </button>
             )}
           </div>
