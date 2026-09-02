@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Indicador } from './types';
 
 interface Props {
@@ -8,6 +8,16 @@ interface Props {
 }
 
 const IndicadorInput: React.FC<Props> = ({ indicador, value, onChange }) => {
+  // O slider sempre exibe 0% quando não respondido — sem isto, o valor mostrado
+  // (0%) nunca é registrado como resposta, porque um <input type="range"> só
+  // dispara onChange quando o valor muda, e arrastar de 0 para 0 não muda nada.
+  useEffect(() => {
+    if (indicador.tipo === 'metrica' && (value === null || value === undefined)) {
+      onChange(0);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [indicador.id]);
+
   if (indicador.tipo === 'metrica') {
     const num = typeof value === 'number' ? value : 0;
     return (
