@@ -8,7 +8,7 @@ import { useApp } from '../../context/AppContext';
 import VisibilidadeCartorioPicker from '../../components/VisibilidadeCartorioPicker';
 import { GeminiService } from '../../services/geminiService';
 
-// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Types ───────────────────────────────────────────────────────────────────
 
 type Perfil = 'colaborador' | 'gestor' | 'admin';
 
@@ -55,7 +55,7 @@ interface TrilhaProgresso {
   updatedAt: any;
 }
 
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const PERFIS: { value: Perfil; label: string; color: string }[] = [
   { value: 'colaborador', label: 'Colaborador', color: '#10b981' },
@@ -82,7 +82,7 @@ function calcPercObrigatorios(trilha: Trilha, prog: TrilhaProgresso): number {
   return Math.round((concluidos.length / obrigatorios.length) * 100);
 }
 
-// â”€â”€â”€ Modulo Form â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Modulo Form ─────────────────────────────────────────────────────────────
 
 const ModuloForm: React.FC<{
   modulo: Modulo;
@@ -159,7 +159,7 @@ const ModuloForm: React.FC<{
   </div>
 );
 
-// â”€â”€â”€ Trilha Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Trilha Card ─────────────────────────────────────────────────────────────
 
 const TrilhaCard: React.FC<{
   trilha: Trilha;
@@ -257,14 +257,14 @@ const TrilhaCard: React.FC<{
 
       {onView && (
         <button onClick={onView} style={{ marginTop: 16, width: '100%', background: '#2563eb', border: 'none', color: '#0f172a', padding: '10px', borderRadius: 12, cursor: 'pointer', fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 1 }}>
-          {progresso?.concluida ? 'ðŸ† Ver Trilha' : 'â–¶ Continuar Trilha'}
+          {progresso?.concluida ? '🏆 Ver Trilha' : '▶ Continuar Trilha'}
         </button>
       )}
     </div>
   );
 };
 
-// â”€â”€â”€ Módulo Player â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Módulo Player ────────────────────────────────────────────────────────────
 
 const ModuloPlayer: React.FC<{
   trilha: Trilha;
@@ -486,7 +486,7 @@ Nota mínima para aprovação: ${modulo.notaMinima}/10`;
             const p = progresso.modulos[modulo.id];
             return (
               <div style={{ background: p?.aprovado ? '#052e16' : '#450a0a', border: `1px solid ${p?.aprovado ? '#10b981' : '#dc2626'}30`, borderRadius: 16, padding: 24, textAlign: 'center' }}>
-                <div style={{ fontSize: 40, marginBottom: 8 }}>{p?.aprovado ? 'ðŸŽ‰' : 'ðŸ“š'}</div>
+                <div style={{ fontSize: 40, marginBottom: 8 }}>{p?.aprovado ? '🎉' : '📚'}</div>
                 <p style={{ fontSize: 18, fontWeight: 900, color: p?.aprovado ? '#10b981' : '#dc2626', marginBottom: 4 }}>
                   {p?.aprovado ? 'Aprovado!' : 'Não aprovado'}
                 </p>
@@ -500,7 +500,7 @@ Nota mínima para aprovação: ${modulo.notaMinima}/10`;
                 )}
                 {p?.aprovado && (
                   <button onClick={() => { if (moduloIdx < trilha.modulos.length - 1) { setModuloIdx(moduloIdx + 1); setShowQuiz(false); setQuizEnviado(false); setRespostas({}); setQuizQuestoes([]); } else { onClose(); } }} style={{ background: '#10b981', border: 'none', color: '#0f172a', padding: '10px 24px', borderRadius: 12, cursor: 'pointer', fontWeight: 900, fontSize: 12, textTransform: 'uppercase' }}>
-                    {moduloIdx < trilha.modulos.length - 1 ? 'Próximo Módulo â†’' : 'Concluir Trilha ðŸ†'}
+                    {moduloIdx < trilha.modulos.length - 1 ? 'Próximo Módulo →' : 'Concluir Trilha 🏆'}
                   </button>
                 )}
               </div>
@@ -512,7 +512,7 @@ Nota mínima para aprovação: ${modulo.notaMinima}/10`;
   );
 };
 
-// â”€â”€â”€ Main View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Main View ────────────────────────────────────────────────────────────────
 
 const TrailsView: React.FC = () => {
   const { state, tenantId } = useApp();
@@ -665,7 +665,7 @@ const TrailsView: React.FC = () => {
         </>}
       </div>
 
-      {/* â”€â”€ Minhas Trilhas â”€â”€ */}
+      {/* ── Minhas Trilhas ── */}
       {tab === 'minhas' && (
         <div>
           {minhasTrilhas.length === 0 ? (
@@ -688,7 +688,7 @@ const TrailsView: React.FC = () => {
         </div>
       )}
 
-      {/* â”€â”€ Todas as Trilhas (gestor) â”€â”€ */}
+      {/* ── Todas as Trilhas (gestor) ── */}
       {tab === 'todas' && isGestor && (
         <div>
           {trilhas.length === 0 ? (
@@ -722,7 +722,7 @@ const TrailsView: React.FC = () => {
         </div>
       )}
 
-      {/* â”€â”€ Criar / Editar Trilha â”€â”€ */}
+      {/* ── Criar / Editar Trilha ── */}
       {tab === 'criar' && isGestor && (
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
           <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 28, padding: 32 }}>
@@ -840,7 +840,7 @@ const TrailsView: React.FC = () => {
         </div>
       )}
 
-      {/* â”€â”€ Progresso Geral (gestor) â”€â”€ */}
+      {/* ── Progresso Geral (gestor) ── */}
       {tab === 'progresso' && isGestor && (
         <div>
           {trilhas.length === 0 ? (
@@ -879,7 +879,7 @@ const TrailsView: React.FC = () => {
                                 <span style={{ fontSize: 10, fontWeight: 900, color: p.concluida ? '#10b981' : '#64748b', flexShrink: 0 }}>{p.percentualObrigatorios}%</span>
                               </div>
                             </div>
-                            {p.concluida && <span style={{ fontSize: 16 }}>ðŸ†</span>}
+                            {p.concluida && <span style={{ fontSize: 16 }}>🏆</span>}
                           </div>
                         ))}
                       </div>

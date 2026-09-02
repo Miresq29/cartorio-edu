@@ -15,7 +15,7 @@ interface FonteConteudo {
   id: string;
   titulo: string;
   conteudo: string;
-  tipo: 'treinamento' | 'knowledgeBase' | 'video' | 'checklist';
+  tipo: 'treinamento' | 'knowledgeBase' | 'video' | 'checklist' | 'trilha';
 }
 
 interface ExameResultado {
@@ -95,6 +95,23 @@ const ExamesView: React.FC = () => {
 
     carrega('treinamentos',  'treinamento',   'descricao',  'titulo');
     carrega('knowledgeBase', 'knowledgeBase', 'rawText',    'title');
+
+    // Trilhas de capacitação também servem de fonte de conteúdo — concatena o
+    // texto de todos os módulos, que é onde o conteúdo real das trilhas mora.
+    const uTrilhas = onSnapshot(query(collection(db, 'trilhas'), where('tenantIds', 'array-contains-any', tenantFilter)), snap => {
+      const novos = snap.docs.map(d => {
+        const data = d.data();
+        const conteudo = (data.modulos || [])
+          .map((m: any) => `${m.titulo ? m.titulo + ':\n' : ''}${m.conteudo || ''}`)
+          .join('\n\n');
+        return { id: d.id, titulo: data.titulo || 'Sem título', conteudo, tipo: 'trilha' as const };
+      });
+      const filtered = allFontes.filter(f => f.tipo !== 'trilha');
+      allFontes.splice(0, allFontes.length, ...filtered, ...novos);
+      setFontes([...allFontes]);
+      setLoadingFontes(false);
+    });
+    unsubs.push(uTrilhas);
 
     return () => unsubs.forEach(u => u());
   }, [tenantId]);
@@ -490,11 +507,13 @@ const ExamesView: React.FC = () => {
                     <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
                       fonte.tipo === 'treinamento'  ? 'bg-emerald-500/20'  :
                       fonte.tipo === 'knowledgeBase'? 'bg-amber-500/20'   :
+                      fonte.tipo === 'trilha'       ? 'bg-purple-500/20'  :
                       fonte.tipo === 'video'        ? 'bg-red-500/20'     : 'bg-blue-500/20'
                     }`}>
                       <i className={`fa-solid text-sm ${
                         fonte.tipo === 'treinamento'  ? 'fa-graduation-cap text-emerald-400' :
                         fonte.tipo === 'knowledgeBase'? 'fa-book-open text-amber-400'       :
+                        fonte.tipo === 'trilha'       ? 'fa-road text-purple-400'           :
                         fonte.tipo === 'video'        ? 'fa-play text-red-400'             : 'fa-list-check text-blue-400'
                       }`}></i>
                     </div>
@@ -503,6 +522,7 @@ const ExamesView: React.FC = () => {
                       <p className="text-[9px] text-slate-500 uppercase tracking-widest font-black">
                         {fonte.tipo === 'treinamento' ? 'Treinamento' :
                          fonte.tipo === 'knowledgeBase' ? 'Base de Conhecimento' :
+                         fonte.tipo === 'trilha' ? 'Trilha de Capacitação' :
                          fonte.tipo === 'video' ? 'Vídeo' : 'Checklist'}
                       </p>
                     </div>
