@@ -11,6 +11,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
+import { FormatoTreinamento, FORMATO_LABEL } from '../../utils/formatoTreinamento';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -72,12 +73,10 @@ interface CatalogoTreinamento {
   titulo: string;
   tipo: 'trilha' | 'treinamento';
   instrutor?: string;
-  formato?: 'ead' | 'presencial' | 'hibrida';
+  formato?: FormatoTreinamento;
   cargaHoraria?: number;
   createdAt?: any;
 }
-
-const FORMATO_LABEL: Record<string, string> = { ead: 'EAD', presencial: 'Presencial', hibrida: 'Híbrida' };
 
 type Tab = 'visao_geral' | 'colaboradores' | 'trilhas' | 'trilhas_evidencias' | 'treinamentos' | 'risco' | 'evidencias';
 

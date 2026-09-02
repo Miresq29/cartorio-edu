@@ -94,10 +94,10 @@ const SECTIONS: Section[] = [
     ]
   },
   {
-    id: 'maturidade', icon: 'fa-gauge-high', title: 'Diagnóstico de Maturidade', subtitle: '42 indicadores, plano de ação e evolução no tempo',
+    id: 'maturidade', icon: 'fa-gauge-high', title: 'Diagnóstico de Maturidade', subtitle: '40 indicadores, plano de ação e evolução no tempo',
     roles: ['SUPERADMIN', 'gestor', 'admin'],
     steps: [
-      { title: 'O que é este diagnóstico', desc: 'Avalia a maturidade da serventia em segurança da informação e LGPD em 10 dimensões (capacitação, proteção de dados, incidentes, governança, controle de acesso, backup, phishing, auditoria, comunicação e segurança física) e 42 indicadores, inspirado no Program Maturity Assessment e adaptado aos Provimentos CNJ e à LGPD.' },
+      { title: 'O que é este diagnóstico', desc: 'Avalia a maturidade da serventia em segurança da informação e LGPD em 10 dimensões (capacitação, proteção de dados, incidentes, governança, controle de acesso, backup, phishing, auditoria, comunicação e segurança física) e 40 indicadores, inspirado no Program Maturity Assessment e adaptado aos Provimentos CNJ e à LGPD.' },
       { title: 'Iniciando um novo diagnóstico', desc: 'Clique em "Iniciar novo diagnóstico", informe o período de referência e responda os indicadores dimensão por dimensão — cada indicador é Sim/Não, "possui o documento?" ou um percentual (0-100%).' },
       { title: 'Score, nível e regra de bloqueio', desc: 'Ao concluir, a plataforma calcula um score global ponderado (0-100%) e um nível de maturidade de 1 a 5. Se a dimensão de Capacitação ou de LGPD (proteção de dados) ficar abaixo de 40%, o nível fica travado em no máximo 2, mesmo que o score global seja mais alto — essas duas dimensões são consideradas bloqueadoras.' },
       { title: 'Resumo executivo automático com IA', desc: 'Ao concluir o diagnóstico, a IA já gera automaticamente um resumo estruturado (cabeçalho, introdução, objetivo e análise) citando o artigo de lei correto para cada dimensão com gap — nunca um Provimento genérico. O botão "Gerar novamente" na tela de resultado permite atualizar o resumo a qualquer momento.' },

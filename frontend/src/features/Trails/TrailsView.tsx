@@ -7,6 +7,7 @@ import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
 import VisibilidadeCartorioPicker from '../../components/VisibilidadeCartorioPicker';
 import { GeminiService } from '../../services/geminiService';
+import { FormatoTreinamento, FORMATOS, FORMATO_LABEL } from '../../utils/formatoTreinamento';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -21,8 +22,6 @@ interface Modulo {
   temQuiz: boolean;
   notaMinima: number;      // 0-10
 }
-
-type FormatoTreinamento = 'ead' | 'presencial' | 'hibrida';
 
 interface Trilha {
   id: string;
@@ -71,14 +70,6 @@ const PERFIS: { value: Perfil; label: string; color: string }[] = [
 const PERFIL_LABEL: Record<string, string> = {
   colaborador: 'Colaborador', gestor: 'Gestor', admin: 'Admin', SUPERADMIN: 'Super Admin',
 };
-
-const FORMATOS: { value: FormatoTreinamento; label: string; icon: string }[] = [
-  { value: 'ead',        label: 'EAD',        icon: 'fa-laptop' },
-  { value: 'presencial', label: 'Presencial', icon: 'fa-chalkboard-user' },
-  { value: 'hibrida',    label: 'Híbrida',    icon: 'fa-shuffle' },
-];
-
-const FORMATO_LABEL: Record<string, string> = { ead: 'EAD', presencial: 'Presencial', hibrida: 'Híbrida' };
 
 function uid() {
   return Math.random().toString(36).slice(2, 10);

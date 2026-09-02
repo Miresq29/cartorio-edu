@@ -31,6 +31,7 @@ interface QuizResult {
   quizId: string;
   quizTitulo: string;
   treinamento: string;
+  trailTitle?: string;
   colaborador: string;
   cargo: string;
   nota: number;
@@ -211,6 +212,10 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
     const result: Omit<QuizResult, 'id'> = {
       quizId: selectedQuiz.id, quizTitulo: selectedQuiz.titulo,
       treinamento: selectedQuiz.treinamento, colaborador: respondente.nome,
+      // trailTitle é o campo que Relatórios usa para agrupar por trilha/treinamento
+      // (Por Trilha, Resumo de Treinamentos, Ficha de Capacitação) — sem isto, todo
+      // resultado de quiz avulso caía em "Sem trilha" e nunca era contabilizado.
+      trailTitle: selectedQuiz.treinamento,
       cargo: respondente.cargo, nota, total: selectedQuiz.questoes.length,
       aprovado: nota >= 70, respostas: resps, tenantId, createdAt: serverTimestamp(),
     };

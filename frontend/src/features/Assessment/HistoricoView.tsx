@@ -41,7 +41,7 @@ const HistoricoView: React.FC<Props> = ({ assessments, loading, onNovo, onSeleci
 
       <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 text-xs text-blue-800">
         <i className="fa-solid fa-circle-info mr-2"></i>
-        O assessment cobre 10 dimensões e 42 indicadores, inspirado no Program Maturity Assessment,
+        O assessment cobre 10 dimensões e 40 indicadores, inspirado no Program Maturity Assessment,
         adaptado aos Provimentos CNJ e à LGPD. Ao final, a plataforma calcula o nível de maturidade,
         gera um plano de ação com trilhas recomendadas e permite exportar um PDF completo.
       </div>
