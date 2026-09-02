@@ -153,4 +153,39 @@ export const GAP_TRILHAS: Record<string, TrilhaGap[]> = {
   'phi.1': [{ trilha: 'Engenharia Social e Phishing (trilha oficial)', prioridade: 'alta', prazo: '14 dias' }],
   'fis.3': [{ trilha: 'Segurança em Dispositivos Móveis e Trabalho Remoto (trilha oficial)', prioridade: 'baixa', prazo: '60 dias' }],
   'aud.4': [{ trilha: 'Gerar Dossiê de Conformidade pela plataforma (ação direta)', prioridade: 'urgente', prazo: 'Imediato' }],
+
+  'cap.2': [{ trilha: 'LGPD no Dia a Dia do Cartório (trilha oficial)', prioridade: 'alta', prazo: '15 dias' }],
+  'cap.4': [{ trilha: 'Fundamentos de Segurança da Informação para colaboradores (IA)', prioridade: 'alta', prazo: '30 dias' }],
+  'cap.5': [{ trilha: 'LGPD no Dia a Dia do Cartório (trilha oficial)', prioridade: 'urgente', prazo: '15 dias' }],
+
+  'lgpd.2': [{ trilha: 'LGPD aplicada ao cartório — ROPA e RIPD (IA)', prioridade: 'alta', prazo: '30 dias' }],
+
+  'inc.3': [{ trilha: 'Resposta a incidentes para serventias (IA)', prioridade: 'alta', prazo: '30 dias' }],
+  'inc.4': [{ trilha: 'Resposta a incidentes para serventias (IA)', prioridade: 'alta', prazo: '30 dias' }],
+
+  'gov.1': [{ trilha: 'Governança e SI para titulares (IA)', prioridade: 'urgente', prazo: '15 dias' }],
+  'gov.2': [{ trilha: 'LGPD no Dia a Dia do Cartório (trilha oficial)', prioridade: 'alta', prazo: '30 dias' }],
+  'gov.4': [{ trilha: 'Governança e SI para titulares (IA)', prioridade: 'alta', prazo: '60 dias' }],
+
+  'acc.1': [{ trilha: 'Controle de acesso e gestão de credenciais (IA)', prioridade: 'alta', prazo: '21 dias' }],
+  'acc.2': [{ trilha: 'Controle de acesso e gestão de credenciais (IA)', prioridade: 'urgente', prazo: '7 dias' }],
+
+  'bkp.3': [{ trilha: 'Backup e recuperação — boas práticas (IA)', prioridade: 'alta', prazo: '30 dias' }],
+  'bkp.4': [{ trilha: 'Backup e recuperação — boas práticas (IA)', prioridade: 'alta', prazo: '30 dias' }],
+
+  'phi.2': [{ trilha: 'Engenharia Social e Phishing (trilha oficial)', prioridade: 'urgente', prazo: '14 dias' }],
+  'phi.3': [{ trilha: 'Engenharia Social e Phishing (trilha oficial)', prioridade: 'alta', prazo: '14 dias' }],
+  'phi.4': [{ trilha: 'Ação direta: acompanhar evolução pelo módulo de Simulação de Phishing', prioridade: 'baixa', prazo: '30 dias' }],
+
+  'aud.1': [{ trilha: 'Auditoria e retenção de logs para cartórios (IA)', prioridade: 'alta', prazo: '45 dias' }],
+  'aud.2': [{ trilha: 'Auditoria e retenção de logs para cartórios (IA)', prioridade: 'alta', prazo: '60 dias' }],
+  'aud.3': [{ trilha: 'Auditoria e retenção de logs para cartórios (IA)', prioridade: 'alta', prazo: '45 dias' }],
+
+  'com.1': [{ trilha: 'Ação direta: ativar "Exigir aceite" nos comunicados críticos pela plataforma', prioridade: 'alta', prazo: '21 dias' }],
+  'com.2': [{ trilha: 'Ação direta: usar o módulo de Comunicados com confirmação de leitura', prioridade: 'alta', prazo: '21 dias' }],
+  'com.3': [{ trilha: 'Canal de reporte de incidentes e suspeitas (IA)', prioridade: 'alta', prazo: '30 dias' }],
+
+  'fis.1': [{ trilha: 'Segurança física e controle de acesso a instalações (IA)', prioridade: 'baixa', prazo: '45 dias' }],
+  'fis.2': [{ trilha: 'Segurança em Dispositivos Móveis e Trabalho Remoto (trilha oficial)', prioridade: 'alta', prazo: '14 dias' }],
+  'fis.4': [{ trilha: 'Segurança física e controle de acesso a instalações (IA)', prioridade: 'baixa', prazo: '45 dias' }],
 };
