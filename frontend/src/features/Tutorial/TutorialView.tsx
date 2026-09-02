@@ -39,7 +39,9 @@ const SECTIONS: Section[] = [
       { title: 'Por Colaborador', desc: 'Veja quantos treinamentos, exames e certificados cada colaborador concluiu. Identifique usuários engajados e os que precisam de atenção.' },
       { title: 'Por Trilha', desc: 'Acompanhe a taxa de conclusão e aprovação por trilha de aprendizado. Útil para avaliar quais conteúdos têm maior aderência.' },
       { title: 'Evidências de Trilhas', desc: 'Lista, um registro por colaborador × trilha, o percentual concluído, status e data da última atualização — evidência direta de quem concluiu o quê e quando, exportável em CSV para fiscalizações.' },
-      { title: 'Ficha de Capacitação individual', desc: 'Na aba "Colaboradores", clique em "Gerar" na coluna Ficha para baixar um PDF individual com trilhas, testes, exames e certificados daquele colaborador — pronto para apresentar em inspeção.' },
+      { title: 'Resumo de Treinamentos', desc: 'Lista todas as trilhas e treinamentos cadastrados com instrutor, forma (EAD/presencial/híbrida), carga horária em horas e taxa de aproveitamento dos participantes — dá visão de catálogo completo, não só de quem concluiu.' },
+      { title: 'Carga horária por colaborador', desc: 'Na aba "Colaboradores", a coluna "Carga Horária" soma as horas de todas as trilhas concluídas por aquele colaborador (definidas no cadastro de cada trilha), e o cálculo de aproveitamento (testes/aprovações/média) já considera tanto os quizzes de trilha quanto os Exames IA.' },
+      { title: 'Ficha de Capacitação individual', desc: 'Na aba "Colaboradores", clique em "Gerar" na coluna Ficha para baixar um PDF individual com trilhas, testes, exames, certificados e a carga horária total daquele colaborador — pronto para apresentar em inspeção.' },
       { title: 'Risco', desc: 'Aba com um índice de risco/maturidade por colaborador, combinando média de notas, atividade recente e validade de certificados — destaca quem precisa de atenção prioritária.' },
       { title: 'Exportação', desc: 'Use "Imprimir" para gerar relatório em PDF ou "Exportar Excel" para análise em planilha. Filtre por período usando o seletor no topo.' },
     ]
@@ -88,6 +90,20 @@ const SECTIONS: Section[] = [
       { title: 'O que reúne o dossiê', desc: 'Consolida, para o período escolhido, colaboradores ativos, aprovação em testes, conclusão de trilhas, certificados válidos/vencidos, confirmações de comunicados críticos e resultado de simulações de phishing.' },
       { title: 'Resumo executivo com IA', desc: 'O botão "Gerar resumo executivo com IA" redige um parágrafo formal citando os Provimentos CNJ 149 e 213/2026, com base apenas nos números reais do período — cada geração fica salva como evidência no histórico.' },
       { title: 'Exportando o PDF', desc: '"Exportar PDF" gera um documento com capa, indicadores, tabela de confirmações de comunicados e o resumo executivo — pronto para apresentar em inspeções ou auditorias externas.' },
+      { title: 'Diagnóstico de Maturidade incluído automaticamente', desc: 'Se houver um Diagnóstico de Maturidade concluído nos últimos 90 dias, o Dossiê já inclui o score global e o nível de maturidade daquele diagnóstico, sem precisar gerar nada de novo.' },
+    ]
+  },
+  {
+    id: 'maturidade', icon: 'fa-gauge-high', title: 'Diagnóstico de Maturidade', subtitle: '42 indicadores, plano de ação e evolução no tempo',
+    roles: ['SUPERADMIN', 'gestor', 'admin'],
+    steps: [
+      { title: 'O que é este diagnóstico', desc: 'Avalia a maturidade da serventia em segurança da informação e LGPD em 10 dimensões (capacitação, proteção de dados, incidentes, governança, controle de acesso, backup, phishing, auditoria, comunicação e segurança física) e 42 indicadores, inspirado no Program Maturity Assessment e adaptado aos Provimentos CNJ e à LGPD.' },
+      { title: 'Iniciando um novo diagnóstico', desc: 'Clique em "Iniciar novo diagnóstico", informe o período de referência e responda os indicadores dimensão por dimensão — cada indicador é Sim/Não, "possui o documento?" ou um percentual (0-100%).' },
+      { title: 'Score, nível e regra de bloqueio', desc: 'Ao concluir, a plataforma calcula um score global ponderado (0-100%) e um nível de maturidade de 1 a 5. Se a dimensão de Capacitação ou de LGPD (proteção de dados) ficar abaixo de 40%, o nível fica travado em no máximo 2, mesmo que o score global seja mais alto — essas duas dimensões são consideradas bloqueadoras.' },
+      { title: 'Resumo executivo automático com IA', desc: 'Ao concluir o diagnóstico, a IA já gera automaticamente um resumo estruturado (cabeçalho, introdução, objetivo e análise) citando o artigo de lei correto para cada dimensão com gap — nunca um Provimento genérico. O botão "Gerar novamente" na tela de resultado permite atualizar o resumo a qualquer momento.' },
+      { title: 'Plano de ação', desc: 'Cada indicador não atendido vira um item do plano de ação, com prioridade (urgente/alta/baixa), prazo sugerido e a trilha de capacitação recomendada para resolver aquele gap. Quando a trilha recomendada já existe na plataforma, um botão "Ir para Trilhas" leva direto para lá.' },
+      { title: 'Exportando o PDF', desc: '"Exportar PDF" gera um documento com capa (score e nível), resumo executivo com gráfico, score por dimensão, análise detalhada com barra de progresso e o plano de ação completo — pronto para apresentar em inspeção.' },
+      { title: 'Histórico e evolução', desc: 'Todo diagnóstico concluído fica salvo permanentemente no histórico, mostrando a evolução do score entre um diagnóstico e o anterior — nada é sobrescrito, cada período gera um novo registro.' },
     ]
   },
   {
@@ -98,6 +114,8 @@ const SECTIONS: Section[] = [
       { title: 'Progresso', desc: 'O progresso de cada trilha é salvo automaticamente. Acompanhe o avanço em "Meu Progresso" no menu CAPACITAÇÃO.' },
       { title: 'Trilhas modelo MJ Consultoria', desc: 'SUPERADMIN pode marcar uma trilha como "modelo oficial MJ Consultoria" (badge dourado) e distribuí-la para todos os cartórios ou para uma lista específica de clientes.' },
       { title: 'Trilhas de segurança inclusas', desc: 'Toda a base de clientes já recebe 4 trilhas oficiais de cyber-higiene: Senhas e Autenticação, Engenharia Social e Phishing, Dispositivos Móveis e Trabalho Remoto, e LGPD no Dia a Dia — disponíveis para todos os perfis.' },
+      { title: 'Instrutor, forma e carga horária', desc: 'Ao criar ou editar uma trilha, preencha o instrutor responsável, a forma de treinamento (EAD, presencial ou híbrida) e a carga horária em horas — esses dados alimentam o Resumo de Treinamentos e a carga horária por colaborador em Relatórios.' },
+      { title: 'Fonte de conteúdo para Exames', desc: 'O texto dos módulos de cada trilha também é usado como fonte de conteúdo na tela de Exames — não é preciso duplicar o material lá.' },
       { title: 'Visibilidade', desc: 'Toda trilha pode ser publicada para "este cartório", "todos os cartórios" ou uma lista de "cartórios específicos" escolhida pelo SUPERADMIN.' },
     ]
   },
@@ -153,7 +171,7 @@ const SECTIONS: Section[] = [
     id: 'training', icon: 'fa-graduation-cap', title: 'Treinamento AI', subtitle: 'Capacitação com IA, roteiros e quizzes',
     steps: [
       { title: 'IA de Treinamento', desc: 'Gere 3 opções de roteiro de treinamento com IA baseadas nos protocolos e documentos da sua serventia. Personalize o pedido para focar em um tema específico.' },
-      { title: 'Salvando o roteiro', desc: 'Depois de expandir o roteiro escolhido, clique em "Salvar como treinamento" — ele passa a ficar disponível como fonte de conteúdo para gerar Exames.' },
+      { title: 'Salvando o roteiro', desc: 'Depois de expandir o roteiro escolhido, clique em "Salvar como treinamento" — ele passa a ficar disponível como fonte de conteúdo para gerar Exames. Ao salvar, informe o instrutor responsável e a forma de treinamento (EAD, presencial ou híbrida); a carga horária é calculada automaticamente a partir da duração do roteiro.' },
       { title: 'Resumos Inteligentes', desc: 'Selecione um documento e o tipo de resumo (Executivo, Técnico, Didático ou Operacional) para que a IA gere um resumo otimizado para cada audiência.' },
       { title: 'Participantes', desc: 'Registre quais colaboradores participaram de cada treinamento, controle a presença e acompanhe o status de conclusão.' },
       { title: 'Questionários com IA', desc: 'Gere automaticamente questões de múltipla escolha baseadas no conteúdo dos treinamentos. Escolha entre 3, 5, 7 ou 10 questões por avaliação.' },
@@ -165,9 +183,12 @@ const SECTIONS: Section[] = [
     id: 'exames', icon: 'fa-file-pen', title: 'Exames', subtitle: 'Avaliações com IA e Taxonomia de Bloom',
     steps: [
       { title: 'O que são os Exames?', desc: 'Exames são avaliações formais geradas pela IA com base na Taxonomia de Bloom — garantindo questões que vão do conhecimento básico à análise e avaliação crítica.' },
-      { title: 'Realizando um exame', desc: 'Selecione o exame disponível e responda as questões no tempo determinado. As respostas são corrigidas automaticamente com gabarito comentado.' },
-      { title: 'Resultado e aprovação', desc: 'A nota mínima de aprovação é 75%. Exames reprovados podem ser refeitos após o período de quarentena definido pelo gestor.' },
-      { title: 'Histórico de provas', desc: 'Consulte o histórico de todos os exames realizados, com data, nota e resultado. Gestores podem visualizar o desempenho de toda a equipe.' },
+      { title: 'Escolhendo o conteúdo', desc: 'A lista de conteúdos disponíveis reúne trilhas de capacitação, treinamentos salvos em "Treinamento AI" e documentos da Base de Conhecimento. Se a lista aparecer vazia, é sinal de que nenhum desses três ainda tem conteúdo suficiente (mínimo 50 caracteres) — crie uma trilha, salve um roteiro de treinamento ou envie um documento para liberar a geração de exames.' },
+      { title: 'Quantidade de questões', desc: 'Escolha 5, 7 ou 10 questões antes de gerar o exame — quanto mais questões, mais completa a avaliação, mas também mais tempo de geração pela IA.' },
+      { title: 'Realizando um exame', desc: 'Selecione o conteúdo, escolha a quantidade de questões e clique em "Gerar Exame com IA". Responda todas as questões e envie — a correção é automática, com gabarito comentado nas questões erradas.' },
+      { title: 'Resultado e aprovação', desc: 'A nota mínima de aprovação é 70%. Quem reprova fica bloqueado por 5 dias antes de poder refazer o mesmo exame.' },
+      { title: 'Certificado', desc: 'Ao ser aprovado, o botão "Emitir Certificado" gera um PDF de conclusão para aquele exame específico.' },
+      { title: 'Histórico de provas', desc: 'A seção "Meu Histórico de Exames" mostra todos os exames realizados, com data, nota e resultado.' },
     ]
   },
   {
@@ -196,7 +217,7 @@ const SECTIONS: Section[] = [
   {
     id: 'certificado', icon: 'fa-certificate', title: 'Certificados', subtitle: 'Emitir e baixar certificados PDF',
     steps: [
-      { title: 'Elegibilidade', desc: 'Certificados são emitidos automaticamente quando o colaborador conclui uma trilha ou é aprovado em um exame com nota mínima de 75%.' },
+      { title: 'Elegibilidade', desc: 'Certificados são emitidos quando o colaborador conclui uma trilha (nota mínima do módulo definida pelo gestor, padrão 70%) ou é aprovado em um Exame IA (nota mínima 70%).' },
       { title: 'Emitindo o certificado', desc: 'Na tela de Certificados, localize o certificado disponível e clique em "Emitir". O PDF é gerado com dados da serventia, nome, data e carga horária.' },
       { title: 'Validade e autenticidade', desc: 'Cada certificado possui um código único de verificação e validade de 1 ano a partir da emissão. O gestor pode validar a autenticidade de qualquer certificado emitido pela plataforma.' },
       { title: 'Aviso de expiração', desc: 'Sete dias antes do vencimento, o colaborador recebe automaticamente um e-mail de aviso para providenciar a renovação.' },
