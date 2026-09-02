@@ -56,7 +56,18 @@ export function gerarPDFAssessment(assessment: Assessment, opts: Opts) {
 
   const dataGeracao = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
   const sitGlobal = SITUACAO[situacaoScore(assessment.scoreGlobal)];
-  const resumo = assessment.resumoExecutivo?.trim();
+  const resumo = assessment.resumoExecutivo;
+
+  // ── Seção 2: Resumo executivo — mini-gráfico de barras (CSS puro, sem libs) ──
+  const miniGraficoBarras = DIMENSOES.map(d => {
+    const score = assessment.scoresPorDim[d.id] ?? 0;
+    const sit = SITUACAO[situacaoScore(score)];
+    return `<div class="mini-bar-col">
+      <div class="mini-bar-track"><div class="mini-bar-fill" style="height:${score}%;background:${sit.cor};"></div></div>
+      <span class="mini-bar-score" style="color:${sit.cor};">${score}%</span>
+      <span class="mini-bar-label">${escapeHtml(d.nome.length > 12 ? d.nome.slice(0, 10) + '…' : d.nome)}</span>
+    </div>`;
+  }).join('');
 
   // ── Seção 3: Score por dimensão ──────────────────────────────────────────
   const linhasScorePorDim = DIMENSOES.map(d => {
@@ -120,8 +131,16 @@ table { width:100%; border-collapse:collapse; font-size:11px; }
 th, td { text-align:left; padding:6px 8px; border-bottom:1px solid #e2e8f0; vertical-align:top; }
 th { color:#64748b; text-transform:uppercase; font-size:9px; letter-spacing:1px; }
 .badge { padding:2px 8px; border-radius:6px; font-size:9px; font-weight:900; text-transform:uppercase; }
-.resumo { font-size:12px; line-height:1.8; color:#334155; white-space:pre-wrap; }
+.resumo-cabecalho { font-size:15px; font-weight:900; color:${CORES.navy}; margin-bottom:10px; }
+.resumo-rotulo { font-size:9px; font-weight:900; color:#c9a84c; text-transform:uppercase; letter-spacing:1px; margin-bottom:3px; }
+.resumo-texto { font-size:11.5px; line-height:1.7; color:#334155; white-space:pre-wrap; margin-bottom:14px; }
 .resumo-vazio { font-size:12px; color:#94a3b8; font-style:italic; }
+.mini-grafico { display:flex; align-items:flex-end; gap:10px; height:120px; margin:16px 0; padding:0 4px; }
+.mini-bar-col { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; }
+.mini-bar-track { width:100%; max-width:22px; height:80px; display:flex; align-items:flex-end; background:#e2e8f0; border-radius:4px 4px 0 0; overflow:hidden; }
+.mini-bar-fill { width:100%; }
+.mini-bar-score { font-size:9px; font-weight:900; margin-top:4px; }
+.mini-bar-label { font-size:7px; color:#94a3b8; text-align:center; margin-top:2px; text-transform:uppercase; letter-spacing:0.3px; }
 .dim-card { background:white; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:10px; }
 .barra-track { width:100%; background:#e2e8f0; border-radius:999px; height:6px; margin-top:6px; }
 .barra-fill { height:6px; border-radius:999px; }
@@ -144,8 +163,18 @@ th { color:#64748b; text-transform:uppercase; font-size:9px; letter-spacing:1px;
 <div class="section">
   <div class="section-title">Resumo Executivo</div>
   <div class="section-body">
-    ${resumo ? `<p class="resumo">${escapeHtml(resumo)}</p>` : '<p class="resumo-vazio">Resumo não gerado.</p>'}
-    <table style="margin-top:14px;">
+    ${resumo ? `
+    <div class="resumo-cabecalho">${escapeHtml(resumo.cabecalho)}</div>
+    ${resumo.introducao ? `<div class="resumo-rotulo">Introdução</div><p class="resumo-texto">${escapeHtml(resumo.introducao)}</p>` : ''}
+    ${resumo.objetivo ? `<div class="resumo-rotulo">Objetivo</div><p class="resumo-texto">${escapeHtml(resumo.objetivo)}</p>` : ''}
+    <div class="resumo-rotulo">Análise</div>
+    <p class="resumo-texto">${escapeHtml(resumo.analiseGeral)}</p>
+    ` : '<p class="resumo-vazio">Resumo não gerado.</p>'}
+
+    <div class="resumo-rotulo">Score por dimensão</div>
+    <div class="mini-grafico">${miniGraficoBarras}</div>
+
+    <table style="margin-top:6px;">
       <thead><tr><th>Respondido por</th><th>Período</th><th>Score global</th><th>Nível</th></tr></thead>
       <tbody><tr>
         <td>${escapeHtml(assessment.respondidoPorNome)}</td>

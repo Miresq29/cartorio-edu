@@ -45,6 +45,13 @@ export interface GapItem {
 
 export type NivelMaturidade = 1 | 2 | 3 | 4 | 5;
 
+export interface ResumoExecutivo {
+  cabecalho: string;      // título curto do diagnóstico (ex: "Diagnóstico de Maturidade — Jan-Jun 2026")
+  introducao: string;     // contextualiza o que foi avaliado e por quê
+  objetivo: string;       // o que este diagnóstico se propõe a mostrar/embasar
+  analiseGeral: string;   // análise do score/nível e das dimensões com gap, citando os artigos corretos
+}
+
 export interface Assessment {
   id: string;
   tenantId: string;
@@ -58,7 +65,7 @@ export interface Assessment {
   bloqueado: boolean;                // true se alguma dimensão bloqueadora < 40%
   scoresPorDim: Record<string, number>;
   gaps: GapItem[];
-  resumoExecutivo?: string;          // gerado por IA
+  resumoExecutivo?: ResumoExecutivo; // gerado por IA
   recomendacoesPorDim?: Record<string, string>; // gerado por IA
   status: 'rascunho' | 'concluido';
   criadoEm: any;

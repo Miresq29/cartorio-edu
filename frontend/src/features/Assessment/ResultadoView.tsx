@@ -33,7 +33,7 @@ const ResultadoView: React.FC<Props> = ({ assessment, onVoltar }) => {
     setGerandoResumo(true);
     try {
       const resultado = await gerarResumoIA(assessmentAtual);
-      if (!resultado.resumoExecutivo) {
+      if (!resultado.resumoExecutivo?.analiseGeral) {
         showToast('Erro ao gerar o resumo executivo.', 'error');
         return;
       }
@@ -97,39 +97,79 @@ const ResultadoView: React.FC<Props> = ({ assessment, onVoltar }) => {
       </div>
 
       {/* Resumo executivo com IA */}
-      <div className="bg-white border border-[#C9A84C]/30 rounded-[24px] p-5 space-y-3">
+      <div className="bg-white border border-[#C9A84C]/30 rounded-[24px] p-5 space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Resumo executivo com IA</p>
           <button onClick={gerarResumo} disabled={gerandoResumo}
             className="bg-[#C9A84C] hover:brightness-110 disabled:opacity-50 text-[#0A1628] px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
-            {gerandoResumo ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Gerando...</> : <><i className="fa-solid fa-wand-magic-sparkles mr-2"></i>Gerar resumo executivo</>}
+            {gerandoResumo ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Gerando...</> : <><i className="fa-solid fa-wand-magic-sparkles mr-2"></i>{assessmentAtual.resumoExecutivo ? 'Gerar novamente' : 'Gerar resumo executivo'}</>}
           </button>
         </div>
         <p className="text-[11px] text-slate-400">
-          Redige um parágrafo formal citando o artigo específico de cada dimensão com gap — incluído automaticamente no PDF exportado.
+          Estrutura um resumo com cabeçalho, introdução, objetivo e análise citando o artigo específico de cada dimensão com gap — incluído automaticamente no PDF exportado.
         </p>
+
         {assessmentAtual.resumoExecutivo && (
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
-            <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{assessmentAtual.resumoExecutivo}</p>
+          <div className="space-y-5">
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4">
+              <h4 className="text-base font-black text-[#0A1628]">{assessmentAtual.resumoExecutivo.cabecalho}</h4>
+
+              {assessmentAtual.resumoExecutivo.introducao && (
+                <div>
+                  <p className="text-[10px] font-black text-[#C9A84C] uppercase tracking-widest mb-1">Introdução</p>
+                  <p className="text-sm text-slate-700 leading-relaxed">{assessmentAtual.resumoExecutivo.introducao}</p>
+                </div>
+              )}
+
+              {assessmentAtual.resumoExecutivo.objetivo && (
+                <div>
+                  <p className="text-[10px] font-black text-[#C9A84C] uppercase tracking-widest mb-1">Objetivo</p>
+                  <p className="text-sm text-slate-700 leading-relaxed">{assessmentAtual.resumoExecutivo.objetivo}</p>
+                </div>
+              )}
+
+              <div>
+                <p className="text-[10px] font-black text-[#C9A84C] uppercase tracking-widest mb-1">Análise</p>
+                <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{assessmentAtual.resumoExecutivo.analiseGeral}</p>
+              </div>
+            </div>
+
+            {/* Gráfico por dimensão — acompanha a análise, não isolado do texto */}
+            <div>
+              <p className="text-[10px] font-black text-[#C9A84C] uppercase tracking-widest mb-2">Score por dimensão</p>
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 60 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <XAxis dataKey="nome" tick={{ fontSize: 9, fill: '#94a3b8' }} angle={-35} textAnchor="end" />
+                  <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: '#94a3b8' }} />
+                  <Tooltip />
+                  <Bar dataKey="Score" radius={[4, 4, 0, 0]}>
+                    {chartData.map((d, i) => <Cell key={i} fill={CORES_SITUACAO[d.situacao]} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Gráfico por dimensão */}
-      <div className="bg-white border border-slate-200 rounded-[24px] p-5 space-y-3">
-        <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Score por dimensão</p>
-        <ResponsiveContainer width="100%" height={280}>
-          <BarChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 60 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-            <XAxis dataKey="nome" tick={{ fontSize: 9, fill: '#94a3b8' }} angle={-35} textAnchor="end" />
-            <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: '#94a3b8' }} />
-            <Tooltip />
-            <Bar dataKey="Score" radius={[4, 4, 0, 0]}>
-              {chartData.map((d, i) => <Cell key={i} fill={CORES_SITUACAO[d.situacao]} />)}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+      {!assessmentAtual.resumoExecutivo && (
+        /* Gráfico por dimensão — exibido mesmo sem resumo gerado ainda */
+        <div className="bg-white border border-slate-200 rounded-[24px] p-5 space-y-3">
+          <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Score por dimensão</p>
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 60 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <XAxis dataKey="nome" tick={{ fontSize: 9, fill: '#94a3b8' }} angle={-35} textAnchor="end" />
+              <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: '#94a3b8' }} />
+              <Tooltip />
+              <Bar dataKey="Score" radius={[4, 4, 0, 0]}>
+                {chartData.map((d, i) => <Cell key={i} fill={CORES_SITUACAO[d.situacao]} />)}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
 
       {/* Tabela por dimensão */}
       <div className="bg-white border border-slate-200 rounded-[24px] p-5 space-y-3">
