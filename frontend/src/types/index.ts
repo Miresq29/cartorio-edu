@@ -108,7 +108,7 @@ export type AppTab =
   // Segurança
   | 'phishing'
   // Compliance
-  | 'dossie'
+  | 'dossie' | 'maturidade'
   // Plataforma
   | 'support' | 'tutorial' | 'terms' | 'privacy' | 'policy'
   // Legados (manter compatibilidade)

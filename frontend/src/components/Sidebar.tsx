@@ -51,6 +51,7 @@ const Sidebar: React.FC = () => {
         { tab: 'analytics', icon: 'fa-chart-pie',        label: 'IA Analitica',  desc: 'Analise de auditoria e base legal',   roles: ['SUPERADMIN', 'gestor']          },
         { tab: 'phishing',  icon: 'fa-shield-halved',     label: 'Simulacao Phishing', desc: 'Recurso opcional: teste de conscientizacao por e-mail', roles: ['SUPERADMIN', 'gestor', 'admin'], color: 'text-red-400' },
         { tab: 'dossie',    icon: 'fa-file-shield',       label: 'Dossie de Conformidade', desc: 'Evidencias consolidadas para inspecao CNJ e LGPD', roles: ['SUPERADMIN', 'gestor', 'admin'], color: 'text-[#C9A84C]' },
+        { tab: 'maturidade', icon: 'fa-gauge-high',       label: 'Diagnostico de Maturidade', desc: '42 indicadores, plano de acao e evolucao no tempo', roles: ['SUPERADMIN', 'gestor', 'admin'], color: 'text-[#C9A84C]' },
       ]
     },
     {

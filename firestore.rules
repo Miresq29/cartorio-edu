@@ -153,6 +153,12 @@ service cloud.firestore {
       allow create: if canWriteOwnPrivate();
       allow update, delete: if isSuperAdmin() || (isGestor() && sameTenant());
     }
+    match /assessments/{docId} {
+      allow read: if canReadPrivate();
+      allow create: if canWriteContent();
+      allow update: if canEditContent();
+      allow delete: if isSuperAdmin();
+    }
     match /dossiesConformidade/{docId} {
       allow read: if isSuperAdmin() || (isGestor() && sameTenant());
       allow create: if isSuperAdmin() || (isGestor() && newSameTenant());
