@@ -22,6 +22,8 @@ interface Modulo {
   notaMinima: number;      // 0-10
 }
 
+type FormatoTreinamento = 'ead' | 'presencial' | 'hibrida';
+
 interface Trilha {
   id: string;
   titulo: string;
@@ -32,6 +34,9 @@ interface Trilha {
   tenantIds: string[];
   oficial?: boolean;
   notificarEmail?: boolean;
+  instrutor?: string;
+  formato?: FormatoTreinamento;
+  cargaHoraria?: number;      // horas totais da trilha, para relatórios de carga horária
   createdAt: any;
 }
 
@@ -66,6 +71,14 @@ const PERFIS: { value: Perfil; label: string; color: string }[] = [
 const PERFIL_LABEL: Record<string, string> = {
   colaborador: 'Colaborador', gestor: 'Gestor', admin: 'Admin', SUPERADMIN: 'Super Admin',
 };
+
+const FORMATOS: { value: FormatoTreinamento; label: string; icon: string }[] = [
+  { value: 'ead',        label: 'EAD',        icon: 'fa-laptop' },
+  { value: 'presencial', label: 'Presencial', icon: 'fa-chalkboard-user' },
+  { value: 'hibrida',    label: 'Híbrida',    icon: 'fa-shuffle' },
+];
+
+const FORMATO_LABEL: Record<string, string> = { ead: 'EAD', presencial: 'Presencial', hibrida: 'Híbrida' };
 
 function uid() {
   return Math.random().toString(36).slice(2, 10);
@@ -235,6 +248,27 @@ const TrilhaCard: React.FC<{
           </span>
         )}
       </div>
+
+      {/* Instrutor · Formato · Carga horária */}
+      {(trilha.instrutor || trilha.formato || trilha.cargaHoraria) && (
+        <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginTop: 10, marginBottom: progresso ? 0 : 4 }}>
+          {trilha.instrutor && (
+            <span style={{ fontSize: 10, color: '#475569' }}>
+              <i className="fa-solid fa-chalkboard-user" style={{ color: '#8a6e2f', marginRight: 4 }}></i>{trilha.instrutor}
+            </span>
+          )}
+          {trilha.formato && (
+            <span style={{ fontSize: 10, color: '#475569' }}>
+              <i className="fa-solid fa-signal" style={{ color: '#8a6e2f', marginRight: 4 }}></i>{FORMATO_LABEL[trilha.formato]}
+            </span>
+          )}
+          {!!trilha.cargaHoraria && (
+            <span style={{ fontSize: 10, color: '#475569' }}>
+              <i className="fa-solid fa-clock" style={{ color: '#8a6e2f', marginRight: 4 }}></i>{trilha.cargaHoraria}h
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Progresso do colaborador */}
       {progresso && (
@@ -531,7 +565,8 @@ const TrailsView: React.FC = () => {
 
   // Form state
   const [form, setForm] = useState({
-    titulo: '', descricao: '', perfis: [] as Perfil[], modulos: [] as Modulo[], ativa: true, oficial: false, notificarEmail: false
+    titulo: '', descricao: '', perfis: [] as Perfil[], modulos: [] as Modulo[], ativa: true, oficial: false, notificarEmail: false,
+    instrutor: '', formato: '' as FormatoTreinamento | '', cargaHoraria: '' as number | '',
   });
 
   // Load trilhas
@@ -566,11 +601,14 @@ const TrailsView: React.FC = () => {
   const iniciarEditar = (trilha?: Trilha) => {
     if (trilha) {
       setEditando(trilha);
-      setForm({ titulo: trilha.titulo, descricao: trilha.descricao, perfis: trilha.perfis, modulos: trilha.modulos, ativa: trilha.ativa, oficial: !!trilha.oficial, notificarEmail: !!trilha.notificarEmail });
+      setForm({
+        titulo: trilha.titulo, descricao: trilha.descricao, perfis: trilha.perfis, modulos: trilha.modulos, ativa: trilha.ativa, oficial: !!trilha.oficial, notificarEmail: !!trilha.notificarEmail,
+        instrutor: trilha.instrutor || '', formato: trilha.formato || '', cargaHoraria: trilha.cargaHoraria ?? '',
+      });
       setTenantIdsForm(trilha.tenantIds || [tenantId]);
     } else {
       setEditando(null);
-      setForm({ titulo: '', descricao: '', perfis: [], modulos: [], ativa: true, oficial: false, notificarEmail: false });
+      setForm({ titulo: '', descricao: '', perfis: [], modulos: [], ativa: true, oficial: false, notificarEmail: false, instrutor: '', formato: '', cargaHoraria: '' });
       setTenantIdsForm([tenantId]);
     }
     setTab('criar');
@@ -584,7 +622,13 @@ const TrailsView: React.FC = () => {
     if (!form.titulo || form.modulos.length === 0 || form.perfis.length === 0) return;
     setSaving(true);
     try {
-      const data = { ...form, tenantIds: isSuperAdmin ? tenantIdsForm : [tenantId], updatedAt: serverTimestamp() };
+      const data = {
+        ...form,
+        formato: form.formato || null,
+        cargaHoraria: form.cargaHoraria === '' ? null : Number(form.cargaHoraria),
+        tenantIds: isSuperAdmin ? tenantIdsForm : [tenantId],
+        updatedAt: serverTimestamp(),
+      };
       if (editando) {
         await updateDoc(doc(db, 'trilhas', editando.id), data);
       } else {
@@ -743,6 +787,34 @@ const TrailsView: React.FC = () => {
                   placeholder="Descreva o objetivo e o público desta trilha"
                   rows={2}
                   style={{ width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 16px', color: '#0f172a', fontSize: 14, resize: 'vertical' }} />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                <div>
+                  <label style={{ fontSize: 10, fontWeight: 900, color: '#475569', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6 }}>Instrutor</label>
+                  <input value={form.instrutor} onChange={e => setForm(f => ({ ...f, instrutor: e.target.value }))}
+                    placeholder="Nome do instrutor responsável"
+                    style={{ width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 16px', color: '#0f172a', fontSize: 14 }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 10, fontWeight: 900, color: '#475569', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6 }}>Carga Horária (horas)</label>
+                  <input type="number" min={0} step={0.5} value={form.cargaHoraria}
+                    onChange={e => setForm(f => ({ ...f, cargaHoraria: e.target.value === '' ? '' : Number(e.target.value) }))}
+                    placeholder="Ex: 2"
+                    style={{ width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 16px', color: '#0f172a', fontSize: 14 }} />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: 10, fontWeight: 900, color: '#475569', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 10 }}>Forma de Treinamento</label>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {FORMATOS.map(f => (
+                    <button key={f.value} onClick={() => setForm(prev => ({ ...prev, formato: prev.formato === f.value ? '' : f.value }))}
+                      style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 10, border: `1px solid ${form.formato === f.value ? '#3b82f6' : '#1e293b'}`, background: form.formato === f.value ? '#3b82f620' : '#f1f5f9', color: form.formato === f.value ? '#3b82f6' : '#64748b', cursor: 'pointer', fontSize: 11, fontWeight: 900, textTransform: 'uppercase' }}>
+                      <i className={`fa-solid ${f.icon}`}></i>{f.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div>

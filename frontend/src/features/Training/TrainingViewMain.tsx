@@ -203,8 +203,23 @@ ${opt.justificativa}
     return result;
   };
 
+  // Converte a duração textual do roteiro (ex: "1h30", "4h", "45min") em horas decimais,
+  // para alimentar os relatórios de carga horária sem exigir mais um campo manual.
+  const parseDuracaoHoras = (duracao: string): number | null => {
+    const hMin = duracao.match(/(\d+)\s*h\s*(\d+)?/i);
+    if (hMin) return Math.round((Number(hMin[1]) + (hMin[2] ? Number(hMin[2]) / 60 : 0)) * 100) / 100;
+    const minOnly = duracao.match(/(\d+)\s*min/i);
+    if (minOnly) return Math.round((Number(minOnly[1]) / 60) * 100) / 100;
+    return null;
+  };
+
   const salvarComoTreinamento = async () => {
     if (!selectedOption || savingTreinamento) return;
+
+    const instrutor = window.prompt('Nome do instrutor responsável por este treinamento:', '')?.trim() || '';
+    const formatoInput = window.prompt('Forma de treinamento — digite: ead, presencial ou hibrida', 'ead')?.trim().toLowerCase() || '';
+    const formato = ['ead', 'presencial', 'hibrida'].includes(formatoInput) ? formatoInput : null;
+
     setSavingTreinamento(true);
     try {
       await addDoc(collection(db, 'treinamentos'), {
@@ -212,6 +227,9 @@ ${opt.justificativa}
         descricao: formatSelectedOption(selectedOption),
         tenantIds: [tenantId],
         criadoPorNome: state.user?.name || '',
+        instrutor: instrutor || null,
+        formato,
+        cargaHoraria: parseDuracaoHoras(selectedOption.duracao || ''),
         createdAt: serverTimestamp(),
       });
       setTreinamentoSalvo(true);

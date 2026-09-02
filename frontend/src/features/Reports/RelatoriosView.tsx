@@ -67,7 +67,19 @@ interface Certificado {
   tenantId: string;
 }
 
-type Tab = 'visao_geral' | 'colaboradores' | 'trilhas' | 'trilhas_evidencias' | 'risco' | 'evidencias';
+interface CatalogoTreinamento {
+  id: string;
+  titulo: string;
+  tipo: 'trilha' | 'treinamento';
+  instrutor?: string;
+  formato?: 'ead' | 'presencial' | 'hibrida';
+  cargaHoraria?: number;
+  createdAt?: any;
+}
+
+const FORMATO_LABEL: Record<string, string> = { ead: 'EAD', presencial: 'Presencial', hibrida: 'Híbrida' };
+
+type Tab = 'visao_geral' | 'colaboradores' | 'trilhas' | 'trilhas_evidencias' | 'treinamentos' | 'risco' | 'evidencias';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -157,6 +169,8 @@ const RelatoriosView: React.FC = () => {
   const [usuarios, setUsuarios] = useState<UserData[]>([]);
   const [certificados, setCertificados] = useState<Certificado[]>([]);
   const [exames, setExames] = useState<ExameResultado[]>([]);
+  const [catalogoTrilhas, setCatalogoTrilhas] = useState<CatalogoTreinamento[]>([]);
+  const [catalogoTreinamentos, setCatalogoTreinamentos] = useState<CatalogoTreinamento[]>([]);
   const [periodo, setPeriodo] = useState('90');
   const [buscaColab, setBuscaColab] = useState('');
   const [buscaTrilha, setBuscaTrilha] = useState('');
@@ -177,7 +191,19 @@ const RelatoriosView: React.FC = () => {
     const q5 = query(collection(db, 'examesResultados'), where('tenantId', '==', tenantId));
     const u5 = onSnapshot(q5, s => setExames(s.docs.map(d => ({ id: d.id, ...d.data() } as ExameResultado))));
 
-    return () => { u1(); u2(); u3(); u4(); u5(); };
+    const q6 = query(collection(db, 'trilhas'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']));
+    const u6 = onSnapshot(q6, s => setCatalogoTrilhas(s.docs.map(d => {
+      const data = d.data();
+      return { id: d.id, titulo: data.titulo || 'Sem título', tipo: 'trilha', instrutor: data.instrutor, formato: data.formato, cargaHoraria: data.cargaHoraria, createdAt: data.createdAt } as CatalogoTreinamento;
+    })));
+
+    const q7 = query(collection(db, 'treinamentos'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']));
+    const u7 = onSnapshot(q7, s => setCatalogoTreinamentos(s.docs.map(d => {
+      const data = d.data();
+      return { id: d.id, titulo: data.titulo || 'Sem título', tipo: 'treinamento', instrutor: data.instrutor, formato: data.formato, cargaHoraria: data.cargaHoraria, createdAt: data.createdAt } as CatalogoTreinamento;
+    })));
+
+    return () => { u1(); u2(); u3(); u4(); u5(); u6(); u7(); };
   }, [tenantId]);
 
   // Filtrar por período
@@ -187,6 +213,13 @@ const RelatoriosView: React.FC = () => {
     const d = r.createdAt?.toDate ? r.createdAt.toDate() : new Date(r.createdAt || 0);
     return d.getTime() >= cutoff;
   });
+  const filteredExames = exames.filter(e => {
+    const d = e.createdAt?.toDate ? e.createdAt.toDate() : new Date(e.createdAt || 0);
+    return d.getTime() >= cutoff;
+  });
+
+  // Carga horária de uma trilha pelo id (catálogo de trilhas com instrutor/formato/horas).
+  const cargaHorariaTrilha = (trilhaId: string) => catalogoTrilhas.find(c => c.id === trilhaId)?.cargaHoraria || 0;
 
   // KPIs
   const colab = usuarios.filter(u => !['SUPERADMIN', 'gestor'].includes(u.role));
@@ -252,26 +285,31 @@ const RelatoriosView: React.FC = () => {
     }));
   }, [filteredResults]);
 
-  // Por colaborador
+  // Por colaborador — aproveitamento considera quizzes de trilha E exames formais (Exames IA),
+  // já que ambos avaliam conhecimento e antes só os quizzes de trilha eram contabilizados.
   const porColab = useMemo(() => {
     return colab
       .filter(u => !buscaColab || u.name.toLowerCase().includes(buscaColab.toLowerCase()))
       .map(u => {
         const res = filteredResults.filter(r => r.userId === u.id || r.colaborador === u.name);
+        const examesUser = filteredExames.filter(e => e.userId === u.id);
+        const notas = [...res.map(r => r.nota), ...examesUser.map(e => e.score)];
+        const totalAvaliacoes = notas.length;
+        const aprov = res.filter(r => r.aprovado).length + examesUser.filter(e => e.aprovado).length;
+        const media = totalAvaliacoes ? Math.round(notas.reduce((a, n) => a + n, 0) / totalAvaliacoes) : 0;
         const prog = progresso.filter(p => p.userId === u.id && p.concluida);
-        const aprov = res.filter(r => r.aprovado).length;
-        const media = res.length ? Math.round(res.reduce((a, r) => a + r.nota, 0) / res.length) : 0;
+        const cargaHoraria = prog.reduce((a, p) => a + cargaHorariaTrilha(p.trilhaId), 0);
         const certs = certificados.filter(c => c.colaboradorNome === u.name).length;
         return {
           id: u.id, name: u.name, cargo: u.cargo || '',
-          testes: res.length, aprovados: aprov,
-          taxa: pct(aprov, res.length),
-          media, trilhas: prog.length, certs,
+          testes: totalAvaliacoes, aprovados: aprov,
+          taxa: pct(aprov, totalAvaliacoes),
+          media, trilhas: prog.length, cargaHoraria, certs,
           ultimo: res[0],
         };
       })
       .sort((a, b) => b.taxa - a.taxa);
-  }, [colab, filteredResults, progresso, certificados, buscaColab]);
+  }, [colab, filteredResults, filteredExames, progresso, certificados, catalogoTrilhas, buscaColab]);
 
   // Score de risco/maturidade por colaborador — combina desempenho, atividade recente e situação do certificado.
   // Pesos: 40% (100 - média das notas), 30% ausência de atividade no período, 30% certificado vencido.
@@ -303,6 +341,24 @@ const RelatoriosView: React.FC = () => {
       })
       .sort((a, b) => b.risco - a.risco);
   }, [colab, filteredResults, certificados, buscaColab]);
+
+  // Resumo de treinamentos — catálogo de trilhas + treinamentos avulsos com instrutor,
+  // forma (EAD/presencial/híbrida), carga horária e participação/aproveitamento.
+  const resumoTreinamentos = useMemo(() => {
+    const trilhasResumo = catalogoTrilhas.map(t => {
+      const progs = progresso.filter(p => p.trilhaId === t.id);
+      const concluidos = progs.filter(p => p.concluida).length;
+      return { ...t, participantes: progs.length, concluidos, taxa: pct(concluidos, progs.length) };
+    });
+    const treinamentosResumo = catalogoTreinamentos.map(t => {
+      const res = quizResults.filter(r => r.trailTitle === t.titulo);
+      const aprovados = res.filter(r => r.aprovado).length;
+      return { ...t, participantes: res.length, concluidos: aprovados, taxa: pct(aprovados, res.length) };
+    });
+    return [...trilhasResumo, ...treinamentosResumo].sort((a, b) => (tsToMillis(b.createdAt)) - (tsToMillis(a.createdAt)));
+  }, [catalogoTrilhas, catalogoTreinamentos, progresso, quizResults]);
+
+  const cargaHorariaCatalogoTotal = resumoTreinamentos.reduce((a, t) => a + (t.cargaHoraria || 0), 0);
 
   const riscoAltoCount = scoreColab.filter(c => c.nivel === 'Alto').length;
 
@@ -348,6 +404,7 @@ const RelatoriosView: React.FC = () => {
     const examesDoColab = exames.filter(e => e.userId === colabId);
     const certsDoColab = certificados.filter(c => c.colaboradorNome === nome);
     const dadosUser = colab.find(u => u.id === colabId);
+    const cargaHorariaColab = trilhasDoColab.filter(p => p.concluida).reduce((a, p) => a + cargaHorariaTrilha(p.trilhaId), 0);
 
     const win = window.open('', '_blank');
     if (!win) return;
@@ -397,6 +454,7 @@ td { background:#fdfbf5; }
   <div class="info">
     <span><strong>Colaborador:</strong> ${escapeHtml(nome)}</span>
     <span><strong>Cargo:</strong> ${escapeHtml(dadosUser?.cargo || '–')}</span>
+    <span><strong>Carga Horária Total:</strong> ${cargaHorariaColab > 0 ? `${cargaHorariaColab}h` : '–'}</span>
     <span><strong>Gerado em:</strong> ${new Date().toLocaleDateString('pt-BR')}</span>
   </div>
 </div>
@@ -461,6 +519,7 @@ td { background:#fdfbf5; }
     { id: 'colaboradores', label: 'Colaboradores',  icon: 'fa-users'        },
     { id: 'trilhas',       label: 'Por Trilha',     icon: 'fa-road'         },
     { id: 'trilhas_evidencias', label: 'Evidências de Trilhas', icon: 'fa-clipboard-list' },
+    { id: 'treinamentos',  label: 'Resumo de Treinamentos', icon: 'fa-chalkboard-user' },
     { id: 'risco',         label: 'Risco',          icon: 'fa-shield-halved' },
     { id: 'evidencias',    label: 'Evidências',     icon: 'fa-file-lines'   },
   ];
@@ -621,14 +680,14 @@ td { background:#fdfbf5; }
                   <table className="w-full text-xs">
                     <thead>
                       <tr className="bg-white border-b border-slate-200">
-                        {['Colaborador', 'Cargo', 'Testes', 'Aprovações', 'Taxa', 'Média', 'Trilhas', 'Certs', 'Último Teste', 'Ficha'].map(h => (
+                        {['Colaborador', 'Cargo', 'Testes', 'Aprovações', 'Taxa', 'Média', 'Trilhas', 'Carga Horária', 'Certs', 'Último Teste', 'Ficha'].map(h => (
                           <th key={h} className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {porColab.length === 0 && (
-                        <tr><td colSpan={10} className="text-center p-8 text-slate-500">Nenhum dado encontrado.</td></tr>
+                        <tr><td colSpan={11} className="text-center p-8 text-slate-500">Nenhum dado encontrado.</td></tr>
                       )}
                       {porColab.map(c => (
                         <tr key={c.id} className="border-b border-slate-100 hover:bg-white transition-all">
@@ -649,6 +708,7 @@ td { background:#fdfbf5; }
                           </td>
                           <td className="p-3 font-bold text-slate-700">{c.media}%</td>
                           <td className="p-3 text-slate-500">{c.trilhas}</td>
+                          <td className="p-3 text-slate-700 font-bold">{c.cargaHoraria > 0 ? `${c.cargaHoraria}h` : '–'}</td>
                           <td className="p-3">
                             {c.certs > 0
                               ? <span className="bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-black px-2 py-0.5 rounded-lg">{c.certs} cert.</span>
@@ -775,6 +835,59 @@ td { background:#fdfbf5; }
                             }`}>{p.concluida ? 'Concluída' : 'Em andamento'}</span>
                           </td>
                           <td className="p-3 text-slate-500 whitespace-nowrap">{formatDate(p.atualizadoEm)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* ── RESUMO DE TREINAMENTOS ──────────────────────────────────────── */}
+            {tab === 'treinamentos' && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                  <p className="text-xs text-slate-500 font-bold">
+                    {resumoTreinamentos.length} treinamentos/trilhas cadastrados
+                    <span className="text-slate-400 font-normal ml-2">— {cargaHorariaCatalogoTotal}h de carga horária total no catálogo</span>
+                  </p>
+                </div>
+                <div className="overflow-x-auto border border-slate-200 rounded-[14px]">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="bg-white border-b border-slate-200">
+                        {['Nome', 'Tipo', 'Instrutor', 'Forma', 'Carga Horária', 'Participantes', 'Concluídos', 'Aproveitamento'].map(h => (
+                          <th key={h} className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {resumoTreinamentos.length === 0 && (
+                        <tr><td colSpan={8} className="text-center p-8 text-slate-500">Nenhuma trilha ou treinamento cadastrado ainda.</td></tr>
+                      )}
+                      {resumoTreinamentos.map(t => (
+                        <tr key={t.id} className="border-b border-slate-100 hover:bg-white transition-all">
+                          <td className="p-3 font-bold text-[#0A1628] max-w-[240px] truncate">{t.titulo}</td>
+                          <td className="p-3">
+                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg ${
+                              t.tipo === 'trilha' ? 'bg-purple-50 text-purple-600 border border-purple-200' : 'bg-blue-50 text-blue-600 border border-blue-200'
+                            }`}>{t.tipo === 'trilha' ? 'Trilha' : 'Treinamento'}</span>
+                          </td>
+                          <td className="p-3 text-slate-600">{t.instrutor || '–'}</td>
+                          <td className="p-3 text-slate-600">{t.formato ? FORMATO_LABEL[t.formato] : '–'}</td>
+                          <td className="p-3 text-slate-700 font-bold">{t.cargaHoraria ? `${t.cargaHoraria}h` : '–'}</td>
+                          <td className="p-3 text-slate-700 font-bold">{t.participantes}</td>
+                          <td className="p-3 text-emerald-600 font-bold">{t.concluidos}</td>
+                          <td className="p-3">
+                            {t.participantes === 0 ? <span className="text-slate-500">–</span> : (
+                              <div className="flex items-center gap-2">
+                                <div className="w-14 bg-slate-200 rounded-full h-1.5">
+                                  <div className="h-1.5 rounded-full" style={{ width: `${t.taxa}%`, background: t.taxa >= 75 ? '#059669' : t.taxa >= 50 ? '#D97706' : '#DC2626' }}></div>
+                                </div>
+                                <span className={`font-black ${t.taxa >= 75 ? 'text-emerald-600' : t.taxa >= 50 ? 'text-amber-600' : 'text-red-500'}`}>{t.taxa}%</span>
+                              </div>
+                            )}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
