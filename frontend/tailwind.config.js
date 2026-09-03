@@ -39,6 +39,19 @@ export default {
           strong:  'rgba(148,163,184,0.25)',  // visible
           focus:   '#3b82f6',
         },
+        // Light-surface tokens — telas com fundo claro (a maioria do app hoje),
+        // navy/dourado/steel são a identidade visual real em uso.
+        content: {
+          bg:      '#f8fafc',
+          surface: '#ffffff',
+          border:  '#e2e8f0',
+        },
+        navy:  '#0A1628',
+        gold:  '#C9A84C',
+        // Nome "steel" (não "slate") de propósito — "slate" já é a escala nativa
+        // do Tailwind (slate-50..900), usada em centenas de classes no projeto;
+        // sobrescrevê-la quebraria todas elas.
+        steel: '#8A9BB0',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
