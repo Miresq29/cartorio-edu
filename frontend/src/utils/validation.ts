@@ -46,7 +46,3 @@ export const DocumentUploadSchema = z.object({
   category: z.string().min(1).max(100),
   fileSize: z.number().max(10 * 1024 * 1024, 'Arquivo muito grande (máx 10MB)')
 });
-
-export const ChecklistItemSchema = z.object({
-  requirement: z.string().min(5, 'Requisito muito curto').max(500, 'Requisito muito longo')
-});

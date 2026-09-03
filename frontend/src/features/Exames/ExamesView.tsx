@@ -15,7 +15,7 @@ interface FonteConteudo {
   id: string;
   titulo: string;
   conteudo: string;
-  tipo: 'treinamento' | 'knowledgeBase' | 'video' | 'checklist' | 'trilha';
+  tipo: 'treinamento' | 'knowledgeBase' | 'video' | 'trilha';
 }
 
 interface ExameResultado {
@@ -522,8 +522,7 @@ const ExamesView: React.FC = () => {
                       <p className="text-[9px] text-slate-500 uppercase tracking-widest font-black">
                         {fonte.tipo === 'treinamento' ? 'Treinamento' :
                          fonte.tipo === 'knowledgeBase' ? 'Base de Conhecimento' :
-                         fonte.tipo === 'trilha' ? 'Trilha de Capacitação' :
-                         fonte.tipo === 'video' ? 'Vídeo' : 'Checklist'}
+                         fonte.tipo === 'trilha' ? 'Trilha de Capacitação' : 'Vídeo'}
                       </p>
                     </div>
                     {selecionada && !bloqueio && (

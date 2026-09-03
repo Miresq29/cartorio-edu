@@ -7,7 +7,6 @@
  * - maxOutputTokens ajustado por função (era 8192 em todas)
  * - Inputs truncados para evitar tokens desnecessários
  * - Cache em memória para resumos (evita chamadas repetidas)
- * - Checklist estático para provimentos conhecidos (zero tokens)
  * - generateTrainingOptions: context truncado + estrutura simplificada
  */
 
@@ -41,131 +40,6 @@ const writeSummaryCache = (key: string, value: string) => {
 
 // Cache em memória para a sessão atual (evita releitura do localStorage)
 const summaryMemCache = new Map<string, string>();
-
-// ─── Checklists estáticos para provimentos conhecidos ────────────────────────
-// Elimina 100% das chamadas Gemini para documentos fixos do acervo
-const STATIC_CHECKLISTS: Record<string, { id: string; text: string }[]> = {
-  // ── LGPD / Segurança da Informação ────────────────────────────────────────
-  'provimento 213': [
-    { id: '1',  text: 'Designar Responsável Técnico de TI (art. 3º)' },
-    { id: '2',  text: 'Designar Encarregado de Dados (DPO) (art. 4º)' },
-    { id: '3',  text: 'Elaborar Política de Segurança da Informação (PSI)' },
-    { id: '4',  text: 'Elaborar Plano de Continuidade de Negócios (PCN)' },
-    { id: '5',  text: 'Manter inventário de ativos de TI atualizado' },
-    { id: '6',  text: 'Formalizar contratos com operadores de dados (DPA)' },
-    { id: '7',  text: 'Elaborar ROPA (Registro de Operações de Tratamento)' },
-    { id: '8',  text: 'Realizar treinamento de equipe em LGPD' },
-    { id: '9',  text: 'Implantar canal de atendimento ao titular de dados' },
-    { id: '10', text: 'Implementar controles de acesso e autenticação' },
-  ],
-  // ── Segurança cibernética / backup ────────────────────────────────────────
-  'provimento 149': [
-    { id: '1', text: 'Manter sistema de gestão eletrônica de documentos' },
-    { id: '2', text: 'Garantir backup periódico dos dados' },
-    { id: '3', text: 'Controlar acesso lógico aos sistemas' },
-    { id: '4', text: 'Registrar logs de acesso e alterações' },
-    { id: '5', text: 'Comunicar incidentes ao CNJ no prazo previsto' },
-  ],
-  // ── PLD/FTP (Prevenção à Lavagem de Dinheiro) ────────────────────────────
-  'provimento 161': [
-    { id: '1', text: 'Implementar programa PLD/FTP (Lei 9.613/98)' },
-    { id: '2', text: 'Realizar identificação e cadastro de clientes (KYC)' },
-    { id: '3', text: 'Monitorar operações suspeitas de lavagem de dinheiro' },
-    { id: '4', text: 'Comunicar operações suspeitas ao COAF' },
-    { id: '5', text: 'Treinar colaboradores em PLD/FTP anualmente' },
-    { id: '6', text: 'Manter registros pelo prazo legal (5 anos)' },
-  ],
-  // ── Inventário e partilha extrajudicial (Resolução 35/CNJ) ───────────────
-  'resolução 35': [
-    { id: '1', text: 'Verificar inexistência de herdeiros incapazes (art. 2º)' },
-    { id: '2', text: 'Exigir certidão de óbito do autor da herança' },
-    { id: '3', text: 'Identificar todos os bens, dívidas e obrigações' },
-    { id: '4', text: 'Verificar quitação do ITCMD (imposto de transmissão)' },
-    { id: '5', text: 'Lavrar escritura de inventário/partilha com todos os herdeiros' },
-    { id: '6', text: 'Registrar escritura no Cartório de Imóveis (se houver imóvel)' },
-  ],
-  // ── Divórcio e separação extrajudicial ───────────────────────────────────
-  'provimento 65': [
-    { id: '1', text: 'Verificar ausência de filhos menores ou incapazes (art. 1º)' },
-    { id: '2', text: 'Obter certidão de casamento atualizada' },
-    { id: '3', text: 'Identificar e discriminar todos os bens partilhados' },
-    { id: '4', text: 'Lavrar escritura com advogado constituído pelas partes' },
-    { id: '5', text: 'Registrar averbação no Cartório de Registro Civil' },
-    { id: '6', text: 'Registrar averbação no Cartório de Imóveis (se houver imóvel)' },
-  ],
-  // ── Apostilamento de Haia ────────────────────────────────────────────────
-  'provimento 32': [
-    { id: '1', text: 'Verificar autenticidade do documento público a ser apostilado' },
-    { id: '2', text: 'Confirmar que o país de destino é signatário da Convenção de Haia' },
-    { id: '3', text: 'Lançar dados no sistema e-Apostila do CNJ' },
-    { id: '4', text: 'Apor apostila com código de verificação único' },
-    { id: '5', text: 'Registrar o ato no livro competente' },
-    { id: '6', text: 'Arquivar cópia do documento apostilado' },
-  ],
-  // ── Atos notariais eletrônicos ───────────────────────────────────────────
-  'provimento 100': [
-    { id: '1', text: 'Usar plataforma e-Notariado homologada pelo CNJ' },
-    { id: '2', text: 'Verificar identidade das partes por videoconferência' },
-    { id: '3', text: 'Coletar assinaturas com certificado ICP-Brasil' },
-    { id: '4', text: 'Gerar QR Code para verificação da escritura' },
-    { id: '5', text: 'Arquivar instrumento eletrônico em servidor certificado' },
-    { id: '6', text: 'Registrar ato no livro eletrônico do e-Notariado' },
-  ],
-  // ── Reconhecimento de parentalidade socioafetiva ─────────────────────────
-  'provimento 63': [
-    { id: '1', text: 'Verificar manifestação espontânea e livre de vício' },
-    { id: '2', text: 'Exigir idade mínima de 18 anos do declarante' },
-    { id: '3', text: 'Confirmar diferença mínima de 16 anos entre as partes' },
-    { id: '4', text: 'Lavrar escritura declaratória de reconhecimento' },
-    { id: '5', text: 'Comunicar o ato ao Cartório de Registro Civil' },
-    { id: '6', text: 'Averbação na certidão de nascimento do filho' },
-  ],
-  // ── Usucapião extrajudicial ───────────────────────────────────────────────
-  'provimento 65_usucapiao': [
-    { id: '1', text: 'Verificar requisitos do art. 1.238 a 1.244 do CC' },
-    { id: '2', text: 'Exigir ata notarial de constatação de posse' },
-    { id: '3', text: 'Obter planta e memorial descritivo do imóvel' },
-    { id: '4', text: 'Notificar confinantes e titulares de direitos reais' },
-    { id: '5', text: 'Registrar procedimento no Cartório de Imóveis' },
-    { id: '6', text: 'Emitir certidão de conclusão do procedimento' },
-  ],
-  // ── Qualidade e excelência notarial ──────────────────────────────────────
-  'provimento 150': [
-    { id: '1', text: 'Implementar sistema de gestão da qualidade (SGQ)' },
-    { id: '2', text: 'Estabelecer indicadores de desempenho (KPIs notariais)' },
-    { id: '3', text: 'Realizar avaliação de satisfação do usuário periodicamente' },
-    { id: '4', text: 'Manter equipe capacitada com horas mínimas de treinamento' },
-    { id: '5', text: 'Elaborar relatório de gestão anual' },
-    { id: '6', text: 'Submeter-se à auditoria do sistema de qualidade' },
-  ],
-  // ── Escritura pública em geral ────────────────────────────────────────────
-  'escritura publica': [
-    { id: '1',  text: 'Verificar identidade e capacidade civil das partes' },
-    { id: '2',  text: 'Conferir representação legal (procuração/mandato)' },
-    { id: '3',  text: 'Verificar impedimentos legais ao ato' },
-    { id: '4',  text: 'Ler o instrumento às partes ou confirmar leitura' },
-    { id: '5',  text: 'Colher assinaturas de todas as partes e testemunhas' },
-    { id: '6',  text: 'Assinar e autenticar com sinal público do tabelião' },
-    { id: '7',  text: 'Lavrar no livro de notas com numeração sequencial' },
-    { id: '8',  text: 'Arquivar minutas e documentos comprobatórios' },
-    { id: '9',  text: 'Expedir certidão (traslado/certidão) quando solicitado' },
-    { id: '10', text: 'Recolher emolumentos conforme tabela estadual' },
-  ],
-};
-
-/**
- * Retorna checklist estático se o nome do arquivo contiver um provimento conhecido.
- * Retorna null se não houver match (deve chamar a IA).
- */
-const getStaticChecklist = (
-  fileName: string
-): { id: string; text: string }[] | null => {
-  const nameLower = fileName.toLowerCase();
-  for (const [key, items] of Object.entries(STATIC_CHECKLISTS)) {
-    if (nameLower.includes(key)) return items;
-  }
-  return null;
-};
 
 // ─── Remove markdown e extrai JSON limpo ─────────────────────────────────────
 export const cleanJsonOutput = (text: string): string => {
@@ -259,38 +133,6 @@ export const getGeminiResponse = async (prompt: string): Promise<string> => {
   } catch (error: any) {
     console.error('Erro Expert Review:', error);
     return 'Erro ao gerar parecer técnico.';
-  }
-};
-
-// ─── Extração de checklist de documento ──────────────────────────────────────
-// OTIMIZAÇÃO: usa checklist estático para provimentos conhecidos (0 tokens)
-// Só chama a IA para documentos desconhecidos
-export const extractChecklistFromDocument = async (doc: {
-  text: string;
-  fileName: string;
-}) => {
-  // Tenta checklist estático primeiro
-  const staticResult = getStaticChecklist(doc.fileName);
-  if (staticResult) {
-    console.info(`[Gemini] Checklist estático usado para: ${doc.fileName}`);
-    return staticResult;
-  }
-
-  // Documento desconhecido → chama IA com input truncado
-  const docText = doc.text.substring(0, 3000);
-  const prompt = `Extraia requisitos do documento "${doc.fileName}" para checklist notarial.
-Retorne APENAS um array JSON: [{"id": "1", "text": "requisito"}]
-Máximo 15 itens. Seja conciso.
-
-Documento: ${docText}`;
-
-  try {
-    const text = await callGemini(prompt, 800);
-    const cleaned = cleanJsonOutput(text);
-    return JSON.parse(cleaned);
-  } catch (e) {
-    console.error('Erro extração:', e);
-    return [];
   }
 };
 
@@ -628,7 +470,6 @@ export const GeminiService = {
   chat,
   getGeminiResponse,
   generateJSON,
-  extractChecklistFromDocument,
   generateTrainingOptions,
   generateTrainingDetail,
   generateSummary,

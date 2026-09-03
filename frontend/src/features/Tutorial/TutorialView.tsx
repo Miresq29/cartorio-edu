@@ -152,15 +152,6 @@ const SECTIONS: Section[] = [
     ]
   },
   {
-    id: 'checklists', icon: 'fa-list-check', title: 'Checklists', subtitle: 'Roteiros e protocolos operacionais',
-    steps: [
-      { title: 'Criando um roteiro', desc: 'Cadastre manualmente os itens do protocolo ou envie um documento (PDF/texto) para que a IA extraia os itens automaticamente.' },
-      { title: 'Executando um checklist', desc: 'No modo "Executar", marque item a item durante a conferência de um protocolo real e registre observações quando necessário.' },
-      { title: 'Análise com IA', desc: 'Envie um documento para análise comparativa contra o roteiro cadastrado — a IA aponta divergências e itens não atendidos (útil para conferência de compliance).' },
-      { title: 'Visibilidade', desc: 'Assim como outros conteúdos, checklists podem ser publicados para este cartório, todos os cartórios ou uma lista de cartórios específicos.' },
-    ]
-  },
-  {
     id: 'banners', icon: 'fa-images', title: 'Banners', subtitle: 'Materiais visuais de divulgação interna',
     steps: [
       { title: 'Publicando um banner', desc: 'Envie uma imagem ou link de campanha visual para divulgação interna (campanhas de segurança, datas comemorativas, avisos visuais).' },

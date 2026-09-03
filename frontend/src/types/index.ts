@@ -64,22 +64,6 @@ export interface SearchLog {
   userId: string;
 }
 
-export interface ChecklistItemTemplate {
-  id: string;
-  text?: string;
-  requirement?: string;
-  category?: string;
-}
-
-export interface ChecklistTemplate {
-  id: string;
-  title?: string;
-  name?: string;
-  icon?: string;
-  items: ChecklistItemTemplate[];
-  isMasterTemplate?: boolean;
-}
-
 export interface ComplianceReview {
   id: string;
   status: 'pendente' | 'aprovado' | 'rejeitado';
@@ -112,7 +96,7 @@ export type AppTab =
   // Plataforma
   | 'support' | 'tutorial' | 'terms' | 'privacy' | 'policy'
   // Legados (manter compatibilidade)
-  | 'chat' | 'compliance' | 'checklists' | 'analytics'
+  | 'chat' | 'compliance' | 'analytics'
   | 'revisar' | 'ia-analitica' | 'base' | 'seguranca' | 'security'
   | 'usuarios' | 'admin-cartorios' | 'atividades-master'
   | 'treinamento' | 'auditoria' | 'relatorios' | 'termos'
@@ -127,7 +111,6 @@ export interface AppState {
   auditLogs: AuditLog[];
   chatHistory: ChatMessage[];
   complianceReviews: ComplianceReview[];
-  checklistTemplates: ChecklistTemplate[];
   usersList: User[];
   tenants: Tenant[];
   searchLogs: SearchLog[];
@@ -143,9 +126,6 @@ export type AppAction =
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'ADD_LOG'; payload: AuditLog }
   | { type: 'SET_CHAT_HISTORY'; payload: ChatMessage[] }
-  | { type: 'ADD_CHECKLIST_TEMPLATE'; payload: ChecklistTemplate }
-  | { type: 'UPDATE_CHECKLIST_TEMPLATE'; payload: ChecklistTemplate }
-  | { type: 'REMOVE_CHECKLIST_TEMPLATE'; payload: string }
   | { type: 'ADD_USER'; payload: User }
   | { type: 'UPDATE_USER'; payload: User }
   | { type: 'DELETE_USER'; payload: string }

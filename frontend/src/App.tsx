@@ -10,7 +10,6 @@ const DashboardView      = lazy(() => import('./features/Dashboard/DashboardView
 const DashboardMasterView= lazy(() => import('./features/Dashboard/DashboardMasterView'));
 const KnowledgeBase      = lazy(() => import('./features/Base/KnowledgeBase'));
 const ExpertReviewView   = lazy(() => import('./features/Expert/ExpertReviewView'));
-const ChecklistView      = lazy(() => import('./features/Checklists/ChecklistView'));
 const SecurityView       = lazy(() => import('./features/Security/SecurityView'));
 const UsersView          = lazy(() => import('./features/Users/UsersView'));
 const AuditoriaView      = lazy(() => import('./features/Audit/AuditoriaView'));
@@ -37,9 +36,8 @@ const SimulacaoPhishingView = lazy(() => import('./features/Phishing/SimulacaoPh
 const DossieConformidadeView = lazy(() => import('./features/Compliance/DossieConformidadeView'));
 const AssessmentView = lazy(() => import('./features/Assessment/AssessmentView'));
 
-// ðŸ›¡ï¸ Admin Views
+// Admin Views
 const TenantsView          = lazy(() => import('./features/Admin/TenantsView'));
-const MasterActivitiesView = lazy(() => import('./features/Admin/MasterActivitiesView'));
 
 const MainLayout: React.FC = () => {
   const { state } = useApp();
@@ -64,7 +62,6 @@ const MainLayout: React.FC = () => {
     switch (state.activeTab) {
       case 'dashboard':  return <DashboardMasterView />;
       case 'unit':       return <DashboardView />;
-      case 'checklists': return <ChecklistView />;
       case 'knowledge':  return <KnowledgeBase />;
       case 'security':   return <SecurityView />;
       case 'users':      return <UsersView />;

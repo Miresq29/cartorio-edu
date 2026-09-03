@@ -15,7 +15,7 @@ import { useToast } from '../../context/ToastContext';
 // Coleções que usam tenantIds (array) em vez de tenantId (string) — ver plano de
 // visibilidade multi-cartório.
 const COLECOES_ARRAY_TENANT = new Set([
-  'trilhas', 'repositorio', 'comunicados', 'checklists', 'knowledgeBase',
+  'trilhas', 'repositorio', 'comunicados', 'knowledgeBase',
   'videos', 'materiaisbanner', 'treinamentos', 'treinamentosQuizzes', 'simulacoesPhishing',
 ]);
 
@@ -32,7 +32,6 @@ const COLECOES_TENANT = [
   { id: 'repositorioProgresso',    label: 'Progresso Repositório',icon: 'fa-eye'               },
   { id: 'comunicados',             label: 'Comunicados',          icon: 'fa-bell'              },
   { id: 'auditLogs',               label: 'Trilha de Auditoria',  icon: 'fa-clock-rotate-left' },
-  { id: 'checklists',              label: 'Checklists',           icon: 'fa-list-check'        },
   { id: 'knowledgeBase',           label: 'Base de Conhecimento', icon: 'fa-book-open'         },
   { id: 'videos',                  label: 'Videos',               icon: 'fa-video'             },
   { id: 'materiaisbanner',         label: 'Banners e Materiais',  icon: 'fa-images'            },
