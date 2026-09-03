@@ -256,7 +256,7 @@ const MeuProgressoView: React.FC = () => {
                           <div className="h-1.5 rounded-full transition-all" style={{ width: `${p}%`, background: p === 100 ? '#059669' : cor }}></div>
                         </div>
                         {media !== null && (
-                          <p className="text-[10px] text-slate-500 mt-1">Média nos testes: <strong style={{ color: media >= 75 ? '#059669' : '#dc2626' }}>{media}%</strong></p>
+                          <p className="text-[10px] text-slate-500 mt-1">Média nos testes: <strong className={media >= 75 ? 'text-success' : 'text-danger'}>{media}%</strong></p>
                         )}
                       </div>
                     );

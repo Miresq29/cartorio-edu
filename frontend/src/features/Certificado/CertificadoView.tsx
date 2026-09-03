@@ -100,9 +100,9 @@ const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
       boxSizing: 'border-box',
     }}>
       {/* Borda decorativa externa */}
-      <div style={{
+      <div className="border-navy" style={{
         position: 'absolute', inset: '8mm',
-        border: '2px solid #1e3a5f',
+        borderWidth: '2px', borderStyle: 'solid',
         borderRadius: '4px',
         pointerEvents: 'none',
       }} />
@@ -114,10 +114,10 @@ const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
       }} />
 
       {/* Marca d'água */}
-      <div style={{
+      <div className="text-navy" style={{
         position: 'absolute', inset: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        opacity: 0.03, fontSize: '120px', fontWeight: 900, color: '#1e3a5f',
+        opacity: 0.03, fontSize: '120px', fontWeight: 900,
         transform: 'rotate(-30deg)', letterSpacing: '-4px',
         userSelect: 'none', pointerEvents: 'none',
       }}>CERTIFICADO</div>
@@ -150,13 +150,13 @@ const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
       }}>
         {/* Logo / título topo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4mm' }}>
-          <div style={{
-            width: '32px', height: '32px', background: '#1e3a5f',
+          <div className="bg-navy" style={{
+            width: '32px', height: '32px',
             borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: '16px',
           }}>⚖️</div>
           <div>
-            <div style={{ fontSize: '10pt', fontWeight: 800, color: '#1e3a5f', letterSpacing: '2px', textTransform: 'uppercase' }}>
+            <div className="text-navy" style={{ fontSize: '10pt', fontWeight: 800, letterSpacing: '2px', textTransform: 'uppercase' }}>
               CartórioLearn
             </div>
             <div style={{ fontSize: '6pt', color: '#888', letterSpacing: '1px', textTransform: 'uppercase' }}>
@@ -178,8 +178,8 @@ const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
           <p style={{ fontSize: '9pt', color: '#555', margin: '0 0 4mm 0' }}>
             Certificamos que
           </p>
-          <p style={{
-            fontSize: '26pt', fontWeight: 900, color: '#1e3a5f',
+          <p className="text-navy" style={{
+            fontSize: '26pt', fontWeight: 900,
             margin: '0 0 2mm 0', lineHeight: 1.1,
             borderBottom: '1.5px solid #c8a84b', paddingBottom: '3mm', paddingLeft: '12mm', paddingRight: '12mm',
           }}>
@@ -203,8 +203,8 @@ const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
             </p>
           )}
           <p style={{ fontSize: '8pt', color: '#555', margin: '2mm 0 0 0' }}>
-            com aprovação de <strong style={{ color: '#1e3a5f' }}>{cert.notaFinal}%</strong> e
-            carga horária de <strong style={{ color: '#1e3a5f' }}>{cert.cargaHoraria} horas</strong>,
+            com aprovação de <strong className="text-navy">{cert.notaFinal}%</strong> e
+            carga horária de <strong className="text-navy">{cert.cargaHoraria} horas</strong>,
             em conformidade com os Provimentos CNJ nº 161/2023, 213/2026 e 149/2023.
           </p>
         </div>
@@ -234,7 +234,7 @@ const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
               margin: '0 auto',
             }}>
               <div style={{ fontSize: '16px' }}>⚖️</div>
-              <div style={{ fontSize: '5pt', fontWeight: 800, color: '#1e3a5f', textAlign: 'center', lineHeight: 1.2 }}>
+              <div className="text-navy" style={{ fontSize: '5pt', fontWeight: 800, textAlign: 'center', lineHeight: 1.2 }}>
                 CERTIFICADO<br/>VÁLIDO
               </div>
             </div>

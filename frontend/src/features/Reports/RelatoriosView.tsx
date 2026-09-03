@@ -981,7 +981,7 @@ td { background:#fdfbf5; }
                           <td className="p-3 text-slate-600 max-w-[160px] truncate">{r.trailTitle || '–'}</td>
                           <td className="p-3 text-slate-500 max-w-[140px] truncate">{r.moduleTitle || '–'}</td>
                           <td className="p-3 text-slate-500 whitespace-nowrap">{formatDate(r.createdAt)}</td>
-                          <td className="p-3 font-black" style={{ color: r.nota >= 75 ? '#059669' : '#DC2626' }}>{r.nota}%</td>
+                          <td className={`p-3 font-black ${r.nota >= 75 ? 'text-success' : 'text-danger'}`}>{r.nota}%</td>
                           <td className="p-3">
                             <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg ${
                               r.aprovado
