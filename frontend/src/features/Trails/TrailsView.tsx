@@ -21,6 +21,7 @@ interface Modulo {
   conteudo: string;        // texto ou URL
   temQuiz: boolean;
   notaMinima: number;      // 0-10
+  conteudoRef?: { tipo: 'video' | 'repositorio'; itemId: string };
 }
 
 interface Trilha {
@@ -93,7 +94,37 @@ const ModuloForm: React.FC<{
   onChange: (m: Modulo) => void;
   onRemove: () => void;
   index: number;
-}> = ({ modulo, onChange, onRemove, index }) => (
+  tenantId: string;
+}> = ({ modulo, onChange, onRemove, index, tenantId }) => {
+  const [vincular, setVincular] = useState(!!modulo.conteudoRef);
+  const [busca, setBusca] = useState('');
+  const [itensVideo, setItensVideo] = useState<{ id: string; titulo: string }[]>([]);
+  const [itensRepo, setItensRepo] = useState<{ id: string; titulo: string; tipo: string }[]>([]);
+
+  useEffect(() => {
+    if (!vincular) return;
+    const q = query(collection(db, 'videos'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']));
+    return onSnapshot(q, s => setItensVideo(s.docs.map(d => ({ id: d.id, titulo: d.data().titulo }))));
+  }, [vincular, tenantId]);
+
+  useEffect(() => {
+    if (!vincular) return;
+    const q = query(collection(db, 'repositorio'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']));
+    return onSnapshot(q, s => setItensRepo(s.docs.map(d => ({ id: d.id, titulo: d.data().titulo, tipo: d.data().tipo }))));
+  }, [vincular, tenantId]);
+
+  const TIPO_REPO_LABEL: Record<string, string> = { youtube: 'Vídeo YouTube', audio: 'Áudio', mp4: 'Vídeo Drive' };
+
+  const opcoes = [
+    ...itensVideo.map(v => ({ id: v.id, titulo: v.titulo, tipoConteudo: 'video' as const, label: 'Vídeo' })),
+    ...itensRepo.map(r => ({ id: r.id, titulo: r.titulo, tipoConteudo: 'repositorio' as const, label: TIPO_REPO_LABEL[r.tipo] || 'Repositório' })),
+  ];
+  const opcoesFiltradas = opcoes.filter(it => !busca || it.titulo.toLowerCase().includes(busca.toLowerCase()));
+  const selecionado = modulo.conteudoRef
+    ? opcoes.find(it => it.id === modulo.conteudoRef!.itemId && it.tipoConteudo === modulo.conteudoRef!.tipo)
+    : null;
+
+  return (
   <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: 20, marginBottom: 12 }}>
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
       <span style={{ fontSize: 11, fontWeight: 900, color: '#8A9BB0', textTransform: 'uppercase', letterSpacing: 2 }}>
@@ -137,6 +168,60 @@ const ModuloForm: React.FC<{
         rows={3}
         style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '10px 14px', color: '#0A1628', fontSize: 13, resize: 'vertical' }}
       />
+
+      <div style={{ borderTop: '1px dashed #e2e8f0', paddingTop: 12 }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', color: '#8A9BB0', fontSize: 13 }}>
+          <input
+            type="checkbox"
+            checked={vincular}
+            onChange={e => {
+              const checked = e.target.checked;
+              setVincular(checked);
+              if (!checked) onChange({ ...modulo, conteudoRef: undefined });
+            }}
+          />
+          Vincular vídeo ou mídia do repositório
+        </label>
+        {vincular && (
+          <div style={{ marginTop: 10, display: 'grid', gap: 8 }}>
+            {selecionado ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#F5EDD8', border: '1px solid #C9A84C40', borderRadius: 10, padding: '8px 12px' }}>
+                <i className="fa-solid fa-link" style={{ color: '#C9A84C' }}></i>
+                <span style={{ fontSize: 12, color: '#7a5c1e', fontWeight: 700, flex: 1 }}>{selecionado.titulo}</span>
+                <span style={{ fontSize: 9, fontWeight: 900, color: '#7a5c1e', textTransform: 'uppercase', letterSpacing: 1 }}>{selecionado.label}</span>
+                <button onClick={() => onChange({ ...modulo, conteudoRef: undefined })} style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer' }}>
+                  <i className="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+            ) : (
+              <>
+                <input
+                  value={busca}
+                  onChange={e => setBusca(e.target.value)}
+                  placeholder="Buscar vídeo ou mídia por título..."
+                  style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '10px 14px', color: '#0A1628', fontSize: 13 }}
+                />
+                <div style={{ maxHeight: 160, overflow: 'auto', display: 'grid', gap: 6 }}>
+                  {opcoesFiltradas.length === 0 && (
+                    <p style={{ fontSize: 11, color: '#8A9BB0', padding: 8 }}>Nenhum item encontrado</p>
+                  )}
+                  {opcoesFiltradas.map(it => (
+                    <button
+                      key={`${it.tipoConteudo}_${it.id}`}
+                      onClick={() => onChange({ ...modulo, conteudoRef: { tipo: it.tipoConteudo, itemId: it.id } })}
+                      style={{ textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '8px 12px', cursor: 'pointer' }}
+                    >
+                      <span style={{ fontSize: 12, color: '#0A1628' }}>{it.titulo}</span>
+                      <span style={{ fontSize: 9, fontWeight: 900, color: '#8A9BB0', textTransform: 'uppercase', letterSpacing: 1, flexShrink: 0 }}>{it.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
       <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', color: '#8A9BB0', fontSize: 13 }}>
           <input
@@ -161,7 +246,8 @@ const ModuloForm: React.FC<{
       </div>
     </div>
   </div>
-);
+  );
+};
 
 // ─── Trilha Card ─────────────────────────────────────────────────────────────
 
@@ -299,7 +385,9 @@ const ModuloPlayer: React.FC<{
   progresso: TrilhaProgresso;
   onUpdateProgresso: (prog: TrilhaProgresso) => void;
   onClose: () => void;
-}> = ({ trilha, progresso, onUpdateProgresso, onClose }) => {
+  tenantId: string;
+  userId: string;
+}> = ({ trilha, progresso, onUpdateProgresso, onClose, tenantId, userId }) => {
   const [moduloIdx, setModuloIdx] = useState(0);
   const [showQuiz, setShowQuiz] = useState(false);
   const [respostas, setRespostas] = useState<Record<number, string>>({});
@@ -307,9 +395,41 @@ const ModuloPlayer: React.FC<{
   const [loading, setLoading] = useState(false);
   const [quizQuestoes, setQuizQuestoes] = useState<{ pergunta: string; opcoes: string[]; correta: number; explicacao: string }[]>([]);
   const [gerandoQuiz, setGerandoQuiz] = useState(false);
+  const [conteudoItem, setConteudoItem] = useState<any | null>(null);
+  const [conteudoVisto, setConteudoVisto] = useState(false);
 
   const modulo = trilha.modulos[moduloIdx];
   const progModulo = progresso.modulos[modulo?.id] || { assistido: false, aprovado: false, nota: null, tentativas: 0 };
+
+  // Carrega o conteúdo vinculado (vídeo/repositório) e marca o progresso, replicando o padrão de VideosView/RepositorioView
+  useEffect(() => {
+    setConteudoItem(null);
+    setConteudoVisto(false);
+    if (!modulo?.conteudoRef) return;
+    const { tipo, itemId } = modulo.conteudoRef;
+    const colecao = tipo === 'video' ? 'videos' : 'repositorio';
+    let cancelado = false;
+    getDoc(doc(db, colecao, itemId)).then(async snap => {
+      if (cancelado || !snap.exists()) return;
+      const item = { id: snap.id, ...snap.data() } as any;
+      setConteudoItem(item);
+      const progColecao = tipo === 'video' ? 'videosProgresso' : 'repositorioProgresso';
+      const key = `${userId}_${itemId}`;
+      if (tipo === 'video') {
+        await setDoc(doc(db, progColecao, key), {
+          userId, videoId: itemId, videoTitulo: item.titulo,
+          tenantId, assistido: true, assistidoEm: serverTimestamp(),
+        }, { merge: true });
+      } else {
+        await setDoc(doc(db, progColecao, key), {
+          userId, midiaId: itemId, midiaTitle: item.titulo,
+          tenantId, visto: true, vistoEm: serverTimestamp(),
+        }, { merge: true });
+      }
+      if (!cancelado) setConteudoVisto(true);
+    });
+    return () => { cancelado = true; };
+  }, [modulo?.id, modulo?.conteudoRef?.tipo, modulo?.conteudoRef?.itemId, userId, tenantId]);
 
   const marcarAssistido = async () => {
     if (!modulo) return;
@@ -422,6 +542,43 @@ Nota mínima para aprovação: ${modulo.notaMinima}/10`;
             <p style={{ fontSize: 13, color: '#0A1628', lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{modulo.conteudo || modulo.descricao}</p>
           </div>
 
+          {/* Conteúdo vinculado (vídeo / repositório) */}
+          {modulo.conteudoRef && conteudoItem && (
+            <div style={{ marginBottom: 16 }}>
+              {(conteudoItem.youtubeId) && (
+                <div style={{ aspectRatio: '16 / 9', borderRadius: 16, overflow: 'hidden' }}>
+                  <iframe
+                    src={`https://www.youtube-nocookie.com/embed/${conteudoItem.youtubeId}?rel=0`}
+                    style={{ width: '100%', height: '100%', border: 'none' }}
+                    allow="autoplay; fullscreen"
+                    allowFullScreen
+                    title={conteudoItem.titulo}
+                  />
+                </div>
+              )}
+              {!conteudoItem.youtubeId && conteudoItem.driveId && conteudoItem.tipo === 'audio' && (
+                <div style={{ borderRadius: 16, overflow: 'hidden', height: 120 }}>
+                  <iframe
+                    src={`https://drive.google.com/file/d/${conteudoItem.driveId}/preview`}
+                    style={{ width: '100%', height: '100%', border: 'none' }}
+                    allow="autoplay"
+                    title={conteudoItem.titulo}
+                  />
+                </div>
+              )}
+              {!conteudoItem.youtubeId && conteudoItem.driveId && conteudoItem.tipo === 'mp4' && (
+                <div style={{ borderRadius: 16, overflow: 'hidden', height: 400 }}>
+                  <iframe
+                    src={`https://drive.google.com/file/d/${conteudoItem.driveId}/preview`}
+                    style={{ width: '100%', height: '100%', border: 'none' }}
+                    allow="autoplay"
+                    title={conteudoItem.titulo}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Status do módulo */}
           {progModulo.nota !== null && (
             <div style={{ background: progModulo.aprovado ? '#F5EDD8' : '#fef2f2', border: `1px solid ${progModulo.aprovado ? '#C9A84C' : '#dc2626'}40`, borderRadius: 12, padding: 12, marginBottom: 16, display: 'flex', gap: 10, alignItems: 'center' }}>
@@ -438,7 +595,7 @@ Nota mínima para aprovação: ${modulo.notaMinima}/10`;
           {/* Ações */}
           {!showQuiz && !quizEnviado && (
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              {!progModulo.assistido && (
+              {!progModulo.assistido && (!modulo.conteudoRef || conteudoVisto) && (
                 <button onClick={marcarAssistido} style={{ flex: 1, minWidth: 160, background: '#0A1628', border: 'none', color: '#ffffff', padding: 14, borderRadius: 12, cursor: 'pointer', fontWeight: 900, fontSize: 12, textTransform: 'uppercase' }}>
                   <i className="fa-solid fa-check" style={{ marginRight: 8 }}></i>Marcar como Lido
                 </button>
@@ -892,7 +1049,7 @@ const TrailsView: React.FC = () => {
 
               {form.modulos.map((m, i) => (
                 <ModuloForm
-                  key={m.id} modulo={m} index={i}
+                  key={m.id} modulo={m} index={i} tenantId={tenantId}
                   onChange={novo => setForm(f => ({ ...f, modulos: f.modulos.map((x, xi) => xi === i ? novo : x) }))}
                   onRemove={() => setForm(f => ({ ...f, modulos: f.modulos.filter((_, xi) => xi !== i) }))}
                 />
@@ -976,6 +1133,8 @@ const TrailsView: React.FC = () => {
           progresso={trilhaAtiva.progresso}
           onUpdateProgresso={updateProgresso}
           onClose={() => setTrilhaAtiva(null)}
+          tenantId={tenantId}
+          userId={user.id}
         />
       )}
     </div>
