@@ -278,7 +278,7 @@ ${opt.justificativa}
     <div className="space-y-4">
       <div className="flex justify-between items-start gap-4">
         <div>
-          <h3 className="text-[#0A1628] font-black uppercase italic text-sm">IA de Treinamento MJ</h3>
+          <h3 className="text-navy font-black uppercase italic text-sm">IA de Treinamento MJ</h3>
           <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Gere 3 opções de roteiro e escolha a melhor para sua equipe</p>
         </div>
         <button onClick={generateOptions} disabled={isLoading}
@@ -297,7 +297,7 @@ ${opt.justificativa}
           value={customRequest}
           onChange={e => setCustomRequest(e.target.value)}
           placeholder="Ex: foco em escrituras públicas, para atendentes novos, duração máxima 2 horas..."
-          className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500"
+          className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-blue-500"
         />
       </div>
 
@@ -308,13 +308,13 @@ ${opt.justificativa}
           {checklists.slice(0, 3).map((c, i) => (
             <div key={i} className="flex items-center gap-3 p-2 bg-slate-100 rounded-xl">
               <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <span className="text-xs text-slate-700"><span className="font-bold text-[#0A1628]">{c.title}</span> - {c.items?.length || 0} requisitos</span>
+              <span className="text-xs text-slate-700"><span className="font-bold text-navy">{c.title}</span> - {c.items?.length || 0} requisitos</span>
             </div>
           ))}
           {knowledgeDocs.slice(0, 3).map((d, i) => (
             <div key={i} className="flex items-center gap-3 p-2 bg-slate-100 rounded-xl">
               <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-              <span className="text-xs text-slate-700"><span className="font-bold text-[#0A1628]">{d.fileName || d.title}</span> - documento indexado</span>
+              <span className="text-xs text-slate-700"><span className="font-bold text-navy">{d.fileName || d.title}</span> - documento indexado</span>
             </div>
           ))}
         </div>
@@ -337,7 +337,7 @@ ${opt.justificativa}
                     </div>
                     <div>
                       <p className={`text-[9px] font-black uppercase tracking-widest text-${color}-600`}>{opt.tipo}</p>
-                      <p className="text-sm font-black text-[#0A1628] leading-tight">{opt.titulo}</p>
+                      <p className="text-sm font-black text-navy leading-tight">{opt.titulo}</p>
                     </div>
                   </div>
                   <p className="text-xs text-slate-600 leading-relaxed">{opt.descricao}</p>
@@ -378,9 +378,9 @@ ${opt.justificativa}
               <div className={`max-w-[85%] px-5 py-4 rounded-2xl text-sm leading-relaxed ${
                 m.role === 'user'
                   ? 'bg-blue-600 text-white'
-                  : 'bg-white text-[#0A1628] border border-slate-200 shadow-sm'
+                  : 'bg-white text-navy border border-slate-200 shadow-sm'
               }`}>
-                <p className={`whitespace-pre-wrap font-mono text-xs ${m.role === 'user' ? 'text-white' : 'text-[#0A1628]'}`}>{m.text}</p>
+                <p className={`whitespace-pre-wrap font-mono text-xs ${m.role === 'user' ? 'text-white' : 'text-navy'}`}>{m.text}</p>
               </div>
             </div>
           ))}
@@ -422,7 +422,7 @@ ${opt.justificativa}
           <input value={input} onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
             placeholder="Ex: Adapte o roteiro para apenas atendentes de balcão..."
-            className="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+            className="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-blue-500" />
           <button type="button" onClick={handleSend} disabled={isLoading || !input.trim()}
             title="Enviar mensagem"
             className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-black text-sm transition-all disabled:opacity-50">
@@ -436,7 +436,7 @@ ${opt.justificativa}
   const renderResumosTab = () => (
     <div className="space-y-6">
       <div>
-        <h3 className="text-[#0A1628] font-black uppercase italic text-sm">Resumos Inteligentes</h3>
+        <h3 className="text-navy font-black uppercase italic text-sm">Resumos Inteligentes</h3>
         <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Escolha um documento e o tipo de resumo desejado</p>
       </div>
 
@@ -455,7 +455,7 @@ ${opt.justificativa}
                         ? 'border-blue-500 bg-blue-50'
                         : 'border-slate-200 hover:border-slate-400 bg-slate-50'
                     }`}>
-                    <p className="text-xs font-bold text-[#0A1628] truncate">{doc.fileName || doc.title}</p>
+                    <p className="text-xs font-bold text-navy truncate">{doc.fileName || doc.title}</p>
                     <p className="text-[9px] text-slate-500 mt-0.5">{doc.content?.length || 0} caracteres indexados</p>
                   </button>
                 ))}
@@ -473,7 +473,7 @@ ${opt.justificativa}
                       ? `border-${st.color}-500 bg-${st.color}-50`
                       : 'border-slate-200 hover:border-slate-400 bg-slate-50'
                   }`}>
-                  <p className={`text-xs font-black ${summaryType === st.id ? `text-${st.color}-600` : 'text-[#0A1628]'}`}>{st.label}</p>
+                  <p className={`text-xs font-black ${summaryType === st.id ? `text-${st.color}-600` : 'text-navy'}`}>{st.label}</p>
                   <p className="text-[9px] text-slate-500 mt-0.5 leading-tight">{st.desc}</p>
                 </button>
               ))}
@@ -541,7 +541,7 @@ ${opt.justificativa}
             {savedSummaries.map(r => (
               <div key={r.id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-emerald-400 transition-all">
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-[#0A1628] truncate">{r.docTitle}</p>
+                  <p className="text-xs font-bold text-navy truncate">{r.docTitle}</p>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="text-[9px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold uppercase">{r.summaryType}</span>
                     <span className="text-[9px] text-slate-400">{r.createdAt?.toDate?.()?.toLocaleDateString('pt-BR') || ''}</span>
@@ -582,7 +582,7 @@ ${opt.justificativa}
     <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
 
       <header>
-        <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">
+        <h2 className="text-3xl font-black text-navy italic uppercase tracking-tighter">
           Centro de <span className="text-blue-500">Treinamento</span>
         </h2>
         <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">MJ Consultoria // Capacitação Notarial IA</p>
@@ -597,7 +597,7 @@ ${opt.justificativa}
         ].map((s, i) => (
           <div key={i} className="bg-white border border-slate-200 rounded-[24px] p-6 space-y-3 shadow-sm">
             <i className={`fa-solid ${s.icon} text-${s.color}-500 text-xl`}></i>
-            <p className="text-3xl font-black text-[#0A1628]">{s.value}</p>
+            <p className="text-3xl font-black text-navy">{s.value}</p>
             <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">{s.label}</p>
           </div>
         ))}

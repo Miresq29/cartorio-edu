@@ -278,7 +278,7 @@ const ExamesView: React.FC = () => {
           <i className="fa-solid fa-brain text-blue-400 text-3xl"></i>
         </div>
         <div className="text-center">
-          <p className="text-[#0A1628] font-black text-xl uppercase tracking-widest">Gerando Exame com IA</p>
+          <p className="text-navy font-black text-xl uppercase tracking-widest">Gerando Exame com IA</p>
           <p className="text-slate-500 text-sm mt-2">Elaborando questões com Taxonomia de Bloom...</p>
         </div>
         <div className="flex gap-1">
@@ -297,7 +297,7 @@ const ExamesView: React.FC = () => {
         {/* cabeçalho */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-black text-[#0A1628] uppercase tracking-tighter">
+            <h2 className="text-2xl font-black text-navy uppercase tracking-tighter">
               Exame: <span className="text-blue-400">{fonteEscolhida?.titulo}</span>
             </h2>
             <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mt-1">
@@ -305,7 +305,7 @@ const ExamesView: React.FC = () => {
             </p>
           </div>
           <div className="text-right">
-            <p className="text-3xl font-black text-[#0A1628]">{totalRespondidas}<span className="text-slate-600">/{questoes.length}</span></p>
+            <p className="text-3xl font-black text-navy">{totalRespondidas}<span className="text-slate-600">/{questoes.length}</span></p>
             <p className="text-[9px] text-slate-500 uppercase tracking-widest">Respondidas</p>
           </div>
         </div>
@@ -329,7 +329,7 @@ const ExamesView: React.FC = () => {
                   <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg bg-${bloomColor}-500/20 text-${bloomColor}-400 flex-shrink-0 mt-0.5`}>
                     {bloomLbl}
                   </span>
-                  <p className="text-sm font-bold text-[#0A1628] leading-relaxed">
+                  <p className="text-sm font-bold text-navy leading-relaxed">
                     <span className="text-slate-500 mr-2">{idx + 1}.</span>{q.enunciado}
                   </p>
                 </div>
@@ -339,11 +339,11 @@ const ExamesView: React.FC = () => {
                       onClick={() => setRespostas(prev => ({ ...prev, [q.id]: alt.letra }))}
                       className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${
                         respondida === alt.letra
-                          ? 'border-blue-500 bg-blue-500/20 text-[#0A1628]'
+                          ? 'border-blue-500 bg-blue-500/20 text-navy'
                           : 'border-slate-200 hover:border-slate-600 text-slate-700 hover:bg-slate-50'
                       }`}>
                       <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black flex-shrink-0 ${
-                        respondida === alt.letra ? 'bg-blue-500 text-[#0A1628]' : 'bg-slate-200 text-slate-500'
+                        respondida === alt.letra ? 'bg-blue-500 text-navy' : 'bg-slate-200 text-slate-500'
                       }`}>{alt.letra}</span>
                       <span className="text-xs leading-snug">{alt.texto}</span>
                     </button>
@@ -359,7 +359,7 @@ const ExamesView: React.FC = () => {
           <button
             onClick={handleSubmeter}
             disabled={totalRespondidas < questoes.length}
-            className="px-10 py-4 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 text-[#0A1628] font-black uppercase tracking-widest rounded-2xl transition-all text-sm shadow-lg shadow-blue-900/30">
+            className="px-10 py-4 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 text-navy font-black uppercase tracking-widest rounded-2xl transition-all text-sm shadow-lg shadow-blue-900/30">
             <i className="fa-solid fa-paper-plane mr-2"></i>
             Enviar Exame
             {totalRespondidas < questoes.length && (
@@ -385,7 +385,7 @@ const ExamesView: React.FC = () => {
 
         <div className="text-center space-y-2">
           <p className={`text-5xl font-black ${aprovado ? 'text-emerald-400' : 'text-red-400'}`}>{score}%</p>
-          <p className="text-xl font-black text-[#0A1628] uppercase tracking-widest">
+          <p className="text-xl font-black text-navy uppercase tracking-widest">
             {aprovado ? 'Aprovado!' : 'Reprovado'}
           </p>
           <p className="text-slate-500 text-sm max-w-sm">
@@ -398,7 +398,7 @@ const ExamesView: React.FC = () => {
 
         {/* gabarito */}
         <div className="w-full max-w-2xl bg-white border border-slate-200 rounded-[24px] p-6 space-y-3">
-          <h3 className="text-[#0A1628] font-black uppercase text-sm">Gabarito</h3>
+          <h3 className="text-navy font-black uppercase text-sm">Gabarito</h3>
           <div className="space-y-2">
             {questoes.map((q, idx) => {
               const escolhida = respostas[q.id] || '';
@@ -408,7 +408,7 @@ const ExamesView: React.FC = () => {
                   <div className="flex items-start gap-2">
                     <i className={`fa-solid ${acertou ? 'fa-check' : 'fa-xmark'} text-${acertou ? 'emerald' : 'red'}-400 text-xs mt-1 flex-shrink-0`}></i>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold text-[#0A1628] leading-snug">{idx + 1}. {q.enunciado.substring(0, 80)}{q.enunciado.length > 80 ? '...' : ''}</p>
+                      <p className="text-xs font-bold text-navy leading-snug">{idx + 1}. {q.enunciado.substring(0, 80)}{q.enunciado.length > 80 ? '...' : ''}</p>
                       <p className="text-[10px] text-slate-500 mt-1">
                         Sua resposta: <span className={acertou ? 'text-emerald-400' : 'text-red-400'}>{escolhida}</span>
                         {!acertou && <span className="text-emerald-400 ml-2">· Correta: {q.correta}</span>}
@@ -428,12 +428,12 @@ const ExamesView: React.FC = () => {
         <div className="flex flex-wrap gap-3 justify-center">
           {aprovado && (
             <button onClick={imprimirCertificado}
-              className="px-6 py-3 bg-amber-600 hover:bg-amber-500 text-[#0A1628] font-black uppercase tracking-widest rounded-xl transition-all text-sm">
+              className="px-6 py-3 bg-amber-600 hover:bg-amber-500 text-navy font-black uppercase tracking-widest rounded-xl transition-all text-sm">
               <i className="fa-solid fa-certificate mr-2"></i>Emitir Certificado
             </button>
           )}
           <button onClick={() => { setFase('escolher'); setFonteEscolhida(null); setResultado(null); }}
-            className="px-6 py-3 bg-slate-200 hover:bg-slate-700 text-[#0A1628] font-black uppercase tracking-widest rounded-xl transition-all text-sm">
+            className="px-6 py-3 bg-slate-200 hover:bg-slate-700 text-navy font-black uppercase tracking-widest rounded-xl transition-all text-sm">
             <i className="fa-solid fa-arrow-left mr-2"></i>Voltar
           </button>
         </div>
@@ -448,7 +448,7 @@ const ExamesView: React.FC = () => {
     <div className="p-6 md:p-8 min-h-screen bg-slate-50 space-y-6 animate-in fade-in">
       {/* cabeçalho */}
       <header>
-        <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">
+        <h2 className="text-3xl font-black text-navy italic uppercase tracking-tighter">
           Exames <span className="text-blue-400">IA</span>
         </h2>
         <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">
@@ -473,7 +473,7 @@ const ExamesView: React.FC = () => {
 
       {/* lista de conteúdos */}
       <div>
-        <h3 className="text-[#0A1628] font-black uppercase text-sm mb-4">
+        <h3 className="text-navy font-black uppercase text-sm mb-4">
           <i className="fa-solid fa-list-check text-blue-400 mr-2"></i>
           Escolha o conteúdo para o exame
         </h3>
@@ -518,7 +518,7 @@ const ExamesView: React.FC = () => {
                       }`}></i>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-black text-[#0A1628] truncate">{fonte.titulo}</p>
+                      <p className="text-sm font-black text-navy truncate">{fonte.titulo}</p>
                       <p className="text-[9px] text-slate-500 uppercase tracking-widest font-black">
                         {fonte.tipo === 'treinamento' ? 'Treinamento' :
                          fonte.tipo === 'knowledgeBase' ? 'Base de Conhecimento' :
@@ -571,8 +571,8 @@ const ExamesView: React.FC = () => {
                 onClick={() => setNumQuestoes(n)}
                 className={`w-10 h-10 rounded-xl text-sm font-black transition-all border ${
                   numQuestoes === n
-                    ? 'bg-[#c9a84c] text-[#0f172a] border-[#c9a84c] shadow-sm'
-                    : 'bg-white text-[#8a6e2f] border-[#c9a84c]/30 hover:border-[#c9a84c]/60'
+                    ? 'bg-gold text-navy border-gold shadow-sm'
+                    : 'bg-white text-[#8a6e2f] border-gold/30 hover:border-gold/60'
                 }`}
               >
                 {n}
@@ -592,7 +592,7 @@ const ExamesView: React.FC = () => {
       {/* histórico pessoal */}
       {resultados.length > 0 && (
         <div className="bg-white border border-slate-200 rounded-[24px] p-6 space-y-4">
-          <h3 className="text-[#0A1628] font-black uppercase text-sm flex items-center gap-2">
+          <h3 className="text-navy font-black uppercase text-sm flex items-center gap-2">
             <i className="fa-solid fa-clock-rotate-left text-slate-500"></i>
             Meu Histórico de Exames
           </h3>
@@ -603,7 +603,7 @@ const ExamesView: React.FC = () => {
                   <i className={`fa-solid ${r.aprovado ? 'fa-trophy' : 'fa-xmark'} ${r.aprovado ? 'text-emerald-400' : 'text-red-400'} text-sm`}></i>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-[#0A1628] truncate">{r.fonteTitulo}</p>
+                  <p className="text-xs font-bold text-navy truncate">{r.fonteTitulo}</p>
                   <p className="text-[9px] text-slate-500">{r.createdAt?.toDate?.()?.toLocaleDateString('pt-BR') || ''}</p>
                 </div>
                 <p className={`text-sm font-black ${r.aprovado ? 'text-emerald-400' : 'text-red-400'}`}>{r.score}%</p>

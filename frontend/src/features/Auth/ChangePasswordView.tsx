@@ -73,7 +73,7 @@ const ChangePasswordView: React.FC = () => {
           <div className="w-20 h-20 bg-amber-500/10 border border-amber-500/20 rounded-full flex items-center justify-center text-amber-500 mx-auto">
             <span className="text-3xl">🔑</span>
           </div>
-          <h2 className="text-xl font-black text-[#0A1628] italic uppercase tracking-tighter">Troca de Senha Obrigatória</h2>
+          <h2 className="text-xl font-black text-navy italic uppercase tracking-tighter">Troca de Senha Obrigatória</h2>
           <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest leading-relaxed">
             Crie uma senha forte. Não poderá reutilizar as últimas 3 senhas.
           </p>
@@ -89,12 +89,12 @@ const ChangePasswordView: React.FC = () => {
                 type={showNew ? 'text' : 'password'}
                 value={newPass}
                 onChange={e => setNewPass(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-2xl p-4 text-xs font-bold text-[#0A1628] focus:border-blue-500 outline-none pr-12"
+                className="w-full bg-white border border-slate-200 rounded-2xl p-4 text-xs font-bold text-navy focus:border-blue-500 outline-none pr-12"
                 placeholder="••••••••••••"
                 required
               />
               <button type="button" onClick={() => setShowNew(!showNew)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-[#0A1628]">
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-navy">
                 <i className={`fa-solid ${showNew ? 'fa-eye-slash' : 'fa-eye'} text-xs`}></i>
               </button>
             </div>
@@ -133,12 +133,12 @@ const ChangePasswordView: React.FC = () => {
                 type={showConfirm ? 'text' : 'password'}
                 value={confirmPass}
                 onChange={e => setConfirmPass(e.target.value)}
-                className={`w-full bg-white border rounded-2xl p-4 text-xs font-bold text-[#0A1628] focus:border-blue-500 outline-none pr-12 ${confirmPass && confirmPass !== newPass ? 'border-red-500/50' : 'border-slate-200'}`}
+                className={`w-full bg-white border rounded-2xl p-4 text-xs font-bold text-navy focus:border-blue-500 outline-none pr-12 ${confirmPass && confirmPass !== newPass ? 'border-red-500/50' : 'border-slate-200'}`}
                 placeholder="••••••••••••"
                 required
               />
               <button type="button" onClick={() => setShowConfirm(!showConfirm)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-[#0A1628]">
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-navy">
                 <i className={`fa-solid ${showConfirm ? 'fa-eye-slash' : 'fa-eye'} text-xs`}></i>
               </button>
             </div>
@@ -151,14 +151,14 @@ const ChangePasswordView: React.FC = () => {
             <button
               type="button"
               onClick={() => logout()}
-              className="flex-1 text-slate-600 font-black text-[10px] uppercase tracking-widest hover:text-[#0A1628] transition-colors"
+              className="flex-1 text-slate-600 font-black text-[10px] uppercase tracking-widest hover:text-navy transition-colors"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={loading || !validation.isValid || newPass !== confirmPass}
-              className="flex-1 bg-blue-600 hover:bg-blue-500 text-[#0A1628] font-black py-4 rounded-2xl shadow-xl transition-all disabled:opacity-40 text-[10px] uppercase tracking-widest"
+              className="flex-1 bg-blue-600 hover:bg-blue-500 text-navy font-black py-4 rounded-2xl shadow-xl transition-all disabled:opacity-40 text-[10px] uppercase tracking-widest"
             >
               {loading ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Salvando...</> : 'Salvar e Entrar'}
             </button>

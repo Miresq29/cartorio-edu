@@ -134,7 +134,7 @@ const StatCard: React.FC<{
       )}
     </div>
     <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">{label}</p>
-    <p className="text-3xl font-black text-[#0A1628]">{value}</p>
+    <p className="text-3xl font-black text-navy">{value}</p>
     {sub && <p className="text-[11px] text-slate-500 mt-1">{sub}</p>}
   </div>
 );
@@ -530,12 +530,12 @@ td { background:#fdfbf5; }
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-black text-[#0A1628]">Relatórios de Treinamento</h2>
+            <h2 className="text-2xl font-black text-navy">Relatórios de Treinamento</h2>
             <p className="text-sm text-slate-500 mt-0.5">Desempenho · Evidências · Exportação</p>
           </div>
           <div className="flex items-center gap-3">
             <select value={periodo} onChange={e => setPeriodo(e.target.value)}
-              className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none focus:border-[#C9A84C] shadow-sm">
+              className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none focus:border-gold shadow-sm">
               <option value="7">Últimos 7 dias</option>
               <option value="30">Últimos 30 dias</option>
               <option value="90">Últimos 90 dias</option>
@@ -543,7 +543,7 @@ td { background:#fdfbf5; }
               <option value="99999">Todo o período</option>
             </select>
             <button onClick={handlePrint} className="flex items-center gap-2 bg-white border border-slate-200 hover:border-slate-400 text-slate-600 px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm"><i className="fa-solid fa-print text-xs"></i>Imprimir</button><button onClick={exportCSV}
-              className="flex items-center gap-2 bg-[#C9A84C] hover:bg-[#A8863C] text-[#0A1628] px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm">
+              className="flex items-center gap-2 bg-gold hover:bg-[#A8863C] text-navy px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm">
               <i className="fa-solid fa-file-excel text-xs"></i>Exportar Excel
             </button>
           </div>
@@ -565,7 +565,7 @@ td { background:#fdfbf5; }
               <button key={a.id} onClick={() => setTab(a.id)}
                 className={`flex items-center gap-2 px-5 py-4 text-xs font-black uppercase tracking-wider transition-all border-b-2 ${
                   tab === a.id
-                    ? 'border-[#C9A84C] text-[#C9A84C] bg-white/50'
+                    ? 'border-gold text-gold bg-white/50'
                     : 'border-transparent text-slate-500 hover:text-slate-600'
                 }`}>
                 <i className={`fa-solid ${a.icon}`}></i>{a.label}
@@ -672,7 +672,7 @@ td { background:#fdfbf5; }
                 <div className="flex items-center gap-3">
                   <input value={buscaColab} onChange={e => setBuscaColab(e.target.value)}
                     placeholder="Buscar colaborador..."
-                    className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-[#C9A84C] w-64" />
+                    className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-gold w-64" />
                   <span className="text-xs text-slate-500 font-bold">{porColab.length} colaboradores</span>
                 </div>
                 <div className="overflow-x-auto">
@@ -690,7 +690,7 @@ td { background:#fdfbf5; }
                       )}
                       {porColab.map(c => (
                         <tr key={c.id} className="border-b border-slate-100 hover:bg-white transition-all">
-                          <td className="p-3 font-bold text-[#0A1628]">{c.name}</td>
+                          <td className="p-3 font-bold text-navy">{c.name}</td>
                           <td className="p-3 text-slate-500">{c.cargo || '–'}</td>
                           <td className="p-3 text-slate-700 font-bold">{c.testes}</td>
                           <td className="p-3 text-emerald-600 font-bold">{c.aprovados}</td>
@@ -722,7 +722,7 @@ td { background:#fdfbf5; }
                           </td>
                           <td className="p-3">
                             <button onClick={() => gerarFichaColaborador(c.id, c.name)}
-                              className="flex items-center gap-1.5 text-[9px] bg-white border border-slate-200 hover:border-[#C9A84C] text-slate-600 hover:text-[#8a6e2f] px-3 py-1.5 rounded-lg font-black uppercase tracking-widest transition-all whitespace-nowrap">
+                              className="flex items-center gap-1.5 text-[9px] bg-white border border-slate-200 hover:border-gold text-slate-600 hover:text-[#8a6e2f] px-3 py-1.5 rounded-lg font-black uppercase tracking-widest transition-all whitespace-nowrap">
                               <i className="fa-solid fa-file-pdf"></i>Gerar
                             </button>
                           </td>
@@ -755,7 +755,7 @@ td { background:#fdfbf5; }
                         const ia = raw.filter(r => r.ia).length;
                         return (
                           <tr key={i} className="border-b border-slate-100 hover:bg-white transition-all">
-                            <td className="p-3 font-bold text-[#0A1628]">{t.name}</td>
+                            <td className="p-3 font-bold text-navy">{t.name}</td>
                             <td className="p-3 text-slate-700 font-bold">{t.testes}</td>
                             <td className="p-3 text-emerald-600 font-bold">{Math.round(t.testes * t['Taxa (%)'] / 100)}</td>
                             <td className="p-3">
@@ -774,7 +774,7 @@ td { background:#fdfbf5; }
                             <td className="p-3 font-bold text-slate-700">{t['Média']}%</td>
                             <td className="p-3">
                               {ia > 0
-                                ? <span className="bg-white text-[#C9A84C] text-[10px] font-black px-2 py-0.5 rounded-lg border border-indigo-100">✨ {ia}</span>
+                                ? <span className="bg-white text-gold text-[10px] font-black px-2 py-0.5 rounded-lg border border-indigo-100">✨ {ia}</span>
                                 : <span className="text-slate-500">–</span>}
                             </td>
                           </tr>
@@ -793,13 +793,13 @@ td { background:#fdfbf5; }
                   <div className="flex items-center gap-3">
                     <input value={buscaTrilha} onChange={e => setBuscaTrilha(e.target.value)}
                       placeholder="Buscar colaborador ou trilha..."
-                      className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-[#C9A84C] w-64" />
+                      className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-gold w-64" />
                     <span className="text-xs text-slate-500 font-bold">
                       {progressoEvidencia.length} registros
                       <span className="text-slate-400 font-normal ml-2">— um registro por colaborador × trilha, válido como evidência de conclusão</span>
                     </span>
                   </div>
-                  <button onClick={exportCSVTrilhas} className="flex items-center gap-2 bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-[#C9A84C] px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-sm">
+                  <button onClick={exportCSVTrilhas} className="flex items-center gap-2 bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-gold px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-sm">
                     <i className="fa-solid fa-file-excel"></i>CSV
                   </button>
                 </div>
@@ -818,7 +818,7 @@ td { background:#fdfbf5; }
                       )}
                       {progressoEvidencia.map(p => (
                         <tr key={p.id} className="border-b border-slate-100 hover:bg-white transition-all">
-                          <td className="p-3 font-bold text-[#0A1628]">{p.colaborador}</td>
+                          <td className="p-3 font-bold text-navy">{p.colaborador}</td>
                           <td className="p-3 text-slate-600 max-w-[220px] truncate">{p.trilha}</td>
                           <td className="p-3">
                             <div className="flex items-center gap-2">
@@ -866,7 +866,7 @@ td { background:#fdfbf5; }
                       )}
                       {resumoTreinamentos.map(t => (
                         <tr key={t.id} className="border-b border-slate-100 hover:bg-white transition-all">
-                          <td className="p-3 font-bold text-[#0A1628] max-w-[240px] truncate">{t.titulo}</td>
+                          <td className="p-3 font-bold text-navy max-w-[240px] truncate">{t.titulo}</td>
                           <td className="p-3">
                             <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg ${
                               t.tipo === 'trilha' ? 'bg-purple-50 text-purple-600 border border-purple-200' : 'bg-blue-50 text-blue-600 border border-blue-200'
@@ -901,7 +901,7 @@ td { background:#fdfbf5; }
                 <div className="flex items-center gap-3">
                   <input value={buscaColab} onChange={e => setBuscaColab(e.target.value)}
                     placeholder="Buscar colaborador..."
-                    className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-[#C9A84C] w-64" />
+                    className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-gold w-64" />
                   <p className="text-xs text-slate-500">
                     Índice combinando desempenho em testes, atividade recente e validade de certificados — quanto maior, mais atenção o colaborador exige.
                   </p>
@@ -923,7 +923,7 @@ td { background:#fdfbf5; }
                         const cor = c.nivel === 'Alto' ? '#DC2626' : c.nivel === 'Médio' ? '#D97706' : '#059669';
                         return (
                           <tr key={c.id} className="border-b border-slate-100 hover:bg-white transition-all">
-                            <td className="p-3 font-bold text-[#0A1628]">{c.name}</td>
+                            <td className="p-3 font-bold text-navy">{c.name}</td>
                             <td className="p-3 text-slate-500">{c.cargo || '–'}</td>
                             <td className="p-3 text-slate-700 font-bold">{c.media !== null ? `${c.media}%` : '–'}</td>
                             <td className="p-3">
@@ -958,7 +958,7 @@ td { background:#fdfbf5; }
                     <span className="text-slate-500 font-normal ml-2">— válidos como evidência para dossiê CNJ (Provimentos 149, 161 e 213)</span>
                   </p>
                   <button onClick={handlePrint} className="flex items-center gap-2 bg-white border border-slate-200 hover:border-slate-400 text-slate-600 px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm"><i className="fa-solid fa-print text-xs"></i>Imprimir</button><button onClick={exportCSV}
-                    className="flex items-center gap-2 bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-[#C9A84C] px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-sm">
+                    className="flex items-center gap-2 bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-gold px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-sm">
                     <i className="fa-solid fa-file-excel"></i>CSV
                   </button>
                 </div>
@@ -977,7 +977,7 @@ td { background:#fdfbf5; }
                       )}
                       {filteredResults.map(r => (
                         <tr key={r.id} className="border-b border-slate-100 hover:bg-white transition-all">
-                          <td className="p-3 font-bold text-[#0A1628]">{r.colaborador}</td>
+                          <td className="p-3 font-bold text-navy">{r.colaborador}</td>
                           <td className="p-3 text-slate-600 max-w-[160px] truncate">{r.trailTitle || '–'}</td>
                           <td className="p-3 text-slate-500 max-w-[140px] truncate">{r.moduleTitle || '–'}</td>
                           <td className="p-3 text-slate-500 whitespace-nowrap">{formatDate(r.createdAt)}</td>
@@ -991,7 +991,7 @@ td { background:#fdfbf5; }
                           </td>
                           <td className="p-3">
                             {r.ia
-                              ? <span className="bg-white text-[#C9A84C] text-[10px] font-black px-2 py-0.5 rounded-lg border border-indigo-100">✨ IA</span>
+                              ? <span className="bg-white text-gold text-[10px] font-black px-2 py-0.5 rounded-lg border border-indigo-100">✨ IA</span>
                               : <span className="text-slate-500 text-[10px]">Padrão</span>}
                           </td>
                         </tr>

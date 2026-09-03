@@ -65,7 +65,7 @@ const TenantsView: React.FC = () => {
   return (
     <div className="p-12 min-h-full bg-slate-50 animate-in fade-in space-y-12">
       <header>
-        <h2 className="text-4xl font-black text-[#0A1628] italic uppercase tracking-tighter">
+        <h2 className="text-4xl font-black text-navy italic uppercase tracking-tighter">
           Gestão de <span className="text-blue-500">Cartórios</span>
         </h2>
         <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.4em] mt-2">
@@ -75,12 +75,12 @@ const TenantsView: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         <form onSubmit={handleCreateTenant} className="bg-white border border-slate-200 rounded-[40px] p-12 space-y-6 shadow-2xl">
-          <h3 className="text-[#0A1628] font-bold uppercase text-sm italic">Ativar Novo Cartório Cliente</h3>
+          <h3 className="text-navy font-bold uppercase text-sm italic">Ativar Novo Cartório Cliente</h3>
           <div className="space-y-4">
             <input
               type="text" value={name} onChange={e => setName(e.target.value)}
               placeholder="Nome da Serventia (Ex: 1º Ofício de Notas)"
-              className="w-full bg-white border border-slate-200 rounded-3xl p-5 text-[#0A1628] outline-none focus:border-blue-600 transition-all" required
+              className="w-full bg-white border border-slate-200 rounded-3xl p-5 text-navy outline-none focus:border-blue-600 transition-all" required
             />
             <input
               type="text" value={slug} onChange={e => setSlug(e.target.value)}
@@ -92,7 +92,7 @@ const TenantsView: React.FC = () => {
             </p>
           </div>
           <button type="submit" disabled={saving}
-            className="w-full bg-blue-600 disabled:opacity-50 text-[#0A1628] font-black py-6 rounded-3xl uppercase text-[11px] tracking-widest shadow-xl hover:bg-blue-500 transition-all">
+            className="w-full bg-blue-600 disabled:opacity-50 text-navy font-black py-6 rounded-3xl uppercase text-[11px] tracking-widest shadow-xl hover:bg-blue-500 transition-all">
             {saving ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Criando...</> : 'Criar Ambiente Isolado'}
           </button>
         </form>
@@ -120,7 +120,7 @@ const TenantsView: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <div className={`w-2 h-2 rounded-full flex-shrink-0 ${t.active ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`}></div>
                   <div>
-                    <span className="text-[#0A1628] font-bold italic uppercase text-sm">{t.name}</span>
+                    <span className="text-navy font-bold italic uppercase text-sm">{t.name}</span>
                     <p className="text-[10px] font-mono text-slate-400">{t.id}</p>
                   </div>
                 </div>

@@ -136,11 +136,11 @@ const AssessmentView: React.FC = () => {
       {modo === 'wizard' && (
         <div className="space-y-5">
           <header>
-            <p className="text-[10px] font-black text-[#C9A84C] uppercase tracking-widest">
+            <p className="text-[10px] font-black text-gold uppercase tracking-widest">
               Etapa {stepIndex + 1} de {DIMENSOES.length} · {periodo}
             </p>
             <div className="w-full bg-slate-200 rounded-full h-1.5 mt-2">
-              <div className="h-1.5 rounded-full bg-[#C9A84C] transition-all" style={{ width: `${((stepIndex + 1) / DIMENSOES.length) * 100}%` }}></div>
+              <div className="h-1.5 rounded-full bg-gold transition-all" style={{ width: `${((stepIndex + 1) / DIMENSOES.length) * 100}%` }}></div>
             </div>
           </header>
 
@@ -161,12 +161,12 @@ const AssessmentView: React.FC = () => {
 
             {stepIndex < DIMENSOES.length - 1 ? (
               <button onClick={() => setStepIndex(i => i + 1)} disabled={!dimensaoCompleta}
-                className="flex items-center gap-2 px-6 py-3 bg-[#C9A84C] hover:brightness-110 disabled:opacity-40 text-[#0A1628] rounded-xl text-xs font-black uppercase tracking-widest transition-all">
+                className="flex items-center gap-2 px-6 py-3 bg-gold hover:brightness-110 disabled:opacity-40 text-navy rounded-xl text-xs font-black uppercase tracking-widest transition-all">
                 Próxima<i className="fa-solid fa-arrow-right"></i>
               </button>
             ) : (
               <button onClick={finalizarAssessment} disabled={!dimensaoCompleta || salvando}
-                className="flex items-center gap-2 px-6 py-3 bg-[#C9A84C] hover:brightness-110 disabled:opacity-40 text-[#0A1628] rounded-xl text-xs font-black uppercase tracking-widest transition-all">
+                className="flex items-center gap-2 px-6 py-3 bg-gold hover:brightness-110 disabled:opacity-40 text-navy rounded-xl text-xs font-black uppercase tracking-widest transition-all">
                 {salvando ? <><i className="fa-solid fa-circle-notch animate-spin"></i>Calculando e gerando resumo com IA...</> : <><i className="fa-solid fa-flag-checkered"></i>Concluir e calcular</>}
               </button>
             )}

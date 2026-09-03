@@ -8,7 +8,7 @@ const PrivacyView: React.FC = () => {
         <div className="w-16 h-16 bg-blue-500/10 border border-blue-500/20 rounded-3xl flex items-center justify-center">
           <i className="fa-solid fa-shield-heart text-blue-400 text-3xl"></i>
         </div>
-        <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">
+        <h2 className="text-3xl font-black text-navy italic uppercase tracking-tighter">
           Política de <span className="text-blue-500">Privacidade</span>
         </h2>
         <p className="text-slate-500 font-bold uppercase tracking-widest text-sm">
@@ -49,7 +49,7 @@ const PrivacyView: React.FC = () => {
             <div>
               <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">Fundamento: Art. 7º, V — LGPD</p>
               <p className="text-xs text-slate-500 leading-relaxed">
-                "O tratamento de dados pessoais somente poderá ser realizado quando necessário para a <strong className="text-[#0A1628]">execução de contrato</strong> ou de procedimentos preliminares relacionados a contrato do qual seja parte o titular, a pedido do titular dos dados."
+                "O tratamento de dados pessoais somente poderá ser realizado quando necessário para a <strong className="text-navy">execução de contrato</strong> ou de procedimentos preliminares relacionados a contrato do qual seja parte o titular, a pedido do titular dos dados."
               </p>
             </div>
           </div>
@@ -176,7 +176,7 @@ const PrivacyView: React.FC = () => {
         <div className="bg-blue-500/5 border border-blue-500/20 rounded-3xl p-8 flex items-start gap-4">
           <i className="fa-solid fa-envelope text-blue-400 text-xl mt-1 flex-shrink-0"></i>
           <div>
-            <p className="text-sm font-black text-[#0A1628] mb-1">Encarregado de Dados (DPO) — MJ Consultoria</p>
+            <p className="text-sm font-black text-navy mb-1">Encarregado de Dados (DPO) — MJ Consultoria</p>
             <p className="text-xs text-slate-500 leading-relaxed">
               Para dúvidas, solicitações ou incidentes relacionados ao tratamento de dados pessoais, utilize o módulo de <strong className="text-blue-400">Suporte Técnico</strong> ou entre em contato diretamente com a equipe MJ Consultoria.
             </p>

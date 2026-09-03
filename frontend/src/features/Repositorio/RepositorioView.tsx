@@ -139,7 +139,7 @@ const PlayerModal: React.FC<{
             href={`https://drive.google.com/file/d/${midia.driveId}/view`}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 text-[10px] bg-rose-600 hover:bg-rose-500 text-[#0A1628] px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all"
+            className="inline-flex items-center gap-2 text-[10px] bg-rose-600 hover:bg-rose-500 text-navy px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all"
           >
             <i className="fa-solid fa-arrow-up-right-from-square"></i>Abrir no Google Drive
           </a>
@@ -167,7 +167,7 @@ const PlayerModal: React.FC<{
               href={`https://drive.google.com/file/d/${midia.driveId}/view`}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 text-[10px] bg-violet-600 hover:bg-violet-500 text-[#0A1628] px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all"
+              className="inline-flex items-center gap-2 text-[10px] bg-violet-600 hover:bg-violet-500 text-navy px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all"
             >
               <i className="fa-brands fa-google-drive"></i>Ouvir no Google Drive
             </a>
@@ -185,10 +185,10 @@ const PlayerModal: React.FC<{
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <i className={`${tipo.icon} text-${tipo.color}-400 text-lg`}></i>
-            <h3 className="text-[#0A1628] font-black text-lg">{midia.titulo}</h3>
+            <h3 className="text-navy font-black text-lg">{midia.titulo}</h3>
           </div>
           <button onClick={onClose}
-            className="text-slate-500 hover:text-[#0A1628] w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center transition-all">
+            className="text-slate-500 hover:text-navy w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center transition-all">
             <i className="fa-solid fa-xmark"></i>
           </button>
         </div>
@@ -229,7 +229,7 @@ const MidiaCard: React.FC<{
             />
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
               <div className="w-14 h-14 bg-red-600 rounded-full flex items-center justify-center shadow-xl">
-                <i className="fa-solid fa-play text-[#0A1628] text-xl ml-1"></i>
+                <i className="fa-solid fa-play text-navy text-xl ml-1"></i>
               </div>
             </div>
           </>
@@ -247,7 +247,7 @@ const MidiaCard: React.FC<{
             </div>
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all bg-black/30">
               <div className={`w-14 h-14 bg-${tipo.color}-600 rounded-full flex items-center justify-center shadow-xl`}>
-                <i className={`fa-solid ${midia.tipo === 'mp4' ? 'fa-eye' : 'fa-play'} text-[#0A1628] text-xl ${midia.tipo !== 'mp4' ? 'ml-1' : ''}`}></i>
+                <i className={`fa-solid ${midia.tipo === 'mp4' ? 'fa-eye' : 'fa-play'} text-navy text-xl ${midia.tipo !== 'mp4' ? 'ml-1' : ''}`}></i>
               </div>
             </div>
           </div>
@@ -255,12 +255,12 @@ const MidiaCard: React.FC<{
 
         {/* Badges */}
         {assistida && (
-          <div className="absolute top-3 right-3 bg-emerald-600 text-[#0A1628] text-[9px] font-black px-2 py-1 rounded-lg uppercase tracking-widest">
+          <div className="absolute top-3 right-3 bg-emerald-600 text-navy text-[9px] font-black px-2 py-1 rounded-lg uppercase tracking-widest">
             <i className="fa-solid fa-check mr-1"></i>Visto
           </div>
         )}
         {midia.duracaoMin > 0 && (
-          <div className="absolute bottom-3 right-3 bg-black/80 text-[#0A1628] text-[9px] font-black px-2 py-1 rounded-lg">
+          <div className="absolute bottom-3 right-3 bg-black/80 text-navy text-[9px] font-black px-2 py-1 rounded-lg">
             {midia.duracaoMin} min
           </div>
         )}
@@ -281,13 +281,13 @@ const MidiaCard: React.FC<{
             </span>
           )}
         </div>
-        <h3 className="text-sm font-black text-[#0A1628] leading-tight">{midia.titulo}</h3>
+        <h3 className="text-sm font-black text-navy leading-tight">{midia.titulo}</h3>
         {midia.descricao && (
           <p className="text-[10px] text-slate-500 leading-relaxed line-clamp-2">{midia.descricao}</p>
         )}
         <div className="flex gap-2 pt-1">
           <button onClick={onPlay}
-            className={`flex-1 bg-${tipo.color}-600 hover:bg-${tipo.color}-500 text-[#0A1628] py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all`}>
+            className={`flex-1 bg-${tipo.color}-600 hover:bg-${tipo.color}-500 text-navy py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all`}>
             <i className={`fa-solid ${midia.tipo === 'mp4' ? 'fa-eye' : 'fa-play'} mr-1`}></i>
             {midia.tipo === 'mp4' ? 'Visualizar' : 'Abrir'}
           </button>
@@ -379,9 +379,9 @@ const FormMidia: React.FC<{
           </p>
           <ol className="text-xs text-slate-500 space-y-1 list-decimal list-inside">
             <li>Faça upload do arquivo no Google Drive</li>
-            <li>Clique com o botão direito no arquivo → <strong className="text-[#0A1628]">Compartilhar</strong></li>
-            <li>Em "Acesso geral", selecione <strong className="text-[#0A1628]">"Qualquer pessoa com o link"</strong></li>
-            <li>Clique em <strong className="text-[#0A1628]">Copiar link</strong> e cole abaixo</li>
+            <li>Clique com o botão direito no arquivo → <strong className="text-navy">Compartilhar</strong></li>
+            <li>Em "Acesso geral", selecione <strong className="text-navy">"Qualquer pessoa com o link"</strong></li>
+            <li>Clique em <strong className="text-navy">Copiar link</strong> e cole abaixo</li>
           </ol>
         </div>
       )}
@@ -398,7 +398,7 @@ const FormMidia: React.FC<{
             ? 'https://youtube.com/watch?v=...'
             : 'https://drive.google.com/file/d/.../view?usp=sharing'
           }
-          className={`w-full bg-slate-50 border rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none transition-all ${
+          className={`w-full bg-slate-50 border rounded-xl px-4 py-3 text-sm text-navy outline-none transition-all ${
             linkErro ? 'border-red-500' : 'border-slate-200 focus:border-blue-500'
           }`}
         />
@@ -411,14 +411,14 @@ const FormMidia: React.FC<{
           <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Título *</label>
           <input value={form.titulo} onChange={e => set('titulo', e.target.value)}
             placeholder="Ex: Introdução ao Provimento 213/2026"
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-blue-500" />
         </div>
 
         {/* Categoria */}
         <div className="space-y-1">
           <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Categoria</label>
           <select value={form.categoria} onChange={e => set('categoria', e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500">
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-blue-500">
             {CATEGORIAS.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
           </select>
         </div>
@@ -427,7 +427,7 @@ const FormMidia: React.FC<{
         <div className="space-y-1">
           <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Duração (minutos)</label>
           <input type="number" min={1} max={300} value={form.duracaoMin} onChange={e => set('duracaoMin', e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-blue-500" />
         </div>
 
         {/* Trilha */}
@@ -435,7 +435,7 @@ const FormMidia: React.FC<{
           <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Trilha Associada (opcional)</label>
           <input value={form.trilhaTitulo} onChange={e => set('trilhaTitulo', e.target.value)}
             placeholder="Ex: Trilha do Atendente"
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-blue-500" />
         </div>
 
         {/* Descrição */}
@@ -443,7 +443,7 @@ const FormMidia: React.FC<{
           <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Descrição</label>
           <input value={form.descricao} onChange={e => set('descricao', e.target.value)}
             placeholder="Breve descrição do conteúdo"
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-blue-500" />
         </div>
       </div>
 
@@ -572,7 +572,7 @@ const RepositorioView: React.FC = () => {
       {/* Header */}
       <header className="flex items-start justify-between">
         <div>
-          <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">
+          <h2 className="text-3xl font-black text-navy italic uppercase tracking-tighter">
             Repositório de <span className="text-blue-500">Conteúdo</span>
           </h2>
           <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">
@@ -597,7 +597,7 @@ const RepositorioView: React.FC = () => {
         ].map((s, i) => (
           <div key={i} className="bg-white border border-slate-200 rounded-[20px] p-5 space-y-2">
             <i className={`${s.icon} text-${s.color}-500`}></i>
-            <p className="text-2xl font-black text-[#0A1628]">{s.value}</p>
+            <p className="text-2xl font-black text-navy">{s.value}</p>
             <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">{s.label}</p>
           </div>
         ))}
@@ -612,7 +612,7 @@ const RepositorioView: React.FC = () => {
       <div className="flex flex-wrap gap-3 items-center">
         <input value={busca} onChange={e => setBusca(e.target.value)}
           placeholder="Buscar conteúdo..."
-          className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500 w-56" />
+          className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-navy outline-none focus:border-blue-500 w-56" />
 
         {/* Filtro tipo */}
         <div className="flex gap-2">
@@ -624,7 +624,7 @@ const RepositorioView: React.FC = () => {
             <button key={key} onClick={() => setFiltroTipo(filtroTipo === key ? '' : key)}
               className={`px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 ${
                 filtroTipo === key
-                  ? `bg-${cfg.color}-600 text-[#0A1628]`
+                  ? `bg-${cfg.color}-600 text-navy`
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200'
               }`}>
               <i className={`${cfg.icon} text-[10px]`}></i>{cfg.label}

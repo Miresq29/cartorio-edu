@@ -216,7 +216,7 @@ const BackupView: React.FC = () => {
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="text-2xl font-black text-[#0A1628]">Backup de Dados</h2>
+            <h2 className="text-2xl font-black text-navy">Backup de Dados</h2>
             <p className="text-sm text-slate-500 mt-0.5">
               Exportação segura dos dados do cartório <strong className="text-slate-700">{tenantId}</strong>
             </p>
@@ -247,7 +247,7 @@ const BackupView: React.FC = () => {
           <div className="bg-white border border-slate-200 rounded-[16px] p-6 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-black text-[#0A1628]">Backup Completo</h3>
+                <h3 className="text-sm font-black text-navy">Backup Completo</h3>
                 <p className="text-xs text-slate-500 mt-0.5">
                   Exporta todas as {COLECOES_TENANT.length} coleções em um único arquivo JSON
                 </p>
@@ -255,7 +255,7 @@ const BackupView: React.FC = () => {
               <button
                 onClick={executarBackup}
                 disabled={rodando}
-                className="flex items-center gap-2 bg-[#C9A84C] hover:bg-[#A8863C] disabled:bg-slate-300 text-[#0A1628] px-6 py-3 rounded-xl text-sm font-bold transition-all shadow-sm">
+                className="flex items-center gap-2 bg-gold hover:bg-[#A8863C] disabled:bg-slate-300 text-navy px-6 py-3 rounded-xl text-sm font-bold transition-all shadow-sm">
                 {rodando
                   ? <><i className="fa-solid fa-spinner animate-spin"></i>Exportando...</>
                   : <><i className="fa-solid fa-download"></i>Exportar Backup</>
@@ -267,7 +267,7 @@ const BackupView: React.FC = () => {
             {(rodando || concluido) && progresso.length > 0 && (
               <div className="space-y-3">
                 <div className="w-full bg-white rounded-full h-2">
-                  <div className="bg-[#C9A84C] h-2 rounded-full transition-all duration-500"
+                  <div className="bg-gold h-2 rounded-full transition-all duration-500"
                     style={{ width: `${(progresso.length / COLECOES_TENANT.length) * 100}%` }} />
                 </div>
 
@@ -304,7 +304,7 @@ const BackupView: React.FC = () => {
         {/* Backup por coleção */}
         <div className="bg-white border border-slate-200 rounded-[16px] shadow-sm overflow-hidden">
           <div className="p-5 border-b border-slate-100">
-            <h3 className="text-sm font-black text-[#0A1628]">Backup por Coleção</h3>
+            <h3 className="text-sm font-black text-navy">Backup por Coleção</h3>
             <p className="text-xs text-slate-500 mt-0.5">Exporte uma coleção específica de forma individual</p>
           </div>
           <div className="divide-y divide-slate-100">
@@ -338,7 +338,7 @@ const BackupView: React.FC = () => {
                       <button
                         onClick={() => backupColecao(col.id, col.label)}
                         disabled={rodando}
-                        className="flex items-center gap-1.5 bg-white border border-slate-200 hover:border-indigo-400 hover:text-[#C9A84C] text-slate-500 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-40">
+                        className="flex items-center gap-1.5 bg-white border border-slate-200 hover:border-indigo-400 hover:text-gold text-slate-500 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-40">
                         <i className="fa-solid fa-download text-[9px]"></i>JSON
                       </button>
                     )}

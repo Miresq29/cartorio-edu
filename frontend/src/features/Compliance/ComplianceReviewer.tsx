@@ -197,7 +197,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
 
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 no-print">
         <div className="flex items-center gap-5">
-          <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-[#0A1628] shadow-lg shadow-blue-900/20">
+          <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-navy shadow-lg shadow-blue-900/20">
             <i className="fa-solid fa-shield-check text-3xl"></i>
           </div>
           <div>
@@ -236,13 +236,13 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => setAnalysisMode('checklist')}
-                  className={`py-3 rounded-xl text-[10px] font-black uppercase transition-all ${analysisMode === 'checklist' ? 'bg-blue-600 text-[#0A1628]' : 'bg-slate-200 text-slate-500 hover:bg-slate-700'}`}
+                  className={`py-3 rounded-xl text-[10px] font-black uppercase transition-all ${analysisMode === 'checklist' ? 'bg-blue-600 text-navy' : 'bg-slate-200 text-slate-500 hover:bg-slate-700'}`}
                 >
                   <i className="fa-solid fa-clipboard-list mr-2"></i>Protocolo
                 </button>
                 <button
                   onClick={() => setAnalysisMode('baselegal')}
-                  className={`py-3 rounded-xl text-[10px] font-black uppercase transition-all ${analysisMode === 'baselegal' ? 'bg-blue-600 text-[#0A1628]' : 'bg-slate-200 text-slate-500 hover:bg-slate-700'}`}
+                  className={`py-3 rounded-xl text-[10px] font-black uppercase transition-all ${analysisMode === 'baselegal' ? 'bg-blue-600 text-navy' : 'bg-slate-200 text-slate-500 hover:bg-slate-700'}`}
                 >
                   <i className="fa-solid fa-book-open mr-2"></i>Base Legal
                 </button>
@@ -258,7 +258,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
                   <select
                     value={selectedChecklistId}
                     onChange={e => setSelectedChecklistId(e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-4 text-xs font-bold text-[#0A1628] focus:border-blue-600 outline-none transition-all"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-4 text-xs font-bold text-navy focus:border-blue-600 outline-none transition-all"
                   >
                     <option value="">Selecione um protocolo...</option>
                     {checklists.map(t => (
@@ -285,7 +285,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
                         className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all border ${selectedKbIds.includes(d.id) ? 'border-blue-500/40 bg-blue-500/5' : 'border-slate-200 hover:border-slate-200'}`}
                       >
                         <div className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border-2 transition-all ${selectedKbIds.includes(d.id) ? 'bg-blue-600 border-blue-600' : 'border-slate-600'}`}>
-                          {selectedKbIds.includes(d.id) && <i className="fa-solid fa-check text-[#0A1628] text-[8px]"></i>}
+                          {selectedKbIds.includes(d.id) && <i className="fa-solid fa-check text-navy text-[8px]"></i>}
                         </div>
                         <span className="text-[10px] text-slate-700 font-bold truncate">{d.fileName}</span>
                       </button>
@@ -298,7 +298,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
             <button
               onClick={handleRunAudit}
               disabled={isAnalyzing}
-              className="w-full bg-blue-600 hover:bg-blue-500 text-[#0A1628] py-5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-900/30 disabled:opacity-50"
+              className="w-full bg-blue-600 hover:bg-blue-500 text-navy py-5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-900/30 disabled:opacity-50"
             >
               {isAnalyzing
                 ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Auditoria em curso...</>
@@ -311,7 +311,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
           <div className="w-24 h-24 bg-slate-50 rounded-3xl flex items-center justify-center text-blue-500 text-4xl mb-6 shadow-2xl">
             <i className="fa-solid fa-robot"></i>
           </div>
-          <h3 className="text-xl font-black text-[#0A1628] uppercase italic">Análise RAG Estrita</h3>
+          <h3 className="text-xl font-black text-navy uppercase italic">Análise RAG Estrita</h3>
           <p className="text-slate-500 text-sm mt-4 max-w-md leading-relaxed">
             O sistema usa apenas os documentos que você indexou na Base Legal e os protocolos cadastrados. Nenhuma lei ou norma externa é consultada.
           </p>
@@ -332,7 +332,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
         <div className="results-report mt-8 space-y-6">
           <div className="grid grid-cols-3 gap-4">
             <div className="bg-white border border-slate-200 rounded-2xl p-6 text-center">
-              <p className="text-3xl font-black text-[#0A1628]">{results.length}</p>
+              <p className="text-3xl font-black text-navy">{results.length}</p>
               <p className="text-[9px] text-slate-500 uppercase font-bold mt-1">Total de Requisitos</p>
             </div>
             <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-6 text-center">
@@ -348,7 +348,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
           <div className="bg-white border border-slate-200 rounded-2xl p-6">
             <div className="flex justify-between items-center mb-2">
               <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Índice de Conformidade</span>
-              <span className="text-sm font-black text-[#0A1628]">{conformePercent}%</span>
+              <span className="text-sm font-black text-navy">{conformePercent}%</span>
             </div>
             <div className="w-full bg-slate-200 rounded-full h-3">
               <div
@@ -363,14 +363,14 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
           </div>
 
           <div className="p-8 bg-slate-50/40 border border-slate-200 rounded-3xl backdrop-blur-md">
-            <h3 className="text-xl font-black text-[#0A1628] italic uppercase mb-6 flex items-center gap-3">
+            <h3 className="text-xl font-black text-navy italic uppercase mb-6 flex items-center gap-3">
               <i className="fa-solid fa-file-invoice text-blue-500"></i> Parecer Técnico Detalhado
             </h3>
             <div className="space-y-4">
               {results.map((res, i) => (
                 <div key={i} className={`p-6 rounded-2xl border ${res.compliant ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-red-500/5 border-red-500/20'} transition-all`}>
                   <div className="flex justify-between items-start mb-3 gap-4">
-                    <h4 className="text-sm font-bold text-[#0A1628] flex-1">{res.requirement}</h4>
+                    <h4 className="text-sm font-bold text-navy flex-1">{res.requirement}</h4>
                     <span className={`text-[9px] font-black uppercase px-3 py-1 rounded-lg flex-shrink-0 ${res.compliant ? 'bg-emerald-500/20 text-emerald-500' : 'bg-red-500/20 text-red-500'}`}>
                       {res.compliant ? '✅ CONFORME' : '❌ PENDENTE'}
                     </span>
@@ -400,7 +400,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE ANÁLISE
 
       {!results.length && rawParecer && (
         <div className="mt-8 p-8 bg-slate-50/40 border border-slate-200 rounded-3xl">
-          <h3 className="text-lg font-black text-[#0A1628] italic uppercase mb-4 flex items-center gap-3">
+          <h3 className="text-lg font-black text-navy italic uppercase mb-4 flex items-center gap-3">
             <i className="fa-solid fa-file-invoice text-blue-500"></i> Parecer Técnico
           </h3>
           <pre className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap font-sans">{rawParecer}</pre>

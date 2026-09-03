@@ -110,7 +110,7 @@ const SecurityView: React.FC = () => {
               ].map((p, i) => (
                 <div key={i} className="p-8 rounded-3xl bg-slate-950 border border-slate-800 space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-black text-[#0A1628] italic tracking-tighter uppercase">{p.title}</span>
+                    <span className="text-sm font-black text-navy italic tracking-tighter uppercase">{p.title}</span>
                     <span className="text-xs font-black text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded uppercase">On</span>
                   </div>
                   <p className="text-sm text-slate-500 font-medium leading-relaxed">{p.desc}</p>

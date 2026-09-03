@@ -40,13 +40,13 @@ class ErrorBoundary extends Component<Props, State> {
             <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
               <i className="fa-solid fa-triangle-exclamation text-2xl"></i>
             </div>
-            <h1 className="text-xl font-bold text-[#0A1628] mb-2">Ops! Algo deu errado</h1>
+            <h1 className="text-xl font-bold text-navy mb-2">Ops! Algo deu errado</h1>
             <p className="text-slate-500 text-sm mb-6">
               Ocorreu um erro inesperado nesta parte da aplicação. Nossa equipe técnica já foi notificada.
             </p>
             <button
               onClick={() => window.location.reload()}
-              className="bg-slate-50 text-[#0A1628] px-6 py-3 rounded-xl font-bold hover:bg-black transition-all"
+              className="bg-slate-50 text-navy px-6 py-3 rounded-xl font-bold hover:bg-black transition-all"
             >
               Recarregar Aplicação
             </button>

@@ -24,7 +24,7 @@ const IndicadorInput: React.FC<Props> = ({ indicador, value, onChange }) => {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <p className="text-sm text-slate-700">{indicador.texto}</p>
-          <span className="text-sm font-black text-[#0A1628] flex-shrink-0 ml-3">{num}%</span>
+          <span className="text-sm font-black text-navy flex-shrink-0 ml-3">{num}%</span>
         </div>
         <input
           type="range" min={0} max={100} step={5} value={num}

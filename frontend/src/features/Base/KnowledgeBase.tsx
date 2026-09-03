@@ -132,7 +132,7 @@ const KnowledgeBase: React.FC = () => {
     <div className="p-8 space-y-8 animate-in fade-in duration-500 bg-slate-50 min-h-screen">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 px-2">
         <div>
-          <h2 className="text-4xl font-black text-[#0A1628] italic uppercase tracking-tighter">Base Legal</h2>
+          <h2 className="text-4xl font-black text-navy italic uppercase tracking-tighter">Base Legal</h2>
           <p className="text-slate-500 text-[10px] font-bold mt-2 uppercase tracking-[0.3em]">
             {tenantId || 'MJ'} // {docs.length} documento{docs.length !== 1 ? 's' : ''} indexado{docs.length !== 1 ? 's' : ''}
           </p>
@@ -141,7 +141,7 @@ const KnowledgeBase: React.FC = () => {
           <div className="relative">
             <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
             <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Buscar na base..."
-              className="bg-white border border-slate-300 rounded-xl pl-10 pr-4 py-3 text-xs text-[#0A1628] outline-none focus:border-blue-500 w-56" />
+              className="bg-white border border-slate-300 rounded-xl pl-10 pr-4 py-3 text-xs text-navy outline-none focus:border-blue-500 w-56" />
           </div>
           {canManage && (
             <label className={`bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-2xl cursor-pointer flex items-center gap-3 text-xs font-black uppercase transition-all shadow-lg shadow-blue-900/20 ${isUploading ? 'opacity-60 pointer-events-none' : ''}`}>
@@ -207,15 +207,15 @@ const KnowledgeBase: React.FC = () => {
           <div className="bg-white border border-slate-200 w-full max-w-5xl max-h-[90vh] rounded-[40px] flex flex-col overflow-hidden shadow-2xl">
             <header className="p-8 border-b border-slate-200 flex justify-between items-center bg-slate-50 flex-shrink-0">
               <div>
-                <h3 className="text-[#0A1628] font-black uppercase italic tracking-tight">{viewingDoc.fileName || viewingDoc.title}</h3>
+                <h3 className="text-navy font-black uppercase italic tracking-tight">{viewingDoc.fileName || viewingDoc.title}</h3>
                 <p className="text-[9px] text-slate-500 font-bold uppercase mt-1">{wordCount(viewingDoc.content).toLocaleString()} palavras // Conteúdo integral</p>
               </div>
               <div className="flex items-center gap-3">
                 <button onClick={() => navigator.clipboard.writeText(viewingDoc.content).then(() => showToast('Copiado!', 'success'))}
-                  className="text-xs text-slate-500 hover:text-[#0A1628] font-bold uppercase px-4 py-2 rounded-xl hover:bg-slate-200 transition-all">
+                  className="text-xs text-slate-500 hover:text-navy font-bold uppercase px-4 py-2 rounded-xl hover:bg-slate-200 transition-all">
                   <i className="fa-solid fa-copy mr-2"></i>Copiar
                 </button>
-                <button onClick={() => setViewingDoc(null)} className="w-10 h-10 rounded-full bg-slate-200 text-[#0A1628] flex items-center justify-center hover:bg-red-500 transition-all">
+                <button onClick={() => setViewingDoc(null)} className="w-10 h-10 rounded-full bg-slate-200 text-navy flex items-center justify-center hover:bg-red-500 transition-all">
                   <i className="fa-solid fa-xmark"></i>
                 </button>
               </div>

@@ -57,11 +57,11 @@ const ChatView: React.FC = () => {
       {/* Header */}
       <div className="p-6 border-b border-slate-200 bg-slate-50/40 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-[#0A1628] text-xl">
+          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-navy text-xl">
             ✨
           </div>
           <div>
-            <h2 className="text-sm font-black text-[#0A1628] uppercase tracking-widest">IA Notarial</h2>
+            <h2 className="text-sm font-black text-navy uppercase tracking-widest">IA Notarial</h2>
             <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Base Legal Ativa</p>
           </div>
         </div>
@@ -75,7 +75,7 @@ const ChatView: React.FC = () => {
         {chatHistory.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center p-10 opacity-50">
             <div className="text-5xl mb-4">💬</div>
-            <h3 className="text-[#0A1628] font-bold uppercase tracking-widest">Inicie uma consulta</h3>
+            <h3 className="text-navy font-bold uppercase tracking-widest">Inicie uma consulta</h3>
             <p className="text-slate-500 text-xs mt-2 max-w-xs leading-relaxed font-medium">Pergunte sobre provimentos, normas ou processos internos do cartório.</p>
           </div>
         ) : (
@@ -83,8 +83,8 @@ const ChatView: React.FC = () => {
             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div className={`max-w-[85%] rounded-2xl px-5 py-3 text-sm leading-relaxed ${
                 msg.role === 'user' 
-                  ? 'bg-blue-600 text-[#0A1628] rounded-br-none shadow-lg shadow-blue-900/20' 
-                  : 'bg-white text-[#0A1628] border border-slate-200 rounded-bl-none shadow-xl'
+                  ? 'bg-blue-600 text-navy rounded-br-none shadow-lg shadow-blue-900/20' 
+                  : 'bg-white text-navy border border-slate-200 rounded-bl-none shadow-xl'
               }`}>
                 {msg.content}
               </div>
@@ -111,12 +111,12 @@ const ChatView: React.FC = () => {
           value={input} 
           onChange={e => setInput(e.target.value)}
           placeholder="Digite sua dúvida jurídica..."
-          className="flex-1 bg-white border border-slate-200 rounded-xl px-5 py-4 text-sm text-[#0A1628] focus:border-blue-500 outline-none transition-all placeholder:text-slate-700"
+          className="flex-1 bg-white border border-slate-200 rounded-xl px-5 py-4 text-sm text-navy focus:border-blue-500 outline-none transition-all placeholder:text-slate-700"
         />
         <button 
           type="submit" 
           disabled={!input.trim() || isTyping}
-          className="bg-blue-600 hover:bg-blue-500 disabled:opacity-20 px-6 rounded-xl text-[#0A1628] transition-all flex items-center justify-center shadow-lg shadow-blue-900/20"
+          className="bg-blue-600 hover:bg-blue-500 disabled:opacity-20 px-6 rounded-xl text-navy transition-all flex items-center justify-center shadow-lg shadow-blue-900/20"
         >
           {isTyping ? '...' : '➤'}
         </button>

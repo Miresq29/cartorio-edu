@@ -257,7 +257,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
     <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
 
       <header>
-        <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">
+        <h2 className="text-3xl font-black text-navy italic uppercase tracking-tighter">
           IA <span className="text-blue-500">Analítica</span>
         </h2>
         <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">MJ Consultoria // Gestão Operacional Inteligente</p>
@@ -273,7 +273,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
         ].map((s, i) => (
           <div key={i} className="bg-white border border-slate-200 rounded-[24px] p-6 space-y-3">
             <i className={`fa-solid ${s.icon} text-${s.color}-500 text-xl`}></i>
-            <p className="text-3xl font-black text-[#0A1628]">{s.value}</p>
+            <p className="text-3xl font-black text-navy">{s.value}</p>
             <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">{s.label}</p>
           </div>
         ))}
@@ -302,11 +302,11 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-[#0A1628] font-black uppercase italic text-sm">Monitoramento Operacional</h3>
+                  <h3 className="text-navy font-black uppercase italic text-sm">Monitoramento Operacional</h3>
                   <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Métricas em tempo real — últimas 24h</p>
                 </div>
                 <button onClick={executarAnalise}
-                  className="bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
+                  className="bg-blue-600 hover:bg-blue-500 text-navy px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
                   <i className="fa-solid fa-wand-magic-sparkles"></i>Analisar com IA
                 </button>
               </div>
@@ -392,7 +392,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                   <div className="w-16 h-16 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
                     <i className="fa-solid fa-circle-notch animate-spin text-blue-400 text-2xl"></i>
                   </div>
-                  <p className="text-[#0A1628] font-black text-sm uppercase italic tracking-widest">IA Analisando...</p>
+                  <p className="text-navy font-black text-sm uppercase italic tracking-widest">IA Analisando...</p>
                   <p className="text-slate-500 text-xs">Cruzando dados de auditoria, documentos e métricas operacionais</p>
                 </div>
               ) : analise ? (
@@ -432,7 +432,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                             <div className="flex items-center gap-2">
                               <i className={`fa-solid ${cfg.icon} text-${cfg.color}-400`}></i>
                               <span className={`text-[9px] font-black text-${cfg.color}-400 uppercase tracking-widest`}>{cfg.label}</span>
-                              <span className="text-sm font-black text-[#0A1628] ml-1">{alerta.titulo}</span>
+                              <span className="text-sm font-black text-navy ml-1">{alerta.titulo}</span>
                             </div>
                             <p className="text-xs text-slate-500">{alerta.descricao}</p>
                             {alerta.acao && (
@@ -463,7 +463,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                   </div>
 
                   <button onClick={executarAnalise}
-                    className="w-full bg-slate-200 hover:bg-slate-700 text-[#0A1628] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2">
+                    className="w-full bg-slate-200 hover:bg-slate-700 text-navy px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2">
                     <i className="fa-solid fa-rotate"></i>Refazer Análise
                   </button>
                 </div>
@@ -472,10 +472,10 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                   <div className="w-16 h-16 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
                     <i className="fa-solid fa-wand-magic-sparkles text-blue-400 text-2xl"></i>
                   </div>
-                  <p className="text-[#0A1628] font-black text-sm uppercase italic">Pronto para Analisar</p>
+                  <p className="text-navy font-black text-sm uppercase italic">Pronto para Analisar</p>
                   <p className="text-slate-500 text-xs max-w-sm">A IA irá cruzar todos os dados da plataforma e gerar um relatório completo de gestão operacional</p>
                   <button onClick={executarAnalise}
-                    className="bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                    className="bg-blue-600 hover:bg-blue-500 text-navy px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
                     <i className="fa-solid fa-wand-magic-sparkles mr-2"></i>Iniciar Análise
                   </button>
                 </div>
@@ -487,7 +487,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
           {activeTab === 'chat' && (
             <div className="space-y-4">
               <div>
-                <h3 className="text-[#0A1628] font-black uppercase italic text-sm">Consultor de Gestão IA</h3>
+                <h3 className="text-navy font-black uppercase italic text-sm">Consultor de Gestão IA</h3>
                 <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Pergunte sobre métricas, anomalias ou ações corretivas</p>
               </div>
 
@@ -507,7 +507,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                   {chatMessages.map((m, i) => (
                     <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                       <div className={`max-w-[80%] px-5 py-4 rounded-2xl text-sm leading-relaxed ${
-                        m.role === 'user' ? 'bg-blue-600 text-[#0A1628]' : 'bg-slate-200 text-[#0A1628] border border-slate-200'
+                        m.role === 'user' ? 'bg-blue-600 text-navy' : 'bg-slate-200 text-navy border border-slate-200'
                       }`}>
                         <p className="whitespace-pre-wrap">{m.text}</p>
                       </div>
@@ -527,9 +527,9 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
                   <input value={chatInput} onChange={e => setChatInput(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleChat()}
                     placeholder="Ex: Quais são os principais riscos operacionais hoje?"
-                    className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+                    className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-blue-500" />
                   <button onClick={handleChat} disabled={isChatLoading || !chatInput.trim()}
-                    className="bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-6 py-3 rounded-xl font-black text-sm transition-all disabled:opacity-50">
+                    className="bg-blue-600 hover:bg-blue-500 text-navy px-6 py-3 rounded-xl font-black text-sm transition-all disabled:opacity-50">
                     <i className="fa-solid fa-paper-plane"></i>
                   </button>
                 </div>

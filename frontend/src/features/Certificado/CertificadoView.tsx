@@ -295,8 +295,8 @@ const ModalEmitir: React.FC<{
     <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-6">
       <div className="bg-white border border-slate-200 rounded-2xl p-6 w-full max-w-lg space-y-5">
         <div className="flex items-center justify-between">
-          <h3 className="text-[#0A1628] font-black text-sm uppercase tracking-widest">Emitir Certificado</h3>
-          <button onClick={onClose} className="text-slate-500 hover:text-[#0A1628] w-8 h-8 flex items-center justify-center">
+          <h3 className="text-navy font-black text-sm uppercase tracking-widest">Emitir Certificado</h3>
+          <button onClick={onClose} className="text-slate-500 hover:text-navy w-8 h-8 flex items-center justify-center">
             <i className="fa-solid fa-xmark"></i>
           </button>
         </div>
@@ -305,7 +305,7 @@ const ModalEmitir: React.FC<{
         <div className="space-y-1">
           <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Colaborador *</label>
           <select value={colab} onChange={e => { setColab(e.target.value); setItem(''); }}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500">
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-blue-500">
             <option value="">Selecione...</option>
             {colabsDisponiveis.map(u => (
               <option key={u.id} value={u.id}>{u.name} — {u.cargo || u.role}</option>
@@ -346,7 +346,7 @@ const ModalEmitir: React.FC<{
               </p>
             ) : (
               <select value={item} onChange={e => setItem(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500">
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-blue-500">
                 <option value="">Selecione...</option>
                 {opcoesItem.map((o, i) => <option key={i} value={o}>{o}</option>)}
               </select>
@@ -358,7 +358,7 @@ const ModalEmitir: React.FC<{
         {colab && item && (
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-1">
             <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Preview</p>
-            <p className="text-sm font-black text-[#0A1628]">{colabUser?.name}</p>
+            <p className="text-sm font-black text-navy">{colabUser?.name}</p>
             <p className="text-xs text-slate-500">{colabUser?.cargo} · {cartorio}</p>
             <p className="text-xs text-blue-400">{item}</p>
             {mediaItem > 0 && <p className="text-xs text-emerald-400">Média: {mediaItem}%</p>}
@@ -388,7 +388,7 @@ const ModalEmitir: React.FC<{
               });
             }}
             disabled={!colab || !item}
-            className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-[#0A1628] px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+            className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-navy px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
             <i className="fa-solid fa-certificate mr-2"></i>Emitir Certificado
           </button>
         </div>
@@ -513,7 +513,7 @@ const CertificadoView: React.FC = () => {
         {/* Header */}
         <header className="flex items-start justify-between">
           <div>
-            <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">
+            <h2 className="text-3xl font-black text-navy italic uppercase tracking-tighter">
               Certificados de <span className="text-amber-500">Conclusão</span>
             </h2>
             <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">
@@ -522,7 +522,7 @@ const CertificadoView: React.FC = () => {
           </div>
           {isGestor && (
             <button onClick={() => setShowModal(true)}
-              className="bg-amber-600 hover:bg-amber-500 text-[#0A1628] px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
+              className="bg-amber-600 hover:bg-amber-500 text-navy px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
               <i className="fa-solid fa-certificate"></i>Emitir Certificado
             </button>
           )}
@@ -538,7 +538,7 @@ const CertificadoView: React.FC = () => {
           ].map((s, i) => (
             <div key={i} className="bg-white border border-slate-200 rounded-[20px] p-5 space-y-2">
               <i className={`fa-solid ${s.icon} text-${s.color}-500`}></i>
-              <p className="text-2xl font-black text-[#0A1628]">{s.value}</p>
+              <p className="text-2xl font-black text-navy">{s.value}</p>
               <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">{s.label}</p>
             </div>
           ))}
@@ -583,7 +583,7 @@ const CertificadoView: React.FC = () => {
                           <i className="fa-solid fa-circle-check mr-1"></i>{cert.notaFinal}%
                         </span>
                       </div>
-                      <h3 className="text-sm font-black text-[#0A1628] leading-tight mb-0.5">{cert.trilhaTitulo}</h3>
+                      <h3 className="text-sm font-black text-navy leading-tight mb-0.5">{cert.trilhaTitulo}</h3>
                       {cert.moduloTitulo && (
                         <p className="text-[10px] text-slate-500 mb-1">{cert.moduloTitulo}</p>
                       )}
@@ -600,7 +600,7 @@ const CertificadoView: React.FC = () => {
                     {/* Ações */}
                     <div className="flex flex-col gap-2 flex-shrink-0">
                       <button onClick={() => handleImprimir(cert)}
-                        className="bg-amber-600 hover:bg-amber-500 text-[#0A1628] px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5">
+                        className="bg-amber-600 hover:bg-amber-500 text-navy px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5">
                         <i className="fa-solid fa-download"></i>PDF
                       </button>
                       <button onClick={() => {

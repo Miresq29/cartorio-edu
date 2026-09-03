@@ -193,7 +193,7 @@ CTA: [chamada para ação aqui]`;
   return (
     <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
       <header>
-        <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">
+        <h2 className="text-3xl font-black text-navy italic uppercase tracking-tighter">
           Banners e <span className="text-pink-500">Materiais</span>
         </h2>
         <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">
@@ -215,7 +215,7 @@ CTA: [chamada para ação aqui]`;
 
           {/* ── Link externo ────────────────────────────── */}
           <div className="bg-white border border-slate-200 rounded-[24px] p-6 space-y-4">
-            <h3 className="text-[#0A1628] font-black uppercase text-sm flex items-center gap-2">
+            <h3 className="text-navy font-black uppercase text-sm flex items-center gap-2">
               <i className="fa-solid fa-link text-blue-400"></i>Adicionar Material via Link
             </h3>
             <p className="text-[10px] text-slate-500 leading-relaxed">
@@ -226,14 +226,14 @@ CTA: [chamada para ação aqui]`;
               value={formLink.titulo}
               onChange={e => setFormLink(p => ({ ...p, titulo: e.target.value }))}
               placeholder="Nome do material..."
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500 transition-colors"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-blue-500 transition-colors"
             />
 
             <input
               value={formLink.url}
               onChange={e => setFormLink(p => ({ ...p, url: e.target.value }))}
               placeholder="https://drive.google.com/..."
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500 transition-colors"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-blue-500 transition-colors"
             />
 
             {/* Tipo */}
@@ -242,7 +242,7 @@ CTA: [chamada para ação aqui]`;
                 <button type="button" key={t} onClick={() => setFormLink(p => ({ ...p, tipo: t }))}
                   className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${
                     formLink.tipo === t
-                      ? 'bg-blue-600 text-[#0A1628]'
+                      ? 'bg-blue-600 text-navy'
                       : 'bg-slate-200 text-slate-500 hover:bg-slate-700'
                   }`}>
                   <i className={`fa-solid ${TIPO_CONFIG[t].icon} mr-1`}></i>{TIPO_CONFIG[t].label}
@@ -251,7 +251,7 @@ CTA: [chamada para ação aqui]`;
             </div>
 
             <button type="button" onClick={salvarLink} disabled={salvandoLink || !formLink.titulo.trim() || !formLink.url.trim()}
-              className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-[#0A1628] py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+              className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-navy py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
               {salvandoLink
                 ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Salvando...</>
                 : <><i className="fa-solid fa-plus mr-2"></i>Adicionar Material</>
@@ -261,7 +261,7 @@ CTA: [chamada para ação aqui]`;
 
           {/* ── Gerador IA ─────────────────────────────── */}
           <div className="bg-white border border-pink-500/30 rounded-[24px] p-6 space-y-4">
-            <h3 className="text-[#0A1628] font-black uppercase text-sm flex items-center gap-2">
+            <h3 className="text-navy font-black uppercase text-sm flex items-center gap-2">
               <i className="fa-solid fa-wand-magic-sparkles text-pink-400"></i>Gerar Banner com IA
             </h3>
             <p className="text-[10px] text-slate-500 leading-relaxed">
@@ -272,10 +272,10 @@ CTA: [chamada para ação aqui]`;
               onChange={e => setPromptBanner(e.target.value)}
               rows={4}
               placeholder="Ex: Banner para treinamento de atendimento ao cliente com foco em excelência..."
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-pink-500 resize-none"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-pink-500 resize-none"
             />
             <button type="button" onClick={gerarTextoBanner} disabled={gerando || !promptBanner.trim()}
-              className="w-full bg-pink-600 hover:bg-pink-500 disabled:opacity-50 text-[#0A1628] py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+              className="w-full bg-pink-600 hover:bg-pink-500 disabled:opacity-50 text-navy py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
               {gerando
                 ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Gerando...</>
                 : <><i className="fa-solid fa-wand-magic-sparkles mr-2"></i>Gerar Texto</>
@@ -291,19 +291,19 @@ CTA: [chamada para ação aqui]`;
         return (
           <div className="bg-white border border-slate-200 rounded-[24px] p-6 space-y-4 shadow-sm">
             <div className="flex items-center justify-between flex-wrap gap-3">
-              <h3 className="text-[#0A1628] font-black uppercase text-sm">Preview do Banner</h3>
+              <h3 className="text-navy font-black uppercase text-sm">Preview do Banner</h3>
               <button type="button" onClick={() => imprimirBanner(textoBannerGerado)}
                 className="text-[9px] bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all border border-slate-200">
                 <i className="fa-solid fa-print mr-1"></i>Imprimir / PDF
               </button>
             </div>
 
-            <div className="relative overflow-hidden bg-gradient-to-br from-[#0A1628] via-[#132a4a] to-[#1e3a5f] rounded-[24px] p-12 text-center space-y-5 border border-[#C9A84C]/30 shadow-xl">
+            <div className="relative overflow-hidden bg-gradient-to-br from-[#0A1628] via-[#132a4a] to-[#1e3a5f] rounded-[24px] p-12 text-center space-y-5 border border-gold/30 shadow-xl">
               {/* Glow decorativo */}
-              <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#C9A84C]/10 rounded-full blur-3xl pointer-events-none"></div>
+              <div className="absolute -top-24 -right-24 w-64 h-64 bg-gold/10 rounded-full blur-3xl pointer-events-none"></div>
               <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-              <p className="relative text-[#C9A84C] text-[10px] font-black uppercase tracking-[0.35em]">
+              <p className="relative text-gold text-[10px] font-black uppercase tracking-[0.35em]">
                 MJ Consultoria // Treinamento Corporativo
               </p>
               <h1 className="relative text-2xl md:text-4xl font-black text-white uppercase tracking-tight leading-tight drop-shadow-sm">
@@ -313,7 +313,7 @@ CTA: [chamada para ação aqui]`;
                 {subtitulo}
               </p>
               {cta && (
-                <div className="relative inline-block bg-[#C9A84C] text-[#0A1628] px-8 py-3.5 rounded-xl font-black text-sm uppercase tracking-widest shadow-lg">
+                <div className="relative inline-block bg-gold text-navy px-8 py-3.5 rounded-xl font-black text-sm uppercase tracking-widest shadow-lg">
                   {cta}
                 </div>
               )}
@@ -324,10 +324,10 @@ CTA: [chamada para ação aqui]`;
                 value={tituloBanner}
                 onChange={e => setTituloBanner(e.target.value)}
                 placeholder="Nome para salvar este banner..."
-                className="flex-1 min-w-0 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-[#C9A84C] transition-colors"
+                className="flex-1 min-w-0 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-gold transition-colors"
               />
               <button type="button" onClick={salvarBannerGerado} disabled={!tituloBanner.trim()}
-                className="bg-[#C9A84C] hover:brightness-110 disabled:opacity-40 disabled:hover:brightness-100 text-[#0A1628] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm">
+                className="bg-gold hover:brightness-110 disabled:opacity-40 disabled:hover:brightness-100 text-navy px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm">
                 <i className="fa-solid fa-floppy-disk mr-2"></i>Salvar
               </button>
               <button type="button" onClick={() => setPreviewBanner(false)}
@@ -343,14 +343,14 @@ CTA: [chamada para ação aqui]`;
       <div className="flex flex-wrap gap-2 items-center">
         <button type="button" onClick={() => setFiltroTipo('')}
           className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-            !filtroTipo ? 'bg-pink-600 text-[#0A1628]' : 'bg-slate-50 text-slate-500 hover:bg-slate-200'
+            !filtroTipo ? 'bg-pink-600 text-navy' : 'bg-slate-50 text-slate-500 hover:bg-slate-200'
           }`}>
           Todos ({materiais.length})
         </button>
         {Object.entries(TIPO_CONFIG).map(([id, cfg]) => (
           <button type="button" key={id} onClick={() => setFiltroTipo(filtroTipo === id ? '' : id)}
             className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-              filtroTipo === id ? 'bg-pink-600 text-[#0A1628]' : 'bg-slate-50 text-slate-500 hover:bg-slate-200'
+              filtroTipo === id ? 'bg-pink-600 text-navy' : 'bg-slate-50 text-slate-500 hover:bg-slate-200'
             }`}>
             <i className={`fa-solid ${cfg.icon} mr-1.5`}></i>{cfg.label}
           </button>
@@ -375,7 +375,7 @@ CTA: [chamada para ação aqui]`;
                     <i className={`fa-solid ${cfg.icon} text-${cfg.color}-400`}></i>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-black text-[#0A1628] truncate">{m.titulo}</p>
+                    <p className="text-sm font-black text-navy truncate">{m.titulo}</p>
                     <p className="text-[9px] text-slate-500 uppercase tracking-widest">{cfg.label}</p>
                   </div>
                 </div>

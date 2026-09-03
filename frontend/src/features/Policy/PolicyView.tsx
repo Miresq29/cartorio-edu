@@ -8,7 +8,7 @@ const PolicyView: React.FC = () => {
         <div className="w-16 h-16 bg-red-500/10 border border-red-500/20 rounded-3xl flex items-center justify-center">
           <i className="fa-solid fa-file-shield text-red-400 text-3xl"></i>
         </div>
-        <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">
+        <h2 className="text-3xl font-black text-navy italic uppercase tracking-tighter">
           Política de <span className="text-red-500">Segurança</span>
         </h2>
         <p className="text-slate-500 font-bold uppercase tracking-widest text-sm">
@@ -169,7 +169,7 @@ const PolicyView: React.FC = () => {
         <div className="bg-slate-50/50 border border-slate-200 rounded-3xl p-8 flex items-start gap-4">
           <i className="fa-solid fa-circle-info text-slate-500 text-xl mt-1 flex-shrink-0"></i>
           <div>
-            <p className="text-sm font-black text-[#0A1628] mb-1">Dúvidas sobre Segurança?</p>
+            <p className="text-sm font-black text-navy mb-1">Dúvidas sobre Segurança?</p>
             <p className="text-xs text-slate-500 leading-relaxed">
               Para reportar vulnerabilidades, incidentes ou dúvidas sobre esta política, utilize o módulo de <strong className="text-blue-400">Suporte Técnico</strong> da plataforma.
               <br /><span className="text-slate-600 text-[9px] mt-2 block">Última atualização: Fevereiro/2026 — CartórioRAG PRO v3.0 — Conforme Provimento CNJ nº 212/2026</span>

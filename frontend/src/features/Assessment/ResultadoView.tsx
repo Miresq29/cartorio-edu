@@ -80,7 +80,7 @@ const ResultadoView: React.FC<Props> = ({ assessment, onVoltar }) => {
           <i className="fa-solid fa-arrow-left"></i>Voltar ao histórico
         </button>
         <button onClick={gerarPDF}
-          className="flex items-center gap-2 bg-[#C9A84C] hover:brightness-110 text-[#0A1628] px-5 py-2.5 rounded-xl text-sm font-black uppercase tracking-widest transition-all shadow-sm">
+          className="flex items-center gap-2 bg-gold hover:brightness-110 text-navy px-5 py-2.5 rounded-xl text-sm font-black uppercase tracking-widest transition-all shadow-sm">
           <i className="fa-solid fa-file-pdf"></i>Exportar PDF
         </button>
       </header>
@@ -92,7 +92,7 @@ const ResultadoView: React.FC<Props> = ({ assessment, onVoltar }) => {
           <span className="text-3xl font-black" style={{ color: CORES_SITUACAO[sitGlobal] }}>{assessmentAtual.scoreGlobal}%</span>
         </div>
         <div className="flex-1 min-w-[200px]">
-          <p className="text-xl font-black text-[#0A1628]">{labelNivel(assessmentAtual.nivel)}</p>
+          <p className="text-xl font-black text-navy">{labelNivel(assessmentAtual.nivel)}</p>
           <p className="text-sm text-slate-500 mt-0.5">{assessmentAtual.periodo} · Score ponderado global</p>
           {assessmentAtual.bloqueado && (
             <p className="text-xs font-black text-red-500 uppercase tracking-widest mt-2">
@@ -104,11 +104,11 @@ const ResultadoView: React.FC<Props> = ({ assessment, onVoltar }) => {
       </div>
 
       {/* Resumo executivo com IA */}
-      <div className="bg-white border border-[#C9A84C]/30 rounded-[24px] p-5 space-y-4">
+      <div className="bg-white border border-gold/30 rounded-[24px] p-5 space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Resumo executivo com IA</p>
           <button onClick={gerarResumo} disabled={gerandoResumo}
-            className="bg-[#C9A84C] hover:brightness-110 disabled:opacity-50 text-[#0A1628] px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+            className="bg-gold hover:brightness-110 disabled:opacity-50 text-navy px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
             {gerandoResumo ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Gerando...</> : <><i className="fa-solid fa-wand-magic-sparkles mr-2"></i>{assessmentAtual.resumoExecutivo ? 'Gerar novamente' : 'Gerar resumo executivo'}</>}
           </button>
         </div>
@@ -119,31 +119,31 @@ const ResultadoView: React.FC<Props> = ({ assessment, onVoltar }) => {
         {assessmentAtual.resumoExecutivo && (
           <div className="space-y-5">
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4">
-              <h4 className="text-base font-black text-[#0A1628]">{assessmentAtual.resumoExecutivo.cabecalho}</h4>
+              <h4 className="text-base font-black text-navy">{assessmentAtual.resumoExecutivo.cabecalho}</h4>
 
               {assessmentAtual.resumoExecutivo.introducao && (
                 <div>
-                  <p className="text-[10px] font-black text-[#C9A84C] uppercase tracking-widest mb-1">Introdução</p>
+                  <p className="text-[10px] font-black text-gold uppercase tracking-widest mb-1">Introdução</p>
                   <p className="text-sm text-slate-700 leading-relaxed">{assessmentAtual.resumoExecutivo.introducao}</p>
                 </div>
               )}
 
               {assessmentAtual.resumoExecutivo.objetivo && (
                 <div>
-                  <p className="text-[10px] font-black text-[#C9A84C] uppercase tracking-widest mb-1">Objetivo</p>
+                  <p className="text-[10px] font-black text-gold uppercase tracking-widest mb-1">Objetivo</p>
                   <p className="text-sm text-slate-700 leading-relaxed">{assessmentAtual.resumoExecutivo.objetivo}</p>
                 </div>
               )}
 
               <div>
-                <p className="text-[10px] font-black text-[#C9A84C] uppercase tracking-widest mb-1">Análise</p>
+                <p className="text-[10px] font-black text-gold uppercase tracking-widest mb-1">Análise</p>
                 <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{assessmentAtual.resumoExecutivo.analiseGeral}</p>
               </div>
             </div>
 
             {/* Gráfico por dimensão — acompanha a análise, não isolado do texto */}
             <div>
-              <p className="text-[10px] font-black text-[#C9A84C] uppercase tracking-widest mb-2">Score por dimensão</p>
+              <p className="text-[10px] font-black text-gold uppercase tracking-widest mb-2">Score por dimensão</p>
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 60 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -196,7 +196,7 @@ const ResultadoView: React.FC<Props> = ({ assessment, onVoltar }) => {
                 const sit = situacaoScore(score);
                 return (
                   <tr key={d.id} className="border-b border-slate-100">
-                    <td className="p-2 font-bold text-[#0A1628]">{d.nome}</td>
+                    <td className="p-2 font-bold text-navy">{d.nome}</td>
                     <td className="p-2 text-slate-500">{d.peso}%</td>
                     <td className="p-2">
                       <div className="flex items-center gap-2">
@@ -232,12 +232,12 @@ const ResultadoView: React.FC<Props> = ({ assessment, onVoltar }) => {
                   {g.prioridade}
                 </span>
                 <div className="flex-1 min-w-[200px]">
-                  <p className="text-sm font-bold text-[#0A1628]">{g.textoIndicador}</p>
+                  <p className="text-sm font-bold text-navy">{g.textoIndicador}</p>
                   <p className="text-xs text-slate-500 mt-1 flex items-center gap-2 flex-wrap">
                     <span><i className="fa-solid fa-road mr-1"></i>{g.trilhaRecomendada}</span>
                     {g.trilhaRecomendada.includes('(trilha oficial)') && (
                       <button onClick={() => setActiveTab('trails')}
-                        className="text-[9px] font-black text-[#0A1628] uppercase tracking-widest bg-[#C9A84C]/20 hover:bg-[#C9A84C]/40 px-2 py-0.5 rounded-lg transition-all">
+                        className="text-[9px] font-black text-navy uppercase tracking-widest bg-gold/20 hover:bg-gold/40 px-2 py-0.5 rounded-lg transition-all">
                         Ir para Trilhas <i className="fa-solid fa-arrow-right ml-1"></i>
                       </button>
                     )}

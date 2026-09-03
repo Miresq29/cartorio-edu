@@ -119,7 +119,7 @@ const ComunicadosView: React.FC = () => {
     <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
       <header className="flex items-start justify-between">
         <div>
-          <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">
+          <h2 className="text-3xl font-black text-navy italic uppercase tracking-tighter">
             Mural de <span className="text-amber-500">Comunicados</span>
           </h2>
           <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">Avisos e informações da empresa</p>
@@ -133,7 +133,7 @@ const ComunicadosView: React.FC = () => {
                 {modo === 'mural' ? 'Gestão' : 'Mural'}
               </button>
               <button onClick={() => setShowForm(!showForm)}
-                className="bg-amber-600 hover:bg-amber-500 text-[#0A1628] px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                className="bg-amber-600 hover:bg-amber-500 text-navy px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
                 <i className="fa-solid fa-plus mr-2"></i>Publicar
               </button>
             </>
@@ -151,7 +151,7 @@ const ComunicadosView: React.FC = () => {
         ].map((k, i) => (
           <div key={i} className="bg-white border border-slate-200 rounded-[20px] p-5 space-y-2">
             <i className={`fa-solid ${k.icon} text-${k.color}-500`}></i>
-            <p className="text-2xl font-black text-[#0A1628]">{k.value}</p>
+            <p className="text-2xl font-black text-navy">{k.value}</p>
             <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">{k.label}</p>
           </div>
         ))}
@@ -160,24 +160,24 @@ const ComunicadosView: React.FC = () => {
       {/* Formulário */}
       {showForm && isGestor && (
         <div className="bg-white border border-amber-500/30 rounded-[24px] p-6 space-y-4">
-          <h3 className="text-[#0A1628] font-black uppercase text-sm">Novo Comunicado</h3>
+          <h3 className="text-navy font-black uppercase text-sm">Novo Comunicado</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Título *</label>
               <input value={form.titulo} onChange={e => setForm(p => ({ ...p, titulo: e.target.value }))}
                 placeholder="Ex: Reunião de equipe - Semana de 14/04"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-amber-500" />
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-amber-500" />
             </div>
             <div className="md:col-span-2">
               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Mensagem *</label>
               <textarea value={form.corpo} onChange={e => setForm(p => ({ ...p, corpo: e.target.value }))} rows={4}
                 placeholder="Digite o comunicado completo aqui..."
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-amber-500 resize-none" />
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-amber-500 resize-none" />
             </div>
             <div>
               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Prioridade</label>
               <select value={form.prioridade} onChange={e => setForm(p => ({ ...p, prioridade: e.target.value as any }))}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-amber-500">
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-amber-500">
                 <option value="informativo">Informativo</option>
                 <option value="normal">Normal</option>
                 <option value="urgente">Urgente</option>
@@ -186,13 +186,13 @@ const ComunicadosView: React.FC = () => {
             <div>
               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Prazo (opcional)</label>
               <input type="date" value={form.prazo} onChange={e => setForm(p => ({ ...p, prazo: e.target.value }))}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-amber-500" />
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-amber-500" />
             </div>
             <div>
               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Link de Anexo (opcional)</label>
               <input value={form.anexoUrl} onChange={e => setForm(p => ({ ...p, anexoUrl: e.target.value }))}
                 placeholder="https://drive.google.com/..."
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-amber-500" />
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-amber-500" />
             </div>
             <div className="flex items-center gap-3">
               <input type="checkbox" id="fixado" checked={form.fixado} onChange={e => setForm(p => ({ ...p, fixado: e.target.checked }))}
@@ -230,7 +230,7 @@ const ComunicadosView: React.FC = () => {
 
           <div className="flex items-center gap-3 flex-wrap">
             <button onClick={salvar} disabled={loading}
-              className="bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-[#0A1628] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+              className="bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-navy px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
               {loading ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Publicando...</> : <><i className="fa-solid fa-bullhorn mr-2"></i>Publicar</>}
             </button>
             <button onClick={() => setShowForm(false)} className="bg-slate-200 hover:bg-slate-700 text-slate-700 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
@@ -262,7 +262,7 @@ const ComunicadosView: React.FC = () => {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     {c.fixado && <i className="fa-solid fa-thumbtack text-amber-400 text-xs"></i>}
-                    <h3 className={`text-sm font-black ${lido ? 'text-slate-700' : 'text-[#0A1628]'} truncate`}>{c.titulo}</h3>
+                    <h3 className={`text-sm font-black ${lido ? 'text-slate-700' : 'text-navy'} truncate`}>{c.titulo}</h3>
                     {!lido && <span className="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0"></span>}
                     <span className={`text-[9px] font-black text-${prio.color}-400 uppercase tracking-widest bg-${prio.color}-500/10 px-2 py-0.5 rounded-lg`}>
                       {prio.label}
@@ -295,7 +295,7 @@ const ComunicadosView: React.FC = () => {
                         <i className="fa-solid fa-signature mr-1"></i>Este comunicado exige confirmação formal de leitura.
                       </p>
                       <button onClick={() => confirmarAceite(c.id)}
-                        className="text-[9px] bg-amber-600 hover:bg-amber-500 text-[#0A1628] px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
+                        className="text-[9px] bg-amber-600 hover:bg-amber-500 text-navy px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
                         <i className="fa-solid fa-signature mr-1"></i>Li e concordo
                       </button>
                     </div>
@@ -309,7 +309,7 @@ const ComunicadosView: React.FC = () => {
                   <div className="flex gap-2 pt-1">
                     {!c.exigeAceite && !lido && (
                       <button onClick={() => marcarLido(c.id)}
-                        className="text-[9px] bg-emerald-600 hover:bg-emerald-500 text-[#0A1628] px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
+                        className="text-[9px] bg-emerald-600 hover:bg-emerald-500 text-navy px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all">
                         <i className="fa-solid fa-check mr-1"></i>Marcar como lido
                       </button>
                     )}

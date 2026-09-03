@@ -186,7 +186,7 @@ const FormMeta: React.FC<{
         <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Título da Meta *</label>
         <input value={form.titulo} onChange={e => set('titulo', e.target.value)}
           placeholder="Ex: Campeões do 2º Trimestre"
-          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-blue-500" />
       </div>
 
       {/* Descrição */}
@@ -195,7 +195,7 @@ const FormMeta: React.FC<{
         <textarea value={form.descricao} onChange={e => set('descricao', e.target.value)}
           placeholder="Descreva os critérios e condições da premiação..."
           rows={2}
-          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500 resize-none" />
+          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-blue-500 resize-none" />
       </div>
 
       {/* Métrica */}
@@ -211,7 +211,7 @@ const FormMeta: React.FC<{
               }`}>
               <div className="flex items-center gap-2 mb-1">
                 <i className={`fa-solid ${cfg.icon} text-xs ${form.metrica === key ? `text-${cfg.color}-400` : 'text-slate-500'}`}></i>
-                <p className={`text-xs font-black ${form.metrica === key ? `text-${cfg.color}-300` : 'text-[#0A1628]'}`}>{cfg.label}</p>
+                <p className={`text-xs font-black ${form.metrica === key ? `text-${cfg.color}-300` : 'text-navy'}`}>{cfg.label}</p>
               </div>
               <p className="text-[9px] text-slate-500 leading-tight">{cfg.desc}</p>
             </button>
@@ -224,7 +224,7 @@ const FormMeta: React.FC<{
         <div className="space-y-1">
           <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Top Premiados</label>
           <select value={form.topN} onChange={e => set('topN', Number(e.target.value))}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500">
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-blue-500">
             {[1, 2, 3, 5, 10].map(n => <option key={n} value={n}>Top {n}</option>)}
           </select>
         </div>
@@ -233,14 +233,14 @@ const FormMeta: React.FC<{
         <div className="space-y-1">
           <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Data Início</label>
           <input type="date" value={form.dataInicio} onChange={e => set('dataInicio', e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-blue-500" />
         </div>
 
         {/* Data Fim */}
         <div className="space-y-1">
           <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Data Encerramento *</label>
           <input type="date" value={form.dataFim} onChange={e => set('dataFim', e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-blue-500" />
         </div>
       </div>
 
@@ -249,14 +249,14 @@ const FormMeta: React.FC<{
         <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Prêmio / Reconhecimento *</label>
         <input value={form.premio} onChange={e => set('premio', e.target.value)}
           placeholder="Ex: Voucher R$200, Folga extra, Certificado de Destaque..."
-          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-blue-500" />
       </div>
 
       {/* Status */}
       <div className="space-y-1">
         <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Status</label>
         <select value={form.status} onChange={e => set('status', e.target.value as StatusMeta)}
-          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500">
+          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-blue-500">
           <option value="rascunho">Rascunho (não visível)</option>
           <option value="ativa">Ativa (visível a todos)</option>
           <option value="encerrada">Encerrada</option>
@@ -274,7 +274,7 @@ const FormMeta: React.FC<{
             onSave(form);
           }}
           disabled={!form.titulo || !form.premio || !form.dataFim}
-          className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-[#0A1628] px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+          className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-navy px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
           <i className="fa-solid fa-floppy-disk mr-2"></i>Salvar Meta
         </button>
       </div>
@@ -332,7 +332,7 @@ const MetaCard: React.FC<{
                 </span>
               )}
             </div>
-            <h3 className="text-[#0A1628] font-black text-sm">{meta.titulo}</h3>
+            <h3 className="text-navy font-black text-sm">{meta.titulo}</h3>
             {meta.descricao && <p className="text-slate-500 text-xs mt-0.5 line-clamp-1">{meta.descricao}</p>}
           </div>
 
@@ -380,7 +380,7 @@ const MetaCard: React.FC<{
                 {!sessaoAberta && (
                   <button
                     onClick={() => onIniciarDesempate(empate.map(r => r.nome))}
-                    className="mt-2 bg-amber-600 hover:bg-amber-500 text-[#0A1628] px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all">
+                    className="mt-2 bg-amber-600 hover:bg-amber-500 text-navy px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all">
                     <i className="fa-solid fa-gavel mr-2"></i>Iniciar Desempate Bloom Alto
                   </button>
                 )}
@@ -409,7 +409,7 @@ const MetaCard: React.FC<{
                   .sort(([, a], [, b]) => b.nota - a.nota)
                   .map(([nome, res], i) => (
                     <div key={nome} className="flex items-center justify-between">
-                      <span className="text-xs text-[#0A1628] font-bold">
+                      <span className="text-xs text-navy font-bold">
                         {i === 0 && <i className="fa-solid fa-trophy text-amber-400 mr-1.5"></i>}
                         {nome}
                       </span>
@@ -442,7 +442,7 @@ const MetaCard: React.FC<{
                                         'bg-slate-50/30'
                     }`}>
                       <i className={`fa-solid ${medalIcon} text-sm w-5 text-center ${medalColor}`}></i>
-                      <span className={`flex-1 text-sm font-bold truncate ${isMe ? 'text-blue-400' : 'text-[#0A1628]'}`}>
+                      <span className={`flex-1 text-sm font-bold truncate ${isMe ? 'text-blue-400' : 'text-navy'}`}>
                         {item.nome}
                         {isMe && <span className="text-[9px] text-blue-500 ml-1.5 font-black uppercase">(você)</span>}
                       </span>
@@ -470,7 +470,7 @@ const MetaCard: React.FC<{
             <i className="fa-solid fa-trophy text-amber-400 text-xl flex-shrink-0"></i>
             <div>
               <p className="text-[9px] font-black text-amber-400 uppercase tracking-widest">Prêmio para o Top {meta.topN}</p>
-              <p className="text-sm font-black text-[#0A1628]">{meta.premio}</p>
+              <p className="text-sm font-black text-navy">{meta.premio}</p>
               {meta.dataFim && (
                 <p className="text-[9px] text-slate-500 mt-0.5">
                   Até {new Date(meta.dataFim + 'T12:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
@@ -542,7 +542,7 @@ const DesempatePlayer: React.FC<{
             <i className={`fa-solid ${resultado.nota >= 70 ? 'fa-trophy' : 'fa-xmark'} text-3xl ${resultado.nota >= 70 ? 'text-emerald-400' : 'text-red-400'}`}></i>
           </div>
           <p className={`text-4xl font-black ${resultado.nota >= 70 ? 'text-emerald-400' : 'text-red-400'}`}>{resultado.nota}%</p>
-          <p className="text-[#0A1628] font-black text-lg uppercase">Desempate concluído!</p>
+          <p className="text-navy font-black text-lg uppercase">Desempate concluído!</p>
           <p className="text-slate-500 text-sm">Seu resultado foi registrado. Aguarde a apuração final pelo gestor.</p>
           <div className="bg-slate-50 rounded-xl p-4 text-left space-y-1">
             <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Gabarito rápido</p>
@@ -574,7 +574,7 @@ const DesempatePlayer: React.FC<{
               <p className="text-[9px] text-slate-500 mt-0.5">Taxonomia de Bloom Nível Alto • Avaliar / Criar</p>
             </div>
             <div className="text-right">
-              <p className="text-2xl font-black text-[#0A1628]">{Object.keys(respostas).length}<span className="text-slate-600">/{total}</span></p>
+              <p className="text-2xl font-black text-navy">{Object.keys(respostas).length}<span className="text-slate-600">/{total}</span></p>
               <p className="text-[9px] text-slate-500 uppercase">respondidas</p>
             </div>
           </div>
@@ -595,7 +595,7 @@ const DesempatePlayer: React.FC<{
                   <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg bg-${bloomColor}-500/20 text-${bloomColor}-400 flex-shrink-0 mt-0.5`}>
                     {q.bloom === 'avaliacao' ? 'Avaliar' : 'Criar'} • Bloom {q.bloom === 'avaliacao' ? 'Nível 5' : 'Nível 6'}
                   </span>
-                  <p className="text-sm font-bold text-[#0A1628] leading-relaxed">
+                  <p className="text-sm font-bold text-navy leading-relaxed">
                     <span className="text-slate-500 mr-2">{qi + 1}.</span>{q.enunciado}
                   </p>
                 </div>
@@ -605,11 +605,11 @@ const DesempatePlayer: React.FC<{
                       onClick={() => handleAnswer(alt.letra)}
                       className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${
                         resp === alt.letra
-                          ? 'border-amber-500 bg-amber-500/20 text-[#0A1628]'
+                          ? 'border-amber-500 bg-amber-500/20 text-navy'
                           : 'border-slate-200 hover:border-slate-600 text-slate-700'
                       }`}>
                       <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black flex-shrink-0 ${
-                        resp === alt.letra ? 'bg-amber-500 text-[#0A1628]' : 'bg-slate-200 text-slate-500'
+                        resp === alt.letra ? 'bg-amber-500 text-navy' : 'bg-slate-200 text-slate-500'
                       }`}>{alt.letra}</span>
                       <span className="text-xs leading-snug">{alt.texto}</span>
                     </button>
@@ -623,7 +623,7 @@ const DesempatePlayer: React.FC<{
         <button
           onClick={handleEnviar}
           disabled={Object.keys(respostas).length < total}
-          className="w-full py-4 bg-amber-600 hover:bg-amber-500 disabled:bg-slate-700 disabled:text-slate-500 text-[#0A1628] font-black uppercase tracking-widest rounded-2xl transition-all text-sm">
+          className="w-full py-4 bg-amber-600 hover:bg-amber-500 disabled:bg-slate-700 disabled:text-slate-500 text-navy font-black uppercase tracking-widest rounded-2xl transition-all text-sm">
           <i className="fa-solid fa-gavel mr-2"></i>
           Enviar Respostas de Desempate
           {Object.keys(respostas).length < total && (
@@ -826,7 +826,7 @@ Retorne APENAS um array JSON válido, sem markdown:
       {/* Header */}
       <header className="flex items-start justify-between">
         <div>
-          <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">
+          <h2 className="text-3xl font-black text-navy italic uppercase tracking-tighter">
             Metas de <span className="text-amber-500">Premiação</span>
           </h2>
           <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">
@@ -835,7 +835,7 @@ Retorne APENAS um array JSON válido, sem markdown:
         </div>
         {isGestor && !showForm && (
           <button onClick={() => { setShowForm(true); setEditingMeta(null); }}
-            className="bg-amber-600 hover:bg-amber-500 text-[#0A1628] px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
+            className="bg-amber-600 hover:bg-amber-500 text-navy px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
             <i className="fa-solid fa-plus"></i>Nova Meta
           </button>
         )}
@@ -851,7 +851,7 @@ Retorne APENAS um array JSON válido, sem markdown:
         ].map((s, i) => (
           <div key={i} className="bg-white border border-slate-200 rounded-[20px] p-5 space-y-2">
             <i className={`fa-solid ${s.icon} text-${s.color}-500`}></i>
-            <p className="text-2xl font-black text-[#0A1628]">{s.value}</p>
+            <p className="text-2xl font-black text-navy">{s.value}</p>
             <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">{s.label}</p>
           </div>
         ))}
@@ -873,7 +873,7 @@ Retorne APENAS um array JSON válido, sem markdown:
           <p className="text-purple-400 font-black text-xs uppercase tracking-widest">Desempate por Bloom Alto</p>
           <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
             Em caso de empate na posição premiada, o gestor pode iniciar um quiz de desempate com questões de 
-            <strong className="text-[#0A1628]"> Nível 5 (Avaliar)</strong> e <strong className="text-[#0A1628]">Nível 6 (Criar)</strong> da Taxonomia de Bloom — 
+            <strong className="text-navy"> Nível 5 (Avaliar)</strong> e <strong className="text-navy">Nível 6 (Criar)</strong> da Taxonomia de Bloom — 
             exigindo raciocínio crítico e elaboração de soluções, não apenas memorização.
           </p>
         </div>
@@ -971,7 +971,7 @@ Retorne APENAS um array JSON válido, sem markdown:
             <div className="w-16 h-16 rounded-full bg-amber-500/20 flex items-center justify-center mx-auto animate-pulse">
               <i className="fa-solid fa-brain text-amber-400 text-2xl"></i>
             </div>
-            <p className="text-[#0A1628] font-black text-sm uppercase tracking-widest">Gerando Quiz de Desempate</p>
+            <p className="text-navy font-black text-sm uppercase tracking-widest">Gerando Quiz de Desempate</p>
             <p className="text-slate-500 text-xs">Criando questões Bloom Nível 5-6 com IA...</p>
             <div className="flex gap-1 justify-center">
               {[0, 1, 2].map(i => (

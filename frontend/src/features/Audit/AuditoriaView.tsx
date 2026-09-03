@@ -199,7 +199,7 @@ const AuditoriaView: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-black text-[#0A1628]">Trilha de Auditoria</h2>
+            <h2 className="text-2xl font-black text-navy">Trilha de Auditoria</h2>
             <p className="text-sm text-slate-500 mt-0.5">Registro completo de acessos e ações na plataforma</p>
           </div>
           <div className="flex items-center gap-2">
@@ -211,7 +211,7 @@ const AuditoriaView: React.FC = () => {
               </button>
             )}
             <button onClick={exportCSV}
-              className="flex items-center gap-2 bg-[#C9A84C] hover:bg-[#A8863C] text-[#0A1628] px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm">
+              className="flex items-center gap-2 bg-gold hover:bg-[#A8863C] text-navy px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm">
               <i className="fa-solid fa-download text-xs"></i>Exportar Excel
             </button>
           </div>
@@ -230,7 +230,7 @@ const AuditoriaView: React.FC = () => {
                 <i className={`fa-solid ${s.icon}`} style={{ color: s.color }}></i>
               </div>
               <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">{s.label}</p>
-              <p className="text-3xl font-black text-[#0A1628]">{s.value}</p>
+              <p className="text-3xl font-black text-navy">{s.value}</p>
             </div>
           ))}
         </div>
@@ -246,7 +246,7 @@ const AuditoriaView: React.FC = () => {
                 <button key={g.id} onClick={() => { setGrupo(g.id); setPagina(1); }}
                   className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
                     grupo === g.id
-                      ? 'bg-[#C9A84C] text-[#0A1628]'
+                      ? 'bg-gold text-navy'
                       : 'bg-white text-slate-500 hover:bg-slate-200'
                   }`}>{g.label}</button>
               ))}
@@ -256,13 +256,13 @@ const AuditoriaView: React.FC = () => {
             <div className="flex flex-wrap gap-3 items-center">
               <input value={busca} onChange={e => { setBusca(e.target.value); setPagina(1); }}
                 placeholder="Buscar por usuário ou descrição..."
-                className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-[#C9A84C] w-64" />
+                className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-gold w-64" />
               <div className="flex items-center gap-2">
                 <input type="date" value={dataInicio} onChange={e => { setDataInicio(e.target.value); setPagina(1); }}
-                  className="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#C9A84C]" />
+                  className="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-gold" />
                 <span className="text-slate-500 text-sm">até</span>
                 <input type="date" value={dataFim} onChange={e => { setDataFim(e.target.value); setPagina(1); }}
-                  className="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#C9A84C]" />
+                  className="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-gold" />
               </div>
               {(busca || dataInicio || dataFim || grupo !== 'todos') && (
                 <button onClick={() => { setBusca(''); setDataInicio(''); setDataFim(''); setGrupo('todos'); setPagina(1); }}
@@ -279,7 +279,7 @@ const AuditoriaView: React.FC = () => {
           {/* Tabela */}
           {loading ? (
             <div className="flex items-center justify-center py-16 gap-3 text-slate-500">
-              <div className="w-5 h-5 border-2 border-[#C9A84C]/50 border-t-indigo-600 rounded-full animate-spin"></div>
+              <div className="w-5 h-5 border-2 border-gold/50 border-t-indigo-600 rounded-full animate-spin"></div>
               <span className="text-sm">Carregando logs...</span>
             </div>
           ) : logsPagina.length === 0 ? (
@@ -352,7 +352,7 @@ const AuditoriaView: React.FC = () => {
                   return (
                     <button key={p} onClick={() => setPagina(p)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                        p === pagina ? 'bg-[#C9A84C] text-[#0A1628]' : 'bg-white text-slate-600 hover:bg-slate-200'
+                        p === pagina ? 'bg-gold text-navy' : 'bg-white text-slate-600 hover:bg-slate-200'
                       }`}>{p}</button>
                   );
                 })}

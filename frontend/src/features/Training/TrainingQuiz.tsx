@@ -254,7 +254,7 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
           <h3 className={`text-2xl font-black uppercase italic ${quizResult.aprovado ? 'text-emerald-400' : 'text-red-400'}`}>
             {quizResult.aprovado ? 'Aprovado!' : 'Reprovado'}
           </h3>
-          <p className="text-[#0A1628] text-5xl font-black mt-2">{quizResult.nota}%</p>
+          <p className="text-navy text-5xl font-black mt-2">{quizResult.nota}%</p>
           <p className="text-slate-500 text-sm mt-1">{quizResult.colaborador} — {quizResult.treinamento}</p>
           <p className="text-slate-500 text-xs mt-1">{corretas} de {selectedQuiz.questoes.length} corretas · Mínimo: 70%</p>
         </div>
@@ -268,9 +268,9 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
               <div key={i} className={`p-5 rounded-2xl border space-y-3 ${acertou ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-red-500/5 border-red-500/20'}`}>
                 <div className="flex items-start gap-3">
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${acertou ? 'bg-emerald-500' : 'bg-red-500'}`}>
-                    <i className={`fa-solid text-[#0A1628] text-xs ${acertou ? 'fa-check' : 'fa-xmark'}`}></i>
+                    <i className={`fa-solid text-navy text-xs ${acertou ? 'fa-check' : 'fa-xmark'}`}></i>
                   </div>
-                  <p className="text-sm text-[#0A1628] font-bold">{i + 1}. {q.texto}</p>
+                  <p className="text-sm text-navy font-bold">{i + 1}. {q.texto}</p>
                 </div>
 
                 <div className="ml-9 space-y-1">
@@ -310,11 +310,11 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
 
         <div className="flex gap-3">
           <button onClick={() => setMode('list')}
-            className="flex-1 bg-slate-200 hover:bg-slate-700 text-[#0A1628] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+            className="flex-1 bg-slate-200 hover:bg-slate-700 text-navy px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
             <i className="fa-solid fa-arrow-left mr-2"></i>Voltar
           </button>
           <button onClick={() => window.print()}
-            className="flex-1 bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+            className="flex-1 bg-blue-600 hover:bg-blue-500 text-navy px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
             <i className="fa-solid fa-print mr-2"></i>Imprimir Resultado
           </button>
         </div>
@@ -331,7 +331,7 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
           <div>
             <h3 className="text-red-400 font-black uppercase italic text-lg">Avaliação Bloqueada</h3>
             <p className="text-sm text-slate-500 mt-2">
-              Você não atingiu a nota mínima de <span className="font-black text-[#0A1628]">70%</span> na tentativa anterior.
+              Você não atingiu a nota mínima de <span className="font-black text-navy">70%</span> na tentativa anterior.
             </p>
             <p className="text-xs text-slate-500 mt-1">{selectedQuiz.titulo}</p>
           </div>
@@ -347,11 +347,11 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
               <i className="fa-solid fa-lightbulb mr-1"></i>Dica de Estudo
             </p>
             <p className="text-xs text-slate-500 leading-relaxed">
-              Use o tempo de espera para revisar o conteúdo do treinamento <span className="font-bold text-[#0A1628]">{selectedQuiz.treinamento}</span> na base legal e nos checklists.
+              Use o tempo de espera para revisar o conteúdo do treinamento <span className="font-bold text-navy">{selectedQuiz.treinamento}</span> na base legal e nos checklists.
             </p>
           </div>
           <button type="button" onClick={() => { setMode('list'); setBloqueadoAte(null); }}
-            className="w-full bg-slate-200 hover:bg-slate-700 text-[#0A1628] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+            className="w-full bg-slate-200 hover:bg-slate-700 text-navy px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
             <i className="fa-solid fa-arrow-left mr-2"></i>Voltar para Avaliações
           </button>
         </div>
@@ -365,7 +365,7 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
       return (
         <div className="space-y-6 max-w-lg mx-auto">
           <div>
-            <h3 className="text-[#0A1628] font-black uppercase italic text-sm">{selectedQuiz.titulo}</h3>
+            <h3 className="text-navy font-black uppercase italic text-sm">{selectedQuiz.titulo}</h3>
             <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">
               {selectedQuiz.treinamento} · {selectedQuiz.questoes.length} questões · Aprovação: 70%
             </p>
@@ -380,13 +380,13 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
               <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Seu Nome *</label>
               <input value={respondente.nome} onChange={e => setRespondente(r => ({ ...r, nome: e.target.value }))}
                 placeholder="Nome completo"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-blue-500" />
             </div>
             <div className="space-y-1">
               <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Cargo / Função</label>
               <input value={respondente.cargo} onChange={e => setRespondente(r => ({ ...r, cargo: e.target.value }))}
                 placeholder="Ex: Escrevente Técnico"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-blue-500" />
             </div>
           </div>
           <div className="flex gap-3">
@@ -406,7 +406,7 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
                 setIdentStarted(true);
               }}
               disabled={!respondente.nome}
-              className="flex-1 bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50">
+              className="flex-1 bg-blue-600 hover:bg-blue-500 text-navy px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50">
               <i className="fa-solid fa-play mr-2"></i>Iniciar Avaliação
             </button>
           </div>
@@ -427,7 +427,7 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
           </div>
         </div>
         <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
-          <p className="text-[#0A1628] font-bold text-sm leading-relaxed">{currentQ + 1}. {questao.texto}</p>
+          <p className="text-navy font-bold text-sm leading-relaxed">{currentQ + 1}. {questao.texto}</p>
           <div className="space-y-2">
             {questao.opcoes.map((opcao, i) => (
               <button key={i} onClick={() => handleAnswer(i)}
@@ -446,11 +446,11 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-3">
-          <button onClick={() => setMode('list')} className="text-slate-500 hover:text-[#0A1628] transition-colors">
+          <button onClick={() => setMode('list')} className="text-slate-500 hover:text-navy transition-colors">
             <i className="fa-solid fa-arrow-left"></i>
           </button>
           <div>
-            <h3 className="text-[#0A1628] font-black uppercase italic text-sm">Novo Questionário</h3>
+            <h3 className="text-navy font-black uppercase italic text-sm">Novo Questionário</h3>
           </div>
         </div>
 
@@ -459,7 +459,7 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
           {(['ia', 'manual'] as const).map(m => (
             <button key={m} onClick={() => setCreateMode(m)}
               className={`px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
-                createMode === m ? 'bg-blue-600 text-[#0A1628]' : 'text-slate-500 hover:text-[#0A1628]'
+                createMode === m ? 'bg-blue-600 text-navy' : 'text-slate-500 hover:text-navy'
               }`}>
               <i className={`fa-solid mr-2 ${m === 'ia' ? 'fa-wand-magic-sparkles' : 'fa-pen'}`}></i>
               {m === 'ia' ? 'Gerar com IA' : 'Criar Manual'}
@@ -488,7 +488,7 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
             <div className="space-y-1">
               <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Treinamento *</label>
               <select value={aiForm.treinamento} onChange={e => setAiForm(f => ({ ...f, treinamento: e.target.value }))}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500">
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-navy outline-none focus:border-blue-500">
                 <option value="">Selecione o treinamento...</option>
                 {checklists.length > 0 && (
                   <optgroup label="Protocolos">
@@ -507,13 +507,13 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
             <div className="space-y-1">
               <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Quantidade de Questões</label>
               <select value={aiForm.quantidade} onChange={e => setAiForm(f => ({ ...f, quantidade: e.target.value }))}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500">
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-navy outline-none focus:border-blue-500">
                 {['3', '5', '7', '10'].map(n => <option key={n} value={n}>{n} questões</option>)}
               </select>
             </div>
             {generateError && <p className="text-red-400 text-xs">{generateError}</p>}
             <button onClick={generateQuizWithAI} disabled={isGenerating || !aiForm.treinamento}
-              className="w-full bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+              className="w-full bg-blue-600 hover:bg-blue-500 text-navy px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50 flex items-center justify-center gap-2">
               {isGenerating
                 ? <><i className="fa-solid fa-circle-notch animate-spin"></i>Gerando com IA...</>
                 : <><i className="fa-solid fa-wand-magic-sparkles"></i>Gerar Questionário</>
@@ -529,7 +529,7 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
               <div className="space-y-1">
                 <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Treinamento *</label>
                 <select value={form.treinamento} onChange={e => setForm(f => ({ ...f, treinamento: e.target.value }))}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500">
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-navy outline-none focus:border-blue-500">
                   <option value="">Selecione...</option>
                   {checklists.map(c => <option key={c.id} value={c.title}>{c.title}</option>)}
                   {knowledgeDocs.map(d => (
@@ -542,7 +542,7 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
                 <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Título *</label>
                 <input value={form.titulo} onChange={e => setForm(f => ({ ...f, titulo: e.target.value }))}
                   placeholder="Ex: Avaliação NR-35"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-navy outline-none focus:border-blue-500" />
               </div>
             </div>
 
@@ -558,7 +558,7 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
                 </div>
                 <input value={q.texto} onChange={e => updateQuestao(qi, 'texto', e.target.value)}
                   placeholder="Digite a pergunta..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-navy outline-none focus:border-blue-500" />
                 <div className="space-y-2">
                   {q.opcoes.map((opcao, oi) => (
                     <div key={oi} className="flex items-center gap-2">
@@ -566,11 +566,11 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
                         className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${
                           q.correta === oi ? 'border-emerald-500 bg-emerald-500' : 'border-slate-200 hover:border-slate-500'
                         }`}>
-                        {q.correta === oi && <i className="fa-solid fa-check text-[#0A1628] text-xs"></i>}
+                        {q.correta === oi && <i className="fa-solid fa-check text-navy text-xs"></i>}
                       </button>
                       <input value={opcao} onChange={e => updateOpcao(qi, oi, e.target.value)}
                         placeholder={`Opção ${String.fromCharCode(65 + oi)}`}
-                        className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-[#0A1628] outline-none focus:border-blue-500" />
+                        className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-navy outline-none focus:border-blue-500" />
                     </div>
                   ))}
                 </div>
@@ -579,18 +579,18 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
                   <textarea value={q.explicacao} onChange={e => updateQuestao(qi, 'explicacao', e.target.value)}
                     placeholder="Explique por que esta é a resposta correta..."
                     rows={2}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-[#0A1628] outline-none focus:border-blue-500 resize-none" />
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-navy outline-none focus:border-blue-500 resize-none" />
                 </div>
               </div>
             ))}
 
             <div className="flex gap-3">
               <button onClick={addQuestao}
-                className="px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 border border-slate-200 hover:border-slate-600 hover:text-[#0A1628] transition-all">
+                className="px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 border border-slate-200 hover:border-slate-600 hover:text-navy transition-all">
                 <i className="fa-solid fa-plus mr-2"></i>Questão
               </button>
               <button onClick={handleCreateQuiz} disabled={!form.treinamento || !form.titulo}
-                className="flex-1 bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50">
+                className="flex-1 bg-blue-600 hover:bg-blue-500 text-navy px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50">
                 <i className="fa-solid fa-floppy-disk mr-2"></i>Salvar
               </button>
             </div>
@@ -605,13 +605,13 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-[#0A1628] font-black uppercase italic text-sm">
+          <h3 className="text-navy font-black uppercase italic text-sm">
             Questionários de <span className="text-blue-500">Avaliação</span>
           </h3>
           <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Criados pela IA ou manualmente</p>
         </div>
         <button onClick={() => setMode('create')}
-          className="bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
+          className="bg-blue-600 hover:bg-blue-500 text-navy px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
           <i className="fa-solid fa-plus"></i>Novo Questionário
         </button>
       </div>
@@ -634,7 +634,7 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[#0A1628] font-black text-sm">{quiz.titulo}</span>
+                      <span className="text-navy font-black text-sm">{quiz.titulo}</span>
                       <span className="text-[9px] font-black uppercase tracking-widest text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md">
                         {quiz.questoes.length} questões
                       </span>
@@ -660,7 +660,7 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
                   </div>
                   <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
                     <button type="button" onClick={() => startQuiz(quiz)}
-                      className={`text-[#0A1628] px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${bloqueado ? 'bg-red-600 hover:bg-red-500' : 'bg-blue-600 hover:bg-blue-500'}`}>
+                      className={`text-navy px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${bloqueado ? 'bg-red-600 hover:bg-red-500' : 'bg-blue-600 hover:bg-blue-500'}`}>
                       <i className={`fa-solid ${bloqueado ? 'fa-lock' : 'fa-play'} mr-1`}></i>
                       {bloqueado ? 'Ver bloqueio' : 'Responder'}
                     </button>

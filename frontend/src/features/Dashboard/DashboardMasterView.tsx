@@ -43,7 +43,7 @@ const DashboardMasterView: React.FC = () => {
   return (
     <div className="p-10 space-y-10 bg-slate-50 min-h-screen animate-in fade-in">
       <header>
-        <h2 className="text-4xl font-black text-[#0A1628] italic uppercase tracking-tighter">
+        <h2 className="text-4xl font-black text-navy italic uppercase tracking-tighter">
           Console <span className="text-blue-500">Master</span>
         </h2>
         <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.4em] mt-2">
@@ -55,17 +55,17 @@ const DashboardMasterView: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="bg-white border border-slate-200 p-8 rounded-[40px] shadow-xl hover:border-blue-500/30 transition-all group">
           <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest group-hover:text-blue-500">Cartórios Ativos</p>
-          <p className="text-5xl font-black text-[#0A1628] mt-2 tracking-tighter">
+          <p className="text-5xl font-black text-navy mt-2 tracking-tighter">
             {loading ? <span className="animate-pulse text-slate-300">—</span> : ativos}
           </p>
         </div>
         <div className="bg-white border border-slate-200 p-8 rounded-[40px] shadow-xl hover:border-emerald-500/30 transition-all group">
           <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest group-hover:text-emerald-500">Documentos Totais</p>
-          <p className="text-5xl font-black text-[#0A1628] mt-2 tracking-tighter">{totalDocs}</p>
+          <p className="text-5xl font-black text-navy mt-2 tracking-tighter">{totalDocs}</p>
         </div>
         <div className="bg-white border border-slate-200 p-8 rounded-[40px] shadow-xl hover:border-purple-500/30 transition-all group">
           <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest group-hover:text-purple-500">Usuários na Plataforma</p>
-          <p className="text-5xl font-black text-[#0A1628] mt-2 tracking-tighter">{totalUsers}</p>
+          <p className="text-5xl font-black text-navy mt-2 tracking-tighter">{totalUsers}</p>
         </div>
       </div>
 
@@ -75,7 +75,7 @@ const DashboardMasterView: React.FC = () => {
           <i className="fa-solid fa-server text-9xl"></i>
         </div>
 
-        <h3 className="text-[#0A1628] font-bold italic uppercase text-sm mb-6 flex items-center gap-2">
+        <h3 className="text-navy font-bold italic uppercase text-sm mb-6 flex items-center gap-2">
           <i className="fa-solid fa-network-wired text-blue-500"></i> Instâncias Recentes
         </h3>
 
@@ -91,7 +91,7 @@ const DashboardMasterView: React.FC = () => {
             <div key={t.id} className="p-5 bg-white border border-slate-200 rounded-2xl flex justify-between items-center group hover:bg-slate-50 transition-all">
               <div className="flex items-center gap-4">
                 <div className={`w-2 h-2 rounded-full ${t.active ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`}></div>
-                <span className="text-[#0A1628] font-bold italic uppercase text-sm">{t.name}</span>
+                <span className="text-navy font-bold italic uppercase text-sm">{t.name}</span>
               </div>
               <div className="flex items-center gap-6">
                 <span className="text-[10px] font-mono text-blue-500 bg-blue-500/5 px-3 py-1 rounded-md border border-blue-500/10">ID: {t.id}</span>

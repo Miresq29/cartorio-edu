@@ -242,7 +242,7 @@ const TrainingReport: React.FC = () => {
         ].map((stat, i) => (
           <div key={i} className="bg-white border border-slate-200 rounded-2xl p-4 space-y-2">
             <i className={`fa-solid ${stat.icon} text-${stat.color}-500 text-lg`}></i>
-            <p className="text-2xl font-black text-[#0A1628]">{stat.value}</p>
+            <p className="text-2xl font-black text-navy">{stat.value}</p>
             <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">{stat.label}</p>
           </div>
         ))}
@@ -253,14 +253,14 @@ const TrainingReport: React.FC = () => {
         <div className="flex flex-wrap gap-2">
           <input value={filterColaborador} onChange={e => setFilterColaborador(e.target.value)}
             placeholder="Buscar colaborador..."
-            className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm text-[#0A1628] outline-none focus:border-blue-500 min-w-[180px]" />
+            className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm text-navy outline-none focus:border-blue-500 min-w-[180px]" />
           <select value={filterTreinamento} onChange={e => setFilterTreinamento(e.target.value)}
-            className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm text-[#0A1628] outline-none focus:border-blue-500">
+            className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm text-navy outline-none focus:border-blue-500">
             <option value="todos">Todos os Treinamentos</option>
             {treinamentosUnicos.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
           <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
-            className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm text-[#0A1628] outline-none focus:border-blue-500">
+            className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm text-navy outline-none focus:border-blue-500">
             <option value="todos">Todos os Status</option>
             <option value="concluído">Concluído</option>
             <option value="pendente">Pendente</option>
@@ -271,11 +271,11 @@ const TrainingReport: React.FC = () => {
         {/* Botões de exportação */}
         <div className="flex gap-2">
           <button onClick={exportCSV}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest bg-emerald-600 hover:bg-emerald-500 text-[#0A1628] transition-all">
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest bg-emerald-600 hover:bg-emerald-500 text-navy transition-all">
             <i className="fa-solid fa-file-csv"></i>CSV
           </button>
           <button onClick={exportPDF}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest bg-red-600 hover:bg-red-500 text-[#0A1628] transition-all">
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest bg-red-600 hover:bg-red-500 text-navy transition-all">
             <i className="fa-solid fa-file-pdf"></i>PDF
           </button>
         </div>
@@ -297,11 +297,11 @@ const TrainingReport: React.FC = () => {
             return (
               <div key={p.id} className="bg-white border border-slate-200 hover:border-slate-200 rounded-2xl p-4 flex items-center gap-4 transition-all group">
                 <div className="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center flex-shrink-0">
-                  <span className="text-sm font-black text-[#0A1628]">{p.nomeColaborador.charAt(0).toUpperCase()}</span>
+                  <span className="text-sm font-black text-navy">{p.nomeColaborador.charAt(0).toUpperCase()}</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-black text-[#0A1628]">{p.nomeColaborador}</span>
+                    <span className="text-sm font-black text-navy">{p.nomeColaborador}</span>
                     {p.cargo && <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md">{p.cargo}</span>}
                   </div>
                   <div className="flex items-center gap-3 mt-1 flex-wrap">
@@ -325,7 +325,7 @@ const TrainingReport: React.FC = () => {
                 </div>
                 {p.status === 'concluído' && (
                   <button onClick={() => printCertificate(p)}
-                    className="opacity-0 group-hover:opacity-100 bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5">
+                    className="opacity-0 group-hover:opacity-100 bg-blue-600 hover:bg-blue-500 text-navy px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5">
                     <i className="fa-solid fa-certificate text-xs"></i>Certificado
                   </button>
                 )}

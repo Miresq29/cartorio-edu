@@ -283,7 +283,7 @@ const TrainingDashboard: React.FC = () => {
         ].map((kpi, i) => (
           <div key={i} className="bg-white border border-slate-200 rounded-[24px] p-6 space-y-3">
             <i className={`fa-solid ${kpi.icon} text-${kpi.color}-500 text-xl`}></i>
-            <p className="text-3xl font-black text-[#0A1628]">{kpi.value}</p>
+            <p className="text-3xl font-black text-navy">{kpi.value}</p>
             <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">{kpi.label}</p>
           </div>
         ))}
@@ -376,7 +376,7 @@ const TrainingDashboard: React.FC = () => {
                 const media = Math.round(resultados.reduce((a, r) => a + r.nota, 0) / resultados.length);
                 return (
                   <div key={t} className="bg-slate-50/50 border border-slate-200 rounded-xl p-4 space-y-2">
-                    <p className="text-xs font-black text-[#0A1628] truncate">{t}</p>
+                    <p className="text-xs font-black text-navy truncate">{t}</p>
                     <div className="flex gap-3">
                       <div>
                         <p className="text-[8px] text-slate-500 uppercase tracking-widest">Aprovação</p>
@@ -384,7 +384,7 @@ const TrainingDashboard: React.FC = () => {
                       </div>
                       <div>
                         <p className="text-[8px] text-slate-500 uppercase tracking-widest">Média</p>
-                        <p className="text-lg font-black text-[#0A1628]">{media}%</p>
+                        <p className="text-lg font-black text-navy">{media}%</p>
                       </div>
                       <div>
                         <p className="text-[8px] text-slate-500 uppercase tracking-widest">Provas</p>
@@ -407,7 +407,7 @@ const TrainingDashboard: React.FC = () => {
   const renderCobertura = () => (
     <div className="space-y-6">
       <div>
-        <h3 className="text-[#0A1628] font-black uppercase italic text-sm">Cobertura de Trilhas</h3>
+        <h3 className="text-navy font-black uppercase italic text-sm">Cobertura de Trilhas</h3>
         <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">
           Funcionários elegíveis × Concluintes por trilha
         </p>
@@ -424,7 +424,7 @@ const TrainingDashboard: React.FC = () => {
             <div key={trilha.id} className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-sm font-black text-[#0A1628]">{trilha.titulo}</p>
+                  <p className="text-sm font-black text-navy">{trilha.titulo}</p>
                   <div className="flex flex-wrap gap-1.5 mt-1.5">
                     {(trilha.perfis || []).map(p => (
                       <span key={p} className="text-[8px] font-black uppercase tracking-widest bg-slate-200 text-slate-500 px-2 py-0.5 rounded-md">{p}</span>
@@ -453,7 +453,7 @@ const TrainingDashboard: React.FC = () => {
                 ].map((s, i) => (
                   <div key={i} className="bg-slate-50/50 rounded-xl p-3 text-center">
                     <i className={`fa-solid ${s.icon} text-${s.color}-400 text-sm mb-1 block`}></i>
-                    <p className="text-xl font-black text-[#0A1628]">{s.value}</p>
+                    <p className="text-xl font-black text-navy">{s.value}</p>
                     <p className="text-[8px] text-slate-500 uppercase tracking-widest">{s.label}</p>
                   </div>
                 ))}
@@ -474,14 +474,14 @@ const TrainingDashboard: React.FC = () => {
                               {p.userName?.charAt(0)?.toUpperCase() || '?'}
                             </div>
                             <div>
-                              <p className="text-xs font-bold text-[#0A1628]">{p.userName}</p>
+                              <p className="text-xs font-bold text-navy">{p.userName}</p>
                               {userInfo?.role && <p className="text-[8px] text-slate-500">{userInfo.role}</p>}
                             </div>
                             <button
                               type="button"
                               title="Emitir certificado"
                               onClick={() => printTrilhaCertificate(p.userName, userInfo?.role || '', trilha.titulo)}
-                              className="ml-1 text-[8px] font-black uppercase bg-emerald-600 hover:bg-emerald-500 text-[#0A1628] px-2 py-1 rounded-lg transition-all"
+                              className="ml-1 text-[8px] font-black uppercase bg-emerald-600 hover:bg-emerald-500 text-navy px-2 py-1 rounded-lg transition-all"
                             >
                               <i className="fa-solid fa-certificate mr-1"></i>Cert.
                             </button>
@@ -501,7 +501,7 @@ const TrainingDashboard: React.FC = () => {
   const renderDificuldade = () => (
     <div className="space-y-6">
       <div>
-        <h3 className="text-[#0A1628] font-black uppercase italic text-sm">Assuntos com Maior Dificuldade</h3>
+        <h3 className="text-navy font-black uppercase italic text-sm">Assuntos com Maior Dificuldade</h3>
         <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">
           Questões com maior taxa de erro nas avaliações
         </p>
@@ -539,7 +539,7 @@ const TrainingDashboard: React.FC = () => {
                       <span className={`text-lg font-black ${dc.text}`}>{i + 1}</span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-[#0A1628] leading-relaxed">{m.texto}</p>
+                      <p className="text-sm font-bold text-navy leading-relaxed">{m.texto}</p>
                       <div className="flex flex-wrap items-center gap-3 mt-1.5">
                         <span className="text-[9px] text-slate-500">
                           <i className="fa-solid fa-graduation-cap text-blue-500 mr-1"></i>{m.treinamento}
@@ -573,7 +573,7 @@ const TrainingDashboard: React.FC = () => {
   const renderRanking = () => (
     <div className="space-y-6">
       <div>
-        <h3 className="text-[#0A1628] font-black uppercase italic text-sm">Ranking de Desempenho</h3>
+        <h3 className="text-navy font-black uppercase italic text-sm">Ranking de Desempenho</h3>
         <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Colaboradores ordenados por nota média</p>
       </div>
 
@@ -597,13 +597,13 @@ const TrainingDashboard: React.FC = () => {
 
                 {/* Avatar */}
                 <div className="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center flex-shrink-0">
-                  <span className="text-sm font-black text-[#0A1628]">{user.nome.charAt(0).toUpperCase()}</span>
+                  <span className="text-sm font-black text-navy">{user.nome.charAt(0).toUpperCase()}</span>
                 </div>
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-black text-[#0A1628]">{user.nome}</span>
+                    <span className="text-sm font-black text-navy">{user.nome}</span>
                     {user.cargo && (
                       <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md">
                         {user.cargo}
@@ -642,7 +642,7 @@ const TrainingDashboard: React.FC = () => {
                         printTrilhaCertificate(user.nome, user.cargo, trilhaConcluida.trilhaTitulo, user.media);
                       }
                     }}
-                    className="opacity-0 group-hover:opacity-100 bg-blue-600 hover:bg-blue-500 text-[#0A1628] px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5"
+                    className="opacity-0 group-hover:opacity-100 bg-blue-600 hover:bg-blue-500 text-navy px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5"
                   >
                     <i className="fa-solid fa-certificate text-xs"></i>Cert.
                   </button>
@@ -658,7 +658,7 @@ const TrainingDashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-[#0A1628] font-black uppercase italic text-sm">Dashboard de Gestão</h3>
+        <h3 className="text-navy font-black uppercase italic text-sm">Dashboard de Gestão</h3>
         <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-1">
           Métricas de desempenho, cobertura de trilhas e dificuldade
         </p>
@@ -669,7 +669,7 @@ const TrainingDashboard: React.FC = () => {
         {DASH_TABS.map(tab => (
           <button type="button" key={tab.id} onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${
-              activeTab === tab.id ? 'bg-blue-600 text-[#0A1628] shadow-lg shadow-blue-900/30' : 'text-slate-500 hover:text-slate-700'
+              activeTab === tab.id ? 'bg-blue-600 text-navy shadow-lg shadow-blue-900/30' : 'text-slate-500 hover:text-slate-700'
             }`}>
             <i className={`fa-solid ${tab.icon} text-xs`}></i>{tab.label}
           </button>

@@ -268,7 +268,7 @@ Colaboradores com mais cliques: ${rankingRisco.slice(0, 5).map(r => `${r.nome} (
     <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
       <header className="flex items-start justify-between">
         <div>
-          <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">
+          <h2 className="text-3xl font-black text-navy italic uppercase tracking-tighter">
             Simulação de <span className="text-amber-500">Phishing</span>
           </h2>
           <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">
@@ -277,7 +277,7 @@ Colaboradores com mais cliques: ${rankingRisco.slice(0, 5).map(r => `${r.nome} (
         </div>
         {tab === 'simulacoes' && podeUsar && (
           <button onClick={() => setShowForm(!showForm)}
-            className="bg-amber-600 hover:bg-amber-500 text-[#0A1628] px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+            className="bg-amber-600 hover:bg-amber-500 text-navy px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
             <i className="fa-solid fa-plus mr-2"></i>Nova Simulação
           </button>
         )}
@@ -316,7 +316,7 @@ Colaboradores com mais cliques: ${rankingRisco.slice(0, 5).map(r => `${r.nome} (
 
               {showForm && (
                 <div className="bg-white border border-amber-500/30 rounded-[24px] p-6 space-y-4">
-                  <h3 className="text-[#0A1628] font-black uppercase text-sm">Nova Simulação</h3>
+                  <h3 className="text-navy font-black uppercase text-sm">Nova Simulação</h3>
 
                   <div>
                     <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Modelo pronto (opcional)</label>
@@ -335,12 +335,12 @@ Colaboradores com mais cliques: ${rankingRisco.slice(0, 5).map(r => `${r.nome} (
                       <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Nome interno da simulação *</label>
                       <input value={form.titulo} onChange={e => setForm(p => ({ ...p, titulo: e.target.value }))}
                         placeholder="Ex: Simulação Q3 - pendência de assinatura"
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-amber-500" />
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-amber-500" />
                     </div>
                     <div className="md:col-span-2">
                       <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Tema / assunto *</label>
                       <select value={form.tema} onChange={e => setForm(p => ({ ...p, tema: e.target.value }))}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-amber-500">
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-amber-500">
                         {TEMAS.map(t => <option key={t} value={t}>{t}</option>)}
                       </select>
                       <p className="text-[10px] text-slate-400 mt-1">O tema é usado nas análises para identificar que tipo de isca gera mais risco.</p>
@@ -348,14 +348,14 @@ Colaboradores com mais cliques: ${rankingRisco.slice(0, 5).map(r => `${r.nome} (
                     <div className="md:col-span-2">
                       <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Assunto do e-mail *</label>
                       <input value={form.assuntoEmail} onChange={e => setForm(p => ({ ...p, assuntoEmail: e.target.value }))}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-amber-500" />
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-amber-500" />
                     </div>
                     <div className="md:col-span-2">
                       <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">
                         Corpo do e-mail * — use <code className="bg-slate-100 px-1 rounded">{'{{NOME}}'}</code> e <code className="bg-slate-100 px-1 rounded">{'{{LINK}}'}</code>
                       </label>
                       <textarea value={form.corpoEmail} onChange={e => setForm(p => ({ ...p, corpoEmail: e.target.value }))} rows={6}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-[#0A1628] outline-none focus:border-amber-500 resize-none" />
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-amber-500 resize-none" />
                     </div>
                   </div>
 
@@ -365,7 +365,7 @@ Colaboradores com mais cliques: ${rankingRisco.slice(0, 5).map(r => `${r.nome} (
 
                   <div className="flex items-center gap-3">
                     <button onClick={salvar} disabled={loading}
-                      className="bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-[#0A1628] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                      className="bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-navy px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
                       {loading ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Disparando...</> : <><i className="fa-solid fa-paper-plane mr-2"></i>Disparar</>}
                     </button>
                     <button onClick={() => setShowForm(false)} className="bg-slate-200 hover:bg-slate-700 text-slate-700 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
@@ -392,7 +392,7 @@ Colaboradores com mais cliques: ${rankingRisco.slice(0, 5).map(r => `${r.nome} (
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="text-sm font-black text-[#0A1628] truncate">{s.titulo}</h3>
+                            <h3 className="text-sm font-black text-navy truncate">{s.titulo}</h3>
                             {s.tema && (
                               <span className="text-[9px] font-black text-amber-700 uppercase tracking-widest bg-amber-500/10 px-2 py-0.5 rounded-lg">
                                 {s.tema}
@@ -447,7 +447,7 @@ Colaboradores com mais cliques: ${rankingRisco.slice(0, 5).map(r => `${r.nome} (
                 ].map((k, i) => (
                   <div key={i} className="bg-white border border-slate-200 rounded-[20px] p-5 space-y-2">
                     <i className={`fa-solid ${k.icon}`} style={{ color: k.color }}></i>
-                    <p className="text-2xl font-black text-[#0A1628]">{k.value}</p>
+                    <p className="text-2xl font-black text-navy">{k.value}</p>
                     <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">{k.label}</p>
                   </div>
                 ))}
@@ -525,7 +525,7 @@ Colaboradores com mais cliques: ${rankingRisco.slice(0, 5).map(r => `${r.nome} (
                       <tbody>
                         {rankingRisco.map((r, i) => (
                           <tr key={i} className="border-b border-slate-100">
-                            <td className="p-2 font-bold text-[#0A1628]">{r.nome}</td>
+                            <td className="p-2 font-bold text-navy">{r.nome}</td>
                             <td className="p-2 text-slate-500">{r.cargo}</td>
                             <td className="p-2 text-slate-500">{r.email}</td>
                             <td className="p-2"><span className="bg-red-50 text-red-600 border border-red-200 text-[10px] font-black px-2 py-0.5 rounded-lg">{r.cliques}x</span></td>
@@ -541,7 +541,7 @@ Colaboradores com mais cliques: ${rankingRisco.slice(0, 5).map(r => `${r.nome} (
                 <div className="flex items-center justify-between flex-wrap gap-3">
                   <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Plano de ação com IA</p>
                   <button onClick={gerarPlanoDeAcao} disabled={gerandoPlano}
-                    className="bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-[#0A1628] px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                    className="bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-navy px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
                     {gerandoPlano ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Gerando...</> : <><i className="fa-solid fa-wand-magic-sparkles mr-2"></i>Gerar plano de ação com IA</>}
                   </button>
                 </div>

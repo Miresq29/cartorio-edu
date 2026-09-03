@@ -7,7 +7,7 @@ const TermsView: React.FC = () => {
         <div className="w-16 h-16 bg-slate-200 rounded-3xl flex items-center justify-center text-slate-500 border border-slate-700 shadow-xl">
           <i className="fa-solid fa-file-contract text-3xl"></i>
         </div>
-        <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">Termos de Uso & Privacidade</h2>
+        <h2 className="text-3xl font-black text-navy italic uppercase tracking-tighter">Termos de Uso & Privacidade</h2>
         <p className="text-slate-500 font-bold uppercase tracking-widest text-sm">
           Políticas de Utilização do CartórioRAG PRO v3.0
         </p>

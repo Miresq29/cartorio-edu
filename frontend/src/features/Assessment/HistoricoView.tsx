@@ -26,15 +26,15 @@ const HistoricoView: React.FC<Props> = ({ assessments, loading, onNovo, onSeleci
     <div className="space-y-6">
       <header className="flex items-start justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">
-            Diagnóstico de <span className="text-[#C9A84C]">Maturidade</span>
+          <h2 className="text-3xl font-black text-navy italic uppercase tracking-tighter">
+            Diagnóstico de <span className="text-gold">Maturidade</span>
           </h2>
           <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">
             Segurança da Informação · Provimentos CNJ 149/213 e LGPD
           </p>
         </div>
         <button onClick={onNovo}
-          className="flex items-center gap-2 bg-[#C9A84C] hover:brightness-110 text-[#0A1628] px-5 py-3 rounded-xl text-sm font-black uppercase tracking-widest transition-all shadow-sm">
+          className="flex items-center gap-2 bg-gold hover:brightness-110 text-navy px-5 py-3 rounded-xl text-sm font-black uppercase tracking-widest transition-all shadow-sm">
           <i className="fa-solid fa-plus"></i>Iniciar novo diagnóstico
         </button>
       </header>
@@ -62,12 +62,12 @@ const HistoricoView: React.FC<Props> = ({ assessments, loading, onNovo, onSeleci
             const cor = CORES[sit];
             return (
               <button key={a.id} onClick={() => onSelecionar(a)}
-                className="w-full text-left bg-white border border-slate-200 hover:border-[#C9A84C] rounded-2xl p-5 flex items-center gap-5 transition-all">
+                className="w-full text-left bg-white border border-slate-200 hover:border-gold rounded-2xl p-5 flex items-center gap-5 transition-all">
                 <div className={`w-16 h-16 rounded-2xl flex flex-col items-center justify-center flex-shrink-0 ${cor.bg}`}>
                   <span className={`text-xl font-black ${cor.text}`}>{a.scoreGlobal}%</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-black text-[#0A1628]">{a.periodo}</p>
+                  <p className="text-sm font-black text-navy">{a.periodo}</p>
                   <p className="text-xs text-slate-500 mt-0.5">
                     {labelNivel(a.nivel)} · Respondido em {formatData(a.respondidoEm)} por {a.respondidoPorNome}
                   </p>

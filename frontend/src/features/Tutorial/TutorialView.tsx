@@ -330,8 +330,8 @@ ${allContent}
       {/* Header */}
       <div className="flex items-end justify-between">
         <div>
-          <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">
-            Tutorial da <span className="text-[#c9a84c]">Plataforma</span>
+          <h2 className="text-3xl font-black text-navy italic uppercase tracking-tighter">
+            Tutorial da <span className="text-gold">Plataforma</span>
           </h2>
           <p className="text-[#8a6e2f] text-xs font-black uppercase tracking-widest mt-1">
             MJ Consultoria — Guia Completo do Usuário
@@ -339,26 +339,26 @@ ${allContent}
         </div>
         <button
           onClick={exportPDF}
-          className="bg-[#c9a84c] hover:brightness-110 text-[#0f172a] px-5 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-lg"
+          className="bg-gold hover:brightness-110 text-navy px-5 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-lg"
         >
           <i className="fa-solid fa-file-pdf"></i> Baixar PDF
         </button>
       </div>
 
       {/* Info */}
-      <div className="bg-[#c9a84c]/8 border border-[#c9a84c]/25 rounded-2xl p-5 flex items-start gap-3">
-        <i className="fa-solid fa-circle-info text-[#c9a84c] text-lg mt-0.5 flex-shrink-0"></i>
+      <div className="bg-gold/8 border border-gold/25 rounded-2xl p-5 flex items-start gap-3">
+        <i className="fa-solid fa-circle-info text-gold text-lg mt-0.5 flex-shrink-0"></i>
         <p className="text-sm text-[#7a5c1e] leading-relaxed">
           Bem-vindo à Plataforma MJ Consultoria. Selecione um módulo para ver as instruções detalhadas,
-          ou clique em <strong className="text-[#c9a84c]">Baixar PDF</strong> para salvar o manual completo.
+          ou clique em <strong className="text-gold">Baixar PDF</strong> para salvar o manual completo.
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
         {/* Menu lateral */}
-        <div className="bg-[#0f172a] rounded-3xl border border-[#c9a84c]/20 p-4 space-y-1 h-fit">
-          <p className="text-xs font-black text-[#c9a84c]/60 uppercase tracking-widest px-3 py-2">Módulos</p>
+        <div className="bg-navy rounded-3xl border border-gold/20 p-4 space-y-1 h-fit">
+          <p className="text-xs font-black text-gold/60 uppercase tracking-widest px-3 py-2">Módulos</p>
           {visibleSections.map(s => {
             const isActive = activeSection === s.id;
             return (
@@ -367,16 +367,16 @@ ${allContent}
                 onClick={() => setActiveSection(s.id)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left ${
                   isActive
-                    ? 'bg-[#c9a84c] shadow-lg'
+                    ? 'bg-gold shadow-lg'
                     : 'hover:bg-white/5'
                 }`}
               >
                 <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
                   isActive ? 'bg-black/15' : 'bg-white/5'
                 }`}>
-                  <i className={`fa-solid ${s.icon} text-xs ${isActive ? 'text-[#0f172a]' : 'text-[#c9a84c]/60'}`}></i>
+                  <i className={`fa-solid ${s.icon} text-xs ${isActive ? 'text-navy' : 'text-gold/60'}`}></i>
                 </div>
-                <p className={`text-xs font-bold truncate ${isActive ? 'text-[#0f172a]' : 'text-[#c9a84c]/80'}`}>
+                <p className={`text-xs font-bold truncate ${isActive ? 'text-navy' : 'text-gold/80'}`}>
                   {s.title}
                 </p>
               </button>
@@ -388,16 +388,16 @@ ${allContent}
         <div className="lg:col-span-3 space-y-4">
 
           {/* Header da seção */}
-          <div className="bg-[#0f172a] rounded-2xl p-6 flex items-center gap-4 shadow-lg border border-[#c9a84c]/20">
-            <div className="w-14 h-14 rounded-2xl bg-[#c9a84c]/15 flex items-center justify-center flex-shrink-0">
-              <i className={`fa-solid ${current.icon} text-[#c9a84c] text-2xl`}></i>
+          <div className="bg-navy rounded-2xl p-6 flex items-center gap-4 shadow-lg border border-gold/20">
+            <div className="w-14 h-14 rounded-2xl bg-gold/15 flex items-center justify-center flex-shrink-0">
+              <i className={`fa-solid ${current.icon} text-gold text-2xl`}></i>
             </div>
             <div>
-              <p className="text-[#c9a84c]/60 text-xs font-black uppercase tracking-widest">
+              <p className="text-gold/60 text-xs font-black uppercase tracking-widest">
                 Módulo {String(currentIdx + 1).padStart(2, '0')} de {visibleSections.length}
               </p>
               <h3 className="text-xl font-black text-white uppercase italic mt-1">{current.title}</h3>
-              <p className="text-[#c9a84c] text-sm mt-1">{current.subtitle}</p>
+              <p className="text-gold text-sm mt-1">{current.subtitle}</p>
             </div>
           </div>
 
@@ -406,10 +406,10 @@ ${allContent}
             {current.steps.map((step, i) => (
               <div
                 key={i}
-                className="bg-white border border-[#c9a84c]/20 rounded-2xl p-5 flex gap-4 hover:border-[#c9a84c]/40 hover:shadow-sm transition-all"
+                className="bg-white border border-gold/20 rounded-2xl p-5 flex gap-4 hover:border-gold/40 hover:shadow-sm transition-all"
               >
-                <div className="w-8 h-8 rounded-xl bg-[#c9a84c] flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
-                  <span className="text-xs font-black text-[#0f172a]">{i + 1}</span>
+                <div className="w-8 h-8 rounded-xl bg-gold flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
+                  <span className="text-xs font-black text-navy">{i + 1}</span>
                 </div>
                 <div>
                   <p className="text-sm font-black text-[#7a5c1e] mb-1.5">{step.title}</p>
@@ -424,7 +424,7 @@ ${allContent}
             {currentIdx > 0 ? (
               <button
                 onClick={() => setActiveSection(visibleSections[currentIdx - 1].id)}
-                className="flex items-center gap-2 px-5 py-2.5 bg-white border border-[#c9a84c]/30 hover:border-[#c9a84c]/60 text-[#7a5c1e] rounded-xl text-xs font-black uppercase transition-all"
+                className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gold/30 hover:border-gold/60 text-[#7a5c1e] rounded-xl text-xs font-black uppercase transition-all"
               >
                 <i className="fa-solid fa-arrow-left"></i> Anterior
               </button>
@@ -433,14 +433,14 @@ ${allContent}
             {currentIdx < visibleSections.length - 1 ? (
               <button
                 onClick={() => setActiveSection(visibleSections[currentIdx + 1].id)}
-                className="flex items-center gap-2 px-5 py-2.5 bg-[#c9a84c] hover:brightness-110 text-[#0f172a] rounded-xl text-xs font-black uppercase transition-all"
+                className="flex items-center gap-2 px-5 py-2.5 bg-gold hover:brightness-110 text-navy rounded-xl text-xs font-black uppercase transition-all"
               >
                 Próximo <i className="fa-solid fa-arrow-right"></i>
               </button>
             ) : (
               <button
                 onClick={exportPDF}
-                className="flex items-center gap-2 px-5 py-2.5 bg-[#c9a84c] hover:brightness-110 text-[#0f172a] rounded-xl text-xs font-black uppercase transition-all"
+                className="flex items-center gap-2 px-5 py-2.5 bg-gold hover:brightness-110 text-navy rounded-xl text-xs font-black uppercase transition-all"
               >
                 <i className="fa-solid fa-file-pdf"></i> Baixar Manual PDF
               </button>

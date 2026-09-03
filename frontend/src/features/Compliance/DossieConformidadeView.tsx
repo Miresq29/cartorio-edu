@@ -263,8 +263,8 @@ ${resumoAtual ? `<div class="section">
     <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
       <header className="flex items-start justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-3xl font-black text-[#0A1628] italic uppercase tracking-tighter">
-            Dossiê de <span className="text-[#C9A84C]">Conformidade</span>
+          <h2 className="text-3xl font-black text-navy italic uppercase tracking-tighter">
+            Dossiê de <span className="text-gold">Conformidade</span>
           </h2>
           <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">
             Evidências consolidadas para inspeção CNJ e LGPD
@@ -272,11 +272,11 @@ ${resumoAtual ? `<div class="section">
         </div>
         <div className="flex items-center gap-3">
           <select value={periodo} onChange={e => setPeriodo(e.target.value)}
-            className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none focus:border-[#C9A84C] shadow-sm">
+            className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none focus:border-gold shadow-sm">
             {PERIODOS.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
           </select>
           <button onClick={gerarPDF}
-            className="flex items-center gap-2 bg-[#C9A84C] hover:brightness-110 text-[#0A1628] px-5 py-2.5 rounded-xl text-sm font-black uppercase tracking-widest transition-all shadow-sm">
+            className="flex items-center gap-2 bg-gold hover:brightness-110 text-navy px-5 py-2.5 rounded-xl text-sm font-black uppercase tracking-widest transition-all shadow-sm">
             <i className="fa-solid fa-file-pdf"></i>Exportar PDF
           </button>
         </div>
@@ -295,7 +295,7 @@ ${resumoAtual ? `<div class="section">
         ].map((k, i) => (
           <div key={i} className="bg-white border border-slate-200 rounded-[16px] p-4 space-y-1.5">
             <i className={`fa-solid ${k.icon}`} style={{ color: k.color }}></i>
-            <p className="text-xl font-black text-[#0A1628]">{k.value}</p>
+            <p className="text-xl font-black text-navy">{k.value}</p>
             <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest leading-tight">{k.label}</p>
           </div>
         ))}
@@ -319,7 +319,7 @@ ${resumoAtual ? `<div class="section">
               <tbody>
                 {dados.confirmacoesPorComunicado.map((c, i) => (
                   <tr key={i} className="border-b border-slate-100">
-                    <td className="p-2 font-bold text-[#0A1628]">{c.titulo}</td>
+                    <td className="p-2 font-bold text-navy">{c.titulo}</td>
                     <td className="p-2 text-slate-600">{c.confirmados}/{c.total}</td>
                     <td className="p-2"><span className={`font-black ${c.taxa >= 75 ? 'text-emerald-600' : c.taxa >= 40 ? 'text-amber-600' : 'text-red-500'}`}>{c.taxa}%</span></td>
                   </tr>
@@ -331,11 +331,11 @@ ${resumoAtual ? `<div class="section">
       </div>
 
       {/* Resumo executivo com IA */}
-      <div className="bg-white border border-[#C9A84C]/30 rounded-[20px] p-5 space-y-4">
+      <div className="bg-white border border-gold/30 rounded-[20px] p-5 space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Resumo executivo com IA</p>
           <button onClick={gerarResumoExecutivo} disabled={gerandoResumo}
-            className="bg-[#C9A84C] hover:brightness-110 disabled:opacity-50 text-[#0A1628] px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+            className="bg-gold hover:brightness-110 disabled:opacity-50 text-navy px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
             {gerandoResumo ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Gerando...</> : <><i className="fa-solid fa-wand-magic-sparkles mr-2"></i>Gerar resumo executivo</>}
           </button>
         </div>
