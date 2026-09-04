@@ -111,6 +111,10 @@ backend/cartorio-homolog-service-account.json
 backend/SENHAS_PROVISORIAS*.json
 backend/users_2tabmoc.json
 scripts/relatorio-migracao-*.csv
+
+# Rascunhos/uso pontual — não fazem parte do produto
+marketing/
+scripts/migrar-usuarios-teixeira.mjs
 *.json
 !package.json
 !tsconfig*.json
