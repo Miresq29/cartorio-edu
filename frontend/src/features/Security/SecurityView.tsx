@@ -2,11 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { useToast } from '../../context/ToastContext';
 import { useAudit } from '../../hooks/useAudit';
+import { useRecursoTenant } from '../../hooks/useRecursoTenant';
 import { User } from '../../types';
 
 const SecurityView: React.FC = () => {
   const { showToast } = useToast();
   const { logAction } = useAudit();
+  const { podeUsar } = useRecursoTenant('segurancaHabilitado');
   const [masterUser, setMasterUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -41,10 +43,21 @@ const SecurityView: React.FC = () => {
     logAction('SECURITY_BACKUP', 'Exportação completa da base de dados realizada.');
   };
 
+  if (!podeUsar) {
+    return (
+      <div className="p-8 min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-sm text-amber-800 space-y-2 max-w-md">
+          <p className="font-black uppercase text-xs tracking-widest"><i className="fa-solid fa-lock mr-2"></i>Recurso não habilitado</p>
+          <p>Este módulo não está habilitado para o seu cartório. Fale com a MJ Consultoria para liberar o acesso.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-8 min-h-full bg-slate-50 text-slate-700">
       <div className="max-w-7xl mx-auto space-y-12">
-        
+
         {/* Como usar */}
         <div className="bg-blue-600/5 border border-blue-500/10 rounded-2xl p-8 flex items-start gap-5">
            <div className="p-3 bg-blue-500/10 rounded-xl text-blue-500 mt-1">

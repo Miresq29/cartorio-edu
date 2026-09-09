@@ -16,9 +16,33 @@ interface Tenant {
   active: boolean;
   phishingHabilitado?: boolean;
   backupHabilitado?: boolean;
+  auditoriaHabilitado?: boolean;
+  segurancaHabilitado?: boolean;
+  iaAnaliticaHabilitado?: boolean;
+  dossieHabilitado?: boolean;
+  maturidadeHabilitado?: boolean;
   demoExpiraEm?: Timestamp | null;
   demoAvisoEnviado?: boolean;
   createdAt: any;
+}
+
+// Módulos controláveis por cartório. `padraoLigado: true` = módulo normal, incluso por
+// padrão (só desliga se o SUPERADMIN gravar `false`, tipicamente ao ativar uma
+// demonstração). `padraoLigado: false` = recurso historicamente vendido à parte
+// (phishing, backup): fica desligado até o SUPERADMIN habilitar explicitamente.
+const RECURSOS: { campo: keyof Tenant; label: string; icon: string; padraoLigado: boolean }[] = [
+  { campo: 'auditoriaHabilitado',   label: 'Auditoria',    icon: 'fa-clock-rotate-left', padraoLigado: true  },
+  { campo: 'segurancaHabilitado',   label: 'Segurança',    icon: 'fa-lock',              padraoLigado: true  },
+  { campo: 'iaAnaliticaHabilitado', label: 'IA Analítica', icon: 'fa-chart-pie',         padraoLigado: true  },
+  { campo: 'dossieHabilitado',      label: 'Dossiê',       icon: 'fa-file-shield',       padraoLigado: true  },
+  { campo: 'maturidadeHabilitado',  label: 'Maturidade',   icon: 'fa-gauge-high',        padraoLigado: true  },
+  { campo: 'phishingHabilitado',    label: 'Phishing',     icon: 'fa-shield-halved',     padraoLigado: false },
+  { campo: 'backupHabilitado',      label: 'Backup',       icon: 'fa-database',          padraoLigado: false },
+];
+
+function recursoHabilitado(t: Tenant, r: typeof RECURSOS[number]): boolean {
+  const valor = t[r.campo] as boolean | undefined;
+  return r.padraoLigado ? valor !== false : !!valor;
 }
 
 function diasRestantes(ts?: Timestamp | null): number | null {
@@ -64,43 +88,38 @@ const TenantsView: React.FC = () => {
     setSaving(false);
   };
 
-  const togglePhishing = async (t: Tenant) => {
-    await updateDoc(doc(db, 'tenants', t.id), { phishingHabilitado: !t.phishingHabilitado });
-    showToast(
-      !t.phishingHabilitado ? `Simulação de phishing habilitada para "${t.name}".` : `Simulação de phishing desabilitada para "${t.name}".`,
-      'success'
-    );
+  const toggleRecurso = async (t: Tenant, r: typeof RECURSOS[number]) => {
+    const atual = recursoHabilitado(t, r);
+    await updateDoc(doc(db, 'tenants', t.id), { [r.campo]: !atual });
+    showToast(`${r.label} ${!atual ? 'habilitado' : 'desabilitado'} para "${t.name}".`, 'success');
   };
 
-  const toggleBackup = async (t: Tenant) => {
-    await updateDoc(doc(db, 'tenants', t.id), { backupHabilitado: !t.backupHabilitado });
-    showToast(
-      !t.backupHabilitado ? `Backup habilitado para "${t.name}".` : `Backup desabilitado para "${t.name}".`,
-      'success'
-    );
-  };
-
+  // Durante a demonstração, só a Capacitação (Trilhas/Exames/Treinamentos) fica disponível —
+  // todos os módulos controláveis (inclusive os "padrão ligado") são desligados aqui.
   const ativarDemo = async (t: Tenant) => {
     const dias = diasDemo[t.id] || 14;
     const expira = Timestamp.fromDate(new Date(Date.now() + dias * 86_400_000));
+    const desligarTudo = Object.fromEntries(RECURSOS.map(r => [r.campo, false]));
     await updateDoc(doc(db, 'tenants', t.id), {
       active: true,
       demoExpiraEm: expira,
       demoAvisoEnviado: false,
-      // Recursos pagos ficam bloqueados durante a demonstração — só liberam na compra.
-      phishingHabilitado: false,
-      backupHabilitado: false,
+      ...desligarTudo,
     });
-    showToast(`Demonstração de ${dias} dia(s) ativada para "${t.name}".`, 'success');
+    showToast(`Demonstração de ${dias} dia(s) ativada para "${t.name}" — só a Capacitação fica liberada.`, 'success');
   };
 
+  // Ao converter em cliente pleno, os módulos "padrão ligado" voltam a ficar disponíveis;
+  // os historicamente vendidos à parte (Phishing/Backup) continuam exigindo habilitação manual.
+  const religarModulosBase = () => Object.fromEntries(RECURSOS.filter(r => r.padraoLigado).map(r => [r.campo, true]));
+
   const encerrarDemo = async (t: Tenant) => {
-    await updateDoc(doc(db, 'tenants', t.id), { demoExpiraEm: null, demoAvisoEnviado: false });
+    await updateDoc(doc(db, 'tenants', t.id), { demoExpiraEm: null, demoAvisoEnviado: false, ...religarModulosBase() });
     showToast(`"${t.name}" convertido para acesso pleno (sem prazo de demonstração).`, 'success');
   };
 
   const reativarAposDemo = async (t: Tenant) => {
-    await updateDoc(doc(db, 'tenants', t.id), { active: true, demoExpiraEm: null, demoAvisoEnviado: false });
+    await updateDoc(doc(db, 'tenants', t.id), { active: true, demoExpiraEm: null, demoAvisoEnviado: false, ...religarModulosBase() });
     showToast(`"${t.name}" reativado com acesso pleno.`, 'success');
   };
 
@@ -142,8 +161,9 @@ const TenantsView: React.FC = () => {
         <div className="bg-white border border-slate-200 rounded-[40px] p-10 space-y-6 shadow-lg">
           <p className="text-[10px] text-slate-400 px-2">
             <i className="fa-solid fa-circle-info mr-1"></i>
-            "Phishing" e "Backup" são recursos pagos — ficam bloqueados (aparecem no menu, mas travados) até você habilitar aqui.
-            "Ativar Demonstração" libera o acesso por N dias com esses recursos desligados; ao expirar, o cartório é suspenso automaticamente e um e-mail é enviado ao gestor.
+            Cada módulo abaixo pode ser ligado/desligado por cartório — aparecem no menu, mas travados, quando desligados.
+            "Ativar Demonstração" desliga todos e libera só a Capacitação (Trilhas/Exames/Treinamentos) por N dias;
+            ao expirar, o cartório é suspenso automaticamente e um e-mail é enviado ao gestor sugerindo a compra.
           </p>
           <div className="flex items-center justify-between">
             <h3 className="text-slate-500 font-bold uppercase text-[10px] tracking-[0.3em] px-2">Instâncias Ativas</h3>
@@ -164,7 +184,7 @@ const TenantsView: React.FC = () => {
               const demoExpirada = restantes !== null && !t.active && !!t.demoExpiraEm;
               return (
               <div key={t.id} className="p-4 bg-white border border-slate-200 rounded-2xl flex flex-col gap-3 group hover:border-blue-500/30 transition-all">
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center flex-wrap gap-2">
                   <div className="flex items-center gap-3">
                     <div className={`w-2 h-2 rounded-full flex-shrink-0 ${t.active ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`}></div>
                     <div>
@@ -172,43 +192,38 @@ const TenantsView: React.FC = () => {
                       <p className="text-[10px] font-mono text-slate-400">{t.id}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => togglePhishing(t)}
-                      className={`flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl border transition-all ${
-                        t.phishingHabilitado
-                          ? 'bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100'
-                          : 'bg-slate-50 text-slate-400 border-slate-200 hover:bg-slate-100'
-                      }`}
-                      title={t.phishingHabilitado ? 'Recurso opcional habilitado — clique para desabilitar' : 'Recurso opcional desabilitado — clique para habilitar'}
-                    >
-                      <i className="fa-solid fa-shield-halved text-[9px]"></i>
-                      Phishing {t.phishingHabilitado ? 'ON' : 'OFF'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => toggleBackup(t)}
-                      className={`flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl border transition-all ${
-                        t.backupHabilitado
-                          ? 'bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100'
-                          : 'bg-slate-50 text-slate-400 border-slate-200 hover:bg-slate-100'
-                      }`}
-                      title={t.backupHabilitado ? 'Recurso pago habilitado — clique para desabilitar' : 'Recurso pago desabilitado — clique para habilitar'}
-                    >
-                      <i className="fa-solid fa-database text-[9px]"></i>
-                      Backup {t.backupHabilitado ? 'ON' : 'OFF'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setActiveTenant(t.id, t.name); setActiveTab('unit'); }}
-                      className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white border border-blue-200 hover:border-blue-600 transition-all"
-                      title={`Acessar ${t.name}`}
-                    >
-                      <i className="fa-solid fa-arrow-right-to-bracket text-[9px]"></i>
-                      Acessar
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setActiveTenant(t.id, t.name); setActiveTab('unit'); }}
+                    className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white border border-blue-200 hover:border-blue-600 transition-all"
+                    title={`Acessar ${t.name}`}
+                  >
+                    <i className="fa-solid fa-arrow-right-to-bracket text-[9px]"></i>
+                    Acessar
+                  </button>
+                </div>
+
+                {/* Módulos habilitáveis */}
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {RECURSOS.map(r => {
+                    const ligado = recursoHabilitado(t, r);
+                    return (
+                      <button
+                        key={String(r.campo)}
+                        type="button"
+                        onClick={() => toggleRecurso(t, r)}
+                        className={`flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border transition-all ${
+                          ligado
+                            ? 'bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100'
+                            : 'bg-slate-50 text-slate-400 border-slate-200 hover:bg-slate-100'
+                        }`}
+                        title={ligado ? `${r.label} habilitado — clique para desabilitar` : `${r.label} desabilitado — clique para habilitar`}
+                      >
+                        <i className={`fa-solid ${r.icon} text-[9px]`}></i>
+                        {r.label} {ligado ? 'ON' : 'OFF'}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {/* Relógio de demonstração */}

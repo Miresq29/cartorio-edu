@@ -11,6 +11,7 @@ import { db, functions } from '../../services/firebase';
 import { httpsCallable } from 'firebase/functions';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
+import { useRecursoTenant } from '../../hooks/useRecursoTenant';
 
 const testarEnvioEmailFn = httpsCallable(functions, 'testarEnvioEmail');
 
@@ -106,6 +107,7 @@ const AuditoriaView: React.FC = () => {
   const { showToast } = useToast();
   const user = state.user!;
   const isSuperAdmin = user.role === 'SUPERADMIN';
+  const { podeUsar } = useRecursoTenant('auditoriaHabilitado');
   const [testandoEmail, setTestandoEmail] = useState(false);
 
   const testarEmail = async () => {
@@ -191,6 +193,17 @@ const AuditoriaView: React.FC = () => {
     a.click();
     URL.revokeObjectURL(url);
   };
+
+  if (!podeUsar) {
+    return (
+      <div className="p-8 min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-sm text-amber-800 space-y-2 max-w-md">
+          <p className="font-black uppercase text-xs tracking-widest"><i className="fa-solid fa-lock mr-2"></i>Recurso não habilitado</p>
+          <p>Este módulo não está habilitado para o seu cartório. Fale com a MJ Consultoria para liberar o acesso.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">

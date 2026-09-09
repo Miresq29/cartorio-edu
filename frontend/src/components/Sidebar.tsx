@@ -17,16 +17,21 @@ const Sidebar: React.FC = () => {
   const [openSections, setOpenSections] = useState<Record<number, boolean>>({
     0: true, 1: true, 2: false, 3: false, 4: false
   });
-  const [phishingHabilitado, setPhishingHabilitado] = useState(false);
-  const [backupHabilitado, setBackupHabilitado] = useState(false);
+  // Campos cujo padrão é DESLIGADO até o SUPERADMIN habilitar (recursos historicamente
+  // vendidos à parte). Os demais módulos controláveis por cartório têm padrão LIGADO —
+  // só desligam se o campo vier `false` explicitamente (ex.: ao ativar uma demonstração).
+  const PADRAO_DESLIGADO = new Set(['phishingHabilitado', 'backupHabilitado']);
+  const [recursos, setRecursos] = useState<Record<string, boolean>>({});
   const [demoExpiraEm, setDemoExpiraEm] = useState<Timestamp | null>(null);
 
   useEffect(() => {
-    if (!tenantId) { setPhishingHabilitado(false); setBackupHabilitado(false); setDemoExpiraEm(null); return; }
+    if (!tenantId) { setRecursos({}); setDemoExpiraEm(null); return; }
     return onSnapshot(doc(db, 'tenants', tenantId), snap => {
       const data = snap.data();
-      setPhishingHabilitado(!!data?.phishingHabilitado);
-      setBackupHabilitado(!!data?.backupHabilitado);
+      const campos = ['phishingHabilitado', 'backupHabilitado', 'auditoriaHabilitado', 'segurancaHabilitado', 'iaAnaliticaHabilitado', 'dossieHabilitado', 'maturidadeHabilitado'];
+      const proximo: Record<string, boolean> = {};
+      campos.forEach(c => { proximo[c] = PADRAO_DESLIGADO.has(c) ? !!data?.[c] : data?.[c] !== false; });
+      setRecursos(proximo);
       setDemoExpiraEm(data?.active !== false ? (data?.demoExpiraEm || null) : null);
     });
   }, [tenantId]);
@@ -34,7 +39,7 @@ const Sidebar: React.FC = () => {
   const diasDemoRestantes = demoExpiraEm ? Math.ceil((demoExpiraEm.toDate().getTime() - Date.now()) / 86_400_000) : null;
 
   const avisarRecursoBloqueado = (nome: string) => {
-    showToast(`"${nome}" é um recurso pago, ainda não habilitado para o seu cartório. Fale com a MJ Consultoria para contratar.`, 'info');
+    showToast(`"${nome}" ainda não está habilitado para o seu cartório. Fale com a MJ Consultoria para liberar.`, 'info');
   };
 
   const toggleSection = (idx: number) => {
@@ -65,12 +70,12 @@ const Sidebar: React.FC = () => {
         { tab: 'unit',     icon: 'fa-border-all',        label: 'Dashboard',     desc: 'Resumo operacional da sua empresa'                                           },
         { tab: 'users',    icon: 'fa-users-gear',        label: 'Colaboradores', desc: 'Gerenciar colaboradores e permissoes', roles: ['SUPERADMIN', 'gestor', 'admin'] },
         { tab: 'reports',  icon: 'fa-chart-column',      label: 'Relatorios',    desc: 'Metricas de treinamento e engajamento'                                        },
-        { tab: 'audit',    icon: 'fa-clock-rotate-left', label: 'Auditoria',     desc: 'Historico de acessos e alteracoes',   roles: ['SUPERADMIN', 'gestor']          },
-        { tab: 'security', icon: 'fa-lock',              label: 'Seguranca',     desc: 'Senhas, bloqueios e politicas',       roles: ['SUPERADMIN', 'gestor']          },
-        { tab: 'analytics', icon: 'fa-chart-pie',        label: 'IA Analitica',  desc: 'Analise de auditoria e base legal',   roles: ['SUPERADMIN', 'gestor']          },
-        { tab: 'phishing',  icon: 'fa-shield-halved',     label: 'Simulacao Phishing', desc: 'Recurso opcional: teste de conscientizacao por e-mail', roles: ['SUPERADMIN', 'gestor', 'admin'], color: 'text-red-400', locked: !superAdminGlobal && !phishingHabilitado },
-        { tab: 'dossie',    icon: 'fa-file-shield',       label: 'Dossie de Conformidade', desc: 'Evidencias consolidadas para inspecao CNJ e LGPD', roles: ['SUPERADMIN', 'gestor', 'admin'], color: 'text-[#C9A84C]' },
-        { tab: 'maturidade', icon: 'fa-gauge-high',       label: 'Diagnostico de Maturidade', desc: '40 indicadores, plano de acao e evolucao no tempo', roles: ['SUPERADMIN', 'gestor', 'admin'], color: 'text-[#C9A84C]' },
+        { tab: 'audit',    icon: 'fa-clock-rotate-left', label: 'Auditoria',     desc: 'Historico de acessos e alteracoes',   roles: ['SUPERADMIN', 'gestor'], locked: !superAdminGlobal && !recursos.auditoriaHabilitado },
+        { tab: 'security', icon: 'fa-lock',              label: 'Seguranca',     desc: 'Senhas, bloqueios e politicas',       roles: ['SUPERADMIN', 'gestor'], locked: !superAdminGlobal && !recursos.segurancaHabilitado },
+        { tab: 'analytics', icon: 'fa-chart-pie',        label: 'IA Analitica',  desc: 'Analise de auditoria e base legal',   roles: ['SUPERADMIN', 'gestor'], locked: !superAdminGlobal && !recursos.iaAnaliticaHabilitado },
+        { tab: 'phishing',  icon: 'fa-shield-halved',     label: 'Simulacao Phishing', desc: 'Recurso opcional: teste de conscientizacao por e-mail', roles: ['SUPERADMIN', 'gestor', 'admin'], color: 'text-red-400', locked: !superAdminGlobal && !recursos.phishingHabilitado },
+        { tab: 'dossie',    icon: 'fa-file-shield',       label: 'Dossie de Conformidade', desc: 'Evidencias consolidadas para inspecao CNJ e LGPD', roles: ['SUPERADMIN', 'gestor', 'admin'], color: 'text-[#C9A84C]', locked: !superAdminGlobal && !recursos.dossieHabilitado },
+        { tab: 'maturidade', icon: 'fa-gauge-high',       label: 'Diagnostico de Maturidade', desc: '40 indicadores, plano de acao e evolucao no tempo', roles: ['SUPERADMIN', 'gestor', 'admin'], color: 'text-[#C9A84C]', locked: !superAdminGlobal && !recursos.maturidadeHabilitado },
       ]
     },
     {
@@ -98,7 +103,7 @@ const Sidebar: React.FC = () => {
     {
       label: 'PLATAFORMA', icon: 'fa-gear',
       items: [
-        { tab: 'backup',   icon: 'fa-database',      label: 'Backup',       desc: 'Exportar dados do cartorio',        color: 'text-[#c9a84c]', roles: ['SUPERADMIN','gestor','admin'], locked: !superAdminGlobal && !backupHabilitado },
+        { tab: 'backup',   icon: 'fa-database',      label: 'Backup',       desc: 'Exportar dados do cartorio',        color: 'text-[#c9a84c]', roles: ['SUPERADMIN','gestor','admin'], locked: !superAdminGlobal && !recursos.backupHabilitado },
         { tab: 'support',  icon: 'fa-headset',       label: 'Suporte',      desc: 'Contatar a MJ Consultoria'          },
         { tab: 'tutorial', icon: 'fa-book-open',     label: 'Tutorial',     desc: 'Guia completo de uso da plataforma' },
         { tab: 'terms',    icon: 'fa-file-contract', label: 'Termos de Uso', desc: 'Politicas e conformidade'          },
