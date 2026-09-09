@@ -9,6 +9,10 @@ import { doc, onSnapshot, Timestamp } from 'firebase/firestore';
 const Sidebar: React.FC = () => {
   const { state, tenantId, setActiveTab, setActiveTenant, logout: appLogout } = useApp();
   const { showToast } = useToast();
+  // No modo global (fora de qualquer cartório) o SUPERADMIN sempre enxerga os recursos
+  // pagos destravados. Ao "entrar" num cartório específico (activeTenantId), deve ver
+  // exatamente o que aquele cliente vê — inclusive travado, para conferir a config.
+  const superAdminGlobal = state.user?.role === 'SUPERADMIN' && !state.activeTenantId;
   const [expanded, setExpanded] = useState(false);
   const [openSections, setOpenSections] = useState<Record<number, boolean>>({
     0: true, 1: true, 2: false, 3: false, 4: false
@@ -64,7 +68,7 @@ const Sidebar: React.FC = () => {
         { tab: 'audit',    icon: 'fa-clock-rotate-left', label: 'Auditoria',     desc: 'Historico de acessos e alteracoes',   roles: ['SUPERADMIN', 'gestor']          },
         { tab: 'security', icon: 'fa-lock',              label: 'Seguranca',     desc: 'Senhas, bloqueios e politicas',       roles: ['SUPERADMIN', 'gestor']          },
         { tab: 'analytics', icon: 'fa-chart-pie',        label: 'IA Analitica',  desc: 'Analise de auditoria e base legal',   roles: ['SUPERADMIN', 'gestor']          },
-        { tab: 'phishing',  icon: 'fa-shield-halved',     label: 'Simulacao Phishing', desc: 'Recurso opcional: teste de conscientizacao por e-mail', roles: ['SUPERADMIN', 'gestor', 'admin'], color: 'text-red-400', locked: state.user?.role !== 'SUPERADMIN' && !phishingHabilitado },
+        { tab: 'phishing',  icon: 'fa-shield-halved',     label: 'Simulacao Phishing', desc: 'Recurso opcional: teste de conscientizacao por e-mail', roles: ['SUPERADMIN', 'gestor', 'admin'], color: 'text-red-400', locked: !superAdminGlobal && !phishingHabilitado },
         { tab: 'dossie',    icon: 'fa-file-shield',       label: 'Dossie de Conformidade', desc: 'Evidencias consolidadas para inspecao CNJ e LGPD', roles: ['SUPERADMIN', 'gestor', 'admin'], color: 'text-[#C9A84C]' },
         { tab: 'maturidade', icon: 'fa-gauge-high',       label: 'Diagnostico de Maturidade', desc: '40 indicadores, plano de acao e evolucao no tempo', roles: ['SUPERADMIN', 'gestor', 'admin'], color: 'text-[#C9A84C]' },
       ]
@@ -94,7 +98,7 @@ const Sidebar: React.FC = () => {
     {
       label: 'PLATAFORMA', icon: 'fa-gear',
       items: [
-        { tab: 'backup',   icon: 'fa-database',      label: 'Backup',       desc: 'Exportar dados do cartorio',        color: 'text-[#c9a84c]', roles: ['SUPERADMIN','gestor','admin'], locked: state.user?.role !== 'SUPERADMIN' && !backupHabilitado },
+        { tab: 'backup',   icon: 'fa-database',      label: 'Backup',       desc: 'Exportar dados do cartorio',        color: 'text-[#c9a84c]', roles: ['SUPERADMIN','gestor','admin'], locked: !superAdminGlobal && !backupHabilitado },
         { tab: 'support',  icon: 'fa-headset',       label: 'Suporte',      desc: 'Contatar a MJ Consultoria'          },
         { tab: 'tutorial', icon: 'fa-book-open',     label: 'Tutorial',     desc: 'Guia completo de uso da plataforma' },
         { tab: 'terms',    icon: 'fa-file-contract', label: 'Termos de Uso', desc: 'Politicas e conformidade'          },

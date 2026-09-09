@@ -80,13 +80,17 @@ const BackupView: React.FC = () => {
   const user = state.user!;
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(user.role);
   const isSuperAdmin = user.role === 'SUPERADMIN';
+  // No modo global (fora de qualquer cartório) o SUPERADMIN sempre enxerga o recurso
+  // destravado. Ao "entrar" num cartório específico (activeTenantId), deve ver
+  // exatamente o que aquele cliente vê — inclusive travado, para conferir a config.
+  const superAdminGlobal = isSuperAdmin && !state.activeTenantId;
 
   const [backupHabilitado, setBackupHabilitado] = useState(false);
   useEffect(() => {
     if (!tenantId) { setBackupHabilitado(false); return; }
     return onSnapshot(doc(db, 'tenants', tenantId), snap => setBackupHabilitado(!!snap.data()?.backupHabilitado));
   }, [tenantId]);
-  const podeUsar = isSuperAdmin || backupHabilitado;
+  const podeUsar = superAdminGlobal || backupHabilitado;
 
   const [rodando, setRodando] = useState(false);
   const [progresso, setProgresso] = useState<BackupStatus[]>([]);

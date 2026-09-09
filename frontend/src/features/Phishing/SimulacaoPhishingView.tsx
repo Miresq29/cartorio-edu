@@ -102,6 +102,10 @@ const SimulacaoPhishingView: React.FC = () => {
   const { state, tenantId } = useApp();
   const { showToast } = useToast();
   const isSuperAdmin = state.user?.role === 'SUPERADMIN';
+  // No modo global (fora de qualquer cartório) o SUPERADMIN sempre enxerga o recurso
+  // destravado. Ao "entrar" num cartório específico (activeTenantId), deve ver
+  // exatamente o que aquele cliente vê — inclusive travado, para conferir a config.
+  const superAdminGlobal = isSuperAdmin && !state.activeTenantId;
   const [tenantIdsForm, setTenantIdsForm] = useState<string[]>([tenantId]);
 
   const [tab, setTab] = useState<'simulacoes' | 'analises'>('simulacoes');
@@ -141,7 +145,7 @@ const SimulacaoPhishingView: React.FC = () => {
   };
 
   const salvar = async () => {
-    if (!isSuperAdmin && !phishingHabilitado) {
+    if (!superAdminGlobal && !phishingHabilitado) {
       showToast('Este recurso opcional não está habilitado para o seu cartório. Solicite a ativação à MJ Consultoria.', 'error'); return;
     }
     if (!form.titulo.trim() || !form.assuntoEmail.trim() || !form.corpoEmail.trim()) {
@@ -262,7 +266,7 @@ Colaboradores com mais cliques: ${rankingRisco.slice(0, 5).map(r => `${r.nome} (
     }
   };
 
-  const podeUsar = isSuperAdmin || phishingHabilitado;
+  const podeUsar = superAdminGlobal || phishingHabilitado;
 
   return (
     <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
