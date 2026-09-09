@@ -2,9 +2,9 @@
 // Backup por cartório — exporta apenas os dados do próprio tenantId em JSON
 // Cada cartório vê e faz backup SOMENTE dos seus próprios dados
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  collection, query, where, getDocs, orderBy
+  collection, query, where, getDocs, orderBy, doc, onSnapshot
 } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
@@ -79,6 +79,14 @@ const BackupView: React.FC = () => {
   const { showToast } = useToast();
   const user = state.user!;
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(user.role);
+  const isSuperAdmin = user.role === 'SUPERADMIN';
+
+  const [backupHabilitado, setBackupHabilitado] = useState(false);
+  useEffect(() => {
+    if (!tenantId) { setBackupHabilitado(false); return; }
+    return onSnapshot(doc(db, 'tenants', tenantId), snap => setBackupHabilitado(!!snap.data()?.backupHabilitado));
+  }, [tenantId]);
+  const podeUsar = isSuperAdmin || backupHabilitado;
 
   const [rodando, setRodando] = useState(false);
   const [progresso, setProgresso] = useState<BackupStatus[]>([]);
@@ -91,6 +99,10 @@ const BackupView: React.FC = () => {
   const executarBackup = async () => {
     if (!isGestor) {
       showToast('Apenas gestores podem executar backups.', 'error');
+      return;
+    }
+    if (!podeUsar) {
+      showToast('Backup é um recurso pago, ainda não habilitado para o seu cartório.', 'error');
       return;
     }
 
@@ -229,6 +241,15 @@ const BackupView: React.FC = () => {
           )}
         </div>
 
+        {!podeUsar ? (
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-sm text-amber-800 space-y-2">
+            <p className="font-black uppercase text-xs tracking-widest">
+              <i className="fa-solid fa-lock mr-2"></i>Recurso pago não habilitado
+            </p>
+            <p>O Backup é um recurso pago — fica bloqueado durante o período de demonstração. Fale com a MJ Consultoria para adquirir a plataforma e habilitar a exportação de dados.</p>
+          </div>
+        ) : (
+        <>
         {/* Aviso de isolamento */}
         <div className="bg-emerald-50 border border-emerald-200 rounded-[14px] p-4 flex items-start gap-3">
           <i className="fa-solid fa-shield-halved text-emerald-500 text-lg mt-0.5 flex-shrink-0"></i>
@@ -361,6 +382,8 @@ const BackupView: React.FC = () => {
             </p>
           </div>
         </div>
+        </>
+        )}
       </div>
     </div>
   );

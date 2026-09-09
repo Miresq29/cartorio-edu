@@ -5,6 +5,7 @@ admin.initializeApp();
 
 export { notificarComunicado, notificarTrilha, verificarExpiracoes, testarEnvioEmail, notificarReforco } from "./email";
 export { notificarSimulacaoPhishing, phishClick } from "./phishing";
+export { verificarDemoExpirada } from "./demo";
 
 const db = admin.firestore();
 

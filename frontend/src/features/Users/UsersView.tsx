@@ -100,6 +100,9 @@ const UsersView: React.FC = () => {
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(user.role);
 
   const isSuperAdmin = user.role === 'SUPERADMIN';
+  // SUPERADMIN só enxerga todos os cartórios no modo global (fora de um cartório ativo);
+  // ao "entrar" em um cartório (state.activeTenantId), deve ver apenas os colaboradores dele.
+  const superAdminGlobal = isSuperAdmin && !state.activeTenantId;
 
   const [tab, setTab] = useState<Tab>('colaboradores');
   const [users, setUsers] = useState<UserData[]>([]);
@@ -111,12 +114,12 @@ const UsersView: React.FC = () => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const [form, setForm] = useState({
-    name: '', email: '', role: 'colaborador' as Role, cargo: '', tenantId: isSuperAdmin ? '' : tenantId,
+    name: '', email: '', role: 'colaborador' as Role, cargo: '', tenantId: superAdminGlobal ? '' : tenantId,
   });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const q = isSuperAdmin
+    const q = superAdminGlobal
       ? query(collection(db, 'users'), orderBy('name'))
       : query(collection(db, 'users'), where('tenantId', '==', tenantId), orderBy('name'));
     const u = onSnapshot(q, snap => {
@@ -128,7 +131,7 @@ const UsersView: React.FC = () => {
       setLoading(false);
     });
     return () => u();
-  }, [tenantId, user.role]);
+  }, [tenantId, superAdminGlobal]);
 
   useEffect(() => {
     if (!isSuperAdmin) return;
@@ -146,14 +149,14 @@ const UsersView: React.FC = () => {
       setForm({ name: u.name, email: u.email, role: u.role, cargo: u.cargo || '', tenantId: u.tenantId });
     } else {
       setEditUser(null);
-      setForm({ name: '', email: '', role: 'colaborador', cargo: '', tenantId: isSuperAdmin ? '' : tenantId });
+      setForm({ name: '', email: '', role: 'colaborador', cargo: '', tenantId: superAdminGlobal ? '' : tenantId });
     }
     setShowForm(true);
   };
 
   const handleSave = async () => {
     if (!form.name || !form.email) { showToast('Preencha nome e e-mail.', 'error'); return; }
-    if (isSuperAdmin && !form.tenantId) { showToast('Selecione o cartório para este colaborador.', 'error'); return; }
+    if (superAdminGlobal && !form.tenantId) { showToast('Selecione o cartório para este colaborador.', 'error'); return; }
     setSaving(true);
     try {
       if (editUser) {

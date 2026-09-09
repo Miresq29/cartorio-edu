@@ -5,7 +5,7 @@ import { useToast } from '../../context/ToastContext';
 import { db, functions } from '../../services/firebase';
 import { httpsCallable } from 'firebase/functions';
 import {
-  collection, onSnapshot, query, orderBy, doc, updateDoc
+  collection, onSnapshot, query, orderBy, doc, updateDoc, Timestamp
 } from 'firebase/firestore';
 
 const createTenantFn = httpsCallable(functions, 'createTenant');
@@ -15,7 +15,16 @@ interface Tenant {
   name: string;
   active: boolean;
   phishingHabilitado?: boolean;
+  backupHabilitado?: boolean;
+  demoExpiraEm?: Timestamp | null;
+  demoAvisoEnviado?: boolean;
   createdAt: any;
+}
+
+function diasRestantes(ts?: Timestamp | null): number | null {
+  if (!ts) return null;
+  const ms = ts.toDate().getTime() - Date.now();
+  return Math.ceil(ms / 86_400_000);
 }
 
 const TenantsView: React.FC = () => {
@@ -26,6 +35,7 @@ const TenantsView: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [loading, setLoading] = useState(true);
+  const [diasDemo, setDiasDemo] = useState<Record<string, number>>({});
 
   useEffect(() => {
     const q = query(collection(db, 'tenants'), orderBy('createdAt', 'desc'));
@@ -60,6 +70,38 @@ const TenantsView: React.FC = () => {
       !t.phishingHabilitado ? `Simulação de phishing habilitada para "${t.name}".` : `Simulação de phishing desabilitada para "${t.name}".`,
       'success'
     );
+  };
+
+  const toggleBackup = async (t: Tenant) => {
+    await updateDoc(doc(db, 'tenants', t.id), { backupHabilitado: !t.backupHabilitado });
+    showToast(
+      !t.backupHabilitado ? `Backup habilitado para "${t.name}".` : `Backup desabilitado para "${t.name}".`,
+      'success'
+    );
+  };
+
+  const ativarDemo = async (t: Tenant) => {
+    const dias = diasDemo[t.id] || 14;
+    const expira = Timestamp.fromDate(new Date(Date.now() + dias * 86_400_000));
+    await updateDoc(doc(db, 'tenants', t.id), {
+      active: true,
+      demoExpiraEm: expira,
+      demoAvisoEnviado: false,
+      // Recursos pagos ficam bloqueados durante a demonstração — só liberam na compra.
+      phishingHabilitado: false,
+      backupHabilitado: false,
+    });
+    showToast(`Demonstração de ${dias} dia(s) ativada para "${t.name}".`, 'success');
+  };
+
+  const encerrarDemo = async (t: Tenant) => {
+    await updateDoc(doc(db, 'tenants', t.id), { demoExpiraEm: null, demoAvisoEnviado: false });
+    showToast(`"${t.name}" convertido para acesso pleno (sem prazo de demonstração).`, 'success');
+  };
+
+  const reativarAposDemo = async (t: Tenant) => {
+    await updateDoc(doc(db, 'tenants', t.id), { active: true, demoExpiraEm: null, demoAvisoEnviado: false });
+    showToast(`"${t.name}" reativado com acesso pleno.`, 'success');
   };
 
   return (
@@ -100,7 +142,8 @@ const TenantsView: React.FC = () => {
         <div className="bg-white border border-slate-200 rounded-[40px] p-10 space-y-6 shadow-lg">
           <p className="text-[10px] text-slate-400 px-2">
             <i className="fa-solid fa-circle-info mr-1"></i>
-            "Phishing ON/OFF" habilita ou desabilita, por cartório, o módulo opcional de simulação de phishing (menu Gestão).
+            "Phishing" e "Backup" são recursos pagos — ficam bloqueados (aparecem no menu, mas travados) até você habilitar aqui.
+            "Ativar Demonstração" libera o acesso por N dias com esses recursos desligados; ao expirar, o cartório é suspenso automaticamente e um e-mail é enviado ao gestor.
           </p>
           <div className="flex items-center justify-between">
             <h3 className="text-slate-500 font-bold uppercase text-[10px] tracking-[0.3em] px-2">Instâncias Ativas</h3>
@@ -115,41 +158,105 @@ const TenantsView: React.FC = () => {
             {!loading && tenants.length === 0 && (
               <p className="text-slate-700 text-xs font-bold uppercase text-center py-10 italic">Nenhum cartório cadastrado</p>
             )}
-            {tenants.map(t => (
-              <div key={t.id} className="p-4 bg-white border border-slate-200 rounded-2xl flex justify-between items-center group hover:border-blue-500/30 transition-all">
-                <div className="flex items-center gap-3">
-                  <div className={`w-2 h-2 rounded-full flex-shrink-0 ${t.active ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`}></div>
-                  <div>
-                    <span className="text-navy font-bold italic uppercase text-sm">{t.name}</span>
-                    <p className="text-[10px] font-mono text-slate-400">{t.id}</p>
+            {tenants.map(t => {
+              const restantes = diasRestantes(t.demoExpiraEm);
+              const emDemo = restantes !== null && restantes >= 0 && t.active;
+              const demoExpirada = restantes !== null && !t.active && !!t.demoExpiraEm;
+              return (
+              <div key={t.id} className="p-4 bg-white border border-slate-200 rounded-2xl flex flex-col gap-3 group hover:border-blue-500/30 transition-all">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${t.active ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`}></div>
+                    <div>
+                      <span className="text-navy font-bold italic uppercase text-sm">{t.name}</span>
+                      <p className="text-[10px] font-mono text-slate-400">{t.id}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => togglePhishing(t)}
+                      className={`flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl border transition-all ${
+                        t.phishingHabilitado
+                          ? 'bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100'
+                          : 'bg-slate-50 text-slate-400 border-slate-200 hover:bg-slate-100'
+                      }`}
+                      title={t.phishingHabilitado ? 'Recurso opcional habilitado — clique para desabilitar' : 'Recurso opcional desabilitado — clique para habilitar'}
+                    >
+                      <i className="fa-solid fa-shield-halved text-[9px]"></i>
+                      Phishing {t.phishingHabilitado ? 'ON' : 'OFF'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => toggleBackup(t)}
+                      className={`flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl border transition-all ${
+                        t.backupHabilitado
+                          ? 'bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100'
+                          : 'bg-slate-50 text-slate-400 border-slate-200 hover:bg-slate-100'
+                      }`}
+                      title={t.backupHabilitado ? 'Recurso pago habilitado — clique para desabilitar' : 'Recurso pago desabilitado — clique para habilitar'}
+                    >
+                      <i className="fa-solid fa-database text-[9px]"></i>
+                      Backup {t.backupHabilitado ? 'ON' : 'OFF'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setActiveTenant(t.id, t.name); setActiveTab('unit'); }}
+                      className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white border border-blue-200 hover:border-blue-600 transition-all"
+                      title={`Acessar ${t.name}`}
+                    >
+                      <i className="fa-solid fa-arrow-right-to-bracket text-[9px]"></i>
+                      Acessar
+                    </button>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => togglePhishing(t)}
-                    className={`flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl border transition-all ${
-                      t.phishingHabilitado
-                        ? 'bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100'
-                        : 'bg-slate-50 text-slate-400 border-slate-200 hover:bg-slate-100'
-                    }`}
-                    title={t.phishingHabilitado ? 'Recurso opcional habilitado — clique para desabilitar' : 'Recurso opcional desabilitado — clique para habilitar'}
-                  >
-                    <i className="fa-solid fa-shield-halved text-[9px]"></i>
-                    Phishing {t.phishingHabilitado ? 'ON' : 'OFF'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setActiveTenant(t.id, t.name); setActiveTab('unit'); }}
-                    className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white border border-blue-200 hover:border-blue-600 transition-all"
-                    title={`Acessar ${t.name}`}
-                  >
-                    <i className="fa-solid fa-arrow-right-to-bracket text-[9px]"></i>
-                    Acessar
-                  </button>
+
+                {/* Relógio de demonstração */}
+                <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-100">
+                  {emDemo ? (
+                    <div className="flex items-center gap-2">
+                      <i className="fa-solid fa-hourglass-half text-amber-500 text-xs"></i>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-amber-600">
+                        Demo — expira em {restantes} dia{restantes !== 1 ? 's' : ''}
+                      </span>
+                      <button type="button" onClick={() => encerrarDemo(t)}
+                        className="text-[9px] font-black uppercase tracking-widest text-blue-500 hover:text-blue-700 underline ml-2">
+                        Converter em cliente pleno
+                      </button>
+                    </div>
+                  ) : demoExpirada ? (
+                    <div className="flex items-center gap-2">
+                      <i className="fa-solid fa-triangle-exclamation text-red-500 text-xs"></i>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-red-500">
+                        Demonstração expirada — acesso suspenso
+                      </span>
+                      <button type="button" onClick={() => reativarAposDemo(t)}
+                        className="text-[9px] font-black uppercase tracking-widest text-emerald-600 hover:text-emerald-700 underline ml-2">
+                        Reativar (venda concluída)
+                      </button>
+                    </div>
+                  ) : (
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Sem prazo de demonstração</span>
+                  )}
+                  {!emDemo && !demoExpirada && (
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="number" min={1} max={90}
+                        value={diasDemo[t.id] ?? 14}
+                        onChange={e => setDiasDemo(prev => ({ ...prev, [t.id]: Number(e.target.value) }))}
+                        className="w-14 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-[11px] text-navy outline-none focus:border-amber-500"
+                      />
+                      <span className="text-[9px] text-slate-400 font-bold uppercase">dias</span>
+                      <button type="button" onClick={() => ativarDemo(t)}
+                        className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-200 transition-all">
+                        <i className="fa-solid fa-hourglass-start mr-1"></i>Ativar Demonstração
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>

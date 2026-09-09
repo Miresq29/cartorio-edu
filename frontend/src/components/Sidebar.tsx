@@ -1,22 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
+import { useToast } from '../context/ToastContext';
 import { AppTab } from '../types';
 import { AuthService } from '../services/authService';
 import { db } from '../services/firebase';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, Timestamp } from 'firebase/firestore';
 
 const Sidebar: React.FC = () => {
   const { state, tenantId, setActiveTab, setActiveTenant, logout: appLogout } = useApp();
+  const { showToast } = useToast();
   const [expanded, setExpanded] = useState(false);
   const [openSections, setOpenSections] = useState<Record<number, boolean>>({
     0: true, 1: true, 2: false, 3: false, 4: false
   });
   const [phishingHabilitado, setPhishingHabilitado] = useState(false);
+  const [backupHabilitado, setBackupHabilitado] = useState(false);
+  const [demoExpiraEm, setDemoExpiraEm] = useState<Timestamp | null>(null);
 
   useEffect(() => {
-    if (!tenantId) { setPhishingHabilitado(false); return; }
-    return onSnapshot(doc(db, 'tenants', tenantId), snap => setPhishingHabilitado(!!snap.data()?.phishingHabilitado));
+    if (!tenantId) { setPhishingHabilitado(false); setBackupHabilitado(false); setDemoExpiraEm(null); return; }
+    return onSnapshot(doc(db, 'tenants', tenantId), snap => {
+      const data = snap.data();
+      setPhishingHabilitado(!!data?.phishingHabilitado);
+      setBackupHabilitado(!!data?.backupHabilitado);
+      setDemoExpiraEm(data?.active !== false ? (data?.demoExpiraEm || null) : null);
+    });
   }, [tenantId]);
+
+  const diasDemoRestantes = demoExpiraEm ? Math.ceil((demoExpiraEm.toDate().getTime() - Date.now()) / 86_400_000) : null;
+
+  const avisarRecursoBloqueado = (nome: string) => {
+    showToast(`"${nome}" é um recurso pago, ainda não habilitado para o seu cartório. Fale com a MJ Consultoria para contratar.`, 'info');
+  };
 
   const toggleSection = (idx: number) => {
     setOpenSections(prev => ({ ...prev, [idx]: !prev[idx] }));
@@ -30,7 +45,7 @@ const Sidebar: React.FC = () => {
   const sections: {
     label: string;
     icon: string;
-    items: { tab: AppTab; icon: string; label: string; desc: string; roles?: string[]; color?: string }[];
+    items: { tab: AppTab; icon: string; label: string; desc: string; roles?: string[]; color?: string; locked?: boolean }[];
   }[] = [
     {
       label: 'SISTEMA MASTER', icon: 'fa-crown',
@@ -49,7 +64,7 @@ const Sidebar: React.FC = () => {
         { tab: 'audit',    icon: 'fa-clock-rotate-left', label: 'Auditoria',     desc: 'Historico de acessos e alteracoes',   roles: ['SUPERADMIN', 'gestor']          },
         { tab: 'security', icon: 'fa-lock',              label: 'Seguranca',     desc: 'Senhas, bloqueios e politicas',       roles: ['SUPERADMIN', 'gestor']          },
         { tab: 'analytics', icon: 'fa-chart-pie',        label: 'IA Analitica',  desc: 'Analise de auditoria e base legal',   roles: ['SUPERADMIN', 'gestor']          },
-        { tab: 'phishing',  icon: 'fa-shield-halved',     label: 'Simulacao Phishing', desc: 'Recurso opcional: teste de conscientizacao por e-mail', roles: ['SUPERADMIN', 'gestor', 'admin'], color: 'text-red-400' },
+        { tab: 'phishing',  icon: 'fa-shield-halved',     label: 'Simulacao Phishing', desc: 'Recurso opcional: teste de conscientizacao por e-mail', roles: ['SUPERADMIN', 'gestor', 'admin'], color: 'text-red-400', locked: state.user?.role !== 'SUPERADMIN' && !phishingHabilitado },
         { tab: 'dossie',    icon: 'fa-file-shield',       label: 'Dossie de Conformidade', desc: 'Evidencias consolidadas para inspecao CNJ e LGPD', roles: ['SUPERADMIN', 'gestor', 'admin'], color: 'text-[#C9A84C]' },
         { tab: 'maturidade', icon: 'fa-gauge-high',       label: 'Diagnostico de Maturidade', desc: '40 indicadores, plano de acao e evolucao no tempo', roles: ['SUPERADMIN', 'gestor', 'admin'], color: 'text-[#C9A84C]' },
       ]
@@ -79,7 +94,7 @@ const Sidebar: React.FC = () => {
     {
       label: 'PLATAFORMA', icon: 'fa-gear',
       items: [
-        { tab: 'backup',   icon: 'fa-database',      label: 'Backup',       desc: 'Exportar dados do cartorio',        color: 'text-[#c9a84c]', roles: ['SUPERADMIN','gestor','admin'] },
+        { tab: 'backup',   icon: 'fa-database',      label: 'Backup',       desc: 'Exportar dados do cartorio',        color: 'text-[#c9a84c]', roles: ['SUPERADMIN','gestor','admin'], locked: state.user?.role !== 'SUPERADMIN' && !backupHabilitado },
         { tab: 'support',  icon: 'fa-headset',       label: 'Suporte',      desc: 'Contatar a MJ Consultoria'          },
         { tab: 'tutorial', icon: 'fa-book-open',     label: 'Tutorial',     desc: 'Guia completo de uso da plataforma' },
         { tab: 'terms',    icon: 'fa-file-contract', label: 'Termos de Uso', desc: 'Politicas e conformidade'          },
@@ -147,13 +162,30 @@ const Sidebar: React.FC = () => {
         </div>
       )}
 
+      {/* Relógio de demonstração */}
+      {diasDemoRestantes !== null && diasDemoRestantes >= 0 && (
+        <div className={`mx-2 mt-2 rounded-xl border border-amber-300 bg-amber-50 transition-all ${expanded ? 'p-3' : 'p-2'}`}>
+          {expanded ? (
+            <div className="flex items-center gap-2">
+              <i className="fa-solid fa-hourglass-half text-amber-600 text-xs flex-shrink-0"></i>
+              <p className="text-[10px] font-black text-amber-700 uppercase tracking-wide leading-tight">
+                Demonstração: {diasDemoRestantes} dia{diasDemoRestantes !== 1 ? 's' : ''} restante{diasDemoRestantes !== 1 ? 's' : ''}
+              </p>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center text-amber-600" title={`Demonstração: ${diasDemoRestantes} dia(s) restante(s)`}>
+              <i className="fa-solid fa-hourglass-half text-sm"></i>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Nav */}
       <nav className="flex-1 px-2 py-3 space-y-1 overflow-y-auto custom-scrollbar pb-8">
         {sections.map((section, sIdx) => {
-          const visibleItems = section.items.filter(item => {
-            if (item.tab === 'phishing' && state.user?.role !== 'SUPERADMIN' && !phishingHabilitado) return false;
-            return !item.roles || item.roles.includes(state.user?.role || '') || state.user?.role === 'SUPERADMIN';
-          });
+          const visibleItems = section.items.filter(item =>
+            !item.roles || item.roles.includes(state.user?.role || '') || state.user?.role === 'SUPERADMIN'
+          );
           if (visibleItems.length === 0) return null;
 
           const isOpen = openSections[sIdx];
@@ -224,23 +256,25 @@ const Sidebar: React.FC = () => {
                       <button
                         key={`${item.tab}-${item.label}`}
                         type="button"
-                        onClick={() => setActiveTab(item.tab)}
+                        onClick={() => item.locked ? avisarRecursoBloqueado(item.label) : setActiveTab(item.tab)}
+                        title={item.locked ? `${item.label} — recurso pago, ainda não habilitado` : undefined}
                         className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl transition-all group ${
+                          item.locked ? 'opacity-50 hover:opacity-80 cursor-not-allowed' :
                           isActive
                             ? 'bg-brand-blue shadow-glow-blue'
                             : 'hover:bg-bg-surface'
                         }`}
                       >
                         <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                          isActive ? 'bg-white/15' : 'bg-bg-surface group-hover:bg-bg-elevated'
+                          isActive && !item.locked ? 'bg-white/15' : 'bg-bg-surface group-hover:bg-bg-elevated'
                         }`}>
-                          <i className={`fa-solid ${item.icon} text-[10px] ${
-                            isActive ? 'text-white' : item.color ?? 'text-text-muted group-hover:text-brand-blue'
+                          <i className={`fa-solid ${item.locked ? 'fa-lock' : item.icon} text-[10px] ${
+                            item.locked ? 'text-text-muted' : isActive ? 'text-white' : item.color ?? 'text-text-muted group-hover:text-brand-blue'
                           }`}></i>
                         </div>
                         <div className="text-left min-w-0">
                           <p className={`text-sm font-semibold truncate ${
-                            isActive ? 'text-white' : 'text-text-secondary group-hover:text-text-primary'
+                            item.locked ? 'text-text-muted' : isActive ? 'text-white' : 'text-text-secondary group-hover:text-text-primary'
                           }`}>
                             {item.label}
                           </p>

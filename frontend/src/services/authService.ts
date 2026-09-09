@@ -103,6 +103,14 @@ export const AuthService = {
       if (!userDoc.exists()) { await signOut(auth); throw new Error("Perfil nao encontrado no banco de dados."); }
       const userData = userDoc.data();
       if (!userData.active) { await signOut(auth); await logAudit("LOGIN_BLOCKED", firebaseUser.uid, email, "Conta desativada", "WARNING", userData.tenantId || ""); throw new Error("Conta desativada. Contate o administrador."); }
+      if (userData.role !== "SUPERADMIN" && userData.tenantId) {
+        const tenantDoc = await getDoc(doc(db, "tenants", userData.tenantId));
+        if (tenantDoc.exists() && tenantDoc.data().active === false) {
+          await signOut(auth);
+          await logAudit("LOGIN_BLOCKED", firebaseUser.uid, email, "Cartorio inativo (demonstracao expirada ou suspenso)", "WARNING", userData.tenantId);
+          throw new Error("O período de demonstração deste cartório terminou. Entre em contato com a MJ Consultoria para adquirir a plataforma.");
+        }
+      }
       await clearFailedAttempts(email);
       await logAudit("LOGIN_SUCCESS", firebaseUser.uid, email, "Login bem-sucedido", "INFO", userData.tenantId || "");
       return { user: { id: firebaseUser.uid, email: firebaseUser.email!, ...userData } as User, token };
@@ -147,9 +155,13 @@ export const AuthService = {
         try {
           const token = await firebaseUser.getIdToken();
           const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
-          if (userDoc.exists() && userDoc.data().active) {
-            callback({ id: firebaseUser.uid, email: firebaseUser.email!, ...userDoc.data() } as User, token);
-          } else { await signOut(auth); callback(null, null); }
+          const userData = userDoc.data();
+          if (!userDoc.exists() || !userData?.active) { await signOut(auth); callback(null, null); return; }
+          if (userData.role !== "SUPERADMIN" && userData.tenantId) {
+            const tenantDoc = await getDoc(doc(db, "tenants", userData.tenantId));
+            if (tenantDoc.exists() && tenantDoc.data().active === false) { await signOut(auth); callback(null, null); return; }
+          }
+          callback({ id: firebaseUser.uid, email: firebaseUser.email!, ...userData } as User, token);
         } catch { callback(null, null); }
       } else { callback(null, null); }
     });

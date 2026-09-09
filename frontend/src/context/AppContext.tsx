@@ -2,6 +2,8 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { User, AppTab } from '../types';
 import { AuthService } from '../services/authService';
+import { db } from '../services/firebase';
+import { doc, onSnapshot } from 'firebase/firestore';
 
 interface AppState {
   user: User | null;
@@ -69,6 +71,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const tenantId = (state.user?.role === 'SUPERADMIN' && state.activeTenantId)
     ? state.activeTenantId
     : state.user?.tenantId ?? '';
+
+  // Se o cartório do usuário logado for desativado (ex.: demonstração expirada),
+  // derruba a sessão em tempo real em vez de esperar o próximo login/refresh de token.
+  useEffect(() => {
+    if (!tenantId || state.user?.role === 'SUPERADMIN') return;
+    return onSnapshot(doc(db, 'tenants', tenantId), snap => {
+      if (snap.exists() && snap.data().active === false) logout();
+    });
+  }, [tenantId, state.user?.role]);
 
   const contextValue = useMemo(() => ({
     state, login, logout, setActiveTab, setActiveTenant, tenantId,
