@@ -10,6 +10,7 @@ import {
 import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
+import { useRecursoTenant } from '../../hooks/useRecursoTenant';
 import VisibilidadeCartorioPicker from '../../components/VisibilidadeCartorioPicker';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -481,6 +482,7 @@ const RepositorioView: React.FC = () => {
   const user = state.user!;
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(user.role);
   const isSuperAdmin = user.role === 'SUPERADMIN';
+  const { podeUsar: podeCriar } = useRecursoTenant('criarConteudoHabilitado');
 
   const [midias, setMidias] = useState<Midia[]>([]);
   const [assistidas, setAssistidas] = useState<Set<string>>(new Set());
@@ -580,10 +582,17 @@ const RepositorioView: React.FC = () => {
           </p>
         </div>
         {isGestor && !showForm && (
-          <button onClick={() => setShowForm(true)}
-            className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
-            <i className="fa-solid fa-plus"></i>Adicionar
-          </button>
+          podeCriar ? (
+            <button onClick={() => setShowForm(true)}
+              className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
+              <i className="fa-solid fa-plus"></i>Adicionar
+            </button>
+          ) : (
+            <button disabled title="Criação de conteúdo não habilitada para o seu cartório"
+              className="bg-slate-100 text-slate-400 px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 cursor-not-allowed">
+              <i className="fa-solid fa-lock"></i>Adicionar
+            </button>
+          )
         )}
       </header>
 

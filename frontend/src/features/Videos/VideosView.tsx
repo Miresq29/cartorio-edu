@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
+import { useRecursoTenant } from '../../hooks/useRecursoTenant';
 import { db } from '../../services/firebase';
 import { collection, onSnapshot, query, orderBy, where, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import VisibilidadeCartorioPicker from '../../components/VisibilidadeCartorioPicker';
@@ -44,6 +45,7 @@ const VideosView: React.FC = () => {
   const { showToast } = useToast();
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(state.user?.role || '');
   const isSuperAdmin = state.user?.role === 'SUPERADMIN';
+  const { podeUsar: podeCriar } = useRecursoTenant('criarConteudoHabilitado');
   const [tenantIdsForm, setTenantIdsForm] = useState<string[]>([tenantId]);
 
   const [videos, setVideos] = useState<Video[]>([]);
@@ -124,10 +126,17 @@ const VideosView: React.FC = () => {
           <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">Biblioteca de conteúdo em vídeo</p>
         </div>
         {isGestor && (
-          <button onClick={() => setShowForm(!showForm)}
-            className="bg-red-600 hover:bg-red-500 text-navy px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
-            <i className="fa-solid fa-plus"></i> Adicionar Vídeo
-          </button>
+          podeCriar ? (
+            <button onClick={() => setShowForm(!showForm)}
+              className="bg-red-600 hover:bg-red-500 text-navy px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
+              <i className="fa-solid fa-plus"></i> Adicionar Vídeo
+            </button>
+          ) : (
+            <button disabled title="Criação de conteúdo não habilitada para o seu cartório"
+              className="bg-slate-100 text-slate-400 px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 cursor-not-allowed">
+              <i className="fa-solid fa-lock"></i> Adicionar Vídeo
+            </button>
+          )
         )}
       </header>
 

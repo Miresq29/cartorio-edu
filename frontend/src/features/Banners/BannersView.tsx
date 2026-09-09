@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
+import { useRecursoTenant } from '../../hooks/useRecursoTenant';
 import { db } from '../../services/firebase';
 import {
   collection, onSnapshot, query, orderBy, where,
@@ -32,6 +33,7 @@ const BannersView: React.FC = () => {
   const { showToast } = useToast();
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(state.user?.role || '');
   const isSuperAdmin = state.user?.role === 'SUPERADMIN';
+  const { podeUsar: podeCriar } = useRecursoTenant('criarConteudoHabilitado');
   const [tenantIdsForm, setTenantIdsForm] = useState<string[]>([tenantId]);
 
   const [materiais, setMateriais] = useState<Material[]>([]);
@@ -188,6 +190,17 @@ CTA: [chamada para ação aqui]`;
   });
 
   const filtrados = materiais.filter(m => !filtroTipo || m.tipo === filtroTipo);
+
+  if (!podeCriar) {
+    return (
+      <div className="p-8 min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-sm text-amber-800 space-y-2 max-w-md">
+          <p className="font-black uppercase text-xs tracking-widest"><i className="fa-solid fa-lock mr-2"></i>Criação de conteúdo não habilitada</p>
+          <p>Este módulo não está habilitado para o seu cartório. Fale com a MJ Consultoria para liberar o acesso.</p>
+        </div>
+      </div>
+    );
+  }
 
   /* ══════════════════ RENDER ══════════════════════════ */
   return (

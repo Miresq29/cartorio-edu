@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useAudit } from '../../hooks/useAudit';
+import { useRecursoTenant } from '../../hooks/useRecursoTenant';
 import { extractTextFromFile } from '../../services/extractor';
 import { useToast } from '../../context/ToastContext';
 import { db } from '../../services/firebase';
@@ -35,6 +36,7 @@ const KnowledgeBase: React.FC = () => {
   const user = state.user;
   const isSuperAdmin = user?.role === 'SUPERADMIN';
   const canManage = isSuperAdmin || user?.role === 'gestor';
+  const { podeUsar: podeCriar } = useRecursoTenant('criarConteudoHabilitado');
   const [tenantIdsForm, setTenantIdsForm] = useState<string[]>([tenantId]);
 
   useEffect(() => {
@@ -144,11 +146,18 @@ const KnowledgeBase: React.FC = () => {
               className="bg-white border border-slate-300 rounded-xl pl-10 pr-4 py-3 text-xs text-navy outline-none focus:border-blue-500 w-56" />
           </div>
           {canManage && (
-            <label className={`bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-2xl cursor-pointer flex items-center gap-3 text-xs font-black uppercase transition-all shadow-lg shadow-blue-900/20 ${isUploading ? 'opacity-60 pointer-events-none' : ''}`}>
-              <i className={`fa-solid ${isUploading ? 'fa-circle-notch animate-spin' : 'fa-cloud-arrow-up'}`}></i>
-              {isUploading ? 'Processando...' : 'Adicionar'}
-              <input type="file" className="hidden" onChange={handleFileUpload} disabled={isUploading} accept=".pdf,.docx,.txt,.jpg,.jpeg,.png,.webp,.bmp,.gif" />
-            </label>
+            podeCriar ? (
+              <label className={`bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-2xl cursor-pointer flex items-center gap-3 text-xs font-black uppercase transition-all shadow-lg shadow-blue-900/20 ${isUploading ? 'opacity-60 pointer-events-none' : ''}`}>
+                <i className={`fa-solid ${isUploading ? 'fa-circle-notch animate-spin' : 'fa-cloud-arrow-up'}`}></i>
+                {isUploading ? 'Processando...' : 'Adicionar'}
+                <input type="file" className="hidden" onChange={handleFileUpload} disabled={isUploading} accept=".pdf,.docx,.txt,.jpg,.jpeg,.png,.webp,.bmp,.gif" />
+              </label>
+            ) : (
+              <button disabled title="Criação de conteúdo não habilitada para o seu cartório"
+                className="bg-slate-100 text-slate-400 px-6 py-3 rounded-2xl flex items-center gap-3 text-xs font-black uppercase cursor-not-allowed">
+                <i className="fa-solid fa-lock"></i>Adicionar
+              </button>
+            )
           )}
         </div>
       </header>

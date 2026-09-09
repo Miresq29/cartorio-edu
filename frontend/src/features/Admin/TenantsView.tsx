@@ -21,6 +21,7 @@ interface Tenant {
   iaAnaliticaHabilitado?: boolean;
   dossieHabilitado?: boolean;
   maturidadeHabilitado?: boolean;
+  criarConteudoHabilitado?: boolean;
   demoExpiraEm?: Timestamp | null;
   demoAvisoEnviado?: boolean;
   createdAt: any;
@@ -36,6 +37,7 @@ const RECURSOS: { campo: keyof Tenant; label: string; icon: string; padraoLigado
   { campo: 'iaAnaliticaHabilitado', label: 'IA Analítica', icon: 'fa-chart-pie',         padraoLigado: true  },
   { campo: 'dossieHabilitado',      label: 'Dossiê',       icon: 'fa-file-shield',       padraoLigado: true  },
   { campo: 'maturidadeHabilitado',  label: 'Maturidade',   icon: 'fa-gauge-high',        padraoLigado: true  },
+  { campo: 'criarConteudoHabilitado', label: 'Criar Conteúdo', icon: 'fa-plus',          padraoLigado: true  },
   { campo: 'phishingHabilitado',    label: 'Phishing',     icon: 'fa-shield-halved',     padraoLigado: false },
   { campo: 'backupHabilitado',      label: 'Backup',       icon: 'fa-database',          padraoLigado: false },
 ];
@@ -162,7 +164,9 @@ const TenantsView: React.FC = () => {
           <p className="text-[10px] text-slate-400 px-2">
             <i className="fa-solid fa-circle-info mr-1"></i>
             Cada módulo abaixo pode ser ligado/desligado por cartório — aparecem no menu, mas travados, quando desligados.
-            "Ativar Demonstração" desliga todos e libera só a Capacitação (Trilhas/Exames/Treinamentos) por N dias;
+            "Criar Conteúdo" trava só a criação (Repositório, Vídeos, Comunicados, Banners, Base Legal, Nova Trilha) — o consumo
+            (fazer as trilhas já cadastradas, assistir vídeos, etc.) continua liberado mesmo desligado.
+            "Ativar Demonstração" desliga todos por N dias, deixando só a Capacitação disponível;
             ao expirar, o cartório é suspenso automaticamente e um e-mail é enviado ao gestor sugerindo a compra.
           </p>
           <div className="flex items-center justify-between">

@@ -5,6 +5,8 @@ import {
 } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
+import { useToast } from '../../context/ToastContext';
+import { useRecursoTenant } from '../../hooks/useRecursoTenant';
 import VisibilidadeCartorioPicker from '../../components/VisibilidadeCartorioPicker';
 import { GeminiService } from '../../services/geminiService';
 import { FormatoTreinamento, FORMATOS, FORMATO_LABEL } from '../../utils/formatoTreinamento';
@@ -709,9 +711,11 @@ Nota mínima para aprovação: ${modulo.notaMinima}/10`;
 
 const TrailsView: React.FC = () => {
   const { state, tenantId } = useApp();
+  const { showToast } = useToast();
   const user = state.user!;
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(user.role);
   const isSuperAdmin = user.role === 'SUPERADMIN';
+  const { podeUsar: podeCriar } = useRecursoTenant('criarConteudoHabilitado');
   const [tenantIdsForm, setTenantIdsForm] = useState<string[]>([tenantId]);
 
   const [tab, setTab] = useState<'minhas' | 'todas' | 'criar' | 'progresso'>(isGestor ? 'todas' : 'minhas');
@@ -859,8 +863,12 @@ const TrailsView: React.FC = () => {
           <button onClick={() => setTab('todas')} style={{ padding: '10px 20px', borderRadius: 12, border: 'none', cursor: 'pointer', fontWeight: 900, fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, background: tab === 'todas' ? '#0A1628' : '#f1f5f9', color: tab === 'todas' ? '#ffffff' : '#8A9BB0' }}>
             <i className="fa-solid fa-list" style={{ marginRight: 6 }}></i>Todas as Trilhas
           </button>
-          <button onClick={() => iniciarEditar()} style={{ padding: '10px 20px', borderRadius: 12, border: 'none', cursor: 'pointer', fontWeight: 900, fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, background: tab === 'criar' ? '#0A1628' : '#f1f5f9', color: tab === 'criar' ? '#ffffff' : '#8A9BB0' }}>
-            <i className="fa-solid fa-plus" style={{ marginRight: 6 }}></i>{editando ? 'Editando Trilha' : 'Nova Trilha'}
+          <button onClick={() => {
+              if (!editando && !podeCriar) { showToast('Criação de novas trilhas não habilitada para o seu cartório.', 'info'); return; }
+              iniciarEditar();
+            }}
+            style={{ padding: '10px 20px', borderRadius: 12, border: 'none', cursor: 'pointer', fontWeight: 900, fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, background: tab === 'criar' ? '#0A1628' : '#f1f5f9', color: !editando && !podeCriar ? '#c2c9d6' : tab === 'criar' ? '#ffffff' : '#8A9BB0' }}>
+            <i className={`fa-solid ${!editando && !podeCriar ? 'fa-lock' : 'fa-plus'}`} style={{ marginRight: 6 }}></i>{editando ? 'Editando Trilha' : 'Nova Trilha'}
           </button>
           <button onClick={() => setTab('progresso')} style={{ padding: '10px 20px', borderRadius: 12, border: 'none', cursor: 'pointer', fontWeight: 900, fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, background: tab === 'progresso' ? '#0A1628' : '#f1f5f9', color: tab === 'progresso' ? '#ffffff' : '#8A9BB0' }}>
             <i className="fa-solid fa-chart-bar" style={{ marginRight: 6 }}></i>Progresso Geral
@@ -898,9 +906,15 @@ const TrailsView: React.FC = () => {
             <div style={{ textAlign: 'center', padding: 60, color: '#8A9BB0' }}>
               <i className="fa-solid fa-folder-open" style={{ fontSize: 40, marginBottom: 16, display: 'block', color: '#C9A84C' }}></i>
               <p style={{ fontWeight: 900, fontSize: 16, marginBottom: 8, color: '#0A1628' }}>Nenhuma trilha criada</p>
-              <button onClick={() => iniciarEditar()} style={{ marginTop: 16, background: '#0A1628', border: 'none', color: '#ffffff', padding: '12px 24px', borderRadius: 12, cursor: 'pointer', fontWeight: 900, fontSize: 12, textTransform: 'uppercase' }}>
-                <i className="fa-solid fa-plus" style={{ marginRight: 8 }}></i>Criar Primeira Trilha
-              </button>
+              {podeCriar ? (
+                <button onClick={() => iniciarEditar()} style={{ marginTop: 16, background: '#0A1628', border: 'none', color: '#ffffff', padding: '12px 24px', borderRadius: 12, cursor: 'pointer', fontWeight: 900, fontSize: 12, textTransform: 'uppercase' }}>
+                  <i className="fa-solid fa-plus" style={{ marginRight: 8 }}></i>Criar Primeira Trilha
+                </button>
+              ) : (
+                <p style={{ marginTop: 16, fontSize: 12, color: '#8A9BB0' }}>
+                  <i className="fa-solid fa-lock" style={{ marginRight: 6 }}></i>Criação de trilhas não habilitada para o seu cartório.
+                </p>
+              )}
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 16 }}>

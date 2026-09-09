@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
+import { useRecursoTenant } from '../../hooks/useRecursoTenant';
 import { db } from '../../services/firebase';
 import { collection, onSnapshot, query, orderBy, where, addDoc, updateDoc, doc, serverTimestamp, setDoc, getDoc } from 'firebase/firestore';
 import VisibilidadeCartorioPicker from '../../components/VisibilidadeCartorioPicker';
@@ -32,6 +33,7 @@ const ComunicadosView: React.FC = () => {
   const { showToast } = useToast();
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(state.user?.role || '');
   const isSuperAdmin = state.user?.role === 'SUPERADMIN';
+  const { podeUsar: podeCriar } = useRecursoTenant('criarConteudoHabilitado');
   const [tenantIdsForm, setTenantIdsForm] = useState<string[]>([tenantId]);
 
   const [comunicados, setComunicados] = useState<Comunicado[]>([]);
@@ -132,10 +134,17 @@ const ComunicadosView: React.FC = () => {
                 <i className={`fa-solid ${modo === 'mural' ? 'fa-cog' : 'fa-eye'} mr-2`}></i>
                 {modo === 'mural' ? 'Gestão' : 'Mural'}
               </button>
-              <button onClick={() => setShowForm(!showForm)}
-                className="bg-amber-600 hover:bg-amber-500 text-navy px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
-                <i className="fa-solid fa-plus mr-2"></i>Publicar
-              </button>
+              {podeCriar ? (
+                <button onClick={() => setShowForm(!showForm)}
+                  className="bg-amber-600 hover:bg-amber-500 text-navy px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                  <i className="fa-solid fa-plus mr-2"></i>Publicar
+                </button>
+              ) : (
+                <button disabled title="Criação de conteúdo não habilitada para o seu cartório"
+                  className="bg-slate-100 text-slate-400 px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest cursor-not-allowed">
+                  <i className="fa-solid fa-lock mr-2"></i>Publicar
+                </button>
+              )}
             </>
           )}
         </div>
