@@ -31,8 +31,9 @@ const TIPO_CONFIG = {
 const BannersView: React.FC = () => {
   const { state, tenantId } = useApp();
   const { showToast } = useToast();
-  const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(state.user?.role || '');
+  const isGestor = ['SUPERADMIN', 'gestor', 'admin', 'curador'].includes(state.user?.role || '');
   const isSuperAdmin = state.user?.role === 'SUPERADMIN';
+  const podeDistribuir = isSuperAdmin || state.user?.role === 'curador';
   const { podeUsar: podeCriar } = useRecursoTenant('criarConteudoHabilitado');
   const [tenantIdsForm, setTenantIdsForm] = useState<string[]>([tenantId]);
 
@@ -70,7 +71,7 @@ const BannersView: React.FC = () => {
         tipo: formLink.tipo,
         linkUrl: formLink.url.trim(),
         textoBanner: '',
-        tenantIds: isSuperAdmin ? tenantIdsForm : [tenantId],
+        tenantIds: podeDistribuir ? tenantIdsForm : [tenantId],
         publicadoPor: state.user?.id || '',
         criadoEm: serverTimestamp(),
       });
@@ -123,7 +124,7 @@ CTA: [chamada para ação aqui]`;
       tipo: 'banner',
       linkUrl: '',
       textoBanner: textoBannerGerado,
-      tenantIds: isSuperAdmin ? tenantIdsForm : [tenantId],
+      tenantIds: podeDistribuir ? tenantIdsForm : [tenantId],
       publicadoPor: state.user?.id || '',
       criadoEm: serverTimestamp(),
     });
@@ -214,9 +215,9 @@ CTA: [chamada para ação aqui]`;
         </p>
       </header>
 
-      {isGestor && isSuperAdmin && (
+      {isGestor && podeDistribuir && (
         <VisibilidadeCartorioPicker
-          isSuperAdmin={isSuperAdmin}
+          isSuperAdmin={podeDistribuir}
           ownTenantId={tenantId}
           value={tenantIdsForm}
           onChange={setTenantIdsForm}

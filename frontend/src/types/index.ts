@@ -1,6 +1,6 @@
 // frontend/src/types/index.ts — versão completa atualizada
 
-export type UserRole = 'SUPERADMIN' | 'TENANT_ADMIN' | 'gestor' | 'atendente' | 'auditor' | 'admin' | 'expert' | 'viewer';
+export type UserRole = 'SUPERADMIN' | 'TENANT_ADMIN' | 'gestor' | 'atendente' | 'auditor' | 'admin' | 'expert' | 'viewer' | 'curador';
 
 export interface User {
   id: string;

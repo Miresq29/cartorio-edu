@@ -482,6 +482,9 @@ const RepositorioView: React.FC = () => {
   const user = state.user!;
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(user.role);
   const isSuperAdmin = user.role === 'SUPERADMIN';
+  // O link de compartilhamento (YouTube/Drive) só pode ser inserido por quem publica
+  // conteúdo oficialmente — gestor não deve ver nem preencher esse campo.
+  const podeGerenciarLink = ['SUPERADMIN', 'admin', 'curador'].includes(user.role);
   const { podeUsar: podeCriar } = useRecursoTenant('criarConteudoHabilitado');
 
   const [midias, setMidias] = useState<Midia[]>([]);
@@ -581,7 +584,7 @@ const RepositorioView: React.FC = () => {
             Vídeos · Áudios · PDFs — Google Drive & YouTube
           </p>
         </div>
-        {isGestor && !showForm && (
+        {podeGerenciarLink && !showForm && (
           podeCriar ? (
             <button onClick={() => setShowForm(true)}
               className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
@@ -658,7 +661,7 @@ const RepositorioView: React.FC = () => {
         <div className="flex flex-col items-center justify-center py-20 opacity-30">
           <i className="fa-solid fa-photo-film text-5xl text-slate-600 mb-4"></i>
           <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Nenhum conteúdo encontrado</p>
-          {isGestor && <p className="text-slate-600 text-[10px] mt-1">Clique em "Adicionar" para inserir o primeiro conteúdo</p>}
+          {podeGerenciarLink && <p className="text-slate-600 text-[10px] mt-1">Clique em "Adicionar" para inserir o primeiro conteúdo</p>}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">

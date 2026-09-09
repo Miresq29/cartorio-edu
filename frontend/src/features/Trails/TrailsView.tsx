@@ -713,8 +713,9 @@ const TrailsView: React.FC = () => {
   const { state, tenantId } = useApp();
   const { showToast } = useToast();
   const user = state.user!;
-  const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(user.role);
+  const isGestor = ['SUPERADMIN', 'gestor', 'admin', 'curador'].includes(user.role);
   const isSuperAdmin = user.role === 'SUPERADMIN';
+  const podeDistribuir = isSuperAdmin || user.role === 'curador';
   const { podeUsar: podeCriar } = useRecursoTenant('criarConteudoHabilitado');
   const [tenantIdsForm, setTenantIdsForm] = useState<string[]>([tenantId]);
 
@@ -789,7 +790,7 @@ const TrailsView: React.FC = () => {
         ...form,
         formato: form.formato || null,
         cargaHoraria: form.cargaHoraria === '' ? null : Number(form.cargaHoraria),
-        tenantIds: isSuperAdmin ? tenantIdsForm : [tenantId],
+        tenantIds: podeDistribuir ? tenantIdsForm : [tenantId],
         updatedAt: serverTimestamp(),
       };
       if (editando) {
@@ -1024,7 +1025,7 @@ const TrailsView: React.FC = () => {
                 </div>
               )}
 
-              {isSuperAdmin && (
+              {podeDistribuir && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', color: '#8A9BB0', fontSize: 13 }}>
                     <input type="checkbox" checked={form.oficial} onChange={e => setForm(f => ({ ...f, oficial: e.target.checked }))} />
@@ -1033,9 +1034,9 @@ const TrailsView: React.FC = () => {
                 </div>
               )}
 
-              {isSuperAdmin && (
+              {podeDistribuir && (
                 <VisibilidadeCartorioPicker
-                  isSuperAdmin={isSuperAdmin}
+                  isSuperAdmin={podeDistribuir}
                   ownTenantId={tenantId}
                   value={tenantIdsForm}
                   onChange={setTenantIdsForm}

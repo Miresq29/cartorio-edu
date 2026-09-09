@@ -35,7 +35,8 @@ const KnowledgeBase: React.FC = () => {
 
   const user = state.user;
   const isSuperAdmin = user?.role === 'SUPERADMIN';
-  const canManage = isSuperAdmin || user?.role === 'gestor';
+  const canManage = isSuperAdmin || user?.role === 'gestor' || user?.role === 'curador';
+  const podeDistribuir = isSuperAdmin || user?.role === 'curador';
   const { podeUsar: podeCriar } = useRecursoTenant('criarConteudoHabilitado');
   const [tenantIdsForm, setTenantIdsForm] = useState<string[]>([tenantId]);
 
@@ -94,7 +95,7 @@ const KnowledgeBase: React.FC = () => {
       }
 
       await addDoc(collection(db, 'knowledgeBase'), {
-        tenantIds: isSuperAdmin ? tenantIdsForm : [tenantId],
+        tenantIds: podeDistribuir ? tenantIdsForm : [tenantId],
         title: file.name,
         fileName: file.name,
         content,
@@ -162,10 +163,10 @@ const KnowledgeBase: React.FC = () => {
         </div>
       </header>
 
-      {canManage && isSuperAdmin && (
+      {canManage && podeDistribuir && (
         <div className="px-2">
           <VisibilidadeCartorioPicker
-            isSuperAdmin={isSuperAdmin}
+            isSuperAdmin={podeDistribuir}
             ownTenantId={tenantId}
             value={tenantIdsForm}
             onChange={setTenantIdsForm}

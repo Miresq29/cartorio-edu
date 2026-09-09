@@ -8,6 +8,12 @@ service cloud.firestore {
     function isActive() { return isAuthenticated() && userExists() && getUserData().get('active', false) == true; }
     function isSuperAdmin() { return isActive() && getUserData().get('role', '') == 'SUPERADMIN'; }
     function isGestor() { return isActive() && getUserData().get('role', '') in ['SUPERADMIN', 'gestor', 'admin']; }
+    // Curador: equipe MJ Consultoria que insere e distribui conteudo entre cartorios,
+    // sem pertencer a nenhum deles e sem os demais poderes de SUPERADMIN (tenants,
+    // usuarios, dados privados por cartorio). So conta para as colecoes de conteudo
+    // compartilhavel (canWriteContentArray/canEditContentArray/canReadContentArray)
+    // — nunca foi adicionado a isGestor() de proposito.
+    function isCurador() { return isActive() && getUserData().get('role', '') == 'curador'; }
 
     // Tenant isolation helpers
     function myTenant() { return getUserData().get('tenantId', ''); }
@@ -39,9 +45,9 @@ service cloud.firestore {
     function newSameTenantArray() { return request.resource.data.get('tenantIds', []) == [myTenant()]; }
     function tenantArrayUnchanged() { return request.resource.data.get('tenantIds', []) == resource.data.get('tenantIds', []); }
     function isGlobalContentArray() { return 'GLOBAL' in resource.data.get('tenantIds', []); }
-    function canReadContentArray() { return isSuperAdmin() || (isActive() && (sameTenantArray() || isGlobalContentArray())); }
-    function canWriteContentArray() { return isSuperAdmin() || (isGestor() && newSameTenantArray()); }
-    function canEditContentArray() { return isSuperAdmin() || (isGestor() && sameTenantArray() && tenantArrayUnchanged()); }
+    function canReadContentArray() { return isSuperAdmin() || isCurador() || (isActive() && (sameTenantArray() || isGlobalContentArray())); }
+    function canWriteContentArray() { return isSuperAdmin() || isCurador() || (isGestor() && newSameTenantArray()); }
+    function canEditContentArray() { return isSuperAdmin() || isCurador() || (isGestor() && sameTenantArray() && tenantArrayUnchanged()); }
 
     // Private: strictly per tenant, SUPERADMIN sees all
     function canReadPrivate() { return isSuperAdmin() || (isActive() && sameTenant()); }

@@ -31,8 +31,9 @@ const PRIORIDADE_CONFIG = {
 const ComunicadosView: React.FC = () => {
   const { state, tenantId } = useApp();
   const { showToast } = useToast();
-  const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(state.user?.role || '');
+  const isGestor = ['SUPERADMIN', 'gestor', 'admin', 'curador'].includes(state.user?.role || '');
   const isSuperAdmin = state.user?.role === 'SUPERADMIN';
+  const podeDistribuir = isSuperAdmin || state.user?.role === 'curador';
   const { podeUsar: podeCriar } = useRecursoTenant('criarConteudoHabilitado');
   const [tenantIdsForm, setTenantIdsForm] = useState<string[]>([tenantId]);
 
@@ -99,7 +100,7 @@ const ComunicadosView: React.FC = () => {
     setLoading(true);
     try {
       await addDoc(collection(db, 'comunicados'), {
-        ...form, ativo: true, tenantIds: isSuperAdmin ? tenantIdsForm : [tenantId],
+        ...form, ativo: true, tenantIds: podeDistribuir ? tenantIdsForm : [tenantId],
         publicadoPor: state.user?.id || '', publicadoPorNome: state.user?.name || '',
         criadoEm: serverTimestamp(),
       });
@@ -228,9 +229,9 @@ const ComunicadosView: React.FC = () => {
             </div>
           </div>
 
-          {isSuperAdmin && (
+          {podeDistribuir && (
             <VisibilidadeCartorioPicker
-              isSuperAdmin={isSuperAdmin}
+              isSuperAdmin={podeDistribuir}
               ownTenantId={tenantId}
               value={tenantIdsForm}
               onChange={setTenantIdsForm}

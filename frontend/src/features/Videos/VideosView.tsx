@@ -43,8 +43,10 @@ function extractYouTubeId(url: string): string | null {
 const VideosView: React.FC = () => {
   const { state, tenantId } = useApp();
   const { showToast } = useToast();
-  const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(state.user?.role || '');
+  const isGestor = ['SUPERADMIN', 'gestor', 'admin', 'curador'].includes(state.user?.role || '');
   const isSuperAdmin = state.user?.role === 'SUPERADMIN';
+  // Curador (equipe MJ Consultoria) distribui conteúdo entre cartórios como SUPERADMIN.
+  const podeDistribuir = isSuperAdmin || state.user?.role === 'curador';
   const { podeUsar: podeCriar } = useRecursoTenant('criarConteudoHabilitado');
   const [tenantIdsForm, setTenantIdsForm] = useState<string[]>([tenantId]);
 
@@ -99,7 +101,7 @@ const VideosView: React.FC = () => {
     try {
       await addDoc(collection(db, 'videos'), {
         ...form, youtubeId: yid, ativo: true,
-        tenantIds: isSuperAdmin ? tenantIdsForm : [tenantId], publicadoPor: state.user?.id || '',
+        tenantIds: podeDistribuir ? tenantIdsForm : [tenantId], publicadoPor: state.user?.id || '',
         createdAt: serverTimestamp(),
       });
       showToast('Vídeo adicionado!', 'success');
@@ -183,9 +185,9 @@ const VideosView: React.FC = () => {
             </div>
           </div>
 
-          {isSuperAdmin && (
+          {podeDistribuir && (
             <VisibilidadeCartorioPicker
-              isSuperAdmin={isSuperAdmin}
+              isSuperAdmin={podeDistribuir}
               ownTenantId={tenantId}
               value={tenantIdsForm}
               onChange={setTenantIdsForm}

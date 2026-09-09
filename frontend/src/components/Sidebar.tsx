@@ -113,6 +113,22 @@ const Sidebar: React.FC = () => {
     }
   ];
 
+  // Curador: equipe MJ Consultoria que insere/distribui conteudo entre cartorios — nao
+  // pertence a nenhum cartorio e nao deve ver telas de gestao/consumo por tenant, so os
+  // modulos de conteudo compartilhavel.
+  const isCurador = state.user?.role === 'curador';
+  const sectionsExibidas = isCurador ? [{
+    label: 'CONTEUDO MJ CONSULTORIA', icon: 'fa-layer-group',
+    items: [
+      { tab: 'trails' as AppTab,      icon: 'fa-road',           label: 'Trilhas',      desc: 'Trilhas oficiais de treinamento'   },
+      { tab: 'repositorio' as AppTab, icon: 'fa-photo-film',     label: 'Repositorio',  desc: 'Audios e PDFs'                     },
+      { tab: 'videos' as AppTab,      icon: 'fa-video',          label: 'Videos',       desc: 'Videos de treinamento (YouTube)'   },
+      { tab: 'knowledge' as AppTab,   icon: 'fa-scale-balanced', label: 'Base Legal',   desc: 'Documentos normativos indexados'   },
+      { tab: 'comunicados' as AppTab, icon: 'fa-bullhorn',       label: 'Comunicados',  desc: 'Mural de avisos'                   },
+      { tab: 'banners' as AppTab,     icon: 'fa-images',         label: 'Banners',      desc: 'Banners e materiais de divulgacao' },
+    ]
+  }] : sections;
+
   return (
     <aside
       className={`bg-bg-base text-text-secondary flex flex-col h-screen sticky top-0 border-r border-border no-print transition-all duration-300 ${
@@ -191,7 +207,7 @@ const Sidebar: React.FC = () => {
 
       {/* Nav */}
       <nav className="flex-1 px-2 py-3 space-y-1 overflow-y-auto custom-scrollbar pb-8">
-        {sections.map((section, sIdx) => {
+        {sectionsExibidas.map((section, sIdx) => {
           const visibleItems = section.items.filter(item =>
             !item.roles || item.roles.includes(state.user?.role || '') || state.user?.role === 'SUPERADMIN'
           );

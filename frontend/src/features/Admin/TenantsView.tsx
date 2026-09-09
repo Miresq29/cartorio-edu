@@ -5,10 +5,19 @@ import { useToast } from '../../context/ToastContext';
 import { db, functions } from '../../services/firebase';
 import { httpsCallable } from 'firebase/functions';
 import {
-  collection, onSnapshot, query, orderBy, doc, updateDoc, Timestamp
+  collection, onSnapshot, query, where, orderBy, doc, updateDoc, Timestamp
 } from 'firebase/firestore';
 
 const createTenantFn = httpsCallable(functions, 'createTenant');
+const createCollaboratorFn = httpsCallable(functions, 'createCollaborator');
+
+interface Curador {
+  id: string;
+  name: string;
+  email: string;
+  active?: boolean;
+  createdAt: any;
+}
 
 interface Tenant {
   id: string;
@@ -63,12 +72,22 @@ const TenantsView: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [diasDemo, setDiasDemo] = useState<Record<string, number>>({});
 
+  const [curadores, setCuradores] = useState<Curador[]>([]);
+  const [curadorNome, setCuradorNome] = useState('');
+  const [curadorEmail, setCuradorEmail] = useState('');
+  const [savingCurador, setSavingCurador] = useState(false);
+
   useEffect(() => {
     const q = query(collection(db, 'tenants'), orderBy('createdAt', 'desc'));
     return onSnapshot(q, snap => {
       setTenants(snap.docs.map(d => ({ id: d.id, ...d.data() } as Tenant)));
       setLoading(false);
     });
+  }, []);
+
+  useEffect(() => {
+    const q = query(collection(db, 'users'), where('role', '==', 'curador'));
+    return onSnapshot(q, snap => setCuradores(snap.docs.map(d => ({ id: d.id, ...d.data() } as Curador))));
   }, []);
 
   const handleCreateTenant = async (e: React.FormEvent) => {
@@ -88,6 +107,27 @@ const TenantsView: React.FC = () => {
       showToast(msg, 'error');
     }
     setSaving(false);
+  };
+
+  const handleCreateCurador = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!curadorNome.trim() || !curadorEmail.trim()) return;
+    setSavingCurador(true);
+    try {
+      const tempPassword = 'Acesso@' + crypto.randomUUID().replace(/-/g, '').slice(0, 12);
+      await createCollaboratorFn({ name: curadorNome.trim(), email: curadorEmail.trim(), role: 'curador', cargo: '', tenantId: '', password: tempPassword });
+      alert(`Curador ${curadorNome.trim()} criado!\n\nSenha temporária: ${tempPassword}\n\nComunique à pessoa — ela deverá alterá-la no primeiro acesso.`);
+      setCuradorNome('');
+      setCuradorEmail('');
+    } catch (err: any) {
+      showToast(err.message || 'Erro ao criar curador.', 'error');
+    }
+    setSavingCurador(false);
+  };
+
+  const toggleCuradorAtivo = async (c: Curador) => {
+    await updateDoc(doc(db, 'users', c.id), { active: c.active === false });
+    showToast(c.active === false ? `Curador "${c.name}" reativado.` : `Curador "${c.name}" desativado.`, 'success');
   };
 
   const toggleRecurso = async (t: Tenant, r: typeof RECURSOS[number]) => {
@@ -277,6 +317,59 @@ const TenantsView: React.FC = () => {
               );
             })}
           </div>
+        </div>
+      </div>
+
+      {/* Equipe de curadoria de conteúdo */}
+      <div className="bg-white border border-slate-200 rounded-[40px] p-10 space-y-6 shadow-lg">
+        <div>
+          <h3 className="text-navy font-bold uppercase text-sm italic">Equipe de Curadoria de Conteúdo</h3>
+          <p className="text-[10px] text-slate-400 mt-2">
+            <i className="fa-solid fa-circle-info mr-1"></i>
+            Curadores inserem Vídeos, Repositório, Comunicados, Banners, Base Legal e Trilhas oficiais e escolhem para quais
+            cartórios distribuir (ou "Todos os cartórios") — sem os demais poderes de SUPERADMIN (gestão de cartórios,
+            colaboradores, demonstração etc.).
+          </p>
+        </div>
+        <form onSubmit={handleCreateCurador} className="flex flex-wrap gap-3 items-end">
+          <div className="flex-1 min-w-[200px]">
+            <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Nome</label>
+            <input type="text" value={curadorNome} onChange={e => setCuradorNome(e.target.value)}
+              placeholder="Nome do curador" required
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-blue-600" />
+          </div>
+          <div className="flex-1 min-w-[200px]">
+            <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">E-mail</label>
+            <input type="email" value={curadorEmail} onChange={e => setCuradorEmail(e.target.value)}
+              placeholder="email@mjconsultoria.com.br" required
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-blue-600" />
+          </div>
+          <button type="submit" disabled={savingCurador}
+            className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+            {savingCurador ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Criando...</> : <><i className="fa-solid fa-plus mr-2"></i>Criar Curador</>}
+          </button>
+        </form>
+        <div className="space-y-2">
+          {curadores.length === 0 && (
+            <p className="text-slate-400 text-xs text-center py-6 italic">Nenhum curador cadastrado ainda.</p>
+          )}
+          {curadores.map(c => (
+            <div key={c.id} className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl">
+              <div className="flex items-center gap-3">
+                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${c.active !== false ? 'bg-emerald-500' : 'bg-slate-300'}`}></div>
+                <div>
+                  <p className="text-navy font-bold text-sm">{c.name}</p>
+                  <p className="text-[10px] text-slate-400">{c.email}</p>
+                </div>
+              </div>
+              <button type="button" onClick={() => toggleCuradorAtivo(c)}
+                className={`text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border transition-all ${
+                  c.active !== false ? 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-red-50 hover:text-red-500 hover:border-red-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                }`}>
+                {c.active !== false ? 'Desativar' : 'Reativar'}
+              </button>
+            </div>
+          ))}
         </div>
       </div>
     </div>
