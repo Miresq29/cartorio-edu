@@ -98,9 +98,31 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
   const [aiForm, setAiForm] = useState({ treinamento: '', quantidade: '5' });
   const [createMode, setCreateMode] = useState<'ia' | 'manual'>('ia');
 
+  // Vídeos (módulo Vídeos) e itens de vídeo do Repositório também são "treinamentos"
+  // válidos para gerar exame — a IA usa título + descrição como base do conteúdo.
+  const [videos, setVideos] = useState<{ id: string; titulo: string; descricao?: string }[]>([]);
+  const [videosRepositorio, setVideosRepositorio] = useState<{ id: string; titulo: string; descricao?: string }[]>([]);
+
   useEffect(() => {
     const q = query(collection(db, 'treinamentosQuizzes'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']), orderBy('createdAt', 'desc'));
     const unsub = onSnapshot(q, snap => setQuizzes(snap.docs.map(d => ({ id: d.id, ...d.data() } as Quiz))));
+    return () => unsub();
+  }, [tenantId]);
+
+  useEffect(() => {
+    const q = query(collection(db, 'videos'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']));
+    const unsub = onSnapshot(q, snap => setVideos(
+      snap.docs.map(d => ({ id: d.id, ...d.data() } as any)).filter((v: any) => v.ativo !== false)
+    ));
+    return () => unsub();
+  }, [tenantId]);
+
+  useEffect(() => {
+    const q = query(collection(db, 'repositorio'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']));
+    const unsub = onSnapshot(q, snap => setVideosRepositorio(
+      snap.docs.map(d => ({ id: d.id, ...d.data() } as any))
+        .filter((m: any) => m.ativo !== false && (m.tipo === 'youtube' || m.tipo === 'mp4'))
+    ));
     return () => unsub();
   }, [tenantId]);
 
@@ -118,12 +140,16 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
 
     const checklist = checklists.find(c => c.title === aiForm.treinamento);
     const docItem = knowledgeDocs.find(d => (d.fileName || d.title) === aiForm.treinamento);
+    const videoItem = videos.find(v => v.titulo === aiForm.treinamento);
+    const repoItem = videosRepositorio.find(m => m.titulo === aiForm.treinamento);
     const titulo = aiForm.treinamento;
     const conteudo = checklist
       ? `${checklist.title}\n${checklist.items?.map((i: any) => i.text).join('\n') || ''}`
       : docItem
         ? (docItem.rawText || docItem.content || titulo).substring(0, 6000)
-        : titulo;
+        : (videoItem || repoItem)
+          ? `${(videoItem || repoItem)!.titulo}\n${(videoItem || repoItem)!.descricao || ''}`
+          : titulo;
 
     try {
       const questoesExame = await GeminiService.generateExam(titulo, conteudo, parseInt(aiForm.quantidade));
@@ -502,6 +528,16 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
                     ))}
                   </optgroup>
                 )}
+                {videos.length > 0 && (
+                  <optgroup label="Vídeos">
+                    {videos.map(v => <option key={v.id} value={v.titulo}>{v.titulo}</option>)}
+                  </optgroup>
+                )}
+                {videosRepositorio.length > 0 && (
+                  <optgroup label="Repositório (vídeos)">
+                    {videosRepositorio.map(m => <option key={m.id} value={m.titulo}>{m.titulo}</option>)}
+                  </optgroup>
+                )}
               </select>
             </div>
             <div className="space-y-1">
@@ -535,6 +571,8 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
                   {knowledgeDocs.map(d => (
                     <option key={d.id} value={d.fileName || d.title}>{d.fileName || d.title}</option>
                   ))}
+                  {videos.map(v => <option key={v.id} value={v.titulo}>{v.titulo}</option>)}
+                  {videosRepositorio.map(m => <option key={m.id} value={m.titulo}>{m.titulo}</option>)}
                   <option value="outro">Outro</option>
                 </select>
               </div>
