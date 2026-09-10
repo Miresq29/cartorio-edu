@@ -98,7 +98,12 @@ const GUIA_GESTAO: { icon: string; title: string; desc: string }[] = [
 ];
 
 const TenantsView: React.FC = () => {
-  const { setActiveTenant, setActiveTab } = useApp();
+  const { state, setActiveTenant, setActiveTab } = useApp();
+  // Equipe MJ enxerga esta tela para poder "Acessar" um cartorio (igual ao SUPERADMIN em
+  // preview) e ver colaboradores/relatorios daquele cliente com "acesso amplo" so depois de
+  // entrar nele — mas os poderes de gerenciar o cadastro de cartorios em si (criar, ativar
+  // demonstracao, ligar/desligar recurso, curadoria) continuam exclusivos do SUPERADMIN real.
+  const isSuperAdmin = state.user?.role === 'SUPERADMIN';
   const { showToast } = useToast();
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
@@ -249,7 +254,8 @@ const TenantsView: React.FC = () => {
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+      <div className={isSuperAdmin ? 'grid grid-cols-1 lg:grid-cols-2 gap-12' : 'grid grid-cols-1'}>
+        {isSuperAdmin && (
         <form onSubmit={handleCreateTenant} className="bg-white border border-slate-200 rounded-[40px] p-12 space-y-6 shadow-2xl">
           <h3 className="text-navy font-bold uppercase text-sm italic">Ativar Novo Cartório Cliente</h3>
           <div className="space-y-4">
@@ -272,6 +278,7 @@ const TenantsView: React.FC = () => {
             {saving ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Criando...</> : 'Criar Ambiente Isolado'}
           </button>
         </form>
+        )}
 
         <div className="bg-white border border-slate-200 rounded-[40px] p-10 space-y-6 shadow-lg">
           <p className="text-[10px] text-slate-400 px-2">
@@ -320,7 +327,8 @@ const TenantsView: React.FC = () => {
                   </button>
                 </div>
 
-                {/* Módulos habilitáveis */}
+                {/* Módulos habilitáveis — exclusivo SUPERADMIN */}
+                {isSuperAdmin && (
                 <div className="flex items-center gap-1.5 flex-wrap">
                   {RECURSOS.map(r => {
                     const ligado = recursoHabilitado(t, r);
@@ -342,8 +350,10 @@ const TenantsView: React.FC = () => {
                     );
                   })}
                 </div>
+                )}
 
-                {/* Relógio de demonstração */}
+                {/* Relógio de demonstração — exclusivo SUPERADMIN */}
+                {isSuperAdmin && (
                 <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-100">
                   {emDemo ? (
                     <div className="flex items-center gap-2">
@@ -386,6 +396,7 @@ const TenantsView: React.FC = () => {
                     </div>
                   )}
                 </div>
+                )}
               </div>
               );
             })}
@@ -393,7 +404,8 @@ const TenantsView: React.FC = () => {
         </div>
       </div>
 
-      {/* Equipe de curadoria de conteúdo */}
+      {/* Equipe de curadoria de conteúdo — exclusivo SUPERADMIN */}
+      {isSuperAdmin && (
       <div className="bg-white border border-slate-200 rounded-[40px] p-10 space-y-6 shadow-lg">
         <div>
           <h3 className="text-navy font-bold uppercase text-sm italic">Equipe de Curadoria de Conteúdo</h3>
@@ -445,6 +457,7 @@ const TenantsView: React.FC = () => {
           ))}
         </div>
       </div>
+      )}
     </div>
   );
 };

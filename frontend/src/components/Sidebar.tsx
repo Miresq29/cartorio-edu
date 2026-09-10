@@ -61,9 +61,10 @@ const Sidebar: React.FC = () => {
       label: 'SISTEMA MASTER', icon: 'fa-crown',
       items: [
         { tab: 'dashboard', icon: 'fa-border-all',    label: 'Painel Master',      desc: 'Visao geral de todas as empresas',  roles: ['SUPERADMIN'], color: 'text-blue-400'    },
-        // Gestao de Empresas grava direto na colecao tenants (criar/excluir cartorio, demonstracao,
-        // habilitar recursos) — exclusivo do SUPERADMIN de verdade, nem a equipe MJ acessa.
-        { tab: 'admin',     icon: 'fa-server',        label: 'Gestao de Empresas', desc: 'Criar e gerenciar tenants',         roles: ['SUPERADMIN'], color: 'text-blue-400', equipeMjOculto: true },
+        // Equipe MJ tambem acessa esta tela, mas só para listar cartorios e "Acessar" um deles
+        // (preview) — os controles de criar/excluir cartorio, demonstracao e habilitar recursos
+        // continuam exclusivos do SUPERADMIN de verdade (a propria tela esconde esses controles).
+        { tab: 'admin',     icon: 'fa-server',        label: 'Gestao de Empresas', desc: 'Criar e gerenciar tenants',         roles: ['SUPERADMIN'], color: 'text-blue-400' },
         { tab: 'treinamentos-oficiais', icon: 'fa-wand-magic-sparkles', label: 'Treinamentos Oficiais', desc: 'Publicar conteudo pronto para todos os cartorios', roles: ['SUPERADMIN'], color: 'text-[#C9A84C]' },
         { tab: 'audit',     icon: 'fa-layer-group',   label: 'Atividades Master',  desc: 'Log global de todas as acoes',      roles: ['SUPERADMIN'], color: 'text-emerald-400' },
       ]

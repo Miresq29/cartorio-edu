@@ -104,9 +104,15 @@ const UsersView: React.FC = () => {
   // Equipe MJ (staff interno, sem cartório) enxerga todos os cartórios igual ao SUPERADMIN,
   // mas só o SUPERADMIN de verdade pode criar outra conta de equipe_mj (evita autorreplicação).
   const isPlatformStaff = isSuperAdmin || user.role === 'equipe_mj';
-  // SUPERADMIN/equipe_mj só enxergam todos os cartórios no modo global (fora de um cartório ativo);
-  // ao "entrar" em um cartório (state.activeTenantId), deve ver apenas os colaboradores dele.
+  // SUPERADMIN só enxerga todos os cartórios no modo global (fora de um cartório ativo); ao
+  // "entrar" em um cartório (state.activeTenantId), deve ver apenas os colaboradores dele.
   const superAdminGlobal = isPlatformStaff && !state.activeTenantId;
+  // Equipe MJ tem "acesso amplo" só DEPOIS de entrar num cartório especifico (preview, igual ao
+  // SUPERADMIN) — sem isso, nao pode listar colaboradores de todos os clientes de uma vez (isso
+  // vazava nome/e-mail de colaboradores de outros cartorios so por logar). Só o SUPERADMIN de
+  // verdade mantém a listagem global irrestrita.
+  const verTodasEmpresas = isSuperAdmin && !state.activeTenantId;
+  const equipeMjSemCartorioSelecionado = user.role === 'equipe_mj' && !state.activeTenantId;
 
   const [tab, setTab] = useState<Tab>('colaboradores');
   const [users, setUsers] = useState<UserData[]>([]);
@@ -123,7 +129,8 @@ const UsersView: React.FC = () => {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const q = superAdminGlobal
+    if (equipeMjSemCartorioSelecionado) { setUsers([]); setLoading(false); return; }
+    const q = verTodasEmpresas
       ? query(collection(db, 'users'), orderBy('name'))
       : query(collection(db, 'users'), where('tenantId', '==', tenantId), orderBy('name'));
     const u = onSnapshot(q, snap => {
@@ -135,7 +142,7 @@ const UsersView: React.FC = () => {
       setLoading(false);
     });
     return () => u();
-  }, [tenantId, superAdminGlobal]);
+  }, [tenantId, verTodasEmpresas, equipeMjSemCartorioSelecionado]);
 
   useEffect(() => {
     if (!isPlatformStaff) return;
@@ -403,7 +410,15 @@ const UsersView: React.FC = () => {
                 className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-gold w-72" />
 
               {/* Tabela */}
-              {loading ? (
+              {equipeMjSemCartorioSelecionado ? (
+                <div className="flex flex-col items-center justify-center gap-3 py-14 text-center bg-white border border-slate-200 rounded-[14px]">
+                  <i className="fa-solid fa-building-circle-arrow-right text-2xl text-slate-300"></i>
+                  <p className="text-sm font-bold text-slate-600">Selecione um cartório para ver os colaboradores dele</p>
+                  <p className="text-xs text-slate-400 max-w-md">
+                    Para ver e gerenciar os colaboradores de um cliente específico, acesse "Gestão de Empresas" e clique em "Acessar" no cartório desejado.
+                  </p>
+                </div>
+              ) : loading ? (
                 <div className="flex items-center justify-center py-12 gap-3 text-slate-500">
                   <div className="w-5 h-5 border-2 border-gold/50 border-t-indigo-600 rounded-full animate-spin"></div>
                   <span className="text-sm">Carregando...</span>

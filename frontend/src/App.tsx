@@ -75,7 +75,7 @@ const MainLayout: React.FC = () => {
       case 'users':      return <UsersView />;
       case 'training':   return <TrainingView />;
       case 'trails':     return <TrailsView />;
-      case 'admin':      return state.user?.role === 'SUPERADMIN' ? <TenantsView /> : <DashboardView />;
+      case 'admin':      return isPlatformStaff ? <TenantsView /> : <DashboardView />;
       case 'treinamentos-oficiais': return isPlatformStaff ? <TreinamentosOficiaisPanel /> : <DashboardView />;
       case 'audit':      return <AuditoriaView />;
       case 'reports':    return <RelatoriosView />;
