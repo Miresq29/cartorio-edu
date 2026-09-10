@@ -51,7 +51,7 @@ service cloud.firestore {
 
     // Private: strictly per tenant, SUPERADMIN sees all
     function canReadPrivate() { return isSuperAdmin() || (isActive() && sameTenant()); }
-    function canWritePrivate() { return isActive() && newSameTenant(); }
+    function canWritePrivate() { return isActive() && (isSuperAdmin() || newSameTenant()); }
     function canEditPrivate() { return isSuperAdmin() || (isGestor() && sameTenant()); }
     // Private + dono do registro: usar nas coleções onde o campo userId reflete o uid autenticado
     function canWriteOwnPrivate() { return canWritePrivate() && (isSelfData() || isGestor()); }
