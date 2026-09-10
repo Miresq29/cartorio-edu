@@ -58,6 +58,7 @@ const TreinamentosOficiaisPanel: React.FC = () => {
   const [buscas, setBuscas] = useState<Record<string, string>>({});
   const [selecionados, setSelecionados] = useState<Record<string, ItemMidia>>({});
   const [criando, setCriando] = useState<Record<string, boolean>>({});
+  const [cargasHorarias, setCargasHorarias] = useState<Record<string, number>>({});
 
   useEffect(() => {
     const q1 = onSnapshot(collection(db, 'videos'), s => setItensVideo(s.docs.map(d => ({ id: d.id, titulo: d.data().titulo }))));
@@ -96,6 +97,8 @@ const TreinamentosOficiaisPanel: React.FC = () => {
         ativa: true,
         oficial: true,
         notificarEmail: false,
+        instrutor: 'Mirian Jabur',
+        cargaHoraria: cargasHorarias[topico.chave] || 1,
         tenantIds: ['GLOBAL'],
         createdAt: serverTimestamp(),
       });
@@ -172,6 +175,14 @@ const TreinamentosOficiaisPanel: React.FC = () => {
                       </div>
                     </>
                   )}
+                  <div className="flex items-center gap-2">
+                    <label className="text-[9px] font-black uppercase text-slate-400 whitespace-nowrap">Carga horária</label>
+                    <input type="number" min={1} step={0.5}
+                      value={cargasHorarias[topico.chave] ?? 1}
+                      onChange={e => setCargasHorarias(prev => ({ ...prev, [topico.chave]: Number(e.target.value) }))}
+                      className="w-20 bg-white border border-slate-200 rounded-lg px-2 py-1.5 text-xs text-navy outline-none focus:border-blue-500" />
+                    <span className="text-[9px] text-slate-400">horas</span>
+                  </div>
                   <button type="button" onClick={() => criarTrilha(topico)} disabled={!item || criando[topico.chave]}
                     className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
                     {criando[topico.chave] ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Criando...</> : <><i className="fa-solid fa-plus mr-2"></i>Criar Trilha Oficial</>}

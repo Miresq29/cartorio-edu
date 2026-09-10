@@ -285,6 +285,9 @@ const ModalEmitir: React.FC<{
   const [colab, setColab] = useState('');
   const [tipo, setTipo] = useState<'trilha' | 'modulo' | 'exame'>('trilha');
   const [item, setItem] = useState('');
+  // Carga horária: pré-preenchida a partir da trilha (mínimo 1h), mas sempre editável —
+  // '' significa "usar o valor calculado automaticamente".
+  const [cargaHorariaManual, setCargaHorariaManual] = useState<number | ''>('');
 
   const colabUser = usuarios.find(u => u.id === colab);
   const colabResults = quizResults.filter(r => r.userId === colab || r.colaborador === colabUser?.name);
@@ -305,6 +308,14 @@ const ModalEmitir: React.FC<{
     ).map(r => r.nota);
     return notas.length ? Math.round(notas.reduce((a, b) => a + b) / notas.length) : 0;
   })();
+
+  const trilhaTituloAtual = tipo === 'modulo' ? item.split(' — ')[0] : item;
+  const trilhaRefAtual = trilhas.find(t => t.titulo === trilhaTituloAtual);
+  const cargaHorariaPadrao = tipo === 'trilha' ? 20 : tipo === 'modulo' ? 5 : 10;
+  const cargaHorariaAuto = Math.max(1, trilhaRefAtual?.cargaHoraria || cargaHorariaPadrao);
+  const instrutorAuto = trilhaRefAtual?.oficial ? 'Mirian Jabur' : (trilhaRefAtual?.instrutor || '');
+
+  useEffect(() => { setCargaHorariaManual(''); }, [item, tipo]);
 
   return (
     <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-6">
@@ -369,6 +380,22 @@ const ModalEmitir: React.FC<{
           </div>
         )}
 
+        {/* Carga horária */}
+        {colab && item && (
+          <div className="space-y-1">
+            <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Carga Horária (horas)</label>
+            <input type="number" min={1} step={0.5}
+              value={cargaHorariaManual === '' ? cargaHorariaAuto : cargaHorariaManual}
+              onChange={e => setCargaHorariaManual(e.target.value === '' ? '' : Number(e.target.value))}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-blue-500" />
+            <p className="text-[10px] text-slate-400">
+              {trilhaRefAtual?.cargaHoraria
+                ? `Preenchido a partir da trilha (${trilhaRefAtual.cargaHoraria}h) — pode ajustar se necessário.`
+                : 'A trilha não informou carga horária — mínimo de 1h aplicado. Pode ajustar se necessário.'}
+            </p>
+          </div>
+        )}
+
         {/* Preview rápido */}
         {colab && item && (
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-1">
@@ -377,6 +404,7 @@ const ModalEmitir: React.FC<{
             <p className="text-xs text-slate-500">{colabUser?.cargo} · {cartorio}</p>
             <p className="text-xs text-blue-400">{item}</p>
             {mediaItem > 0 && <p className="text-xs text-emerald-400">Média: {mediaItem}%</p>}
+            {instrutorAuto && <p className="text-xs text-slate-500">Instrutor(a): {instrutorAuto}</p>}
           </div>
         )}
 
@@ -388,27 +416,23 @@ const ModalEmitir: React.FC<{
           <button
             onClick={() => {
               if (!colab || !item) return;
-              const trilhaTitulo = tipo === 'modulo' ? item.split(' — ')[0] : item;
               const moduloTitulo = tipo === 'modulo' ? item.split(' — ')[1] : undefined;
-              // Trilhas oficiais (distribuídas pela MJ Consultoria) sempre saem com
-              // "Mirian Jabur" como instrutora; as demais usam o instrutor cadastrado
-              // na trilha, se houver. Carga horária nunca sai zerada — mínimo de 1h
-              // quando a trilha não informou (cargaHoraria vazio/0).
-              const trilhaRef = trilhas.find(t => t.titulo === trilhaTitulo);
-              const cargaHorariaPadrao = tipo === 'trilha' ? 20 : tipo === 'modulo' ? 5 : 10;
-              const cargaHoraria = Math.max(1, trilhaRef?.cargaHoraria || cargaHorariaPadrao);
-              const instrutor = trilhaRef?.oficial ? 'Mirian Jabur' : (trilhaRef?.instrutor || '');
+              // Carga horária: usa o ajuste manual quando preenchido, senão o valor
+              // calculado a partir da trilha (mínimo 1h). Instrutor: trilhas oficiais
+              // (distribuídas pela MJ Consultoria) sempre saem com "Mirian Jabur";
+              // as demais usam o instrutor cadastrado na própria trilha, se houver.
+              const cargaHoraria = cargaHorariaManual === '' ? cargaHorariaAuto : Math.max(1, cargaHorariaManual);
               onEmitir({
                 colaboradorId: colab,
                 colaboradorNome: colabUser?.name || '',
                 cargo: colabUser?.cargo || colabUser?.role || '',
                 cartorio,
-                trilhaTitulo,
+                trilhaTitulo: trilhaTituloAtual,
                 moduloTitulo,
                 tipo,
                 notaFinal: mediaItem || 100,
                 cargaHoraria,
-                instrutor,
+                instrutor: instrutorAuto,
               });
             }}
             disabled={!colab || !item}
