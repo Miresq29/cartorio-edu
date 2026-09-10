@@ -14,6 +14,12 @@ service cloud.firestore {
     // compartilhavel (canWriteContentArray/canEditContentArray/canReadContentArray)
     // — nunca foi adicionado a isGestor() de proposito.
     function isCurador() { return isActive() && getUserData().get('role', '') == 'curador'; }
+    // Equipe MJ: staff interno da MJ Consultoria que ajuda a Mirian (SUPERADMIN) a operar a
+    // plataforma para todos os cartorios (colaboradores, relatorios, auditoria, conteudo,
+    // dados privados de qualquer cartorio) sem pertencer a nenhum deles — mas sem os poderes
+    // exclusivos de SUPERADMIN sobre a colecao tenants/cartorios (criar/excluir cartorio,
+    // ativar demonstracao, habilitar/desabilitar recursos por cartorio).
+    function isEquipeMJ() { return isActive() && getUserData().get('role', '') == 'equipe_mj'; }
 
     // Tenant isolation helpers
     function myTenant() { return getUserData().get('tenantId', ''); }
@@ -34,8 +40,8 @@ service cloud.firestore {
     }
 
     // Content: SUPERADMIN vê tudo; demais usuários: mesmo tenant ou global
-    function canWriteContent() { return isSuperAdmin() || (isGestor() && newSameTenant()); }
-    function canEditContent() { return isSuperAdmin() || (isGestor() && sameTenant() && tenantUnchanged()); }
+    function canWriteContent() { return isSuperAdmin() || isEquipeMJ() || (isGestor() && newSameTenant()); }
+    function canEditContent() { return isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant() && tenantUnchanged()); }
 
     // Content compartilhavel entre multiplos cartorios (campo tenantIds: array, em vez de
     // tenantId escalar) — usado pelas 9 colecoes de conteudo com o seletor de visibilidade
@@ -45,14 +51,14 @@ service cloud.firestore {
     function newSameTenantArray() { return request.resource.data.get('tenantIds', []) == [myTenant()]; }
     function tenantArrayUnchanged() { return request.resource.data.get('tenantIds', []) == resource.data.get('tenantIds', []); }
     function isGlobalContentArray() { return 'GLOBAL' in resource.data.get('tenantIds', []); }
-    function canReadContentArray() { return isSuperAdmin() || isCurador() || (isActive() && (sameTenantArray() || isGlobalContentArray())); }
-    function canWriteContentArray() { return isSuperAdmin() || isCurador() || (isGestor() && newSameTenantArray()); }
-    function canEditContentArray() { return isSuperAdmin() || isCurador() || (isGestor() && sameTenantArray() && tenantArrayUnchanged()); }
+    function canReadContentArray() { return isSuperAdmin() || isCurador() || isEquipeMJ() || (isActive() && (sameTenantArray() || isGlobalContentArray())); }
+    function canWriteContentArray() { return isSuperAdmin() || isCurador() || isEquipeMJ() || (isGestor() && newSameTenantArray()); }
+    function canEditContentArray() { return isSuperAdmin() || isCurador() || isEquipeMJ() || (isGestor() && sameTenantArray() && tenantArrayUnchanged()); }
 
     // Private: strictly per tenant, SUPERADMIN sees all
-    function canReadPrivate() { return isSuperAdmin() || (isActive() && sameTenant()); }
-    function canWritePrivate() { return isActive() && (isSuperAdmin() || newSameTenant()); }
-    function canEditPrivate() { return isSuperAdmin() || (isGestor() && sameTenant()); }
+    function canReadPrivate() { return isSuperAdmin() || isEquipeMJ() || (isActive() && sameTenant()); }
+    function canWritePrivate() { return isActive() && (isSuperAdmin() || isEquipeMJ() || newSameTenant()); }
+    function canEditPrivate() { return isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant()); }
     // Private + dono do registro: usar nas coleções onde o campo userId reflete o uid autenticado
     function canWriteOwnPrivate() { return canWritePrivate() && (isSelfData() || isGestor()); }
     // Impede que o próprio usuário grave um nome/e-mail de exibição diferente do seu cadastro
@@ -67,14 +73,17 @@ service cloud.firestore {
 
     match /users/{userId} {
       allow read: if isSuperAdmin()
+        || isEquipeMJ()
         || request.auth.uid == userId
         || (isActive() && resource.data.get('tenantId', '') == myTenant());
-      allow create: if isSuperAdmin() || (isGestor() && newSameTenant());
+      allow create: if isSuperAdmin() || isEquipeMJ() || (isGestor() && newSameTenant());
+      // Equipe MJ pode editar colaboradores de qualquer cartorio, mas nao pode trocar role
+      // (evita promover a si mesmo ou a terceiros a SUPERADMIN/equipe_mj).
       allow update: if isSuperAdmin()
-        || (isGestor() && sameTenant() && tenantUnchanged()
+        || ((isEquipeMJ() || (isGestor() && sameTenant())) && tenantUnchanged()
             && request.resource.data.get('role', '') == resource.data.get('role', ''))
         || selfPasswordUpdate(userId);
-      allow delete: if isSuperAdmin();
+      allow delete: if isSuperAdmin() || isEquipeMJ();
     }
 
     // Fluxo de login roda sem sessao Firebase Auth ainda (nao da pra exigir isAuthenticated aqui).
@@ -93,7 +102,7 @@ service cloud.firestore {
     }
 
     match /auditLogs/{docId} {
-      allow read: if isSuperAdmin() || (isGestor() && sameTenant());
+      allow read: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
       // Autenticado: so pode registrar acao em nome de si mesmo (evita forjar log de outro usuario).
       // Nao autenticado: so o evento de login falho, sem severidade CRITICAL (evita poluir/forjar auditoria).
       allow create: if (isAuthenticated() && request.resource.data.get('usuarioId', '') == request.auth.uid)
@@ -151,13 +160,13 @@ service cloud.firestore {
     }
     match /simulacoesPhishingCliques/{docId} {
       // Escrito somente pelas Cloud Functions (Admin SDK, ignora as regras). Clientes só leem, para evidência de auditoria.
-      allow read: if isSuperAdmin() || (isGestor() && sameTenant());
+      allow read: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
       allow write: if false;
     }
     match /campanhas/{docId} {
       allow read: if canReadPrivate();
       allow create: if canWriteOwnPrivate();
-      allow update, delete: if isSuperAdmin() || (isGestor() && sameTenant());
+      allow update, delete: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
     }
     match /assessments/{docId} {
       allow read: if canReadPrivate();
@@ -166,14 +175,14 @@ service cloud.firestore {
       allow delete: if isSuperAdmin();
     }
     match /dossiesConformidade/{docId} {
-      allow read: if isSuperAdmin() || (isGestor() && sameTenant());
-      allow create: if isSuperAdmin() || (isGestor() && newSameTenant());
-      allow update, delete: if isSuperAdmin() || (isGestor() && sameTenant());
+      allow read: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
+      allow create: if isSuperAdmin() || isEquipeMJ() || (isGestor() && newSameTenant());
+      allow update, delete: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
     }
     match /planosAcaoPhishing/{docId} {
-      allow read: if isSuperAdmin() || (isGestor() && sameTenant());
-      allow create: if isSuperAdmin() || (isGestor() && newSameTenant());
-      allow update, delete: if isSuperAdmin() || (isGestor() && sameTenant());
+      allow read: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
+      allow create: if isSuperAdmin() || isEquipeMJ() || (isGestor() && newSameTenant());
+      allow update, delete: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
     }
     match /repositorio/{docId} {
       allow read: if canReadContentArray();
@@ -187,37 +196,37 @@ service cloud.firestore {
       allow read: if canReadPrivate();
       allow create: if canWritePrivate();
       allow update: if canEditPrivate();
-      allow delete: if isSuperAdmin() || (isGestor() && sameTenant());
+      allow delete: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
     }
     match /trilhasProgresso/{docId} {
       allow read: if canReadPrivate();
       allow create, update: if canWriteOwnPrivate();
-      allow delete: if isSuperAdmin() || (isGestor() && sameTenant());
+      allow delete: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
     }
     match /treinamentosParticipantes/{docId} {
       allow read: if canReadPrivate();
       allow create, update: if canWritePrivate();
-      allow delete: if isSuperAdmin() || (isGestor() && sameTenant());
+      allow delete: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
     }
     match /videosProgresso/{docId} {
       allow read: if canReadPrivate();
       allow create, update: if canWriteOwnPrivate();
-      allow delete: if isSuperAdmin() || (isGestor() && sameTenant());
+      allow delete: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
     }
     match /comunicadosLeituras/{docId} {
       allow read: if canReadPrivate();
       allow create, update: if canWriteOwnPrivate() && selfIdentityMatches();
-      allow delete: if isSuperAdmin() || (isGestor() && sameTenant());
+      allow delete: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
     }
     match /reforcosPendentes/{docId} {
       allow read: if canReadPrivate();
       allow create: if canWriteOwnPrivate();
-      allow update, delete: if isSuperAdmin() || (isGestor() && sameTenant());
+      allow update, delete: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
     }
     match /examesResultados/{docId} {
       allow read: if canReadPrivate();
       allow create: if canWriteOwnPrivate();
-      allow update, delete: if isSuperAdmin() || (isGestor() && sameTenant());
+      allow update, delete: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
     }
     match /metas/{docId} {
       allow read: if canReadPrivate();
@@ -232,14 +241,14 @@ service cloud.firestore {
     match /repositorioProgresso/{docId} {
       allow read: if canReadPrivate();
       allow create, update: if canWriteOwnPrivate();
-      allow delete: if isSuperAdmin() || (isGestor() && sameTenant());
+      allow delete: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
     }
     match /certificados/{docId} {
       allow read: if canReadPrivate();
       // Emissao de certificado exige gestor/admin — evita autoemissao de aprovacao sem concluir o treinamento
-      allow create: if isSuperAdmin() || (isGestor() && newSameTenant());
-      allow update: if isSuperAdmin() || (isGestor() && sameTenant() && tenantUnchanged());
-      allow delete: if isSuperAdmin() || (isGestor() && sameTenant());
+      allow create: if isSuperAdmin() || isEquipeMJ() || (isGestor() && newSameTenant());
+      allow update: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant() && tenantUnchanged());
+      allow delete: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
     }
     match /resumos/{docId} {
       allow read: if canReadPrivate();
@@ -247,7 +256,7 @@ service cloud.firestore {
       allow update, delete: if canEditPrivate();
     }
     match /backup/{docId} {
-      allow read, write: if isSuperAdmin() || (isGestor() && sameTenant());
+      allow read, write: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
     }
     match /cartorios/{docId} {
       allow read: if isActive();

@@ -12,7 +12,8 @@ const Sidebar: React.FC = () => {
   // No modo global (fora de qualquer cartório) o SUPERADMIN sempre enxerga os recursos
   // pagos destravados. Ao "entrar" num cartório específico (activeTenantId), deve ver
   // exatamente o que aquele cliente vê — inclusive travado, para conferir a config.
-  const superAdminGlobal = state.user?.role === 'SUPERADMIN' && !state.activeTenantId;
+  const isPlatformStaff = state.user?.role === 'SUPERADMIN' || state.user?.role === 'equipe_mj';
+  const superAdminGlobal = isPlatformStaff && !state.activeTenantId;
   const [expanded, setExpanded] = useState(false);
   const [openSections, setOpenSections] = useState<Record<number, boolean>>({
     0: true, 1: true, 2: false, 3: false, 4: false
@@ -54,13 +55,15 @@ const Sidebar: React.FC = () => {
   const sections: {
     label: string;
     icon: string;
-    items: { tab: AppTab; icon: string; label: string; desc: string; roles?: string[]; color?: string; locked?: boolean }[];
+    items: { tab: AppTab; icon: string; label: string; desc: string; roles?: string[]; color?: string; locked?: boolean; equipeMjOculto?: boolean }[];
   }[] = [
     {
       label: 'SISTEMA MASTER', icon: 'fa-crown',
       items: [
         { tab: 'dashboard', icon: 'fa-border-all',    label: 'Painel Master',      desc: 'Visao geral de todas as empresas',  roles: ['SUPERADMIN'], color: 'text-blue-400'    },
-        { tab: 'admin',     icon: 'fa-server',        label: 'Gestao de Empresas', desc: 'Criar e gerenciar tenants',         roles: ['SUPERADMIN'], color: 'text-blue-400'    },
+        // Gestao de Empresas grava direto na colecao tenants (criar/excluir cartorio, demonstracao,
+        // habilitar recursos) — exclusivo do SUPERADMIN de verdade, nem a equipe MJ acessa.
+        { tab: 'admin',     icon: 'fa-server',        label: 'Gestao de Empresas', desc: 'Criar e gerenciar tenants',         roles: ['SUPERADMIN'], color: 'text-blue-400', equipeMjOculto: true },
         { tab: 'treinamentos-oficiais', icon: 'fa-wand-magic-sparkles', label: 'Treinamentos Oficiais', desc: 'Publicar conteudo pronto para todos os cartorios', roles: ['SUPERADMIN'], color: 'text-[#C9A84C]' },
         { tab: 'audit',     icon: 'fa-layer-group',   label: 'Atividades Master',  desc: 'Log global de todas as acoes',      roles: ['SUPERADMIN'], color: 'text-emerald-400' },
       ]
@@ -209,9 +212,12 @@ const Sidebar: React.FC = () => {
       {/* Nav */}
       <nav className="flex-1 px-2 py-3 space-y-1 overflow-y-auto custom-scrollbar pb-8">
         {sectionsExibidas.map((section, sIdx) => {
-          const visibleItems = section.items.filter(item =>
-            !item.roles || item.roles.includes(state.user?.role || '') || state.user?.role === 'SUPERADMIN'
-          );
+          const visibleItems = section.items.filter(item => {
+            const role = state.user?.role;
+            if (role === 'SUPERADMIN') return true;
+            if (role === 'equipe_mj') return !item.equipeMjOculto;
+            return !item.roles || item.roles.includes(role || '');
+          });
           if (visibleItems.length === 0) return null;
 
           const isOpen = openSections[sIdx];
@@ -325,7 +331,7 @@ const Sidebar: React.FC = () => {
             <div className="flex-1 overflow-hidden">
               <p className="text-sm font-semibold text-text-primary truncate">{state.user?.name || 'Usuario'}</p>
               <p className="text-[9px] text-brand-blue font-black uppercase tracking-widest truncate">
-                {state.user?.role === 'SUPERADMIN' ? 'SUPER ADMIN' : state.user?.role || 'Acesso'}
+                {state.user?.role === 'SUPERADMIN' ? 'SUPER ADMIN' : state.user?.role === 'equipe_mj' ? 'EQUIPE MJ' : state.user?.role || 'Acesso'}
               </p>
             </div>
             <button

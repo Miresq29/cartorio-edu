@@ -15,7 +15,7 @@ const createCollaboratorFn = httpsCallable(functions, 'createCollaborator');
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Role = 'SUPERADMIN' | 'gestor' | 'admin' | 'colaborador';
+type Role = 'SUPERADMIN' | 'gestor' | 'admin' | 'colaborador' | 'equipe_mj';
 
 interface UserData {
   id: string;
@@ -48,18 +48,18 @@ const MODULOS = [
 type Nivel = 'completo' | 'leitura' | 'proprio' | '-';
 
 const PERMISSOES: Record<string, Record<Role, Nivel>> = {
-  dashboard:    { SUPERADMIN: 'completo', gestor: 'completo', admin: 'completo',  colaborador: 'proprio' },
-  trilhas:      { SUPERADMIN: 'completo', gestor: 'completo', admin: 'completo',  colaborador: 'leitura' },
-  repositorio:  { SUPERADMIN: 'completo', gestor: 'completo', admin: 'completo',  colaborador: 'leitura' },
-  treinamento:  { SUPERADMIN: 'completo', gestor: 'completo', admin: 'completo',  colaborador: 'proprio' },
-  exames:       { SUPERADMIN: 'completo', gestor: 'completo', admin: 'completo',  colaborador: 'proprio' },
-  metas:        { SUPERADMIN: 'completo', gestor: 'completo', admin: 'leitura',   colaborador: 'leitura' },
-  certificados: { SUPERADMIN: 'completo', gestor: 'completo', admin: 'completo',  colaborador: 'proprio' },
-  progresso:    { SUPERADMIN: 'completo', gestor: 'completo', admin: 'leitura',   colaborador: 'proprio' },
-  relatorios:   { SUPERADMIN: 'completo', gestor: 'completo', admin: 'leitura',   colaborador: '-'       },
-  auditoria:    { SUPERADMIN: 'completo', gestor: 'completo', admin: '-',         colaborador: '-'       },
-  usuarios:     { SUPERADMIN: 'completo', gestor: 'completo', admin: 'completo',  colaborador: '-'       },
-  seguranca:    { SUPERADMIN: 'completo', gestor: 'completo', admin: '-',         colaborador: '-'       },
+  dashboard:    { SUPERADMIN: 'completo', equipe_mj: 'completo', gestor: 'completo', admin: 'completo',  colaborador: 'proprio' },
+  trilhas:      { SUPERADMIN: 'completo', equipe_mj: 'completo', gestor: 'completo', admin: 'completo',  colaborador: 'leitura' },
+  repositorio:  { SUPERADMIN: 'completo', equipe_mj: 'completo', gestor: 'completo', admin: 'completo',  colaborador: 'leitura' },
+  treinamento:  { SUPERADMIN: 'completo', equipe_mj: 'completo', gestor: 'completo', admin: 'completo',  colaborador: 'proprio' },
+  exames:       { SUPERADMIN: 'completo', equipe_mj: 'completo', gestor: 'completo', admin: 'completo',  colaborador: 'proprio' },
+  metas:        { SUPERADMIN: 'completo', equipe_mj: 'leitura',  gestor: 'completo', admin: 'leitura',   colaborador: 'leitura' },
+  certificados: { SUPERADMIN: 'completo', equipe_mj: 'completo', gestor: 'completo', admin: 'completo',  colaborador: 'proprio' },
+  progresso:    { SUPERADMIN: 'completo', equipe_mj: 'leitura',  gestor: 'completo', admin: 'leitura',   colaborador: 'proprio' },
+  relatorios:   { SUPERADMIN: 'completo', equipe_mj: 'leitura',  gestor: 'completo', admin: 'leitura',   colaborador: '-'       },
+  auditoria:    { SUPERADMIN: 'completo', equipe_mj: 'leitura',  gestor: 'completo', admin: '-',         colaborador: '-'       },
+  usuarios:     { SUPERADMIN: 'completo', equipe_mj: 'completo', gestor: 'completo', admin: 'completo',  colaborador: '-'       },
+  seguranca:    { SUPERADMIN: 'completo', equipe_mj: '-',        gestor: 'completo', admin: '-',         colaborador: '-'       },
 };
 
 const NIVEL_CONFIG: Record<Nivel, { label: string; color: string; bg: string; icon: string }> = {
@@ -71,6 +71,7 @@ const NIVEL_CONFIG: Record<Nivel, { label: string; color: string; bg: string; ic
 
 const ROLES: { id: Role; label: string; color: string; desc: string }[] = [
   { id: 'SUPERADMIN', label: 'Super Admin',  color: '#059669', desc: 'Acesso total a todos os cartórios' },
+  { id: 'equipe_mj',  label: 'Equipe MJ',    color: '#0891B2', desc: 'Suporte MJ Consultoria — ajuda em todos os cartórios' },
   { id: 'gestor',     label: 'Gestor',       color: '#4F46E5', desc: 'Gestão completa do cartório'       },
   { id: 'admin',      label: 'Admin',        color: '#D97706', desc: 'Administração de colaboradores'    },
   { id: 'colaborador',label: 'Colaborador',  color: '#64748b', desc: 'Acesso aos próprios dados'         },
@@ -97,12 +98,15 @@ const UsersView: React.FC = () => {
   const { state, tenantId } = useApp();
   const { showToast } = useToast();
   const user = state.user!;
-  const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(user.role);
+  const isGestor = ['SUPERADMIN', 'equipe_mj', 'gestor', 'admin'].includes(user.role);
 
   const isSuperAdmin = user.role === 'SUPERADMIN';
-  // SUPERADMIN só enxerga todos os cartórios no modo global (fora de um cartório ativo);
+  // Equipe MJ (staff interno, sem cartório) enxerga todos os cartórios igual ao SUPERADMIN,
+  // mas só o SUPERADMIN de verdade pode criar outra conta de equipe_mj (evita autorreplicação).
+  const isPlatformStaff = isSuperAdmin || user.role === 'equipe_mj';
+  // SUPERADMIN/equipe_mj só enxergam todos os cartórios no modo global (fora de um cartório ativo);
   // ao "entrar" em um cartório (state.activeTenantId), deve ver apenas os colaboradores dele.
-  const superAdminGlobal = isSuperAdmin && !state.activeTenantId;
+  const superAdminGlobal = isPlatformStaff && !state.activeTenantId;
 
   const [tab, setTab] = useState<Tab>('colaboradores');
   const [users, setUsers] = useState<UserData[]>([]);
@@ -134,12 +138,12 @@ const UsersView: React.FC = () => {
   }, [tenantId, superAdminGlobal]);
 
   useEffect(() => {
-    if (!isSuperAdmin) return;
+    if (!isPlatformStaff) return;
     const q = query(collection(db, 'tenants'), orderBy('name'));
     return onSnapshot(q, snap => {
       setTenants(snap.docs.map(d => ({ id: d.id, name: (d.data() as any).name || d.id })));
     });
-  }, [isSuperAdmin]);
+  }, [isPlatformStaff]);
 
   const setF = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
 
@@ -156,7 +160,7 @@ const UsersView: React.FC = () => {
 
   const handleSave = async () => {
     if (!form.name || !form.email) { showToast('Preencha nome e e-mail.', 'error'); return; }
-    if (superAdminGlobal && !form.tenantId) { showToast('Selecione o cartório para este colaborador.', 'error'); return; }
+    if (superAdminGlobal && form.role !== 'equipe_mj' && !form.tenantId) { showToast('Selecione o cartório para este colaborador.', 'error'); return; }
     setSaving(true);
     try {
       if (editUser) {
@@ -303,10 +307,13 @@ const UsersView: React.FC = () => {
                     </div>
                     <div className="space-y-1">
                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Perfil de Acesso</label>
-                      <select value={form.role} onChange={e => setF('role', e.target.value)}
+                      <select value={form.role} onChange={e => {
+                          const novoRole = e.target.value as Role;
+                          setForm(f => ({ ...f, role: novoRole, tenantId: novoRole === 'equipe_mj' ? '' : f.tenantId }));
+                        }}
                         title="Perfil de acesso"
                         className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-gold">
-                        {ROLES.filter(r => r.id !== 'SUPERADMIN').map(r => (
+                        {ROLES.filter(r => r.id !== 'SUPERADMIN' && (r.id !== 'equipe_mj' || isSuperAdmin)).map(r => (
                           <option key={r.id} value={r.id}>{r.label} — {r.desc}</option>
                         ))}
                       </select>
@@ -324,7 +331,15 @@ const UsersView: React.FC = () => {
                         {CARGOS.map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
                     </div>
-                    {isSuperAdmin && (
+                    {isPlatformStaff && form.role === 'equipe_mj' && (
+                      <div className="space-y-1 md:col-span-2">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Cartório</label>
+                        <div className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-400 italic">
+                          Não se aplica — Equipe MJ atende todos os cartórios
+                        </div>
+                      </div>
+                    )}
+                    {isPlatformStaff && form.role !== 'equipe_mj' && (
                       <div className="space-y-1 md:col-span-2">
                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
                           Cartório <span className="text-red-400">*</span>
@@ -388,21 +403,21 @@ const UsersView: React.FC = () => {
                   <table className="w-full text-xs">
                     <thead>
                       <tr className="bg-white border-b border-slate-200">
-                        {['Colaborador', 'E-mail', 'Cargo', ...(isSuperAdmin ? ['Cartório'] : []), 'Perfil', 'Status', 'Desde', 'Ações'].map(h => (
+                        {['Colaborador', 'E-mail', 'Cargo', ...(isPlatformStaff ? ['Cartório'] : []), 'Perfil', 'Status', 'Desde', 'Ações'].map(h => (
                           <th key={h} className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {filtrados.length === 0 && (
-                        <tr><td colSpan={isSuperAdmin ? 8 : 7} className="text-center p-8 text-slate-500">Nenhum colaborador encontrado.</td></tr>
+                        <tr><td colSpan={isPlatformStaff ? 8 : 7} className="text-center p-8 text-slate-500">Nenhum colaborador encontrado.</td></tr>
                       )}
                       {filtrados.map(u => (
                         <tr key={u.id} className={`border-b border-slate-100 hover:bg-white transition-all ${u.ativo === false ? 'opacity-50' : ''}`}>
                           <td className="p-3 font-bold text-navy">{u.name}</td>
                           <td className="p-3 text-slate-500">{u.email || '–'}</td>
                           <td className="p-3 text-slate-500">{u.cargo || '–'}</td>
-                          {isSuperAdmin && (
+                          {isPlatformStaff && (
                             <td className="p-3">
                               <span className="text-[10px] font-mono bg-blue-50 text-blue-600 border border-blue-100 px-2 py-0.5 rounded-lg">
                                 {u.tenantId || '–'}

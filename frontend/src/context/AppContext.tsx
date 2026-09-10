@@ -68,14 +68,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setState(prev => ({ ...prev, activeTenantId: id, activeTenantName: name }));
   }, []);
 
-  const tenantId = (state.user?.role === 'SUPERADMIN' && state.activeTenantId)
+  // Equipe MJ (staff interno, sem cartório fixo) usa o mesmo modo de preview que o SUPERADMIN.
+  const isPlatformStaff = state.user?.role === 'SUPERADMIN' || state.user?.role === 'equipe_mj';
+
+  const tenantId = (isPlatformStaff && state.activeTenantId)
     ? state.activeTenantId
     : state.user?.tenantId ?? '';
 
   // Se o cartório do usuário logado for desativado (ex.: demonstração expirada),
   // derruba a sessão em tempo real em vez de esperar o próximo login/refresh de token.
   useEffect(() => {
-    if (!tenantId || state.user?.role === 'SUPERADMIN') return;
+    if (!tenantId || isPlatformStaff) return;
     return onSnapshot(doc(db, 'tenants', tenantId), snap => {
       if (snap.exists() && snap.data().active === false) logout();
     });

@@ -9,8 +9,8 @@ export { verificarDemoExpirada } from "./demo";
 
 const db = admin.firestore();
 
-const GESTOR_ROLES = ["SUPERADMIN", "gestor", "admin"];
-const CREATABLE_ROLES = ["gestor", "admin", "colaborador", "curador"];
+const GESTOR_ROLES = ["SUPERADMIN", "gestor", "admin", "equipe_mj"];
+const CREATABLE_ROLES = ["gestor", "admin", "colaborador", "curador", "equipe_mj"];
 
 interface CallerProfile {
   uid: string;
@@ -85,17 +85,23 @@ export const createCollaborator = onCall(async (request) => {
   if (!CREATABLE_ROLES.includes(role)) {
     throw new HttpsError("invalid-argument", "Perfil de acesso inválido.");
   }
-  // Curador é a equipe da MJ Consultoria que insere e distribui conteúdo entre
-  // cartórios — não pertence a nenhum cartório específico, então não exige tenantId.
-  if (role === "curador") {
+  // Curador e equipe_mj são equipe interna da MJ Consultoria — não pertencem a nenhum
+  // cartório específico, então não exigem tenantId. Só o SUPERADMIN de verdade (nunca outro
+  // curador/equipe_mj) pode criar essas contas, para não se autorreplicarem.
+  if (role === "curador" || role === "equipe_mj") {
     if (caller.role !== "SUPERADMIN") {
-      throw new HttpsError("permission-denied", "Apenas SUPERADMIN pode criar contas de curador.");
+      throw new HttpsError(
+        "permission-denied",
+        role === "curador"
+          ? "Apenas SUPERADMIN pode criar contas de curador."
+          : "Apenas SUPERADMIN pode criar contas da equipe MJ."
+      );
     }
   } else {
     if (!tenantId) {
       throw new HttpsError("invalid-argument", "Cartório (tenantId) é obrigatório.");
     }
-    if (caller.role !== "SUPERADMIN" && tenantId !== caller.tenantId) {
+    if (!["SUPERADMIN", "equipe_mj"].includes(caller.role) && tenantId !== caller.tenantId) {
       throw new HttpsError("permission-denied", "Só é possível criar colaboradores do próprio cartório.");
     }
   }
