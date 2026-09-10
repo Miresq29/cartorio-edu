@@ -160,7 +160,7 @@ const UsersView: React.FC = () => {
 
   const handleSave = async () => {
     if (!form.name || !form.email) { showToast('Preencha nome e e-mail.', 'error'); return; }
-    if (superAdminGlobal && form.role !== 'equipe_mj' && !form.tenantId) { showToast('Selecione o cartório para este colaborador.', 'error'); return; }
+    if (superAdminGlobal && form.role !== 'equipe_mj' && form.role !== 'SUPERADMIN' && !form.tenantId) { showToast('Selecione o cartório para este colaborador.', 'error'); return; }
     setSaving(true);
     try {
       if (editUser) {
@@ -309,14 +309,22 @@ const UsersView: React.FC = () => {
                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Perfil de Acesso</label>
                       <select value={form.role} onChange={e => {
                           const novoRole = e.target.value as Role;
-                          setForm(f => ({ ...f, role: novoRole, tenantId: novoRole === 'equipe_mj' ? '' : f.tenantId }));
+                          setForm(f => ({ ...f, role: novoRole, tenantId: (novoRole === 'equipe_mj' || novoRole === 'SUPERADMIN') ? '' : f.tenantId }));
                         }}
                         title="Perfil de acesso"
                         className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-gold">
-                        {ROLES.filter(r => r.id !== 'SUPERADMIN' && (r.id !== 'equipe_mj' || isSuperAdmin)).map(r => (
+                        {ROLES.filter(r =>
+                          (r.id !== 'SUPERADMIN' || (isSuperAdmin && !!editUser))
+                          && (r.id !== 'equipe_mj' || isSuperAdmin)
+                        ).map(r => (
                           <option key={r.id} value={r.id}>{r.label} — {r.desc}</option>
                         ))}
                       </select>
+                      {isSuperAdmin && !editUser && (
+                        <p className="text-[9px] text-slate-400 mt-1">
+                          Para promover alguém a Super Admin, crie primeiro como Equipe MJ/Gestor e depois edite o perfil.
+                        </p>
+                      )}
                     </div>
                     <div className="space-y-1">
                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Senha Inicial</label>
@@ -331,15 +339,17 @@ const UsersView: React.FC = () => {
                         {CARGOS.map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
                     </div>
-                    {isPlatformStaff && form.role === 'equipe_mj' && (
+                    {isPlatformStaff && (form.role === 'equipe_mj' || form.role === 'SUPERADMIN') && (
                       <div className="space-y-1 md:col-span-2">
                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Cartório</label>
                         <div className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-400 italic">
-                          Não se aplica — Equipe MJ atende todos os cartórios
+                          {form.role === 'SUPERADMIN'
+                            ? 'Não se aplica — Super Admin tem acesso total a todos os cartórios'
+                            : 'Não se aplica — Equipe MJ atende todos os cartórios'}
                         </div>
                       </div>
                     )}
-                    {isPlatformStaff && form.role !== 'equipe_mj' && (
+                    {isPlatformStaff && form.role !== 'equipe_mj' && form.role !== 'SUPERADMIN' && (
                       <div className="space-y-1 md:col-span-2">
                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
                           Cartório <span className="text-red-400">*</span>
