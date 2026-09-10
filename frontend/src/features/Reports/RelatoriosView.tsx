@@ -73,6 +73,7 @@ interface CatalogoTreinamento {
   titulo: string;
   tipo: 'trilha' | 'treinamento';
   instrutor?: string;
+  oficial?: boolean;
   formato?: FormatoTreinamento;
   cargaHoraria?: number;
   createdAt?: any;
@@ -193,7 +194,7 @@ const RelatoriosView: React.FC = () => {
     const q6 = query(collection(db, 'trilhas'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']));
     const u6 = onSnapshot(q6, s => setCatalogoTrilhas(s.docs.map(d => {
       const data = d.data();
-      return { id: d.id, titulo: data.titulo || 'Sem título', tipo: 'trilha', instrutor: data.instrutor, formato: data.formato, cargaHoraria: data.cargaHoraria, createdAt: data.createdAt } as CatalogoTreinamento;
+      return { id: d.id, titulo: data.titulo || 'Sem título', tipo: 'trilha', instrutor: data.instrutor, oficial: data.oficial, formato: data.formato, cargaHoraria: data.cargaHoraria, createdAt: data.createdAt } as CatalogoTreinamento;
     })));
 
     const q7 = query(collection(db, 'treinamentos'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']));
@@ -218,7 +219,12 @@ const RelatoriosView: React.FC = () => {
   });
 
   // Carga horária de uma trilha pelo id (catálogo de trilhas com instrutor/formato/horas).
-  const cargaHorariaTrilha = (trilhaId: string) => catalogoTrilhas.find(c => c.id === trilhaId)?.cargaHoraria || 0;
+  // Mesma regra do certificado: trilha concluída sempre conta pelo menos 1h, mesmo
+  // quando a trilha não informou cargaHoraria — nunca fica de fora do total do colaborador.
+  const cargaHorariaTrilha = (trilhaId: string) => {
+    const t = catalogoTrilhas.find(c => c.id === trilhaId);
+    return t ? Math.max(1, t.cargaHoraria || 0) : 0;
+  };
 
   // KPIs
   const colab = usuarios.filter(u => !['SUPERADMIN', 'gestor'].includes(u.role));
@@ -872,9 +878,11 @@ td { background:#fdfbf5; }
                               t.tipo === 'trilha' ? 'bg-purple-50 text-purple-600 border border-purple-200' : 'bg-blue-50 text-blue-600 border border-blue-200'
                             }`}>{t.tipo === 'trilha' ? 'Trilha' : 'Treinamento'}</span>
                           </td>
-                          <td className="p-3 text-slate-600">{t.instrutor || '–'}</td>
+                          <td className="p-3 text-slate-600">{t.instrutor || (t.tipo === 'trilha' && t.oficial ? 'Mirian Jabur' : '–')}</td>
                           <td className="p-3 text-slate-600">{t.formato ? FORMATO_LABEL[t.formato] : '–'}</td>
-                          <td className="p-3 text-slate-700 font-bold">{t.cargaHoraria ? `${t.cargaHoraria}h` : '–'}</td>
+                          <td className="p-3 text-slate-700 font-bold">
+                            {t.tipo === 'trilha' ? `${Math.max(1, t.cargaHoraria || 0)}h` : (t.cargaHoraria ? `${t.cargaHoraria}h` : '–')}
+                          </td>
                           <td className="p-3 text-slate-700 font-bold">{t.participantes}</td>
                           <td className="p-3 text-emerald-600 font-bold">{t.concluidos}</td>
                           <td className="p-3">
