@@ -11,11 +11,14 @@ interface Section {
   // colaboradores o funcionamento da simulação de phishing, que depende do
   // fator surpresa para ser eficaz.
   roles?: string[];
+  // Print real da tela (capturado com dados fictícios de um cartório de demonstração
+  // isolado) — caminho em /public/tutorial/. Opcional: nem toda seção tem uma imagem ainda.
+  image?: string;
 }
 
 const SECTIONS: Section[] = [
   {
-    id: 'dashboard', icon: 'fa-border-all', title: 'Dashboard', subtitle: 'Painel operacional da sua serventia',
+    id: 'dashboard', icon: 'fa-border-all', title: 'Dashboard', subtitle: 'Painel operacional da sua serventia', image: '/tutorial/dashboard.png',
     steps: [
       { title: 'Acessando o Dashboard', desc: 'Clique em "Dashboard" no menu lateral, na seção GESTÃO. Esta tela exibe dados em tempo real exclusivos da sua serventia.' },
       { title: 'KPIs em tempo real', desc: 'Os cards no topo mostram métricas como Documentos na Base, Protocolos Ativos, Treinamentos Concluídos e Ações Registradas. Todos atualizam automaticamente.' },
@@ -24,7 +27,7 @@ const SECTIONS: Section[] = [
     ]
   },
   {
-    id: 'tenants', icon: 'fa-server', title: 'Gestão de Empresas', subtitle: 'Ativar cartórios, demonstração e equipe MJ',
+    id: 'tenants', icon: 'fa-server', title: 'Gestão de Empresas', subtitle: 'Ativar cartórios, demonstração e equipe MJ', image: '/tutorial/tenants.png',
     roles: ['SUPERADMIN'],
     steps: [
       { title: 'Ativar um novo cartório cliente', desc: 'No formulário "Ativar Novo Cartório Cliente", informe o nome da serventia e um ID do sistema (sem espaços, ex: cartorio-bh-01). Esse ID vira o tenantId de todos os colaboradores daquele cartório e não pode ser alterado depois.' },
@@ -36,7 +39,7 @@ const SECTIONS: Section[] = [
     ]
   },
   {
-    id: 'collaborators', icon: 'fa-users-gear', title: 'Colaboradores', subtitle: 'Gerenciar usuários e permissões',
+    id: 'collaborators', icon: 'fa-users-gear', title: 'Colaboradores', subtitle: 'Gerenciar usuários e permissões', image: '/tutorial/collaborators.png',
     steps: [
       { title: 'Criando um colaborador', desc: 'Clique em "+ Novo Colaborador", preencha nome, e-mail e selecione o perfil de acesso. O colaborador deverá trocar a senha no primeiro login.' },
       { title: 'Perfis disponíveis', desc: 'Super Admin: acesso total. Equipe MJ: staff interno da MJ Consultoria, ajuda em todos os cartórios (colaboradores, relatórios, auditoria) sem pertencer a nenhum — só o SUPERADMIN pode criar esse perfil. Gestor: acesso completo à serventia. Admin: gerenciar colaboradores. Colaborador: acesso aos próprios dados e treinamentos.' },
@@ -45,7 +48,7 @@ const SECTIONS: Section[] = [
     ]
   },
   {
-    id: 'reports', icon: 'fa-chart-column', title: 'Relatórios', subtitle: 'Métricas de treinamento, engajamento e risco',
+    id: 'reports', icon: 'fa-chart-column', title: 'Relatórios', subtitle: 'Métricas de treinamento, engajamento e risco', image: '/tutorial/reports.png',
     steps: [
       { title: 'Visão Geral', desc: 'A primeira aba exibe a atividade mensal e distribuição de notas da equipe. Acompanhe tendências de desempenho ao longo do tempo.' },
       { title: 'Por Colaborador', desc: 'Veja quantos treinamentos, exames e certificados cada colaborador concluiu. Identifique usuários engajados e os que precisam de atenção.' },
@@ -59,7 +62,7 @@ const SECTIONS: Section[] = [
     ]
   },
   {
-    id: 'audit', icon: 'fa-clock-rotate-left', title: 'Auditoria', subtitle: 'Histórico completo de acessos e alterações',
+    id: 'audit', icon: 'fa-clock-rotate-left', title: 'Auditoria', subtitle: 'Histórico completo de acessos e alterações', image: '/tutorial/audit.png',
     steps: [
       { title: 'Log de Atividades', desc: 'Visualize todas as ações registradas na plataforma em ordem cronológica. Filtre por tipo de evento, usuário e data.' },
       { title: 'Tipos de Evento', desc: 'Os eventos incluem: login/logout, criação e edição de usuários, acesso a módulos, geração de certificados, exportações, alterações de configuração e envio/erro de e-mail.' },
@@ -119,7 +122,7 @@ const SECTIONS: Section[] = [
     ]
   },
   {
-    id: 'trails', icon: 'fa-road', title: 'Trilhas', subtitle: 'Trilhas de aprendizagem por perfil',
+    id: 'trails', icon: 'fa-road', title: 'Trilhas', subtitle: 'Trilhas de aprendizagem por perfil', image: '/tutorial/trails.png',
     steps: [
       { title: 'O que são Trilhas?', desc: 'Trilhas são sequências de conteúdos organizados por perfil profissional (atendente, escrevente, oficial substituto). Cada trilha guia o colaborador do básico ao avançado.' },
       { title: 'Navegando em uma trilha', desc: 'Selecione uma trilha para ver os módulos disponíveis. Complete os módulos em sequência para liberar o próximo nível.' },
@@ -140,7 +143,7 @@ const SECTIONS: Section[] = [
     ]
   },
   {
-    id: 'repositorio', icon: 'fa-photo-film', title: 'Repositório', subtitle: 'Áudios e PDFs de capacitação',
+    id: 'repositorio', icon: 'fa-photo-film', title: 'Repositório', subtitle: 'Áudios e PDFs de capacitação', image: '/tutorial/repositorio.png',
     steps: [
       { title: 'Tipos de conteúdo', desc: 'O repositório centraliza materiais de capacitação: arquivos de áudio, PDFs, apresentações e documentos complementares.' },
       { title: 'Buscando conteúdo', desc: 'Use a busca para localizar materiais por palavra-chave, tipo de arquivo ou categoria.' },
@@ -183,7 +186,7 @@ const SECTIONS: Section[] = [
     ]
   },
   {
-    id: 'exames', icon: 'fa-file-pen', title: 'Exames', subtitle: 'Avaliações com IA e Taxonomia de Bloom',
+    id: 'exames', icon: 'fa-file-pen', title: 'Exames', subtitle: 'Avaliações com IA e Taxonomia de Bloom', image: '/tutorial/exames.png',
     steps: [
       { title: 'O que são os Exames?', desc: 'Exames são avaliações formais geradas pela IA com base na Taxonomia de Bloom — garantindo questões que vão do conhecimento básico à análise e avaliação crítica.' },
       { title: 'Escolhendo o conteúdo', desc: 'A lista de conteúdos disponíveis reúne trilhas de capacitação, treinamentos salvos em "Treinamento AI" e documentos da Base de Conhecimento. Se a lista aparecer vazia, é sinal de que nenhum desses três ainda tem conteúdo suficiente (mínimo 50 caracteres) — crie uma trilha, salve um roteiro de treinamento ou envie um documento para liberar a geração de exames.' },
@@ -218,7 +221,7 @@ const SECTIONS: Section[] = [
     ]
   },
   {
-    id: 'certificado', icon: 'fa-certificate', title: 'Certificados', subtitle: 'Emitir e baixar certificados PDF',
+    id: 'certificado', icon: 'fa-certificate', title: 'Certificados', subtitle: 'Emitir e baixar certificados PDF', image: '/tutorial/certificado.png',
     steps: [
       { title: 'Elegibilidade', desc: 'Certificados são emitidos quando o colaborador conclui uma trilha (nota mínima do módulo definida pelo gestor, padrão 70%) ou é aprovado em um Exame IA (nota mínima 70%).' },
       { title: 'Emitindo o certificado', desc: 'Na tela de Certificados, localize o certificado disponível e clique em "Emitir". O PDF é gerado com dados da serventia, nome, data e carga horária.' },
@@ -266,6 +269,7 @@ const TutorialView: React.FC = () => {
             <div class="section-subtitle">${s.subtitle}</div>
           </div>
         </div>
+        ${s.image ? `<img src="${window.location.origin}${s.image}" class="section-shot" alt="Tela de ${s.title}">` : ''}
         ${s.steps.map((step, i) => `
           <div class="step">
             <div class="step-number">${i + 1}</div>
@@ -299,6 +303,7 @@ body { font-family: Arial, sans-serif; color:#1e293b; background:white; padding:
 .toc-item b { color:#c9a84c; margin-right:6px; }
 .section { margin-bottom:32px; page-break-inside:avoid; }
 .section-header { background:#0f172a; color:white; padding:14px 20px; border-radius:10px 10px 0 0; display:flex; align-items:center; gap:16px; border-left:4px solid #c9a84c; }
+.section-shot { display:block; width:100%; border:1px solid #e8d9a0; border-top:none; }
 .section-num { font-size:22px; font-weight:900; color:#c9a84c; }
 .section-title { font-size:16px; font-weight:900; text-transform:uppercase; letter-spacing:1px; }
 .section-subtitle { font-size:10px; color:#c9a84c; margin-top:2px; text-transform:uppercase; letter-spacing:1px; }
@@ -412,6 +417,13 @@ ${allContent}
               <p className="text-gold text-sm mt-1">{current.subtitle}</p>
             </div>
           </div>
+
+          {/* Print real da tela (dados fictícios de um cartório de demonstração) */}
+          {current.image && (
+            <div className="bg-white border border-gold/20 rounded-2xl p-2 shadow-sm">
+              <img src={current.image} alt={`Tela de ${current.title}`} className="w-full rounded-xl border border-slate-100" />
+            </div>
+          )}
 
           {/* Passos */}
           <div className="space-y-3">
