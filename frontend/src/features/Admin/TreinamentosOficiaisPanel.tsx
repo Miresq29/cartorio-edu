@@ -105,7 +105,17 @@ const TreinamentosOficiaisPanel: React.FC = () => {
   };
 
   return (
-    <div className="bg-white border border-slate-200 rounded-[40px] p-10 space-y-6 shadow-lg">
+    <div className="p-12 min-h-full bg-slate-50 animate-in fade-in space-y-8 max-w-4xl">
+      <header>
+        <h2 className="text-4xl font-black text-navy italic uppercase tracking-tighter">
+          Treinamentos <span className="text-blue-500">Oficiais</span>
+        </h2>
+        <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.4em] mt-2">
+          Conteúdo pronto para publicar em todos os cartórios // MJ Consultoria Master
+        </p>
+      </header>
+
+      <div className="bg-white border border-slate-200 rounded-[40px] p-10 space-y-6 shadow-lg">
       <div>
         <h3 className="text-navy font-bold uppercase text-sm italic">Treinamentos Oficiais Prontos</h3>
         <p className="text-[10px] text-slate-400 mt-2">
@@ -171,6 +181,7 @@ const TreinamentosOficiaisPanel: React.FC = () => {
             </div>
           );
         })}
+      </div>
       </div>
     </div>
   );

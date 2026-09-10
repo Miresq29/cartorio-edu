@@ -38,6 +38,7 @@ const AssessmentView = lazy(() => import('./features/Assessment/AssessmentView')
 
 // Admin Views
 const TenantsView          = lazy(() => import('./features/Admin/TenantsView'));
+const TreinamentosOficiaisPanel = lazy(() => import('./features/Admin/TreinamentosOficiaisPanel'));
 
 const MainLayout: React.FC = () => {
   const { state } = useApp();
@@ -68,6 +69,7 @@ const MainLayout: React.FC = () => {
       case 'training':   return <TrainingView />;
       case 'trails':     return <TrailsView />;
       case 'admin':      return <TenantsView />;
+      case 'treinamentos-oficiais': return <TreinamentosOficiaisPanel />;
       case 'audit':      return <AuditoriaView />;
       case 'reports':    return <RelatoriosView />;
       case 'support':    return <SupportView />;

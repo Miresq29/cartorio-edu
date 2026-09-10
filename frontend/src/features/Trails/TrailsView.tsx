@@ -883,7 +883,7 @@ const TrailsView: React.FC = () => {
           <span style={{ fontSize: 12, color: '#7a5c1e', flex: 1 }}>
             Provimento 213/2026, Compliance e Antissuborno, Provimento 149 e LGPD já têm vídeo pronto — crie a trilha oficial em 1 clique.
           </span>
-          <button onClick={() => setActiveTab('admin')} style={{ background: '#0A1628', border: 'none', color: '#ffffff', padding: '8px 16px', borderRadius: 10, cursor: 'pointer', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+          <button onClick={() => setActiveTab('treinamentos-oficiais')} style={{ background: '#0A1628', border: 'none', color: '#ffffff', padding: '8px 16px', borderRadius: 10, cursor: 'pointer', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
             Abrir Treinamentos Oficiais
           </button>
         </div>

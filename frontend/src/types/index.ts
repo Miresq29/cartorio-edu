@@ -76,7 +76,7 @@ export interface ChatMessage {
 
 export type AppTab =
   // Sistema Master
-  | 'dashboard' | 'admin' | 'audit'
+  | 'dashboard' | 'admin' | 'audit' | 'treinamentos-oficiais'
   // Gestão
   | 'unit' | 'users' | 'reports' | 'security'
   // Conteúdo
