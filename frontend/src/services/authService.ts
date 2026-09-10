@@ -5,7 +5,9 @@ import {
   onAuthStateChanged,
   setPersistence,
   browserSessionPersistence,
-  updatePassword as firebaseUpdatePassword
+  updatePassword as firebaseUpdatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider
 } from "firebase/auth";
 import {
   doc, getDoc, updateDoc, setDoc,
@@ -117,7 +119,7 @@ export const AuthService = {
     } catch (error: any) { throw new Error(error.message || "Falha na autenticacao."); }
   },
 
-  updatePassword: async (userId: string, newPassword: string) => {
+  updatePassword: async (userId: string, newPassword: string, currentPassword?: string) => {
     try {
       if (!isStrongPassword(newPassword)) {
         throw new Error("Senha fraca. Minimo 12 caracteres, com maiuscula, minuscula, numero e caractere especial.");
@@ -131,15 +133,38 @@ export const AuthService = {
       const lastThree = passwordHistory.slice(-3);
       if (lastThree.includes(newHash)) throw new Error("Esta senha ja foi utilizada recentemente. Escolha uma senha diferente das ultimas 3.");
       const currentUser = auth.currentUser;
-      if (currentUser) await firebaseUpdatePassword(currentUser, newPassword);
+      if (currentUser) {
+        try {
+          await firebaseUpdatePassword(currentUser, newPassword);
+        } catch (err: any) {
+          // O Firebase exige login "recente" para trocar senha. Se a sessao ja tem alguns
+          // minutos, reautentica com a senha atual (informada no formulario) e tenta de novo.
+          if (err.code === "auth/requires-recent-login") {
+            if (!currentPassword) {
+              throw new Error("Sua sessao expirou para esta operacao sensivel. Informe sua senha atual para confirmar a troca.");
+            }
+            const credential = EmailAuthProvider.credential(currentUser.email || userData.email, currentPassword);
+            await reauthenticateWithCredential(currentUser, credential);
+            await firebaseUpdatePassword(currentUser, newPassword);
+          } else {
+            throw err;
+          }
+        }
+      }
       const updatedHistory = [...passwordHistory, newHash].slice(-3);
       await updateDoc(userRef, { isFirstLogin: false, passwordHistory: updatedHistory, passwordUpdatedAt: serverTimestamp() });
       await logAudit("PASSWORD_CHANGED", userId, userData.email || "", "Senha atualizada com sucesso", "INFO", userData.tenantId || "");
       return { success: true };
-    } catch (error: any) { console.error("Erro ao atualizar senha:", error); return { success: false, message: error.message }; }
+    } catch (error: any) {
+      console.error("Erro ao atualizar senha:", error);
+      const msg = error.code === "auth/wrong-password" || error.code === "auth/invalid-credential"
+        ? "Senha atual incorreta."
+        : error.message;
+      return { success: false, message: msg };
+    }
   },
 
-  updateFirstPassword: async (userId: string, newPassword: string) => { return AuthService.updatePassword(userId, newPassword); },
+  updateFirstPassword: async (userId: string, newPassword: string, currentPassword?: string) => { return AuthService.updatePassword(userId, newPassword, currentPassword); },
 
   logout: async (userId?: string, email?: string) => {
     try {

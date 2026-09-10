@@ -7,9 +7,11 @@ import { AuthService } from '../../services/authService';
 const ChangePasswordView: React.FC = () => {
   const { state, login, logout } = useApp();
   const { showToast } = useToast();
+  const [currentPass, setCurrentPass] = useState('');
   const [newPass, setNewPass] = useState('');
   const [confirmPass, setConfirmPass] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
@@ -50,7 +52,7 @@ const ChangePasswordView: React.FC = () => {
         throw new Error('As senhas digitadas não coincidem.');
       }
 
-      const result = await AuthService.updatePassword(user.id, newPass);
+      const result = await AuthService.updatePassword(user.id, newPass, currentPass);
 
       if (result.success) {
         showToast('Senha atualizada com sucesso!', 'success');
@@ -80,6 +82,25 @@ const ChangePasswordView: React.FC = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+
+          {/* Senha atual (necessária para confirmar a troca com segurança) */}
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Senha Atual</label>
+            <div className="relative">
+              <input
+                type={showCurrent ? 'text' : 'password'}
+                value={currentPass}
+                onChange={e => setCurrentPass(e.target.value)}
+                className="w-full bg-white border border-slate-200 rounded-2xl p-4 text-xs font-bold text-navy focus:border-blue-500 outline-none pr-12"
+                placeholder="Senha usada para entrar agora"
+                required
+              />
+              <button type="button" onClick={() => setShowCurrent(!showCurrent)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-navy">
+                <i className={`fa-solid ${showCurrent ? 'fa-eye-slash' : 'fa-eye'} text-xs`}></i>
+              </button>
+            </div>
+          </div>
 
           {/* Nova senha */}
           <div className="space-y-2">
@@ -157,7 +178,7 @@ const ChangePasswordView: React.FC = () => {
             </button>
             <button
               type="submit"
-              disabled={loading || !validation.isValid || newPass !== confirmPass}
+              disabled={loading || !currentPass || !validation.isValid || newPass !== confirmPass}
               className="flex-1 bg-blue-600 hover:bg-blue-500 text-navy font-black py-4 rounded-2xl shadow-xl transition-all disabled:opacity-40 text-[10px] uppercase tracking-widest"
             >
               {loading ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Salvando...</> : 'Salvar e Entrar'}
