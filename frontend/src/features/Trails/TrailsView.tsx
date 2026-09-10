@@ -559,23 +559,45 @@ Nota mínima para aprovação: ${modulo.notaMinima}/10`;
                 </div>
               )}
               {!conteudoItem.youtubeId && conteudoItem.driveId && conteudoItem.tipo === 'audio' && (
-                <div style={{ borderRadius: 16, overflow: 'hidden', height: 120 }}>
-                  <iframe
-                    src={`https://drive.google.com/file/d/${conteudoItem.driveId}/preview`}
-                    style={{ width: '100%', height: '100%', border: 'none' }}
-                    allow="autoplay"
-                    title={conteudoItem.titulo}
-                  />
+                <div style={{ display: 'grid', gap: 8 }}>
+                  <div style={{ borderRadius: 16, overflow: 'hidden', height: 120, background: '#f8fafc' }}>
+                    <iframe
+                      src={`https://drive.google.com/file/d/${conteudoItem.driveId}/preview`}
+                      style={{ width: '100%', height: '100%', border: 'none' }}
+                      allow="autoplay"
+                      title={conteudoItem.titulo}
+                    />
+                  </div>
+                  <a href={`https://drive.google.com/file/d/${conteudoItem.driveId}/view`} target="_blank" rel="noreferrer"
+                    style={{ fontSize: 11, color: '#0A1628', textAlign: 'center' }}>
+                    <i className="fa-brands fa-google-drive" style={{ marginRight: 6, color: '#C9A84C' }}></i>
+                    Se o player não carregar, abra diretamente no Google Drive
+                  </a>
                 </div>
               )}
               {!conteudoItem.youtubeId && conteudoItem.driveId && conteudoItem.tipo === 'mp4' && (
-                <div style={{ borderRadius: 16, overflow: 'hidden', height: 400 }}>
-                  <iframe
-                    src={`https://drive.google.com/file/d/${conteudoItem.driveId}/preview`}
-                    style={{ width: '100%', height: '100%', border: 'none' }}
-                    allow="autoplay"
-                    title={conteudoItem.titulo}
-                  />
+                <div style={{ display: 'grid', gap: 8 }}>
+                  <div style={{ borderRadius: 16, overflow: 'hidden', height: 400, background: '#f8fafc' }}>
+                    <iframe
+                      src={`https://drive.google.com/file/d/${conteudoItem.driveId}/preview`}
+                      style={{ width: '100%', height: '100%', border: 'none' }}
+                      allow="autoplay"
+                      title={conteudoItem.titulo}
+                    />
+                  </div>
+                  <a href={`https://drive.google.com/file/d/${conteudoItem.driveId}/view`} target="_blank" rel="noreferrer"
+                    style={{ fontSize: 11, color: '#0A1628', textAlign: 'center' }}>
+                    <i className="fa-brands fa-google-drive" style={{ marginRight: 6, color: '#C9A84C' }}></i>
+                    Se o player não carregar, abra diretamente no Google Drive
+                  </a>
+                </div>
+              )}
+              {!conteudoItem.youtubeId && !conteudoItem.driveId && (
+                <div style={{ background: '#fef2f2', border: '1px solid #dc262640', borderRadius: 16, padding: 16, textAlign: 'center' }}>
+                  <p style={{ fontSize: 12, color: '#dc2626' }}>
+                    <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: 6 }}></i>
+                    Não foi possível carregar o vídeo vinculado a este módulo. Verifique se o link de origem ainda é válido.
+                  </p>
                 </div>
               )}
             </div>
