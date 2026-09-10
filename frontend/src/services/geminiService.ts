@@ -460,9 +460,10 @@ Retorne APENAS array JSON sem markdown:
 [{"id":1,"enunciado":"...","alternativas":[{"letra":"A","texto":"..."},{"letra":"B","texto":"..."},{"letra":"C","texto":"..."},{"letra":"D","texto":"..."}],"correta":"A","bloom":"compreensao","justificativa":"..."}]`;
 
   try {
-    // jsonMode=true: Gemini garante JSON valido. Escala com numQuestoes — 6000 tokens
-    // fixos cortavam exames de 10 questoes com justificativa (MAX_TOKENS a meio do JSON).
-    const maxTokens = Math.min(8192, 700 * numQuestoes + 1500);
+    // jsonMode=true: Gemini garante JSON valido. Escala com numQuestoes — mesmo com
+    // thinking desligado (thinkingBudget:0), 8192 ainda cortava exames com conteudo
+    // maior (trilhas de seguranca com varios modulos). Teto bem folgado.
+    const maxTokens = Math.min(32768, 1500 * numQuestoes + 3000);
     const text = await callGemini(prompt, maxTokens, true);
     const questoes = JSON.parse(text);
     if (!Array.isArray(questoes) || questoes.length === 0)
