@@ -263,10 +263,13 @@ service cloud.firestore {
       allow write: if isSuperAdmin();
     }
     match /tenants/{docId} {
-      // TODO(seguranca): varias telas (TenantsView, DashboardMasterView, dropdown em UsersView)
-      // fazem list() sem filtro nessa colecao — confirmar que sao SUPERADMIN-only antes de
-      // restringir por tenant, senao quebra essas telas para gestores comuns.
-      allow read: if isActive();
+      // get: qualquer usuario ativo pode ler o PROPRIO cartorio por ID exato (necessario para
+      // os toggles de recurso do Sidebar e o contador de demonstracao). list: so quem enxerga
+      // todos os cartorios de proposito (SUPERADMIN/Equipe MJ, telas TenantsView e Dashboard
+      // Master) — sem isso, list() sem filtro deixava qualquer gestor/colaborador consultar a
+      // colecao inteira e enumerar nome/ID de todos os clientes da MJ Consultoria.
+      allow get: if isActive();
+      allow list: if isSuperAdmin() || isEquipeMJ();
       allow write: if isSuperAdmin();
     }
 

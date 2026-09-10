@@ -59,17 +59,24 @@ const MainLayout: React.FC = () => {
     );
   }
 
+  const isPlatformStaff = state.user?.role === 'SUPERADMIN' || state.user?.role === 'equipe_mj';
+
   const renderContent = () => {
     switch (state.activeTab) {
-      case 'dashboard':  return <DashboardMasterView />;
+      // Painel Master, Gestao de Empresas e Treinamentos Oficiais expoem dados de TODOS os
+      // cartorios (nomes reais de clientes) — mesmo com o Sidebar escondendo o item para quem
+      // nao e SUPERADMIN/Equipe MJ, o roteamento aqui precisa recusar explicitamente, senao um
+      // activeTab default ou residual (ex.: 'dashboard' logo apos o login) expoe a tela mesmo
+      // assim.
+      case 'dashboard':  return isPlatformStaff ? <DashboardMasterView /> : <DashboardView />;
       case 'unit':       return <DashboardView />;
       case 'knowledge':  return <KnowledgeBase />;
       case 'security':   return <SecurityView />;
       case 'users':      return <UsersView />;
       case 'training':   return <TrainingView />;
       case 'trails':     return <TrailsView />;
-      case 'admin':      return <TenantsView />;
-      case 'treinamentos-oficiais': return <TreinamentosOficiaisPanel />;
+      case 'admin':      return state.user?.role === 'SUPERADMIN' ? <TenantsView /> : <DashboardView />;
+      case 'treinamentos-oficiais': return isPlatformStaff ? <TreinamentosOficiaisPanel /> : <DashboardView />;
       case 'audit':      return <AuditoriaView />;
       case 'reports':    return <RelatoriosView />;
       case 'support':    return <SupportView />;
@@ -92,7 +99,7 @@ const MainLayout: React.FC = () => {
       case 'dossie':        return <DossieConformidadeView />;
       case 'maturidade':    return <AssessmentView />;
       default:
-        return state.user?.role === 'SUPERADMIN' ? <DashboardMasterView /> : <DashboardView />;
+        return isPlatformStaff ? <DashboardMasterView /> : <DashboardView />;
     }
   };
 

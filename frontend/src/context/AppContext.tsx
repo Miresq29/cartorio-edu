@@ -36,6 +36,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     activeTenantName: null,
   });
 
+  // Console Master (dashboard) e as demais telas de Sistema Master mostram dados agregados de
+  // TODOS os cartorios — so SUPERADMIN/Equipe MJ devem cair ali por padrao ao logar.
+  const tabInicial = (role?: string) => (role === 'SUPERADMIN' || role === 'equipe_mj') ? 'dashboard' : 'unit';
+
   useEffect(() => {
     const unsubscribe = AuthService.onAuthUpdate((user, token) => {
       setState(prev => ({
@@ -43,6 +47,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         user,
         token,
         loading: false,
+        activeTab: tabInicial(user?.role),
         // Reset tenant mode ao trocar de usuário
         activeTenantId: null,
         activeTenantName: null,
@@ -52,7 +57,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   const login = useMemo(() => (user: User, token: string) => {
-    setState(prev => ({ ...prev, user, token, activeTenantId: null, activeTenantName: null }));
+    setState(prev => ({ ...prev, user, token, activeTab: tabInicial(user?.role), activeTenantId: null, activeTenantName: null }));
   }, []);
 
   const logout = useMemo(() => async () => {
