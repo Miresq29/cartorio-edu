@@ -710,7 +710,7 @@ Nota mínima para aprovação: ${modulo.notaMinima}/10`;
 // ─── Main View ────────────────────────────────────────────────────────────────
 
 const TrailsView: React.FC = () => {
-  const { state, tenantId } = useApp();
+  const { state, tenantId, setActiveTab } = useApp();
   const { showToast } = useToast();
   const user = state.user!;
   const isGestor = ['SUPERADMIN', 'gestor', 'admin', 'curador'].includes(user.role);
@@ -876,6 +876,18 @@ const TrailsView: React.FC = () => {
           </button>
         </>}
       </div>
+
+      {isSuperAdmin && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#F5EDD8', border: '1px solid #C9A84C40', borderRadius: 14, padding: '12px 16px', marginBottom: 24 }}>
+          <i className="fa-solid fa-wand-magic-sparkles" style={{ color: '#C9A84C' }}></i>
+          <span style={{ fontSize: 12, color: '#7a5c1e', flex: 1 }}>
+            Provimento 213/2026, Compliance e Antissuborno, Provimento 149 e LGPD já têm vídeo pronto — crie a trilha oficial em 1 clique.
+          </span>
+          <button onClick={() => setActiveTab('admin')} style={{ background: '#0A1628', border: 'none', color: '#ffffff', padding: '8px 16px', borderRadius: 10, cursor: 'pointer', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+            Abrir Treinamentos Oficiais
+          </button>
+        </div>
+      )}
 
       {/* ── Minhas Trilhas ── */}
       {tab === 'minhas' && (

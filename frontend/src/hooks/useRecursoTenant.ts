@@ -13,15 +13,23 @@ import { useApp } from '../context/AppContext';
 // o SUPERADMIN gravar `false`, como acontece ao ativar uma demonstração).
 const PADRAO_DESLIGADO = new Set(['phishingHabilitado', 'backupHabilitado']);
 
+// "criarConteudoHabilitado" trava o CLIENTE (gestor/admin do cartório) durante a
+// demonstração, mas nunca deve travar o próprio SUPERADMIN — criar/distribuir
+// conteúdo oficial é uma ação da plataforma, não "o que o cliente veria", então o
+// bypass vale mesmo com o SUPERADMIN "dentro" de um cartório em modo demonstração.
+const SEMPRE_LIBERADO_PARA_SUPERADMIN = new Set(['criarConteudoHabilitado']);
+
 export function useRecursoTenant(campo: string) {
   const { state, tenantId } = useApp();
   const padraoLigado = !PADRAO_DESLIGADO.has(campo);
   const [habilitado, setHabilitado] = useState(padraoLigado);
 
+  const isSuperAdmin = state.user?.role === 'SUPERADMIN';
   // No modo global (fora de qualquer cartório) o SUPERADMIN sempre enxerga o recurso
   // destravado. Ao "entrar" num cartório específico (activeTenantId), deve ver
-  // exatamente o que aquele cliente vê — inclusive travado, para conferir a config.
-  const superAdminGlobal = state.user?.role === 'SUPERADMIN' && !state.activeTenantId;
+  // exatamente o que aquele cliente vê — inclusive travado, para conferir a config —
+  // exceto os campos em SEMPRE_LIBERADO_PARA_SUPERADMIN, que nunca travam para ele.
+  const superAdminGlobal = isSuperAdmin && (!state.activeTenantId || SEMPRE_LIBERADO_PARA_SUPERADMIN.has(campo));
 
   useEffect(() => {
     if (!tenantId) { setHabilitado(padraoLigado); return; }
