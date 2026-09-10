@@ -113,7 +113,14 @@ const callGemini = async (
   }
 
   const data = await response.json();
-  return data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Sem resposta da IA.';
+  const candidate = data?.candidates?.[0];
+  // MAX_TOKENS = a resposta foi cortada no meio antes de terminar — se for JSON,
+  // vira "Unterminated string"/"Unexpected end of JSON input" confuso no JSON.parse.
+  // Falha aqui com uma mensagem clara em vez de deixar o parser explodir.
+  if (candidate?.finishReason === 'MAX_TOKENS') {
+    throw new Error('A resposta da IA foi cortada por exceder o limite de tokens. Tente novamente com menos questões/itens.');
+  }
+  return candidate?.content?.parts?.[0]?.text || 'Sem resposta da IA.';
 };
 
 // ─── Chat principal ───────────────────────────────────────────────────────────
@@ -448,8 +455,10 @@ Retorne APENAS array JSON sem markdown:
 [{"id":1,"enunciado":"...","alternativas":[{"letra":"A","texto":"..."},{"letra":"B","texto":"..."},{"letra":"C","texto":"..."},{"letra":"D","texto":"..."}],"correta":"A","bloom":"compreensao","justificativa":"..."}]`;
 
   try {
-    // jsonMode=true: Gemini garante JSON valido; 6000 tokens para questoes detalhadas
-    const text = await callGemini(prompt, 6000, true);
+    // jsonMode=true: Gemini garante JSON valido. Escala com numQuestoes — 6000 tokens
+    // fixos cortavam exames de 10 questoes com justificativa (MAX_TOKENS a meio do JSON).
+    const maxTokens = Math.min(8192, 700 * numQuestoes + 1500);
+    const text = await callGemini(prompt, maxTokens, true);
     const questoes = JSON.parse(text);
     if (!Array.isArray(questoes) || questoes.length === 0)
       throw new Error('Formato inválido na resposta da IA.');

@@ -95,6 +95,14 @@
         { "fieldPath": "tenantIds", "arrayConfig": "CONTAINS" },
         { "fieldPath": "criadoEm", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "certificados",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "tenantId", "order": "ASCENDING" },
+        { "fieldPath": "emitidoEm", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

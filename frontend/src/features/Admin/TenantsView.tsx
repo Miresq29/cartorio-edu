@@ -7,6 +7,7 @@ import { httpsCallable } from 'firebase/functions';
 import {
   collection, onSnapshot, query, where, orderBy, doc, updateDoc, Timestamp
 } from 'firebase/firestore';
+import TreinamentosOficiaisPanel from './TreinamentosOficiaisPanel';
 
 const createTenantFn = httpsCallable(functions, 'createTenant');
 const createCollaboratorFn = httpsCallable(functions, 'createCollaborator');
@@ -319,6 +320,8 @@ const TenantsView: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <TreinamentosOficiaisPanel />
 
       {/* Equipe de curadoria de conteúdo */}
       <div className="bg-white border border-slate-200 rounded-[40px] p-10 space-y-6 shadow-lg">
