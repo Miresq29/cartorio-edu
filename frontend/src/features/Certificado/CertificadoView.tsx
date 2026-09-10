@@ -24,11 +24,20 @@ interface Certificado {
   tipo: 'trilha' | 'modulo' | 'exame';
   notaFinal: number;
   cargaHoraria: number;
+  instrutor?: string;
   codigoVerificacao: string;
   emitidoEm: any;
   emitidoPor: string;
   tenantId: string;
   validoAte?: any;
+}
+
+interface TrilhaRef {
+  id: string;
+  titulo: string;
+  cargaHoraria?: number;
+  instrutor?: string;
+  oficial?: boolean;
 }
 
 interface QuizResult {
@@ -207,6 +216,11 @@ const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
             carga horária de <strong className="text-navy">{cert.cargaHoraria} horas</strong>,
             em conformidade com os Provimentos CNJ nº 161/2023, 213/2026 e 149/2023.
           </p>
+          {cert.instrutor && (
+            <p style={{ fontSize: '8pt', color: '#555', margin: '1mm 0 0 0' }}>
+              Instrutor(a): <strong className="text-navy">{cert.instrutor}</strong>
+            </p>
+          )}
         </div>
 
         {/* Data e assinaturas */}
@@ -263,10 +277,11 @@ const ModalEmitir: React.FC<{
   quizResults: QuizResult[];
   trilhasProgresso: TrilhaProgresso[];
   usuarios: UserData[];
+  trilhas: TrilhaRef[];
   cartorio: string;
   onEmitir: (data: Omit<Certificado, 'id' | 'codigoVerificacao' | 'emitidoEm' | 'tenantId' | 'emitidoPor'>) => void;
   onClose: () => void;
-}> = ({ quizResults, trilhasProgresso, usuarios, cartorio, onEmitir, onClose }) => {
+}> = ({ quizResults, trilhasProgresso, usuarios, trilhas, cartorio, onEmitir, onClose }) => {
   const [colab, setColab] = useState('');
   const [tipo, setTipo] = useState<'trilha' | 'modulo' | 'exame'>('trilha');
   const [item, setItem] = useState('');
@@ -375,6 +390,14 @@ const ModalEmitir: React.FC<{
               if (!colab || !item) return;
               const trilhaTitulo = tipo === 'modulo' ? item.split(' — ')[0] : item;
               const moduloTitulo = tipo === 'modulo' ? item.split(' — ')[1] : undefined;
+              // Trilhas oficiais (distribuídas pela MJ Consultoria) sempre saem com
+              // "Mirian Jabur" como instrutora; as demais usam o instrutor cadastrado
+              // na trilha, se houver. Carga horária nunca sai zerada — mínimo de 1h
+              // quando a trilha não informou (cargaHoraria vazio/0).
+              const trilhaRef = trilhas.find(t => t.titulo === trilhaTitulo);
+              const cargaHorariaPadrao = tipo === 'trilha' ? 20 : tipo === 'modulo' ? 5 : 10;
+              const cargaHoraria = Math.max(1, trilhaRef?.cargaHoraria || cargaHorariaPadrao);
+              const instrutor = trilhaRef?.oficial ? 'Mirian Jabur' : (trilhaRef?.instrutor || '');
               onEmitir({
                 colaboradorId: colab,
                 colaboradorNome: colabUser?.name || '',
@@ -384,7 +407,8 @@ const ModalEmitir: React.FC<{
                 moduloTitulo,
                 tipo,
                 notaFinal: mediaItem || 100,
-                cargaHoraria: tipo === 'trilha' ? 20 : tipo === 'modulo' ? 5 : 10,
+                cargaHoraria,
+                instrutor,
               });
             }}
             disabled={!colab || !item}
@@ -409,6 +433,7 @@ const CertificadoView: React.FC = () => {
   const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
   const [trilhasProgresso, setTrilhasProgresso] = useState<TrilhaProgresso[]>([]);
   const [usuarios, setUsuarios] = useState<UserData[]>([]);
+  const [trilhas, setTrilhas] = useState<TrilhaRef[]>([]);
   const [cartorioNome, setCartorioNome] = useState(tenantId);
   const [showModal, setShowModal] = useState(false);
   const [imprimindo, setImprimindo] = useState<Certificado | null>(null);
@@ -420,6 +445,9 @@ const CertificadoView: React.FC = () => {
 
     const q2 = query(collection(db, 'treinamentosQuizResults'), orderBy('createdAt', 'desc'));
     const u2 = onSnapshot(q2, s => setQuizResults(s.docs.map(d => ({ id: d.id, ...d.data() } as QuizResult))));
+
+    const q5 = query(collection(db, 'trilhas'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']));
+    const u5 = onSnapshot(q5, s => setTrilhas(s.docs.map(d => ({ id: d.id, ...d.data() } as TrilhaRef))));
 
     const q3 = query(collection(db, 'trilhasProgresso'), where('tenantId', '==', tenantId));
     const u3 = onSnapshot(q3, s => setTrilhasProgresso(s.docs.map(d => ({ id: d.id, ...d.data() } as TrilhaProgresso))));
@@ -436,7 +464,7 @@ const CertificadoView: React.FC = () => {
     };
     loadCartorio();
 
-    return () => { u1(); u2(); u3(); u4(); };
+    return () => { u1(); u2(); u3(); u4(); u5(); };
   }, [tenantId]);
 
   // Filtrar certificados do colaborador atual se não for gestor
@@ -504,6 +532,7 @@ const CertificadoView: React.FC = () => {
             quizResults={quizResults}
             trilhasProgresso={trilhasProgresso}
             usuarios={usuarios}
+            trilhas={trilhas}
             cartorio={cartorioNome}
             onEmitir={handleEmitir}
             onClose={() => setShowModal(false)}
