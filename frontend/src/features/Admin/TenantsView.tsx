@@ -61,6 +61,42 @@ function diasRestantes(ts?: Timestamp | null): number | null {
   return Math.ceil(ms / 86_400_000);
 }
 
+// Procedimento passo a passo desta tela — ilustrado com ícones (não fotos reais de tela)
+// para não desatualizar a cada mudança visual da interface. Cada passo aponta exatamente
+// para o bloco correspondente nesta mesma página.
+const GUIA_GESTAO: { icon: string; title: string; desc: string }[] = [
+  {
+    icon: 'fa-building-circle-check',
+    title: '1. Ativar um novo cartório cliente',
+    desc: 'No formulário "Ativar Novo Cartório Cliente", informe o nome da serventia e um ID do sistema (sem espaços, ex: cartorio-bh-01). Esse ID vira o tenantId de todos os colaboradores daquele cartório e não pode ser alterado depois.',
+  },
+  {
+    icon: 'fa-toggle-on',
+    title: '2. Habilitar ou desligar módulos por cartório',
+    desc: 'Em cada cartório listado em "Instâncias Ativas", clique nos chips de módulo (Auditoria, Segurança, IA Analítica, Phishing, Dossiê, Diagnóstico, Backup) para ligar/desligar. Quando desligado, o item aparece travado (cadeado) no menu daquele cliente.',
+  },
+  {
+    icon: 'fa-hourglass-half',
+    title: '3. Ativar um período de demonstração',
+    desc: 'Clique em "Ativar Demonstração", defina a quantidade de dias e confirme. Durante a demonstração só a Capacitação (Trilhas/Exames/Treinamentos) fica liberada — os demais módulos ficam travados até você "Encerrar Demonstração" (vira cliente pleno) ou o prazo expirar.',
+  },
+  {
+    icon: 'fa-arrow-right-to-bracket',
+    title: '4. Acessar um cartório para conferir o que o cliente vê',
+    desc: 'Clique em "Acessar" ao lado do cartório. Você entra no ambiente exatamente como aquele cliente enxerga — inclusive módulos travados — para validar a configuração. Use "Sair do cartório" no menu lateral para voltar ao modo global.',
+  },
+  {
+    icon: 'fa-wand-magic-sparkles',
+    title: '5. Publicar treinamentos oficiais prontos',
+    desc: 'Em "Treinamentos Oficiais" (menu Sistema Master), vincule um vídeo já cadastrado a cada tema pronto (Provimento 213/2026, Compliance, Provimento 149, LGPD) e clique em "Criar Trilha Oficial" — a trilha é publicada automaticamente para todos os cartórios, com quiz gerado por IA.',
+  },
+  {
+    icon: 'fa-user-shield',
+    title: '6. Montar a equipe interna da MJ Consultoria',
+    desc: 'Nesta página, em "Equipe de Curadoria de Conteúdo", cadastre pessoas que só vão inserir/distribuir conteúdo (Curador). Para alguém que vai te ajudar de forma mais ampla — colaboradores, relatórios, auditoria de qualquer cartório —, cadastre em "Colaboradores" escolhendo o perfil "Equipe MJ" (não pede cartório).',
+  },
+];
+
 const TenantsView: React.FC = () => {
   const { setActiveTenant, setActiveTab } = useApp();
   const { showToast } = useToast();
@@ -75,6 +111,7 @@ const TenantsView: React.FC = () => {
   const [curadorNome, setCuradorNome] = useState('');
   const [curadorEmail, setCuradorEmail] = useState('');
   const [savingCurador, setSavingCurador] = useState(false);
+  const [mostrarGuia, setMostrarGuia] = useState(false);
 
   useEffect(() => {
     const q = query(collection(db, 'tenants'), orderBy('createdAt', 'desc'));
@@ -174,6 +211,43 @@ const TenantsView: React.FC = () => {
           Ativação de Novas Instâncias // MJ Consultoria Master
         </p>
       </header>
+
+      {/* Guia passo a passo desta tela */}
+      <div className="bg-white border border-gold/30 rounded-[32px] shadow-lg overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setMostrarGuia(v => !v)}
+          className="w-full flex items-center justify-between gap-4 p-6 hover:bg-gold/5 transition-all"
+        >
+          <div className="flex items-center gap-4 text-left">
+            <div className="w-12 h-12 rounded-2xl bg-gold/15 flex items-center justify-center flex-shrink-0">
+              <i className="fa-solid fa-map-signs text-gold text-lg"></i>
+            </div>
+            <div>
+              <p className="text-navy font-black uppercase text-sm italic">Guia passo a passo desta tela</p>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
+                Como ativar cartórios, controlar demonstração e montar a equipe MJ
+              </p>
+            </div>
+          </div>
+          <i className={`fa-solid ${mostrarGuia ? 'fa-chevron-up' : 'fa-chevron-down'} text-slate-400 flex-shrink-0`}></i>
+        </button>
+        {mostrarGuia && (
+          <div className="px-6 pb-6 grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-100 pt-6">
+            {GUIA_GESTAO.map(passo => (
+              <div key={passo.title} className="flex gap-4 p-4 bg-slate-50 border border-slate-200 rounded-2xl">
+                <div className="w-10 h-10 rounded-xl bg-gold/15 flex items-center justify-center flex-shrink-0">
+                  <i className={`fa-solid ${passo.icon} text-gold`}></i>
+                </div>
+                <div>
+                  <p className="text-navy font-bold text-xs uppercase tracking-wide mb-1">{passo.title}</p>
+                  <p className="text-slate-500 text-xs leading-relaxed">{passo.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         <form onSubmit={handleCreateTenant} className="bg-white border border-slate-200 rounded-[40px] p-12 space-y-6 shadow-2xl">

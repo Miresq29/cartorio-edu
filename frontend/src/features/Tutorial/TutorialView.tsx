@@ -24,10 +24,22 @@ const SECTIONS: Section[] = [
     ]
   },
   {
+    id: 'tenants', icon: 'fa-server', title: 'Gestão de Empresas', subtitle: 'Ativar cartórios, demonstração e equipe MJ',
+    roles: ['SUPERADMIN'],
+    steps: [
+      { title: 'Ativar um novo cartório cliente', desc: 'No formulário "Ativar Novo Cartório Cliente", informe o nome da serventia e um ID do sistema (sem espaços, ex: cartorio-bh-01). Esse ID vira o tenantId de todos os colaboradores daquele cartório e não pode ser alterado depois.' },
+      { title: 'Habilitar ou desligar módulos por cartório', desc: 'Em cada cartório listado em "Instâncias Ativas", clique nos chips de módulo (Auditoria, Segurança, IA Analítica, Phishing, Dossiê, Diagnóstico, Backup) para ligar/desligar. Quando desligado, o item aparece travado (cadeado) no menu daquele cliente.' },
+      { title: 'Ativar um período de demonstração', desc: 'Clique em "Ativar Demonstração", defina a quantidade de dias e confirme. Durante a demonstração só a Capacitação (Trilhas/Exames/Treinamentos) fica liberada — os demais módulos ficam travados até você "Encerrar Demonstração" (vira cliente pleno) ou o prazo expirar, quando o cartório é suspenso automaticamente e um e-mail é enviado ao gestor sugerindo a compra.' },
+      { title: 'Acessar um cartório para conferir o que o cliente vê', desc: 'Clique em "Acessar" ao lado do cartório. Você entra no ambiente exatamente como aquele cliente enxerga — inclusive módulos travados — para validar a configuração. Use "Sair do cartório" no menu lateral para voltar ao modo global.' },
+      { title: 'Publicar treinamentos oficiais prontos', desc: 'Em "Treinamentos Oficiais" (menu Sistema Master), vincule um vídeo já cadastrado a cada tema pronto (Provimento 213/2026, Compliance, Provimento 149, LGPD) e clique em "Criar Trilha Oficial" — a trilha é publicada automaticamente para todos os cartórios, com quiz gerado por IA.' },
+      { title: 'Montar a equipe interna da MJ Consultoria', desc: 'Em "Equipe de Curadoria de Conteúdo" (nesta mesma tela), cadastre pessoas que só vão inserir/distribuir conteúdo (perfil Curador). Para alguém que vai te ajudar de forma mais ampla — colaboradores, relatórios, auditoria de qualquer cartório —, cadastre em "Colaboradores" escolhendo o perfil "Equipe MJ" (não pede cartório).' },
+    ]
+  },
+  {
     id: 'collaborators', icon: 'fa-users-gear', title: 'Colaboradores', subtitle: 'Gerenciar usuários e permissões',
     steps: [
       { title: 'Criando um colaborador', desc: 'Clique em "+ Novo Colaborador", preencha nome, e-mail e selecione o perfil de acesso. O colaborador deverá trocar a senha no primeiro login.' },
-      { title: 'Perfis disponíveis', desc: 'Super Admin: acesso total. Gestor: acesso completo à serventia. Admin: gerenciar colaboradores. Colaborador: acesso aos próprios dados e treinamentos.' },
+      { title: 'Perfis disponíveis', desc: 'Super Admin: acesso total. Equipe MJ: staff interno da MJ Consultoria, ajuda em todos os cartórios (colaboradores, relatórios, auditoria) sem pertencer a nenhum — só o SUPERADMIN pode criar esse perfil. Gestor: acesso completo à serventia. Admin: gerenciar colaboradores. Colaborador: acesso aos próprios dados e treinamentos.' },
       { title: 'Editando e desativando', desc: 'Clique no ícone de edição para alterar dados ou perfil. Ao desligar um colaborador, desative imediatamente para revogar o acesso à plataforma.' },
       { title: 'Matriz de Acesso', desc: 'Na aba "Matriz de Acesso", visualize um mapa completo de quais recursos cada perfil pode acessar.' },
     ]
