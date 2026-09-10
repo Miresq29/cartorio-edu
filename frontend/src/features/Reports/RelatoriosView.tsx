@@ -410,6 +410,7 @@ const RelatoriosView: React.FC = () => {
     const certsDoColab = certificados.filter(c => c.colaboradorNome === nome);
     const dadosUser = colab.find(u => u.id === colabId);
     const cargaHorariaColab = trilhasDoColab.filter(p => p.concluida).reduce((a, p) => a + cargaHorariaTrilha(p.trilhaId), 0);
+    const codigo = `MJ-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
 
     const win = window.open('', '_blank');
     if (!win) return;
@@ -435,24 +436,36 @@ const RelatoriosView: React.FC = () => {
 
     win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Ficha de Capacitação</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Dancing+Script:wght@700&display=swap');
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family: Arial, sans-serif; color:#1e293b; background:white; padding:40px; font-size:12px; }
-.cover { text-align:center; padding:40px 0 30px; border-bottom:3px solid #c9a84c; margin-bottom:32px; }
-.cover-logo { font-size:34px; font-weight:900; color:#0f172a; letter-spacing:-2px; }
+.cover { text-align:center; padding:34px 24px; margin-bottom:32px; border:3px double #c9a84c; position:relative; }
+.corner { position:absolute; width:22px; height:22px; border:2px solid #c9a84c; }
+.corner.tl { top:8px; left:8px; border-right:none; border-bottom:none; }
+.corner.tr { top:8px; right:8px; border-left:none; border-bottom:none; }
+.corner.bl { bottom:8px; left:8px; border-right:none; border-top:none; }
+.corner.br { bottom:8px; right:8px; border-left:none; border-top:none; }
+.cover-logo { font-family:'Playfair Display', serif; font-size:34px; font-weight:900; color:#0f172a; letter-spacing:-2px; }
 .cover-logo span { color:#c9a84c; }
 .cover-title { font-size:18px; font-weight:900; color:#1e293b; margin-top:12px; text-transform:uppercase; letter-spacing:2px; }
 .cover-sub { font-size:12px; color:#8a6e2f; margin-top:6px; text-transform:uppercase; letter-spacing:2px; }
-.info { display:flex; gap:24px; justify-content:center; margin-top:16px; font-size:11px; color:#475569; }
+.info { display:flex; gap:24px; justify-content:center; flex-wrap:wrap; margin-top:16px; font-size:11px; color:#475569; }
 .section { margin-bottom:24px; page-break-inside:avoid; }
 .section-title { background:#0f172a; color:white; padding:8px 14px; border-radius:8px 8px 0 0; font-size:12px; font-weight:900; text-transform:uppercase; letter-spacing:1px; border-left:4px solid #c9a84c; }
 table { width:100%; border-collapse:collapse; font-size:11px; }
 th, td { text-align:left; padding:6px 8px; border-bottom:1px solid #e8d9a0; }
 th { background:#fdfbf5; color:#7a5c1e; text-transform:uppercase; font-size:9px; letter-spacing:1px; }
 td { background:#fdfbf5; }
-.footer { text-align:center; margin-top:40px; padding-top:16px; border-top:1px solid #e8d9a0; font-size:9px; color:#a8882f; }
-@media print { body { padding:20px; } .section { page-break-inside:avoid; } }
+.assinatura { display:flex; justify-content:center; margin-top:40px; page-break-inside:avoid; }
+.assinatura-bloco { text-align:center; }
+.assinatura-nome { font-family:'Dancing Script', cursive; font-size:30px; color:#1e3a5f; line-height:1; margin-bottom:-2px; }
+.assinatura-linha { border-top:1px solid #bbb; padding-top:6px; font-size:10px; color:#888; min-width:260px; }
+.footer { text-align:center; margin-top:24px; padding-top:16px; border-top:1px solid #e8d9a0; font-size:9px; color:#a8882f; }
+.verificacao { text-align:center; margin-top:6px; font-size:9px; color:#bbb; letter-spacing:1px; text-transform:uppercase; }
+@media print { body { padding:20px; } .section, .assinatura { page-break-inside:avoid; } }
 </style></head><body>
 <div class="cover">
+  <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
   <div class="cover-logo">MJ <span>Consultoria</span></div>
   <div class="cover-title">Ficha de Capacitação</div>
   <div class="cover-sub">Evidência individual de treinamento</div>
@@ -488,10 +501,18 @@ td { background:#fdfbf5; }
   <tbody>${linhasCerts}</tbody></table>
 </div>
 
+<div class="assinatura">
+  <div class="assinatura-bloco">
+    <div class="assinatura-nome">Mirian Jabur</div>
+    <div class="assinatura-linha">MJ Consultoria — Coordenação de Treinamento</div>
+  </div>
+</div>
+
 <div class="footer">
   MJ Consultoria · Ficha gerada automaticamente pela plataforma de treinamento<br>
   Em conformidade com LGPD Lei nº 13.709/2018 · Provimento CNJ nº 149 · Provimento CNJ nº 213/2026
 </div>
+<div class="verificacao">Código de verificação: ${codigo}</div>
 </body></html>`);
     win.document.close();
     setTimeout(() => win.print(), 600);
