@@ -94,6 +94,11 @@ const callGemini = async (
       generationConfig: {
         temperature: 0.2,
         maxOutputTokens,
+        // gemini-flash-latest (2.5) "pensa" antes de responder por padrão, consumindo
+        // parte do maxOutputTokens com raciocínio interno — sobrava pouco (ou nada)
+        // para o JSON em si, cortando a resposta mesmo com limite alto. Desliga o
+        // thinking pra reservar o budget inteiro pra resposta.
+        thinkingConfig: { thinkingBudget: 0 },
         ...(jsonMode ? { responseMimeType: 'application/json' } : {}),
       },
     }),
