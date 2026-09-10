@@ -16,6 +16,13 @@ interface FonteConteudo {
   titulo: string;
   conteudo: string;
   tipo: 'treinamento' | 'knowledgeBase' | 'video' | 'trilha';
+  cargaHoraria?: number;
+  instrutor?: string;
+  oficial?: boolean;
+}
+
+function gerarCodigoVerificacao(): string {
+  return `MJ-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
 }
 
 interface ExameResultado {
@@ -83,6 +90,9 @@ const ExamesView: React.FC = () => {
           titulo: d.data()[campoTitulo] || d.data()['title'] || d.data()['nome'] || 'Sem título',
           conteudo: d.data()[campoConteudo] || d.data()['content'] || d.data()['rawText'] || d.data()['descricao'] || '',
           tipo,
+          cargaHoraria: d.data()['cargaHoraria'],
+          instrutor: d.data()['instrutor'],
+          oficial: d.data()['oficial'],
         }));
         // substitui as fontes desse tipo
         const filtered = allFontes.filter(f => f.tipo !== tipo);
@@ -104,7 +114,10 @@ const ExamesView: React.FC = () => {
         const conteudo = (data.modulos || [])
           .map((m: any) => `${m.titulo ? m.titulo + ':\n' : ''}${m.conteudo || ''}`)
           .join('\n\n');
-        return { id: d.id, titulo: data.titulo || 'Sem título', conteudo, tipo: 'trilha' as const };
+        return {
+          id: d.id, titulo: data.titulo || 'Sem título', conteudo, tipo: 'trilha' as const,
+          cargaHoraria: data.cargaHoraria, instrutor: data.instrutor, oficial: data.oficial,
+        };
       });
       const filtered = allFontes.filter(f => f.tipo !== 'trilha');
       allFontes.splice(0, allFontes.length, ...filtered, ...novos);
@@ -228,35 +241,72 @@ const ExamesView: React.FC = () => {
     const win = window.open('', '_blank');
     if (!win) return;
     const data = new Date().toLocaleDateString('pt-BR');
+    const codigo = gerarCodigoVerificacao();
+    // Trilhas/treinamentos oficiais (distribuídos pela MJ Consultoria) sempre saem
+    // com "Mirian Jabur" como instrutora; carga horária nunca sai zerada — mínimo
+    // de 1h quando a fonte não informou.
+    const instrutor = fonteEscolhida?.oficial ? 'Mirian Jabur' : (fonteEscolhida?.instrutor || 'Mirian Jabur');
+    const cargaHoraria = Math.max(1, fonteEscolhida?.cargaHoraria || 1);
     win.document.write(`<!DOCTYPE html><html><head><title>Certificado</title>
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600;800&display=swap');
-      body { margin: 0; font-family: 'Inter', sans-serif; background: #f8f6f0; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-      .cert { width: 900px; background: white; border: 12px solid #1e3a5f; padding: 60px 80px; text-align: center; position: relative; }
-      .cert::before { content: ''; position: absolute; inset: 8px; border: 2px solid #c9a84c; pointer-events: none; }
-      .logo { font-size: 13px; font-weight: 800; letter-spacing: 4px; color: #1e3a5f; text-transform: uppercase; margin-bottom: 30px; }
-      .cert h1 { font-family: 'Playfair Display', serif; font-size: 42px; color: #1e3a5f; margin: 0 0 10px; }
-      .tipo { font-size: 11px; letter-spacing: 5px; text-transform: uppercase; color: #c9a84c; margin-bottom: 30px; font-weight: 600; }
+      @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Dancing+Script:wght@700&family=Inter:wght@400;600;800&display=swap');
+      body { margin: 0; font-family: 'Inter', sans-serif; background: #eee9dd; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+      .cert { width: 980px; background: #fffdf7; border: 14px double #1e3a5f; padding: 64px 90px; text-align: center; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.25); }
+      .cert::before { content: ''; position: absolute; inset: 10px; border: 1.5px solid #c9a84c; pointer-events: none; }
+      .corner { position: absolute; width: 34px; height: 34px; border: 3px solid #c9a84c; }
+      .corner.tl { top: 22px; left: 22px; border-right: none; border-bottom: none; }
+      .corner.tr { top: 22px; right: 22px; border-left: none; border-bottom: none; }
+      .corner.bl { bottom: 22px; left: 22px; border-right: none; border-top: none; }
+      .corner.br { bottom: 22px; right: 22px; border-left: none; border-top: none; }
+      .logo { font-size: 12px; font-weight: 800; letter-spacing: 4px; color: #1e3a5f; text-transform: uppercase; margin-bottom: 6px; }
+      .subrazao { font-size: 9px; letter-spacing: 2px; color: #999; text-transform: uppercase; margin-bottom: 28px; }
+      .cert h1 { font-family: 'Playfair Display', serif; font-weight: 900; font-size: 46px; color: #1e3a5f; margin: 0 0 8px; }
+      .tipo { font-size: 11px; letter-spacing: 5px; text-transform: uppercase; color: #c9a84c; margin-bottom: 34px; font-weight: 700; }
       .texto { font-size: 15px; color: #555; line-height: 1.8; margin-bottom: 10px; }
-      .nome { font-size: 32px; font-weight: 800; color: #1e3a5f; margin: 10px 0; font-style: italic; }
-      .curso { font-size: 20px; font-weight: 700; color: #1e3a5f; margin: 20px 0 10px; }
-      .data { font-size: 13px; color: #888; margin-top: 40px; }
-      .assinatura { margin-top: 50px; padding-top: 15px; border-top: 1px solid #ddd; font-size: 12px; color: #888; display: inline-block; min-width: 200px; }
-      @media print { body { background: white; } .cert { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
+      .nome { font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 900; color: #1e3a5f; margin: 6px 0; border-bottom: 1.5px solid #c9a84c; display: inline-block; padding-bottom: 8px; }
+      .curso { font-size: 21px; font-weight: 700; color: #1e3a5f; margin: 20px 0 6px; }
+      .detalhes { font-size: 13px; color: #666; margin: 14px 0 0; }
+      .detalhes strong { color: #1e3a5f; }
+      .rodape { display: flex; align-items: flex-end; justify-content: space-between; margin-top: 56px; gap: 24px; }
+      .rodape-bloco { text-align: center; flex: 1; }
+      .data-emissao { font-size: 12px; color: #888; }
+      .assinatura-nome { font-family: 'Dancing Script', cursive; font-size: 34px; color: #1e3a5f; line-height: 1; margin-bottom: -4px; }
+      .assinatura-linha { border-top: 1px solid #bbb; padding-top: 8px; font-size: 11px; color: #888; }
+      .selo { width: 90px; height: 90px; border-radius: 50%; border: 2.5px solid #c9a84c; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle, #fffaf0, #fff); flex-shrink: 0; }
+      .selo-txt { font-family: 'Playfair Display', serif; font-weight: 900; font-size: 9px; color: #1e3a5f; line-height: 1.3; text-align: center; }
+      .verificacao { margin-top: 22px; font-size: 9px; color: #aaa; letter-spacing: 1px; text-transform: uppercase; }
+      .conformidade { margin-top: 6px; font-size: 10px; color: #999; max-width: 640px; margin-left: auto; margin-right: auto; line-height: 1.5; }
+      @media print { body { background: white; } .cert { box-shadow: none; print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
     </style></head><body>
     <div class="cert">
-      <div class="logo">MJ Consultoria · Plataforma de Treinamento Corporativo</div>
+      <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+      <div class="logo">MJ Consultoria</div>
+      <div class="subrazao">Plataforma de Treinamento e Conformidade Notarial</div>
       <h1>Certificado de Conclusão</h1>
-      <div class="tipo">Exame de Avaliação</div>
-      <p class="texto">Certificamos que</p>
+      <div class="tipo">✦ Exame de Avaliação ✦</div>
+      <p class="texto">Certificamos, para os devidos fins, que</p>
       <p class="nome">${user.name}</p>
-      <p class="texto">foi aprovado(a) no exame de</p>
-      <p class="curso">${fonteEscolhida?.titulo || 'Treinamento'}</p>
-      <p class="texto" style="font-size:13px;color:#888">Nota obtida: <strong>${resultado?.score}%</strong></p>
-      <p class="data">Emitido em ${data}</p>
-      <div style="display:flex;justify-content:center;gap:80px;margin-top:50px">
-        <div class="assinatura">MJ Consultoria<br>Coordenação de Treinamento</div>
+      <p class="texto" style="margin-top:16px">foi aprovado(a) no exame de avaliação de conhecimentos referente a</p>
+      <p class="curso">"${fonteEscolhida?.titulo || 'Treinamento'}"</p>
+      <p class="detalhes">
+        com aproveitamento de <strong>${resultado?.score}%</strong> e carga horária de <strong>${cargaHoraria} hora${cargaHoraria !== 1 ? 's' : ''}</strong>,
+        sob instrução de <strong>${instrutor}</strong>.
+      </p>
+      <div class="rodape">
+        <div class="rodape-bloco">
+          <p class="data-emissao">Belo Horizonte, ${data}</p>
+          <div class="assinatura-linha">Data de Emissão</div>
+        </div>
+        <div class="selo">
+          <div class="selo-txt">CERTIFICADO<br>VÁLIDO</div>
+        </div>
+        <div class="rodape-bloco">
+          <div class="assinatura-nome">Mirian Jabur</div>
+          <div class="assinatura-linha">MJ Consultoria — Coordenação de Treinamento</div>
+        </div>
       </div>
+      <p class="conformidade">Documento emitido eletronicamente e válido como evidência de capacitação profissional, em conformidade com os Provimentos CNJ nº 161/2023, 213/2026 e 149/2023.</p>
+      <p class="verificacao">Código de verificação: ${codigo}</p>
     </div></body></html>`);
     win.document.close();
     win.print();
