@@ -119,6 +119,7 @@ const UsersView: React.FC = () => {
   const [tenants, setTenants] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [busca, setBusca] = useState('');
+  const [filtroCartorio, setFiltroCartorio] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editUser, setEditUser] = useState<UserData | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -207,6 +208,7 @@ const UsersView: React.FC = () => {
   };
 
   const filtrados = users.filter(u => {
+    if (filtroCartorio && u.tenantId !== filtroCartorio) return false;
     if (!busca) return true;
     const b = busca.toLowerCase();
     return u.name?.toLowerCase().includes(b) || u.email?.toLowerCase().includes(b) || u.cargo?.toLowerCase().includes(b);
@@ -404,10 +406,22 @@ const UsersView: React.FC = () => {
                 </div>
               )}
 
-              {/* Busca */}
-              <input value={busca} onChange={e => setBusca(e.target.value)}
-                placeholder="Buscar por nome, e-mail ou cargo..."
-                className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-gold w-72" />
+              {/* Busca + filtro por cartório (visível apenas na listagem global) */}
+              <div className="flex flex-wrap gap-3">
+                <input value={busca} onChange={e => setBusca(e.target.value)}
+                  placeholder="Buscar por nome, e-mail ou cargo..."
+                  className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-gold w-72" />
+                {verTodasEmpresas && (
+                  <select value={filtroCartorio} onChange={e => setFiltroCartorio(e.target.value)}
+                    title="Filtrar por cartório"
+                    className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-gold">
+                    <option value="">Todos os cartórios</option>
+                    {tenants.map(t => (
+                      <option key={t.id} value={t.id}>{t.name} — {t.id}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
 
               {/* Tabela */}
               {equipeMjSemCartorioSelecionado ? (
