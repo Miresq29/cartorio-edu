@@ -149,3 +149,61 @@ export const createCollaborator = onCall(async (request) => {
 
   return { uid, reused };
 });
+
+function isStrongPassword(pass: string): boolean {
+  return (
+    pass.length >= 12 &&
+    /[A-Z]/.test(pass) &&
+    /[a-z]/.test(pass) &&
+    /\d/.test(pass) &&
+    /[!@#$%^&*(),.?":{}|<>_-]/.test(pass)
+  );
+}
+
+// Redefine a senha de TODOS os colaboradores de um cartorio de uma vez (ex.: apos suspeita de
+// vazamento, ou para padronizar acesso inicial de um grupo). Forca troca no proximo login
+// (isFirstLogin/mustChangePassword) — igual ao fluxo de criacao de colaborador.
+export const resetTenantPasswords = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Login necessário.");
+  }
+  const caller = await getCallerProfile(request.auth.uid);
+  if (!["SUPERADMIN", "equipe_mj"].includes(caller.role)) {
+    throw new HttpsError("permission-denied", "Sem permissão para redefinir senhas em massa.");
+  }
+
+  const tenantId = String(request.data?.tenantId || "").trim();
+  const password = String(request.data?.password || "");
+  if (!tenantId) {
+    throw new HttpsError("invalid-argument", "Cartório (tenantId) é obrigatório.");
+  }
+  if (!isStrongPassword(password)) {
+    throw new HttpsError(
+      "invalid-argument",
+      "Senha fraca. Mínimo 12 caracteres, com maiúscula, minúscula, número e caractere especial."
+    );
+  }
+
+  const usersSnap = await db.collection("users").where("tenantId", "==", tenantId).get();
+  if (usersSnap.empty) {
+    throw new HttpsError("not-found", "Nenhum colaborador encontrado para este cartório.");
+  }
+
+  let updated = 0;
+  const failed: string[] = [];
+  for (const doc of usersSnap.docs) {
+    try {
+      await admin.auth().updateUser(doc.id, { password });
+      await doc.ref.update({
+        isFirstLogin: true,
+        mustChangePassword: true,
+        passwordUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      updated++;
+    } catch (err: any) {
+      failed.push(doc.data().email || doc.id);
+    }
+  }
+
+  return { total: usersSnap.size, updated, failed };
+});

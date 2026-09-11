@@ -12,6 +12,7 @@ import {
 } from 'firebase/firestore';
 
 const createCollaboratorFn = httpsCallable(functions, 'createCollaborator');
+const resetTenantPasswordsFn = httpsCallable(functions, 'resetTenantPasswords');
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -123,6 +124,13 @@ const UsersView: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [editUser, setEditUser] = useState<UserData | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [showReset, setShowReset] = useState(false);
+  const [resetPassword, setResetPassword] = useState('');
+  const [resetting, setResetting] = useState(false);
+
+  // Cartório concretamente "em foco" agora: o filtro escolhido na listagem global, ou o
+  // próprio cartório quando já não se está na visão global (dentro de um preview/tenant fixo).
+  const tenantEmFoco = filtroCartorio || (!superAdminGlobal ? tenantId : '');
 
   const [form, setForm] = useState({
     name: '', email: '', role: 'colaborador' as Role, cargo: '', tenantId: superAdminGlobal ? '' : tenantId,
@@ -207,6 +215,25 @@ const UsersView: React.FC = () => {
     showToast(u.ativo ? 'Acesso suspenso.' : 'Acesso reativado.', 'success');
   };
 
+  const handleResetTenantPasswords = async () => {
+    if (!tenantEmFoco) return;
+    setResetting(true);
+    try {
+      const result: any = await resetTenantPasswordsFn({ tenantId: tenantEmFoco, password: resetPassword });
+      const { total, updated, failed } = result.data || {};
+      if (failed?.length) {
+        showToast(`Senha redefinida para ${updated}/${total} colaboradores. Falhou para: ${failed.join(', ')}`, 'error');
+      } else {
+        showToast(`Senha redefinida para ${updated} colaborador(es). Todos precisarão trocá-la no próximo login.`, 'success');
+      }
+      setShowReset(false);
+      setResetPassword('');
+    } catch (err: any) {
+      showToast(err.message || 'Erro ao redefinir senhas.', 'error');
+    }
+    setResetting(false);
+  };
+
   const filtrados = users.filter(u => {
     if (filtroCartorio && u.tenantId !== filtroCartorio) return false;
     if (!busca) return true;
@@ -241,18 +268,54 @@ const UsersView: React.FC = () => {
           </div>
         )}
 
+        {/* Modal de redefinição de senha em massa */}
+        {showReset && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+            <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl space-y-4">
+              <div>
+                <h3 className="text-lg font-black text-navy mb-1">Redefinir senha de todos os colaboradores</h3>
+                <p className="text-sm text-slate-500">
+                  Cartório: <span className="font-mono text-blue-600">{tenantEmFoco}</span>. Todos os colaboradores desse cartório
+                  passarão a usar a senha abaixo e serão obrigados a trocá-la no próximo login.
+                </p>
+              </div>
+              <input type="text" value={resetPassword} onChange={e => setResetPassword(e.target.value)}
+                placeholder="Senha temporária (mín. 12 caracteres, maiúscula, minúscula, número e símbolo)"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-gold" />
+              <div className="flex gap-3">
+                <button onClick={() => { setShowReset(false); setResetPassword(''); }}
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-bold hover:bg-white transition-all">
+                  Cancelar
+                </button>
+                <button onClick={handleResetTenantPasswords} disabled={resetting || !resetPassword}
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-sm font-bold transition-all">
+                  {resetting ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Redefinindo...</> : 'Redefinir para todos'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-black text-navy">Colaboradores & Permissões</h2>
             <p className="text-sm text-slate-500 mt-0.5">Gerencie usuários e controle de acesso</p>
           </div>
-          {isGestor && (
-            <button onClick={() => abrirForm()}
-              className="flex items-center gap-2 bg-gold hover:bg-[#A8863C] text-navy px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm">
-              <i className="fa-solid fa-plus text-xs"></i>Novo Colaborador
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {isPlatformStaff && tenantEmFoco && (
+              <button onClick={() => setShowReset(true)}
+                className="flex items-center gap-2 bg-white border border-red-200 hover:bg-red-50 text-red-500 px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm">
+                <i className="fa-solid fa-key text-xs"></i>Redefinir senha de todos
+              </button>
+            )}
+            {isGestor && (
+              <button onClick={() => abrirForm()}
+                className="flex items-center gap-2 bg-gold hover:bg-[#A8863C] text-navy px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm">
+                <i className="fa-solid fa-plus text-xs"></i>Novo Colaborador
+              </button>
+            )}
+          </div>
         </div>
 
         {/* KPIs */}
