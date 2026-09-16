@@ -258,10 +258,6 @@ service cloud.firestore {
     match /backup/{docId} {
       allow read, write: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
     }
-    match /cartorios/{docId} {
-      allow read: if isActive();
-      allow write: if isSuperAdmin();
-    }
     match /tenants/{docId} {
       // get: qualquer usuario ativo pode ler o PROPRIO cartorio por ID exato (necessario para
       // os toggles de recurso do Sidebar e o contador de demonstracao). list: so quem enxerga
