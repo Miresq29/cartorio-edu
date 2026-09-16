@@ -560,7 +560,7 @@ Nota mínima para aprovação: ${modulo.notaMinima}/10`;
               )}
               {!conteudoItem.youtubeId && conteudoItem.driveId && conteudoItem.tipo === 'audio' && (
                 <div style={{ display: 'grid', gap: 8 }}>
-                  <div style={{ borderRadius: 16, overflow: 'hidden', height: 120, background: '#f8fafc' }}>
+                  <div style={{ borderRadius: 16, overflow: 'hidden', height: 120, background: '#f8fafc' }} onContextMenu={e => e.preventDefault()}>
                     <iframe
                       src={`https://drive.google.com/file/d/${conteudoItem.driveId}/preview`}
                       style={{ width: '100%', height: '100%', border: 'none' }}
@@ -568,16 +568,14 @@ Nota mínima para aprovação: ${modulo.notaMinima}/10`;
                       title={conteudoItem.titulo}
                     />
                   </div>
-                  <a href={`https://drive.google.com/file/d/${conteudoItem.driveId}/view`} target="_blank" rel="noreferrer"
-                    style={{ fontSize: 11, color: '#0A1628', textAlign: 'center' }}>
-                    <i className="fa-brands fa-google-drive" style={{ marginRight: 6, color: '#C9A84C' }}></i>
-                    Se o player não carregar, abra diretamente no Google Drive
-                  </a>
+                  <p style={{ fontSize: 10, color: '#94a3b8', textAlign: 'center' }}>
+                    Conteúdo exclusivo da plataforma MJ Consultoria — reprodução apenas por aqui, sem download.
+                  </p>
                 </div>
               )}
               {!conteudoItem.youtubeId && conteudoItem.driveId && conteudoItem.tipo === 'mp4' && (
                 <div style={{ display: 'grid', gap: 8 }}>
-                  <div style={{ borderRadius: 16, overflow: 'hidden', height: 400, background: '#f8fafc' }}>
+                  <div style={{ borderRadius: 16, overflow: 'hidden', height: 400, background: '#f8fafc' }} onContextMenu={e => e.preventDefault()}>
                     <iframe
                       src={`https://drive.google.com/file/d/${conteudoItem.driveId}/preview`}
                       style={{ width: '100%', height: '100%', border: 'none' }}
@@ -585,11 +583,9 @@ Nota mínima para aprovação: ${modulo.notaMinima}/10`;
                       title={conteudoItem.titulo}
                     />
                   </div>
-                  <a href={`https://drive.google.com/file/d/${conteudoItem.driveId}/view`} target="_blank" rel="noreferrer"
-                    style={{ fontSize: 11, color: '#0A1628', textAlign: 'center' }}>
-                    <i className="fa-brands fa-google-drive" style={{ marginRight: 6, color: '#C9A84C' }}></i>
-                    Se o player não carregar, abra diretamente no Google Drive
-                  </a>
+                  <p style={{ fontSize: 10, color: '#94a3b8', textAlign: 'center' }}>
+                    Conteúdo exclusivo da plataforma MJ Consultoria — reprodução apenas por aqui, sem download.
+                  </p>
                 </div>
               )}
               {!conteudoItem.youtubeId && !conteudoItem.driveId && (

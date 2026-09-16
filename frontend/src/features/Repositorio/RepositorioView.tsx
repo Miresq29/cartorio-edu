@@ -128,7 +128,7 @@ const PlayerModal: React.FC<{
     if (midia.tipo === 'mp4' && midia.driveId) {
       return (
         <div className="space-y-3">
-          <div className="rounded-2xl overflow-hidden shadow-2xl bg-slate-50" style={{ height: '70vh' }}>
+          <div className="rounded-2xl overflow-hidden shadow-2xl bg-slate-50" style={{ height: '70vh' }} onContextMenu={e => e.preventDefault()}>
             <iframe
               src={driveEmbedUrl(midia.driveId)}
               className="w-full h-full"
@@ -136,14 +136,9 @@ const PlayerModal: React.FC<{
               title={midia.titulo}
             />
           </div>
-          <a
-            href={`https://drive.google.com/file/d/${midia.driveId}/view`}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 text-[10px] bg-rose-600 hover:bg-rose-500 text-navy px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all"
-          >
-            <i className="fa-solid fa-arrow-up-right-from-square"></i>Abrir no Google Drive
-          </a>
+          <p className="text-[10px] text-slate-400 text-center">
+            Conteúdo exclusivo da plataforma MJ Consultoria — reprodução apenas por aqui, sem download.
+          </p>
         </div>
       );
     }
@@ -152,7 +147,7 @@ const PlayerModal: React.FC<{
       return (
         <div className="space-y-4">
           {/* Player iframe do Drive */}
-          <div className="rounded-2xl overflow-hidden bg-slate-50" style={{ height: '120px' }}>
+          <div className="rounded-2xl overflow-hidden bg-slate-50" style={{ height: '120px' }} onContextMenu={e => e.preventDefault()}>
             <iframe
               src={driveAudioUrl(midia.driveId)}
               className="w-full h-full"
@@ -160,19 +155,9 @@ const PlayerModal: React.FC<{
               title={midia.titulo}
             />
           </div>
-          {/* Fallback: link direto */}
-          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-center space-y-2">
-            <i className="fa-solid fa-headphones text-violet-400 text-3xl block mb-2"></i>
-            <p className="text-xs text-slate-500">Se o player não carregar, abra diretamente no Drive:</p>
-            <a
-              href={`https://drive.google.com/file/d/${midia.driveId}/view`}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 text-[10px] bg-violet-600 hover:bg-violet-500 text-navy px-4 py-2 rounded-xl font-black uppercase tracking-widest transition-all"
-            >
-              <i className="fa-brands fa-google-drive"></i>Ouvir no Google Drive
-            </a>
-          </div>
+          <p className="text-[10px] text-slate-400 text-center">
+            Conteúdo exclusivo da plataforma MJ Consultoria — reprodução apenas por aqui, sem download.
+          </p>
         </div>
       );
     }
