@@ -381,11 +381,22 @@ const TenantsView: React.FC = () => {
                     <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Sem prazo de demonstração</span>
                   )}
                   {!emDemo && !demoExpirada && (
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {[7, 14, 15, 30].map(dias => (
+                        <button key={dias} type="button" onClick={() => setDiasDemo(prev => ({ ...prev, [t.id]: dias }))}
+                          className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border transition-all ${
+                            (diasDemo[t.id] ?? 14) === dias
+                              ? 'bg-amber-500 text-white border-amber-500'
+                              : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'
+                          }`}>
+                          {dias}d
+                        </button>
+                      ))}
                       <input
                         type="number" min={1} max={90}
                         value={diasDemo[t.id] ?? 14}
                         onChange={e => setDiasDemo(prev => ({ ...prev, [t.id]: Number(e.target.value) }))}
+                        title="Ou digite uma quantidade personalizada de dias"
                         className="w-14 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-[11px] text-navy outline-none focus:border-amber-500"
                       />
                       <span className="text-[9px] text-slate-400 font-bold uppercase">dias</span>
