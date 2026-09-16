@@ -467,7 +467,7 @@ const CertificadoView: React.FC = () => {
     const q1 = query(collection(db, 'certificados'), where('tenantId', '==', tenantId), orderBy('emitidoEm', 'desc'));
     const u1 = onSnapshot(q1, s => setCertificados(s.docs.map(d => ({ id: d.id, ...d.data() } as Certificado))));
 
-    const q2 = query(collection(db, 'treinamentosQuizResults'), orderBy('createdAt', 'desc'));
+    const q2 = query(collection(db, 'treinamentosQuizResults'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'));
     const u2 = onSnapshot(q2, s => setQuizResults(s.docs.map(d => ({ id: d.id, ...d.data() } as QuizResult))));
 
     const q5 = query(collection(db, 'trilhas'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']));
