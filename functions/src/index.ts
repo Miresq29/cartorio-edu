@@ -116,6 +116,9 @@ export const createCollaborator = onCall(async (request) => {
       const existingUser = await admin.auth().getUserByEmail(email);
       uid = existingUser.uid;
       reused = true;
+      // A conta ja existia com outra senha — sem isto, a senha temporaria informada/gerada
+      // aqui nunca entra em vigor e a pessoa nao consegue logar com o que foi comunicado a ela.
+      await admin.auth().updateUser(uid, { password }).catch(() => {});
     } else if (err.code === "auth/invalid-password") {
       throw new HttpsError("invalid-argument", "Senha inválida — mínimo 6 caracteres.");
     } else {
