@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { db } from '../../services/firebase';
-import { collection, onSnapshot, query, orderBy, getCountFromServer } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 
 interface Tenant {
   id: string;
@@ -14,6 +14,7 @@ const DashboardMasterView: React.FC = () => {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [totalUsers, setTotalUsers] = useState(0);
   const [totalDocs, setTotalDocs] = useState(0);
+  const [colabPorTenant, setColabPorTenant] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,18 +25,22 @@ const DashboardMasterView: React.FC = () => {
     });
   }, []);
 
+  // Contagens ao vivo — refletem a realidade dos cartorios em tempo real,
+  // em vez de uma foto tirada uma unica vez ao montar a tela.
   useEffect(() => {
-    const loadCounts = async () => {
-      try {
-        const [usersSnap, docsSnap] = await Promise.all([
-          getCountFromServer(collection(db, 'users')),
-          getCountFromServer(collection(db, 'knowledgeBase')),
-        ]);
-        setTotalUsers(usersSnap.data().count);
-        setTotalDocs(docsSnap.data().count);
-      } catch { /* silencioso */ }
-    };
-    loadCounts();
+    return onSnapshot(collection(db, 'users'), snap => {
+      setTotalUsers(snap.size);
+      const porTenant: Record<string, number> = {};
+      snap.docs.forEach(d => {
+        const t = d.data().tenantId;
+        if (t) porTenant[t] = (porTenant[t] || 0) + 1;
+      });
+      setColabPorTenant(porTenant);
+    });
+  }, []);
+
+  useEffect(() => {
+    return onSnapshot(collection(db, 'knowledgeBase'), snap => setTotalDocs(snap.size));
   }, []);
 
   const ativos = tenants.filter(t => t.active).length;
@@ -95,6 +100,9 @@ const DashboardMasterView: React.FC = () => {
               </div>
               <div className="flex items-center gap-6">
                 <span className="text-[10px] font-mono text-blue-500 bg-blue-500/5 px-3 py-1 rounded-md border border-blue-500/10">ID: {t.id}</span>
+                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
+                  <i className="fa-solid fa-users mr-1"></i>{colabPorTenant[t.id] || 0} colaborador{(colabPorTenant[t.id] || 0) !== 1 ? 'es' : ''}
+                </span>
                 <span className={`text-[9px] font-black px-2 py-0.5 rounded-lg uppercase ${t.active ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'}`}>
                   {t.active ? 'Ativo' : 'Inativo'}
                 </span>
