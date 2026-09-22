@@ -193,9 +193,11 @@ const MidiaCard: React.FC<{
   midia: Midia;
   assistida: boolean;
   isGestor: boolean;
+  podeEditar: boolean;
   onPlay: () => void;
+  onEdit: () => void;
   onDelete: () => void;
-}> = ({ midia, assistida, isGestor, onPlay, onDelete }) => {
+}> = ({ midia, assistida, isGestor, podeEditar, onPlay, onEdit, onDelete }) => {
   const cat = CATEGORIAS.find(c => c.id === midia.categoria) || CATEGORIAS[0];
   const tipo = TIPO_CONFIG[midia.tipo];
 
@@ -277,6 +279,12 @@ const MidiaCard: React.FC<{
             <i className={`fa-solid ${midia.tipo === 'mp4' ? 'fa-eye' : 'fa-play'} mr-1`}></i>
             {midia.tipo === 'mp4' ? 'Visualizar' : 'Abrir'}
           </button>
+          {podeEditar && (
+            <button onClick={onEdit}
+              className="w-9 h-9 bg-slate-50 hover:bg-amber-500/20 text-slate-500 hover:text-amber-500 rounded-xl flex items-center justify-center transition-all flex-shrink-0">
+              <i className="fa-solid fa-pen text-xs"></i>
+            </button>
+          )}
           {isGestor && (
             <button onClick={onDelete}
               className="w-9 h-9 bg-slate-50 hover:bg-red-500/20 text-slate-500 hover:text-red-400 rounded-xl flex items-center justify-center transition-all flex-shrink-0">
@@ -294,9 +302,10 @@ const MidiaCard: React.FC<{
 const FormMidia: React.FC<{
   onSave: (data: Omit<Midia, 'id' | 'tenantIds' | 'createdAt' | 'ativo'>, tenantIds: string[]) => Promise<void>;
   onCancel: () => void;
-  isSuperAdmin: boolean;
+  podeDistribuir: boolean;
   ownTenantId: string;
-}> = ({ onSave, onCancel, isSuperAdmin, ownTenantId }) => {
+  editando: Midia | null;
+}> = ({ onSave, onCancel, podeDistribuir, ownTenantId, editando }) => {
   const [tipo, setTipo] = useState<MidiaTipo>('youtube');
   const [form, setForm] = useState({
     titulo: '', descricao: '', categoria: 'onboarding',
@@ -305,6 +314,27 @@ const FormMidia: React.FC<{
   const [linkErro, setLinkErro] = useState('');
   const [saving, setSaving] = useState(false);
   const [tenantIdsForm, setTenantIdsForm] = useState<string[]>([ownTenantId]);
+
+  useEffect(() => {
+    if (editando) {
+      setTipo(editando.tipo);
+      setForm({
+        titulo: editando.titulo,
+        descricao: editando.descricao || '',
+        categoria: editando.categoria,
+        trilhaTitulo: editando.trilhaTitulo || '',
+        duracaoMin: editando.duracaoMin || 5,
+        link: editando.tipo === 'youtube'
+          ? `https://youtube.com/watch?v=${editando.youtubeId}`
+          : (editando.driveUrl || ''),
+      });
+      setTenantIdsForm(editando.tenantIds || [ownTenantId]);
+    } else {
+      setTipo('youtube');
+      setForm({ titulo: '', descricao: '', categoria: 'onboarding', trilhaTitulo: '', duracaoMin: 5, link: '' });
+      setTenantIdsForm([ownTenantId]);
+    }
+  }, [editando, ownTenantId]);
 
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
 
@@ -339,7 +369,9 @@ const FormMidia: React.FC<{
 
   return (
     <div className="bg-white border border-blue-500/30 rounded-2xl p-6 space-y-5">
-      <h4 className="text-blue-400 font-black uppercase text-xs tracking-widest">Adicionar Conteúdo ao Repositório</h4>
+      <h4 className="text-blue-400 font-black uppercase text-xs tracking-widest">
+        {editando ? 'Editar Conteúdo do Repositório' : 'Adicionar Conteúdo ao Repositório'}
+      </h4>
 
       {/* Tipo */}
       <div className="space-y-2">
@@ -433,9 +465,9 @@ const FormMidia: React.FC<{
         </div>
       </div>
 
-      {isSuperAdmin && (
+      {podeDistribuir && (
         <VisibilidadeCartorioPicker
-          isSuperAdmin={isSuperAdmin}
+          isSuperAdmin={podeDistribuir}
           ownTenantId={ownTenantId}
           value={tenantIdsForm}
           onChange={setTenantIdsForm}
@@ -451,7 +483,9 @@ const FormMidia: React.FC<{
           className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
           {saving
             ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Salvando...</>
-            : <><i className="fa-solid fa-floppy-disk mr-2"></i>Adicionar ao Repositório</>
+            : editando
+              ? <><i className="fa-solid fa-floppy-disk mr-2"></i>Salvar Alterações</>
+              : <><i className="fa-solid fa-floppy-disk mr-2"></i>Adicionar ao Repositório</>
           }
         </button>
       </div>
@@ -470,6 +504,8 @@ const RepositorioView: React.FC = () => {
   // O link de compartilhamento (YouTube/Drive) só pode ser inserido por quem publica
   // conteúdo oficialmente — gestor não deve ver nem preencher esse campo.
   const podeGerenciarLink = ['SUPERADMIN', 'admin', 'curador'].includes(user.role);
+  // Só quem atende múltiplos cartórios pode direcionar o conteúdo para cartórios específicos/todos.
+  const podeDistribuir = isSuperAdmin || user.role === 'curador';
   const { podeUsar: podeCriar } = useRecursoTenant('criarConteudoHabilitado');
 
   const [midias, setMidias] = useState<Midia[]>([]);
@@ -478,6 +514,7 @@ const RepositorioView: React.FC = () => {
   const [filtroCategoria, setFiltroCategoria] = useState('');
   const [busca, setBusca] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [editando, setEditando] = useState<Midia | null>(null);
   const [playerMidia, setPlayerMidia] = useState<Midia | null>(null);
 
   // Load mídias
@@ -519,13 +556,22 @@ const RepositorioView: React.FC = () => {
     const cleanData = Object.fromEntries(
       Object.entries(data).filter(([, v]) => v !== undefined)
     );
-    await addDoc(collection(db, 'repositorio'), {
-      ...cleanData, ativo: true,
-      tenantIds: isSuperAdmin ? tenantIdsForm : [tenantId], criadoPor: user.id,
-      createdAt: serverTimestamp(),
-    });
-    showToast('Conteúdo adicionado ao repositório!', 'success');
+    if (editando) {
+      await updateDoc(doc(db, 'repositorio', editando.id), {
+        ...cleanData,
+        tenantIds: podeDistribuir ? tenantIdsForm : editando.tenantIds,
+      });
+      showToast('Conteúdo atualizado!', 'success');
+    } else {
+      await addDoc(collection(db, 'repositorio'), {
+        ...cleanData, ativo: true,
+        tenantIds: podeDistribuir ? tenantIdsForm : [tenantId], criadoPor: user.id,
+        createdAt: serverTimestamp(),
+      });
+      showToast('Conteúdo adicionado ao repositório!', 'success');
+    }
     setShowForm(false);
+    setEditando(null);
   };
 
   const handleDelete = async (id: string) => {
@@ -571,7 +617,7 @@ const RepositorioView: React.FC = () => {
         </div>
         {podeGerenciarLink && !showForm && (
           podeCriar ? (
-            <button onClick={() => setShowForm(true)}
+            <button onClick={() => { setEditando(null); setShowForm(true); }}
               className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
               <i className="fa-solid fa-plus"></i>Adicionar
             </button>
@@ -602,7 +648,13 @@ const RepositorioView: React.FC = () => {
 
       {/* Formulário */}
       {showForm && (
-        <FormMidia onSave={handleSave} onCancel={() => setShowForm(false)} isSuperAdmin={isSuperAdmin} ownTenantId={tenantId} />
+        <FormMidia
+          onSave={handleSave}
+          onCancel={() => { setShowForm(false); setEditando(null); }}
+          podeDistribuir={podeDistribuir}
+          ownTenantId={tenantId}
+          editando={editando}
+        />
       )}
 
       {/* Filtros */}
@@ -656,7 +708,9 @@ const RepositorioView: React.FC = () => {
               midia={m}
               assistida={assistidas.has(m.id)}
               isGestor={isGestor}
+              podeEditar={podeGerenciarLink}
               onPlay={() => abrirPlayer(m)}
+              onEdit={() => { setEditando(m); setShowForm(true); }}
               onDelete={() => handleDelete(m.id)}
             />
           ))}
