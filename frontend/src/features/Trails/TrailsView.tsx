@@ -470,7 +470,7 @@ Nota mínima para aprovação: ${modulo.notaMinima}/10`;
     setGerandoQuiz(false);
   };
 
-  const enviarQuiz = () => {
+  const enviarQuiz = async () => {
     if (!modulo) return;
     const total = quizQuestoes.length;
     const acertos = quizQuestoes.filter((q, i) => String(respostas[i]) === String(q.correta)).length;
@@ -491,6 +491,17 @@ Nota mínima para aprovação: ${modulo.notaMinima}/10`;
     novoProgresso.concluida = novoProgresso.percentualObrigatorios === 100;
     onUpdateProgresso(novoProgresso);
     setQuizEnviado(true);
+
+    // Registra o resultado tambem em treinamentosQuizResults — sem isso, o quiz do
+    // modulo ficava so dentro de trilhasProgresso e nunca aparecia em Relatorios,
+    // Certificados ou no calculo de risco (colaborador parecia "sem atividade").
+    try {
+      await addDoc(collection(db, 'treinamentosQuizResults'), {
+        colaborador: progresso.userName, userId: progresso.userId,
+        nota: nota * 10, aprovado, trailTitle: trilha.titulo, moduleTitle: modulo.titulo,
+        ia: true, tenantId, createdAt: serverTimestamp(),
+      });
+    } catch { /* nao bloqueia o fluxo do colaborador se o registro de relatorio falhar */ }
   };
 
   if (!modulo) return null;
