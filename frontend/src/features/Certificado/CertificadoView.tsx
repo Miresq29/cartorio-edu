@@ -58,8 +58,18 @@ interface TrilhaProgresso {
   userName: string;
   trilhaId: string;
   trilhaTitulo?: string;
-  concluido: boolean;
+  concluida: boolean;
   tenantId: string;
+}
+
+interface ExameResultado {
+  id: string;
+  userId: string;
+  fonteTitulo: string;
+  score: number;
+  aprovado: boolean;
+  tenantId: string;
+  createdAt: any;
 }
 
 interface UserData {
@@ -276,12 +286,13 @@ const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
 const ModalEmitir: React.FC<{
   quizResults: QuizResult[];
   trilhasProgresso: TrilhaProgresso[];
+  exames: ExameResultado[];
   usuarios: UserData[];
   trilhas: TrilhaRef[];
   cartorio: string;
   onEmitir: (data: Omit<Certificado, 'id' | 'codigoVerificacao' | 'emitidoEm' | 'tenantId' | 'emitidoPor'>) => void;
   onClose: () => void;
-}> = ({ quizResults, trilhasProgresso, usuarios, trilhas, cartorio, onEmitir, onClose }) => {
+}> = ({ quizResults, trilhasProgresso, exames, usuarios, trilhas, cartorio, onEmitir, onClose }) => {
   const [colab, setColab] = useState('');
   const [tipo, setTipo] = useState<'trilha' | 'modulo' | 'exame'>('trilha');
   const [item, setItem] = useState('');
@@ -291,22 +302,34 @@ const ModalEmitir: React.FC<{
 
   const colabUser = usuarios.find(u => u.id === colab);
   const colabResults = quizResults.filter(r => r.userId === colab || r.colaborador === colabUser?.name);
-  const colabTrilhas = trilhasProgresso.filter(p => (p.userId === colab) && p.concluido);
+  const colabTrilhas = trilhasProgresso.filter(p => (p.userId === colab) && p.concluida);
+  // Exames formais (colecao separada de examesResultados) — sem isso, colaboradores que só
+  // fizeram Exames (não quizzes de trilha) nunca apareciam com nenhum item para certificar.
+  const colabExames = exames.filter(e => e.userId === colab && e.aprovado);
 
   const opcoesItem = tipo === 'trilha'
     ? [...new Set(colabTrilhas.map(t => t.trilhaTitulo || t.trilhaId).filter(Boolean))]
-    : [...new Set(colabResults.filter(r => r.aprovado).map(r =>
-        tipo === 'modulo' ? `${r.trailTitle} — ${r.moduleTitle}` : r.trailTitle || ''
-      ).filter(Boolean))];
+    : tipo === 'modulo'
+    ? [...new Set(colabResults.filter(r => r.aprovado && r.moduleTitle).map(r => `${r.trailTitle} — ${r.moduleTitle}`).filter(Boolean))]
+    : [...new Set([
+        ...colabResults.filter(r => r.aprovado && !r.moduleTitle).map(r => r.trailTitle || ''),
+        ...colabExames.map(e => e.fonteTitulo || ''),
+      ].filter(Boolean))];
 
   const colabsDisponiveis = usuarios.filter(u => u.role !== 'SUPERADMIN' && u.role !== 'gestor');
 
   const mediaItem = (() => {
     if (!item) return 0;
+    if (tipo === 'exame') {
+      const notasQuiz = colabResults.filter(r => r.aprovado && !r.moduleTitle && r.trailTitle === item).map(r => r.nota);
+      const notasExame = colabExames.filter(e => e.fonteTitulo === item).map(e => e.score);
+      const notas = [...notasQuiz, ...notasExame];
+      return notas.length ? Math.round(notas.reduce((a, b) => a + b, 0) / notas.length) : 0;
+    }
     const notas = colabResults.filter(r => r.aprovado &&
       (tipo === 'trilha' ? r.trailTitle === item : `${r.trailTitle} — ${r.moduleTitle}` === item)
     ).map(r => r.nota);
-    return notas.length ? Math.round(notas.reduce((a, b) => a + b) / notas.length) : 0;
+    return notas.length ? Math.round(notas.reduce((a, b) => a + b, 0) / notas.length) : 0;
   })();
 
   const trilhaTituloAtual = tipo === 'modulo' ? item.split(' — ')[0] : item;
@@ -456,6 +479,7 @@ const CertificadoView: React.FC = () => {
   const [certificados, setCertificados] = useState<Certificado[]>([]);
   const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
   const [trilhasProgresso, setTrilhasProgresso] = useState<TrilhaProgresso[]>([]);
+  const [exames, setExames] = useState<ExameResultado[]>([]);
   const [usuarios, setUsuarios] = useState<UserData[]>([]);
   const [trilhas, setTrilhas] = useState<TrilhaRef[]>([]);
   const [cartorioNome, setCartorioNome] = useState(tenantId);
@@ -476,6 +500,9 @@ const CertificadoView: React.FC = () => {
     const q3 = query(collection(db, 'trilhasProgresso'), where('tenantId', '==', tenantId));
     const u3 = onSnapshot(q3, s => setTrilhasProgresso(s.docs.map(d => ({ id: d.id, ...d.data() } as TrilhaProgresso))));
 
+    const q6 = query(collection(db, 'examesResultados'), where('tenantId', '==', tenantId));
+    const u6 = onSnapshot(q6, s => setExames(s.docs.map(d => ({ id: d.id, ...d.data() } as ExameResultado))));
+
     const q4 = query(collection(db, 'users'), where('tenantId', '==', tenantId));
     const u4 = onSnapshot(q4, s => setUsuarios(s.docs.map(d => ({ id: d.id, ...d.data() } as UserData))));
 
@@ -488,7 +515,7 @@ const CertificadoView: React.FC = () => {
     };
     loadCartorio();
 
-    return () => { u1(); u2(); u3(); u4(); u5(); };
+    return () => { u1(); u2(); u3(); u4(); u5(); u6(); };
   }, [tenantId]);
 
   // Filtrar certificados do colaborador atual se não for gestor
@@ -555,6 +582,7 @@ const CertificadoView: React.FC = () => {
           <ModalEmitir
             quizResults={quizResults}
             trilhasProgresso={trilhasProgresso}
+            exames={exames}
             usuarios={usuarios}
             trilhas={trilhas}
             cartorio={cartorioNome}
