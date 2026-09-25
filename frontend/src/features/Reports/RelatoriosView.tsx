@@ -79,7 +79,7 @@ interface CatalogoTreinamento {
   createdAt?: any;
 }
 
-type Tab = 'visao_geral' | 'colaboradores' | 'trilhas' | 'trilhas_evidencias' | 'treinamentos' | 'risco' | 'evidencias';
+type Tab = 'visao_geral' | 'iso' | 'colaboradores' | 'trilhas' | 'trilhas_evidencias' | 'treinamentos' | 'risco' | 'evidencias';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -330,6 +330,50 @@ const RelatoriosView: React.FC = () => {
       .sort((a, b) => b.taxa - a.taxa);
   }, [colab, filteredResults, filteredExames, progresso, certificados, catalogoTrilhas, buscaColab]);
 
+  // Indicadores de cobertura (ISO) — funil: total de colaboradores -> quantos participaram
+  // de algum treinamento -> quantos fizeram alguma avaliação -> quantos foram aprovados.
+  // Serve como evidência objetiva de cobertura de capacitação (ISO 27001/9001, Provimento 213).
+  const coberturaISO = useMemo(() => {
+    const linhas = colab.map(u => {
+      const progUser = progresso.filter(p => p.userId === u.id);
+      const iniciouTreinamento = progUser.length > 0;
+      const testesUser = filteredResults.filter(r => r.userId === u.id || r.colaborador === u.name);
+      const examesUser = filteredExames.filter(e => e.userId === u.id);
+      const totalAvaliacoes = testesUser.length + examesUser.length;
+      const fezAvaliacao = totalAvaliacoes > 0;
+      const aprovouAlguma = testesUser.some(r => r.aprovado) || examesUser.some(e => e.aprovado);
+      let status: 'aprovado' | 'reprovado' | 'sem_avaliacao' | 'sem_atividade';
+      if (aprovouAlguma) status = 'aprovado';
+      else if (fezAvaliacao) status = 'reprovado';
+      else if (iniciouTreinamento) status = 'sem_avaliacao';
+      else status = 'sem_atividade';
+      return { id: u.id, name: u.name, cargo: u.cargo || '', iniciouTreinamento, fezAvaliacao, status };
+    });
+    const totalColab = linhas.length;
+    const participaram = linhas.filter(l => l.iniciouTreinamento || l.fezAvaliacao).length;
+    const avaliados = linhas.filter(l => l.fezAvaliacao).length;
+    const aprovados = linhas.filter(l => l.status === 'aprovado').length;
+    const reprovados = linhas.filter(l => l.status === 'reprovado').length;
+    const semAvaliacao = linhas.filter(l => l.status === 'sem_avaliacao').length;
+    const semAtividade = linhas.filter(l => l.status === 'sem_atividade').length;
+    return { linhas, totalColab, participaram, avaliados, aprovados, reprovados, semAvaliacao, semAtividade };
+  }, [colab, progresso, filteredResults, filteredExames]);
+
+  const exportCSVCobertura = () => {
+    const rows = ['Colaborador;Cargo;Iniciou Treinamento;Fez Avaliacao;Situacao'];
+    const label: Record<string, string> = { aprovado: 'Aprovado', reprovado: 'Reprovado', sem_avaliacao: 'Treinou, sem avaliar', sem_atividade: 'Sem atividade' };
+    coberturaISO.linhas.forEach(l => {
+      rows.push([l.name, l.cargo, l.iniciouTreinamento ? 'Sim' : 'Não', l.fezAvaliacao ? 'Sim' : 'Não', label[l.status]].join(';'));
+    });
+    const blob = new Blob(['﻿' + rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `cobertura_iso_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   // Score de risco/maturidade por colaborador — combina desempenho, atividade recente e situação do certificado.
   // Pesos: 40% (100 - média das notas), 30% ausência de atividade no período, 30% certificado vencido.
   const scoreColab = useMemo(() => {
@@ -561,6 +605,7 @@ td { background:#fdfbf5; }
 
   const ABAS: { id: Tab; label: string; icon: string }[] = [
     { id: 'visao_geral',   label: 'Visão Geral',    icon: 'fa-chart-pie'    },
+    { id: 'iso',           label: 'Indicadores ISO', icon: 'fa-award'       },
     { id: 'colaboradores', label: 'Colaboradores',  icon: 'fa-users'        },
     { id: 'trilhas',       label: 'Por Trilha',     icon: 'fa-road'         },
     { id: 'trilhas_evidencias', label: 'Evidências de Trilhas', icon: 'fa-clipboard-list' },
@@ -710,6 +755,91 @@ td { background:#fdfbf5; }
                       <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-1">{s.label}</p>
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* ── INDICADORES ISO ─────────────────────────────────────────────── */}
+            {tab === 'iso' && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                  <p className="text-xs text-slate-500 max-w-2xl">
+                    Cobertura de capacitação: quantos colaboradores existem, quantos participaram de algum treinamento,
+                    quantos foram efetivamente avaliados (teste/exame) e o resultado — pronto para evidência em auditoria
+                    ISO 27001/9001 e Provimento CNJ 213/2026.
+                  </p>
+                  <button onClick={exportCSVCobertura} className="flex items-center gap-2 bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-gold px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-sm">
+                    <i className="fa-solid fa-file-excel"></i>CSV
+                  </button>
+                </div>
+
+                {/* Funil */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <StatCard label="Colaboradores" value={coberturaISO.totalColab} icon="fa-users" color="#0F172A" sub="cadastrados" />
+                  <StatCard label="Participaram" value={coberturaISO.participaram} icon="fa-person-chalkboard" color="#4F46E5"
+                    sub={`${pct(coberturaISO.participaram, coberturaISO.totalColab)}% do total`} />
+                  <StatCard label="Avaliados" value={coberturaISO.avaliados} icon="fa-file-signature" color="#D97706"
+                    sub={`${pct(coberturaISO.avaliados, coberturaISO.totalColab)}% do total`} />
+                  <StatCard label="Aprovados" value={coberturaISO.aprovados} icon="fa-circle-check" color="#059669"
+                    sub={`${pct(coberturaISO.aprovados, coberturaISO.totalColab)}% do total`} />
+                </div>
+
+                {/* Barra empilhada de situação */}
+                <div className="space-y-2">
+                  <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Situação de todos os colaboradores</p>
+                  <div className="w-full h-8 rounded-xl overflow-hidden flex border border-slate-200">
+                    {[
+                      { n: coberturaISO.aprovados,    color: '#059669' },
+                      { n: coberturaISO.reprovados,   color: '#DC2626' },
+                      { n: coberturaISO.semAvaliacao, color: '#D97706' },
+                      { n: coberturaISO.semAtividade, color: '#94a3b8' },
+                    ].filter(s => s.n > 0).map((s, i) => (
+                      <div key={i} style={{ width: `${pct(s.n, coberturaISO.totalColab)}%`, background: s.color }}
+                        className="flex items-center justify-center text-white text-[10px] font-black">
+                        {pct(s.n, coberturaISO.totalColab) >= 6 ? `${pct(s.n, coberturaISO.totalColab)}%` : ''}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap gap-4 text-[11px] text-slate-600">
+                    <span><i className="fa-solid fa-square text-emerald-600 mr-1.5"></i>Aprovados: <strong>{coberturaISO.aprovados}</strong></span>
+                    <span><i className="fa-solid fa-square text-red-600 mr-1.5"></i>Reprovados: <strong>{coberturaISO.reprovados}</strong></span>
+                    <span><i className="fa-solid fa-square text-amber-600 mr-1.5"></i>Treinaram, sem avaliação: <strong>{coberturaISO.semAvaliacao}</strong></span>
+                    <span><i className="fa-solid fa-square text-slate-400 mr-1.5"></i>Sem nenhuma atividade: <strong>{coberturaISO.semAtividade}</strong></span>
+                  </div>
+                </div>
+
+                {/* Tabela por colaborador */}
+                <div className="overflow-x-auto border border-slate-200 rounded-[14px]">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="bg-white border-b border-slate-200">
+                        {['Colaborador', 'Cargo', 'Iniciou Treinamento', 'Fez Avaliação', 'Situação'].map(h => (
+                          <th key={h} className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {coberturaISO.linhas.map(l => {
+                        const badge = {
+                          aprovado:      { txt: 'Aprovado',            cls: 'bg-emerald-50 text-emerald-600 border-emerald-200' },
+                          reprovado:     { txt: 'Reprovado',           cls: 'bg-red-50 text-red-500 border-red-200'             },
+                          sem_avaliacao: { txt: 'Treinou, sem avaliar',cls: 'bg-amber-50 text-amber-600 border-amber-200'       },
+                          sem_atividade: { txt: 'Sem atividade',       cls: 'bg-slate-100 text-slate-500 border-slate-200'      },
+                        }[l.status];
+                        return (
+                          <tr key={l.id} className="border-b border-slate-100 hover:bg-white transition-all">
+                            <td className="p-3 font-bold text-navy">{l.name}</td>
+                            <td className="p-3 text-slate-500">{l.cargo || '–'}</td>
+                            <td className="p-3">{l.iniciouTreinamento ? <i className="fa-solid fa-check text-emerald-600"></i> : <i className="fa-solid fa-xmark text-slate-400"></i>}</td>
+                            <td className="p-3">{l.fezAvaliacao ? <i className="fa-solid fa-check text-emerald-600"></i> : <i className="fa-solid fa-xmark text-slate-400"></i>}</td>
+                            <td className="p-3">
+                              <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg border ${badge.cls}`}>{badge.txt}</span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             )}
