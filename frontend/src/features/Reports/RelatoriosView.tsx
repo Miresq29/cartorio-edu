@@ -7,7 +7,7 @@ import {
   Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend
 } from 'recharts';
 import {
-  collection, query, orderBy, onSnapshot, where
+  collection, query, orderBy, onSnapshot, where, doc
 } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
@@ -174,6 +174,12 @@ const RelatoriosView: React.FC = () => {
   const [periodo, setPeriodo] = useState('90');
   const [buscaColab, setBuscaColab] = useState('');
   const [buscaTrilha, setBuscaTrilha] = useState('');
+  const [tenantName, setTenantName] = useState('');
+
+  useEffect(() => {
+    if (!tenantId) return;
+    return onSnapshot(doc(db, 'tenants', tenantId), snap => setTenantName((snap.data() as any)?.name || tenantId));
+  }, [tenantId]);
 
   useEffect(() => {
     const q1 = query(collection(db, 'treinamentosQuizResults'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'));
@@ -578,8 +584,154 @@ td { background:#fdfbf5; }
     setTimeout(() => win.print(), 600);
   };
 
-  // Exportar Excel
-  const handlePrint = () => { window.print(); };
+  // Relatório consolidado em formato de documento (capa, seções, assinatura) — substitui o
+  // "print da tela" (com botões, ícones e cores de interface) por um PDF apresentável,
+  // no mesmo padrão visual da Ficha de Capacitação individual.
+  const gerarRelatorioPDF = () => {
+    const PERIODO_LABEL: Record<string, string> = {
+      '7': 'Últimos 7 dias', '30': 'Últimos 30 dias', '90': 'Últimos 90 dias',
+      '365': 'Último ano', '99999': 'Todo o período',
+    };
+    const codigo = `MJ-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+    const win = window.open('', '_blank');
+    if (!win) return;
+
+    const linhasColab = porColab.length
+      ? porColab.map(c => `<tr><td>${escapeHtml(c.name)}</td><td>${escapeHtml(c.cargo || '–')}</td><td>${c.testes}</td><td>${c.aprovados}</td><td>${c.taxa}%</td><td>${c.media}%</td><td>${c.trilhas}</td><td>${c.cargaHoraria > 0 ? c.cargaHoraria + 'h' : '–'}</td><td>${c.certs}</td></tr>`).join('')
+      : '<tr><td colspan="9">Nenhum colaborador cadastrado.</td></tr>';
+
+    const linhasTrilha = porTrilha.length
+      ? porTrilha.map(t => `<tr><td>${escapeHtml(t.name)}</td><td>${t.testes}</td><td>${t['Taxa (%)']}%</td><td>${t['Média']}%</td></tr>`).join('')
+      : '<tr><td colspan="4">Sem dados no período.</td></tr>';
+
+    const linhasRisco = scoreColab.length
+      ? scoreColab.map(c => `<tr><td>${escapeHtml(c.name)}</td><td>${escapeHtml(c.cargo || '–')}</td><td>${c.media !== null ? c.media + '%' : '–'}</td><td>${c.nivel}</td><td>${c.risco}</td><td>${escapeHtml(c.motivos.join(' · '))}</td></tr>`).join('')
+      : '<tr><td colspan="6">Nenhum dado encontrado.</td></tr>';
+
+    const isoBadge: Record<string, string> = { aprovado: 'Aprovado', reprovado: 'Reprovado', sem_avaliacao: 'Treinou, sem avaliar', sem_atividade: 'Sem atividade' };
+    const linhasIso = coberturaISO.linhas.length
+      ? coberturaISO.linhas.map(l => `<tr><td>${escapeHtml(l.name)}</td><td>${escapeHtml(l.cargo || '–')}</td><td>${l.iniciouTreinamento ? 'Sim' : 'Não'}</td><td>${l.fezAvaliacao ? 'Sim' : 'Não'}</td><td>${isoBadge[l.status]}</td></tr>`).join('')
+      : '<tr><td colspan="5">Nenhum colaborador cadastrado.</td></tr>';
+
+    const linhasEvidencias = filteredAvaliacoes.length
+      ? filteredAvaliacoes.map(r => `<tr><td>${escapeHtml(r.colaborador)}</td><td>${escapeHtml(r.trailTitle || '–')}</td><td>${escapeHtml(r.moduleTitle || '–')}</td><td>${formatDate(r.createdAt)}</td><td>${r.nota}%</td><td>${r.aprovado ? 'Aprovado' : 'Reprovado'}</td><td>${r.ia ? 'IA' : 'Padrão'}</td></tr>`).join('')
+      : '<tr><td colspan="7">Nenhum registro no período.</td></tr>';
+
+    win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório de Treinamento</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Dancing+Script:wght@700&display=swap');
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: Arial, sans-serif; color:#1e293b; background:white; padding:40px; font-size:12px; }
+.cover { text-align:center; padding:34px 24px; margin-bottom:32px; border:3px double #c9a84c; position:relative; }
+.corner { position:absolute; width:22px; height:22px; border:2px solid #c9a84c; }
+.corner.tl { top:8px; left:8px; border-right:none; border-bottom:none; }
+.corner.tr { top:8px; right:8px; border-left:none; border-bottom:none; }
+.corner.bl { bottom:8px; left:8px; border-right:none; border-top:none; }
+.corner.br { bottom:8px; right:8px; border-left:none; border-top:none; }
+.cover-logo { font-family:'Playfair Display', serif; font-size:34px; font-weight:900; color:#0f172a; letter-spacing:-2px; }
+.cover-logo span { color:#c9a84c; }
+.cover-title { font-size:18px; font-weight:900; color:#1e293b; margin-top:12px; text-transform:uppercase; letter-spacing:2px; }
+.cover-sub { font-size:12px; color:#8a6e2f; margin-top:6px; text-transform:uppercase; letter-spacing:2px; }
+.info { display:flex; gap:24px; justify-content:center; flex-wrap:wrap; margin-top:16px; font-size:11px; color:#475569; }
+.section { margin-bottom:24px; }
+.section-title { background:#0f172a; color:white; padding:8px 14px; border-radius:8px 8px 0 0; font-size:12px; font-weight:900; text-transform:uppercase; letter-spacing:1px; border-left:4px solid #c9a84c; }
+table { width:100%; border-collapse:collapse; font-size:10.5px; }
+th, td { text-align:left; padding:6px 8px; border-bottom:1px solid #e8d9a0; }
+th { background:#fdfbf5; color:#7a5c1e; text-transform:uppercase; font-size:9px; letter-spacing:1px; }
+td { background:#fdfbf5; }
+thead { display:table-header-group; }
+tr { page-break-inside:avoid; }
+.kpis { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:28px; }
+.kpi { border:1px solid #e8d9a0; border-radius:8px; padding:12px; text-align:center; }
+.kpi .v { font-size:22px; font-weight:900; color:#0f172a; }
+.kpi .l { font-size:8.5px; color:#7a5c1e; text-transform:uppercase; letter-spacing:1px; margin-top:4px; }
+.assinatura { display:flex; justify-content:center; margin-top:40px; page-break-inside:avoid; }
+.assinatura-bloco { text-align:center; }
+.assinatura-nome { font-family:'Dancing Script', cursive; font-size:30px; color:#1e3a5f; line-height:1; margin-bottom:-2px; }
+.assinatura-linha { border-top:1px solid #bbb; padding-top:6px; font-size:10px; color:#888; min-width:260px; }
+.footer { text-align:center; margin-top:24px; padding-top:16px; border-top:1px solid #e8d9a0; font-size:9px; color:#a8882f; }
+.verificacao { text-align:center; margin-top:6px; font-size:9px; color:#bbb; letter-spacing:1px; text-transform:uppercase; }
+@media print { body { padding:20px; } .assinatura { page-break-inside:avoid; } }
+</style></head><body>
+<div class="cover">
+  <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+  <div class="cover-logo">MJ <span>Consultoria</span></div>
+  <div class="cover-title">Relatório de Treinamento e Conformidade</div>
+  <div class="cover-sub">${escapeHtml(tenantName || tenantId)}</div>
+  <div class="info">
+    <span><strong>Período:</strong> ${PERIODO_LABEL[periodo] || periodo}</span>
+    <span><strong>Gerado em:</strong> ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+    <span><strong>Gerado por:</strong> ${escapeHtml(user.name || 'Operador')}</span>
+  </div>
+</div>
+
+<div class="kpis">
+  <div class="kpi"><div class="v">${totalTestes}</div><div class="l">Total de Testes</div></div>
+  <div class="kpi"><div class="v">${taxaAprovacao}%</div><div class="l">Taxa de Aprovação</div></div>
+  <div class="kpi"><div class="v">${mediaGeral}%</div><div class="l">Média Geral</div></div>
+  <div class="kpi"><div class="v">${totalCerts}</div><div class="l">Certificados</div></div>
+  <div class="kpi"><div class="v">${riscoAltoCount}</div><div class="l">Risco Alto</div></div>
+</div>
+
+<div class="section">
+  <div class="section-title">Indicadores ISO — Cobertura de Capacitação</div>
+  <table><thead><tr><th>Etapa</th><th>Quantidade</th><th>% do Total</th></tr></thead><tbody>
+    <tr><td>Colaboradores cadastrados</td><td>${coberturaISO.totalColab}</td><td>100%</td></tr>
+    <tr><td>Participaram de algum treinamento</td><td>${coberturaISO.participaram}</td><td>${pct(coberturaISO.participaram, coberturaISO.totalColab)}%</td></tr>
+    <tr><td>Foram avaliados (teste/exame)</td><td>${coberturaISO.avaliados}</td><td>${pct(coberturaISO.avaliados, coberturaISO.totalColab)}%</td></tr>
+    <tr><td>Aprovados</td><td>${coberturaISO.aprovados}</td><td>${pct(coberturaISO.aprovados, coberturaISO.totalColab)}%</td></tr>
+    <tr><td>Reprovados</td><td>${coberturaISO.reprovados}</td><td>${pct(coberturaISO.reprovados, coberturaISO.totalColab)}%</td></tr>
+    <tr><td>Treinaram, mas não avaliaram</td><td>${coberturaISO.semAvaliacao}</td><td>${pct(coberturaISO.semAvaliacao, coberturaISO.totalColab)}%</td></tr>
+    <tr><td>Sem nenhuma atividade</td><td>${coberturaISO.semAtividade}</td><td>${pct(coberturaISO.semAtividade, coberturaISO.totalColab)}%</td></tr>
+  </tbody></table>
+</div>
+
+<div class="section">
+  <div class="section-title">Situação Individual de Cobertura</div>
+  <table><thead><tr><th>Colaborador</th><th>Cargo</th><th>Iniciou Treinamento</th><th>Fez Avaliação</th><th>Situação</th></tr></thead>
+  <tbody>${linhasIso}</tbody></table>
+</div>
+
+<div class="section">
+  <div class="section-title">Aproveitamento por Colaborador</div>
+  <table><thead><tr><th>Colaborador</th><th>Cargo</th><th>Testes</th><th>Aprovações</th><th>Taxa</th><th>Média</th><th>Trilhas</th><th>Carga Horária</th><th>Certs</th></tr></thead>
+  <tbody>${linhasColab}</tbody></table>
+</div>
+
+<div class="section">
+  <div class="section-title">Taxa de Aprovação por Trilha</div>
+  <table><thead><tr><th>Trilha</th><th>Testes</th><th>Taxa (%)</th><th>Média</th></tr></thead>
+  <tbody>${linhasTrilha}</tbody></table>
+</div>
+
+<div class="section">
+  <div class="section-title">Risco por Colaborador</div>
+  <table><thead><tr><th>Colaborador</th><th>Cargo</th><th>Média</th><th>Nível</th><th>Score</th><th>Motivos</th></tr></thead>
+  <tbody>${linhasRisco}</tbody></table>
+</div>
+
+<div class="section">
+  <div class="section-title">Evidências — Testes e Exames no Período</div>
+  <table><thead><tr><th>Colaborador</th><th>Trilha</th><th>Módulo</th><th>Data</th><th>Nota</th><th>Status</th><th>Tipo</th></tr></thead>
+  <tbody>${linhasEvidencias}</tbody></table>
+</div>
+
+<div class="assinatura">
+  <div class="assinatura-bloco">
+    <div class="assinatura-nome">Mirian Jabur</div>
+    <div class="assinatura-linha">MJ Consultoria — Coordenação de Treinamento</div>
+  </div>
+</div>
+
+<div class="footer">
+  MJ Consultoria · Relatório gerado automaticamente pela plataforma de treinamento<br>
+  Em conformidade com LGPD Lei nº 13.709/2018 · Provimento CNJ nº 149 · Provimento CNJ nº 213/2026
+</div>
+<div class="verificacao">Código de verificação: ${codigo}</div>
+</body></html>`);
+    win.document.close();
+    setTimeout(() => win.print(), 600);
+  };
 
   const exportCSV = () => {
     // Separador ; — o Excel em português (pt-BR) usa vírgula como separador decimal e só
@@ -633,7 +785,7 @@ td { background:#fdfbf5; }
               <option value="365">Último ano</option>
               <option value="99999">Todo o período</option>
             </select>
-            <button onClick={handlePrint} className="flex items-center gap-2 bg-white border border-slate-200 hover:border-slate-400 text-slate-600 px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm"><i className="fa-solid fa-print text-xs"></i>Imprimir</button><button onClick={exportCSV}
+            <button onClick={gerarRelatorioPDF} className="flex items-center gap-2 bg-white border border-slate-200 hover:border-slate-400 text-slate-600 px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm"><i className="fa-solid fa-file-pdf text-xs"></i>Relatório em PDF</button><button onClick={exportCSV}
               className="flex items-center gap-2 bg-gold hover:bg-[#A8863C] text-navy px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm">
               <i className="fa-solid fa-file-excel text-xs"></i>Exportar Excel
             </button>
@@ -1137,7 +1289,7 @@ td { background:#fdfbf5; }
                     {filteredAvaliacoes.length} registros no período
                     <span className="text-slate-500 font-normal ml-2">— válidos como evidência para dossiê CNJ (Provimentos 149, 161 e 213)</span>
                   </p>
-                  <button onClick={handlePrint} className="flex items-center gap-2 bg-white border border-slate-200 hover:border-slate-400 text-slate-600 px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm"><i className="fa-solid fa-print text-xs"></i>Imprimir</button><button onClick={exportCSV}
+                  <button onClick={gerarRelatorioPDF} className="flex items-center gap-2 bg-white border border-slate-200 hover:border-slate-400 text-slate-600 px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm"><i className="fa-solid fa-file-pdf text-xs"></i>Relatório em PDF</button><button onClick={exportCSV}
                     className="flex items-center gap-2 bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-gold px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-sm">
                     <i className="fa-solid fa-file-excel"></i>CSV
                   </button>
