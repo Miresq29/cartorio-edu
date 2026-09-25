@@ -560,7 +560,7 @@ td { background:#fdfbf5; }
             <h2 className="text-2xl font-black text-navy">Relatórios de Treinamento</h2>
             <p className="text-sm text-slate-500 mt-0.5">Desempenho · Evidências · Exportação</p>
           </div>
-          <div className="flex items-center gap-3 print:hidden">
+          <div className="flex items-center gap-3">
             <select value={periodo} onChange={e => setPeriodo(e.target.value)}
               className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none focus:border-gold shadow-sm">
               <option value="7">Últimos 7 dias</option>
@@ -569,7 +569,7 @@ td { background:#fdfbf5; }
               <option value="365">Último ano</option>
               <option value="99999">Todo o período</option>
             </select>
-            <button onClick={handlePrint} className="flex items-center gap-2 bg-white border border-slate-200 hover:border-slate-400 text-slate-600 px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm"><i className="fa-solid fa-print text-xs"></i>Imprimir tudo</button><button onClick={exportCSV}
+            <button onClick={handlePrint} className="flex items-center gap-2 bg-white border border-slate-200 hover:border-slate-400 text-slate-600 px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm"><i className="fa-solid fa-print text-xs"></i>Imprimir</button><button onClick={exportCSV}
               className="flex items-center gap-2 bg-gold hover:bg-[#A8863C] text-navy px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm">
               <i className="fa-solid fa-file-excel text-xs"></i>Exportar Excel
             </button>
@@ -587,7 +587,7 @@ td { background:#fdfbf5; }
 
         {/* Abas */}
         <div className="bg-white border border-slate-200 rounded-[16px] shadow-sm overflow-hidden">
-          <div className="flex border-b border-slate-100 print:hidden">
+          <div className="flex border-b border-slate-100">
             {ABAS.map(a => (
               <button key={a.id} onClick={() => setTab(a.id)}
                 className={`flex items-center gap-2 px-5 py-4 text-xs font-black uppercase tracking-wider transition-all border-b-2 ${
@@ -602,13 +602,8 @@ td { background:#fdfbf5; }
 
           <div className="p-6">
 
-            {/* Na tela mostra so a aba ativa; ao imprimir ("Imprimir tudo"), todas as
-                folhas abaixo aparecem, cada uma em sua propria pagina — os dados de
-                todas as abas ja sao calculados o tempo todo, so a exibicao era filtrada. */}
-
             {/* ── VISÃO GERAL ─────────────────────────────────────────────── */}
-            <div className={tab === 'visao_geral' ? '' : 'hidden print:block print:break-before-page'}>
-              <h3 className="hidden print:block text-lg font-black text-navy mb-4">Visão Geral</h3>
+            {tab === 'visao_geral' && (
               <div className="space-y-6">
 
                 {/* Linha 1: Atividade mensal + Distribuição */}
@@ -696,11 +691,10 @@ td { background:#fdfbf5; }
                   ))}
                 </div>
               </div>
-            </div>
+            )}
 
             {/* ── COLABORADORES ────────────────────────────────────────────── */}
-            <div className={tab === 'colaboradores' ? '' : 'hidden print:block print:break-before-page'}>
-              <h3 className="hidden print:block text-lg font-black text-navy mb-4">Colaboradores</h3>
+            {tab === 'colaboradores' && (
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <input value={buscaColab} onChange={e => setBuscaColab(e.target.value)}
@@ -765,11 +759,10 @@ td { background:#fdfbf5; }
                   </table>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* ── POR TRILHA ───────────────────────────────────────────────── */}
-            <div className={tab === 'trilhas' ? '' : 'hidden print:block print:break-before-page'}>
-              <h3 className="hidden print:block text-lg font-black text-navy mb-4">Por Trilha</h3>
+            {tab === 'trilhas' && (
               <div className="space-y-4">
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs">
@@ -818,11 +811,10 @@ td { background:#fdfbf5; }
                   </table>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* ── EVIDÊNCIAS DE TRILHAS ───────────────────────────────────────── */}
-            <div className={tab === 'trilhas_evidencias' ? '' : 'hidden print:block print:break-before-page'}>
-              <h3 className="hidden print:block text-lg font-black text-navy mb-4">Evidências de Trilhas</h3>
+            {tab === 'trilhas_evidencias' && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between flex-wrap gap-3">
                   <div className="flex items-center gap-3">
@@ -875,11 +867,10 @@ td { background:#fdfbf5; }
                   </table>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* ── RESUMO DE TREINAMENTOS ──────────────────────────────────────── */}
-            <div className={tab === 'treinamentos' ? '' : 'hidden print:block print:break-before-page'}>
-              <h3 className="hidden print:block text-lg font-black text-navy mb-4">Resumo de Treinamentos</h3>
+            {tab === 'treinamentos' && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between flex-wrap gap-3">
                   <p className="text-xs text-slate-500 font-bold">
@@ -931,11 +922,10 @@ td { background:#fdfbf5; }
                   </table>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* ── RISCO ────────────────────────────────────────────────────── */}
-            <div className={tab === 'risco' ? '' : 'hidden print:block print:break-before-page'}>
-              <h3 className="hidden print:block text-lg font-black text-navy mb-4">Risco</h3>
+            {tab === 'risco' && (
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <input value={buscaColab} onChange={e => setBuscaColab(e.target.value)}
@@ -986,13 +976,12 @@ td { background:#fdfbf5; }
                   </table>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* ── EVIDÊNCIAS ───────────────────────────────────────────────── */}
-            <div className={tab === 'evidencias' ? '' : 'hidden print:block print:break-before-page'}>
-              <h3 className="hidden print:block text-lg font-black text-navy mb-4">Evidências</h3>
+            {tab === 'evidencias' && (
               <div className="space-y-4">
-                <div className="flex items-center justify-between print:hidden">
+                <div className="flex items-center justify-between">
                   <p className="text-sm font-black text-slate-700">
                     {filteredResults.length} registros no período
                     <span className="text-slate-500 font-normal ml-2">— válidos como evidência para dossiê CNJ (Provimentos 149, 161 e 213)</span>
@@ -1040,7 +1029,7 @@ td { background:#fdfbf5; }
                   </table>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
