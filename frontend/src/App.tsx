@@ -14,6 +14,7 @@ const SecurityView       = lazy(() => import('./features/Security/SecurityView')
 const UsersView          = lazy(() => import('./features/Users/UsersView'));
 const AuditoriaView      = lazy(() => import('./features/Audit/AuditoriaView'));
 const RelatoriosView     = lazy(() => import('./features/Reports/RelatoriosView'));
+const RelatoriosMasterView = lazy(() => import('./features/Reports/RelatoriosMasterView'));
 const SupportView        = lazy(() => import('./features/Support/SupportView'));
 const TrainingView       = lazy(() => import('./features/Training/TrainingViewMain'));
 const IAAnaliticaView    = lazy(() => import('./features/Analytics/IAAnaliticaView'));
@@ -76,6 +77,7 @@ const MainLayout: React.FC = () => {
       case 'training':   return <TrainingView />;
       case 'trails':     return <TrailsView />;
       case 'admin':      return isPlatformStaff ? <TenantsView /> : <DashboardView />;
+      case 'reports-master': return isPlatformStaff ? <RelatoriosMasterView /> : <DashboardView />;
       case 'treinamentos-oficiais': return isPlatformStaff ? <TreinamentosOficiaisPanel /> : <DashboardView />;
       case 'audit':      return <AuditoriaView />;
       case 'reports':    return <RelatoriosView />;

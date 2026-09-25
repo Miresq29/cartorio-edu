@@ -66,6 +66,7 @@ const Sidebar: React.FC = () => {
         // continuam exclusivos do SUPERADMIN de verdade (a propria tela esconde esses controles).
         { tab: 'admin',     icon: 'fa-server',        label: 'Gestao de Empresas', desc: 'Criar e gerenciar tenants',         roles: ['SUPERADMIN'], color: 'text-blue-400' },
         { tab: 'treinamentos-oficiais', icon: 'fa-wand-magic-sparkles', label: 'Treinamentos Oficiais', desc: 'Publicar conteudo pronto para todos os cartorios', roles: ['SUPERADMIN'], color: 'text-[#C9A84C]' },
+        { tab: 'reports-master', icon: 'fa-chart-column', label: 'Relatorio por Cartorio', desc: 'Numeros reais de cada cartorio, sem precisar acessar um por um', roles: ['SUPERADMIN'], color: 'text-blue-400' },
         { tab: 'audit',     icon: 'fa-layer-group',   label: 'Atividades Master',  desc: 'Log global de todas as acoes',      roles: ['SUPERADMIN'], color: 'text-emerald-400' },
       ]
     },
