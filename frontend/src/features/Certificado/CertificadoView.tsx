@@ -559,11 +559,14 @@ const CertificadoView: React.FC = () => {
 
   return (
     <>
-      {/* CSS para impressão */}
+      {/* CSS para impressão — usa visibility em vez de display: "#certificado-wrapper" fica
+          varios niveis dentro de #root, entao "body > * { display:none }" escondia o
+          ancestral inteiro (incluindo o proprio wrapper) e a impressao saia em branco. */}
       <style>{`
         @media print {
-          body > * { display: none !important; }
-          #certificado-wrapper { display: block !important; }
+          body * { visibility: hidden; }
+          #certificado-wrapper, #certificado-wrapper * { visibility: visible; }
+          #certificado-wrapper { display: block !important; position: absolute; top: 0; left: 0; }
           @page { size: A4 landscape; margin: 0; }
         }
         #certificado-wrapper { display: none; }
