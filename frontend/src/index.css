@@ -156,6 +156,12 @@ a, button {
     overflow: visible !important;
   }
   aside { display: none !important; }
+
+  /* Gráficos Recharts (Dashboard, Relatórios) quebram no papel quando o layout muda de
+     altura fixa para fluxo normal — o canvas recalcula com dimensão inválida e vira um
+     retângulo preto. As tabelas e números já cobrem os mesmos dados, então os gráficos
+     simplesmente não são impressos. */
+  .recharts-responsive-container { display: none !important; }
 }
 
 /* ── Utilities ── */

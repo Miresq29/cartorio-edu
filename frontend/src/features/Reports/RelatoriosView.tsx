@@ -398,13 +398,15 @@ const RelatoriosView: React.FC = () => {
   }, [progresso, buscaTrilha]);
 
   const exportCSVTrilhas = () => {
-    const rows = ['Colaborador,Trilha,Percentual Concluido,Status,Ultima Atualizacao'];
+    // Separador ; — o Excel em português (pt-BR) usa vírgula como separador decimal e só
+    // reconhece automaticamente ; como separador de colunas ao abrir o CSV direto (duplo clique).
+    const rows = ['Colaborador;Trilha;Percentual Concluido;Status;Ultima Atualizacao'];
     progressoEvidencia.forEach(p => {
       rows.push([
         p.colaborador, p.trilha, `${p.percentual}%`,
         p.concluida ? 'Concluída' : 'Em andamento',
         formatDate(p.atualizadoEm),
-      ].join(','));
+      ].join(';'));
     });
     const blob = new Blob(['﻿' + rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -536,14 +538,16 @@ td { background:#fdfbf5; }
   const handlePrint = () => { window.print(); };
 
   const exportCSV = () => {
-    const rows = ['Colaborador,Trilha,Módulo,Data,Nota,Status,Tipo'];
+    // Separador ; — o Excel em português (pt-BR) usa vírgula como separador decimal e só
+    // reconhece automaticamente ; como separador de colunas ao abrir o CSV direto (duplo clique).
+    const rows = ['Colaborador;Trilha;Módulo;Data;Nota;Status;Tipo'];
     filteredAvaliacoes.forEach(r => {
       rows.push([
         r.colaborador, r.trailTitle || '', r.moduleTitle || '',
         formatDate(r.createdAt), r.nota + '%',
         r.aprovado ? 'Aprovado' : 'Reprovado',
         r.ia ? 'IA' : 'Padrão'
-      ].join(','));
+      ].join(';'));
     });
     // BOM no início — sem ele o Excel abre acentos como "MÃ³dulo" em vez de "Módulo"
     const blob = new Blob(['﻿' + rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
@@ -624,7 +628,7 @@ td { background:#fdfbf5; }
                 {/* Linha 1: Atividade mensal + Distribuição */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {/* Atividade mensal */}
-                  <div className="lg:col-span-2 space-y-3">
+                  <div className="lg:col-span-2 space-y-3 print:hidden">
                     <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Atividade Mensal</p>
                     {porMes.length === 0 ? (
                       <div className="h-48 flex items-center justify-center text-slate-500 text-sm">Sem dados no período</div>
@@ -646,6 +650,7 @@ td { background:#fdfbf5; }
                   {/* Distribuição de notas */}
                   <div className="space-y-3">
                     <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Distribuição de Notas</p>
+                    <div className="print:hidden">
                     <ResponsiveContainer width="100%" height={200}>
                       <PieChart>
                         <Pie data={distribuicaoNotas} cx="50%" cy="50%" innerRadius={50} outerRadius={80}
@@ -657,6 +662,7 @@ td { background:#fdfbf5; }
                         <Tooltip />
                       </PieChart>
                     </ResponsiveContainer>
+                    </div>
                     <div className="grid grid-cols-2 gap-1">
                       {distribuicaoNotas.map((d, i) => (
                         <div key={i} className="flex items-center gap-1.5">
@@ -670,7 +676,7 @@ td { background:#fdfbf5; }
                 </div>
 
                 {/* Linha 2: Aprovação por trilha */}
-                <div className="space-y-3">
+                <div className="space-y-3 print:hidden">
                   <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Taxa de Aprovação por Trilha</p>
                   {porTrilha.length === 0 ? (
                     <div className="h-48 flex items-center justify-center text-slate-500 text-sm">Sem dados no período</div>

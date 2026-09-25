@@ -23,6 +23,7 @@ interface TrilhaProg  { id:string; userId:string; userName:string; trilhaId:stri
 interface Trilha      { id:string; titulo:string; descricao:string; icone:string; cor:string; modulos:any[]; tenantId:string; }
 interface UserData    { id:string; name:string; cargo?:string; role:string; tenantId:string; }
 interface Certificado { id:string; colaboradorNome:string; trilhaTitulo:string; notaFinal:number; emitidoEm:any; tenantId:string; }
+interface ExameResultado { id:string; userId:string; fonteTitulo:string; score:number; aprovado:boolean; createdAt:any; tenantId?:string; }
 
 function pct(a:number,b:number){ return b===0?0:Math.round((a/b)*100); }
 function getMonth(ts:any){ if(!ts)return ''; const d=ts?.toDate?ts.toDate():new Date(ts); return d.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'}); }
@@ -383,7 +384,8 @@ const DashboardView:React.FC = () => {
 
   const [trilhas,      setTrilhas]      = useState<Trilha[]>([]);
   const [progresso,    setProgresso]    = useState<TrilhaProg[]>([]);
-  const [quizResults,  setQuizResults]  = useState<QuizResult[]>([]);
+  const [quizResultsRaw, setQuizResultsRaw] = useState<QuizResult[]>([]);
+  const [exames,       setExames]       = useState<ExameResultado[]>([]);
   const [usuarios,     setUsuarios]     = useState<UserData[]>([]);
   const [certificados, setCertificados] = useState<Certificado[]>([]);
   const [loading,      setLoading]      = useState(true);
@@ -392,11 +394,24 @@ const DashboardView:React.FC = () => {
     const u:Array<()=>void> = [];
     u.push(onSnapshot(query(collection(db,'trilhas'),where('tenantIds','array-contains-any',[tenantId,'GLOBAL'])),s=>setTrilhas(s.docs.map(d=>({id:d.id,...d.data()} as Trilha)))));
     u.push(onSnapshot(query(collection(db,'trilhasProgresso'),where('tenantId','==',tenantId)),s=>setProgresso(s.docs.map(d=>({id:d.id,...d.data()} as TrilhaProg)))));
-    u.push(onSnapshot(query(collection(db,'treinamentosQuizResults'),where('tenantId','==',tenantId),orderBy('createdAt','desc')),s=>{setQuizResults(s.docs.map(d=>({id:d.id,...d.data()} as QuizResult)));setLoading(false);}));
+    u.push(onSnapshot(query(collection(db,'treinamentosQuizResults'),where('tenantId','==',tenantId),orderBy('createdAt','desc')),s=>{setQuizResultsRaw(s.docs.map(d=>({id:d.id,...d.data()} as QuizResult)));setLoading(false);}));
+    u.push(onSnapshot(query(collection(db,'examesResultados'),where('tenantId','==',tenantId)),s=>setExames(s.docs.map(d=>({id:d.id,...d.data()} as ExameResultado)))));
     u.push(onSnapshot(query(collection(db,'users'),where('tenantId','==',tenantId)),s=>setUsuarios(s.docs.map(d=>({id:d.id,...d.data()} as UserData)))));
     u.push(onSnapshot(query(collection(db,'certificados'),where('tenantId','==',tenantId)),s=>setCertificados(s.docs.map(d=>({id:d.id,...d.data()} as Certificado)))));
     return ()=>u.forEach(f=>f());
   },[tenantId]);
+
+  // Une quizzes de trilha e Exames formais numa unica lista — sem isso os KPIs do
+  // painel ficavam zerados para cartorios que so usam Exames (ex.: 2rimontesclaros).
+  const quizResults = useMemo<QuizResult[]>(() => {
+    const doExame: QuizResult[] = exames.map(e => ({
+      id: `exame_${e.id}`,
+      colaborador: usuarios.find(u => u.id === e.userId)?.name || '–',
+      userId: e.userId, nota: e.score, aprovado: e.aprovado,
+      trailTitle: e.fonteTitulo, ia: false, createdAt: e.createdAt,
+    }));
+    return [...quizResultsRaw, ...doExame];
+  }, [quizResultsRaw, exames, usuarios]);
 
   if(loading) return (
     <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:'#F8F7F2'}}>
