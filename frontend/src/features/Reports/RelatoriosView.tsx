@@ -218,6 +218,20 @@ const RelatoriosView: React.FC = () => {
     return d.getTime() >= cutoff;
   });
 
+  // Avaliação unificada: quizzes de trilha (treinamentosQuizResults) + Exames formais (examesResultados).
+  // Sem isso, colaboradores que só fazem Exames (como os de 2rimontesclaros) ficavam com KPIs,
+  // exportação e score de risco zerados/errados, mesmo tendo feito e passado nas avaliações.
+  const filteredAvaliacoes = useMemo(() => {
+    const doExame = filteredExames.map(e => ({
+      id: `exame_${e.id}`,
+      colaborador: usuarios.find(u => u.id === e.userId)?.name || '–',
+      userId: e.userId, nota: e.score, aprovado: e.aprovado,
+      trailTitle: e.fonteTitulo, moduleTitle: undefined as string | undefined,
+      ia: false, createdAt: e.createdAt,
+    }));
+    return [...filteredResults, ...doExame];
+  }, [filteredResults, filteredExames, usuarios]);
+
   // Carga horária de uma trilha pelo id (catálogo de trilhas com instrutor/formato/horas).
   // Mesma regra do certificado: trilha concluída sempre conta pelo menos 1h, mesmo
   // quando a trilha não informou cargaHoraria — nunca fica de fora do total do colaborador.
@@ -228,18 +242,18 @@ const RelatoriosView: React.FC = () => {
 
   // KPIs
   const colab = usuarios.filter(u => !['SUPERADMIN', 'gestor'].includes(u.role));
-  const totalTestes = filteredResults.length;
-  const totalAprovados = filteredResults.filter(r => r.aprovado).length;
+  const totalTestes = filteredAvaliacoes.length;
+  const totalAprovados = filteredAvaliacoes.filter(r => r.aprovado).length;
   const taxaAprovacao = pct(totalAprovados, totalTestes);
   const mediaGeral = totalTestes
-    ? Math.round(filteredResults.reduce((a, r) => a + r.nota, 0) / totalTestes)
+    ? Math.round(filteredAvaliacoes.reduce((a, r) => a + r.nota, 0) / totalTestes)
     : 0;
   const totalCerts = certificados.length;
 
   // Gráfico 1: Aprovação por trilha
   const porTrilha = useMemo(() => {
     const map: Record<string, { total: number; aprovados: number; soma: number }> = {};
-    filteredResults.forEach(r => {
+    filteredAvaliacoes.forEach(r => {
       const t = r.trailTitle || 'Sem trilha';
       if (!map[t]) map[t] = { total: 0, aprovados: 0, soma: 0 };
       map[t].total++;
@@ -255,12 +269,12 @@ const RelatoriosView: React.FC = () => {
       }))
       .sort((a, b) => b['Taxa (%)'] - a['Taxa (%)'])
       .slice(0, 8);
-  }, [filteredResults]);
+  }, [filteredAvaliacoes]);
 
   // Gráfico 2: Atividade por mês
   const porMes = useMemo(() => {
     const map: Record<string, { testes: number; aprovados: number }> = {};
-    filteredResults.forEach(r => {
+    filteredAvaliacoes.forEach(r => {
       const m = getMonth(r.createdAt);
       if (!m) return;
       if (!map[m]) map[m] = { testes: 0, aprovados: 0 };
@@ -274,7 +288,7 @@ const RelatoriosView: React.FC = () => {
         Testes: v.testes,
         Aprovados: v.aprovados,
       }));
-  }, [filteredResults]);
+  }, [filteredAvaliacoes]);
 
   // Gráfico 3: Distribuição de notas
   const distribuicaoNotas = useMemo(() => {
@@ -286,9 +300,9 @@ const RelatoriosView: React.FC = () => {
     ];
     return faixas.map(f => ({
       name: f.name,
-      value: filteredResults.filter(r => r.nota >= f.min && r.nota <= f.max).length,
+      value: filteredAvaliacoes.filter(r => r.nota >= f.min && r.nota <= f.max).length,
     }));
-  }, [filteredResults]);
+  }, [filteredAvaliacoes]);
 
   // Por colaborador — aproveitamento considera quizzes de trilha E exames formais (Exames IA),
   // já que ambos avaliam conhecimento e antes só os quizzes de trilha eram contabilizados.
@@ -322,7 +336,7 @@ const RelatoriosView: React.FC = () => {
     return colab
       .filter(u => !buscaColab || u.name.toLowerCase().includes(buscaColab.toLowerCase()))
       .map(u => {
-        const res = filteredResults.filter(r => r.userId === u.id || r.colaborador === u.name);
+        const res = filteredAvaliacoes.filter(r => r.userId === u.id || r.colaborador === u.name);
         const media = res.length ? Math.round(res.reduce((a, r) => a + r.nota, 0) / res.length) : null;
         const certsUsuario = certificados.filter(c => c.colaboradorNome === u.name);
         const certVencido = certsUsuario.length > 0 && certsUsuario.every(c => c.validoAte && new Date(c.validoAte).getTime() < Date.now());
@@ -345,7 +359,7 @@ const RelatoriosView: React.FC = () => {
         return { id: u.id, name: u.name, cargo: u.cargo || '', media, risco, nivel, motivos };
       })
       .sort((a, b) => b.risco - a.risco);
-  }, [colab, filteredResults, certificados, buscaColab]);
+  }, [colab, filteredAvaliacoes, certificados, buscaColab]);
 
   // Resumo de treinamentos — catálogo de trilhas + treinamentos avulsos com instrutor,
   // forma (EAD/presencial/híbrida), carga horária e participação/aproveitamento.
@@ -392,7 +406,7 @@ const RelatoriosView: React.FC = () => {
         formatDate(p.atualizadoEm),
       ].join(','));
     });
-    const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(['﻿' + rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -523,7 +537,7 @@ td { background:#fdfbf5; }
 
   const exportCSV = () => {
     const rows = ['Colaborador,Trilha,Módulo,Data,Nota,Status,Tipo'];
-    filteredResults.forEach(r => {
+    filteredAvaliacoes.forEach(r => {
       rows.push([
         r.colaborador, r.trailTitle || '', r.moduleTitle || '',
         formatDate(r.createdAt), r.nota + '%',
@@ -531,7 +545,8 @@ td { background:#fdfbf5; }
         r.ia ? 'IA' : 'Padrão'
       ].join(','));
     });
-    const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    // BOM no início — sem ele o Excel abre acentos como "MÃ³dulo" em vez de "Módulo"
+    const blob = new Blob(['﻿' + rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -679,9 +694,9 @@ td { background:#fdfbf5; }
                 {/* Resumo rápido */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {[
-                    { label: 'Colaboradores ativos', value: colab.filter(u => filteredResults.some(r => r.userId === u.id || r.colaborador === u.name)).length },
-                    { label: 'Testes com IA', value: filteredResults.filter(r => r.ia).length },
-                    { label: 'Reprovações', value: filteredResults.filter(r => !r.aprovado).length },
+                    { label: 'Colaboradores ativos', value: colab.filter(u => filteredAvaliacoes.some(r => r.userId === u.id || r.colaborador === u.name)).length },
+                    { label: 'Testes com IA', value: filteredAvaliacoes.filter(r => r.ia).length },
+                    { label: 'Reprovações', value: filteredAvaliacoes.filter(r => !r.aprovado).length },
                     { label: 'Trilhas ativas', value: new Set(progresso.map(p => p.trilhaId)).size },
                   ].map((s, i) => (
                     <div key={i} className="bg-white border border-slate-200 rounded-xl p-4 text-center">
@@ -778,7 +793,7 @@ td { background:#fdfbf5; }
                         <tr><td colSpan={6} className="text-center p-8 text-slate-500">Sem dados no período.</td></tr>
                       )}
                       {porTrilha.map((t, i) => {
-                        const raw = filteredResults.filter(r => (r.trailTitle || 'Sem trilha') === t.name || (r.trailTitle || 'Sem trilha').startsWith(t.name.replace('…', '')));
+                        const raw = filteredAvaliacoes.filter(r => (r.trailTitle || 'Sem trilha') === t.name || (r.trailTitle || 'Sem trilha').startsWith(t.name.replace('…', '')));
                         const ia = raw.filter(r => r.ia).length;
                         return (
                           <tr key={i} className="border-b border-slate-100 hover:bg-white transition-all">
@@ -983,7 +998,7 @@ td { background:#fdfbf5; }
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-black text-slate-700">
-                    {filteredResults.length} registros no período
+                    {filteredAvaliacoes.length} registros no período
                     <span className="text-slate-500 font-normal ml-2">— válidos como evidência para dossiê CNJ (Provimentos 149, 161 e 213)</span>
                   </p>
                   <button onClick={handlePrint} className="flex items-center gap-2 bg-white border border-slate-200 hover:border-slate-400 text-slate-600 px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm"><i className="fa-solid fa-print text-xs"></i>Imprimir</button><button onClick={exportCSV}
@@ -1001,10 +1016,10 @@ td { background:#fdfbf5; }
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredResults.length === 0 && (
+                      {filteredAvaliacoes.length === 0 && (
                         <tr><td colSpan={7} className="text-center p-8 text-slate-500">Nenhum registro no período.</td></tr>
                       )}
-                      {filteredResults.map(r => (
+                      {filteredAvaliacoes.map(r => (
                         <tr key={r.id} className="border-b border-slate-100 hover:bg-white transition-all">
                           <td className="p-3 font-bold text-navy">{r.colaborador}</td>
                           <td className="p-3 text-slate-600 max-w-[160px] truncate">{r.trailTitle || '–'}</td>

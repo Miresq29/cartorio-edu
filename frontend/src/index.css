@@ -146,6 +146,16 @@ a, button {
 /* ── Print ── */
 @media print {
   .no-print { display: none !important; }
+
+  /* O layout principal usa altura fixa (h-screen) com rolagem interna (overflow-y-auto)
+     no <main> — na impressão isso corta o conteudo na altura de uma tela só, imprimindo
+     apenas o que estava visivel no momento do Ctrl+P. Ao imprimir, volta ao fluxo normal
+     para o conteudo inteiro (ex: tabela de 76 colaboradores) sair em varias paginas. */
+  .app-shell, .app-main {
+    height: auto !important;
+    overflow: visible !important;
+  }
+  aside { display: none !important; }
 }
 
 /* ── Utilities ── */
