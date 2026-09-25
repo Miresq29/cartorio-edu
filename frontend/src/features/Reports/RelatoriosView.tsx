@@ -400,9 +400,9 @@ const RelatoriosView: React.FC = () => {
         const nivel: 'Alto' | 'Médio' | 'Baixo' = risco >= 60 ? 'Alto' : risco >= 30 ? 'Médio' : 'Baixo';
 
         const motivos: string[] = [];
-        if (media === null) motivos.push('Sem testes registrados');
+        if (media === null) motivos.push('Ainda não fez nenhuma prova');
         else if (media < 70) motivos.push(`Média baixa (${media}%)`);
-        if (semAtividade) motivos.push('Sem atividade no período');
+        if (semAtividade && media !== null) motivos.push('Sem atividade no período');
         if (certVencido) motivos.push('Certificado vencido');
         if (motivos.length === 0) motivos.push('Sem pendências');
 
@@ -760,10 +760,10 @@ tr { page-break-inside:avoid; }
     { id: 'iso',           label: 'Indicadores ISO', icon: 'fa-award'       },
     { id: 'colaboradores', label: 'Colaboradores',  icon: 'fa-users'        },
     { id: 'trilhas',       label: 'Por Trilha',     icon: 'fa-road'         },
-    { id: 'trilhas_evidencias', label: 'Evidências de Trilhas', icon: 'fa-clipboard-list' },
+    { id: 'trilhas_evidencias', label: 'Progresso das Trilhas', icon: 'fa-clipboard-list' },
     { id: 'treinamentos',  label: 'Resumo de Treinamentos', icon: 'fa-chalkboard-user' },
     { id: 'risco',         label: 'Risco',          icon: 'fa-shield-halved' },
-    { id: 'evidencias',    label: 'Evidências',     icon: 'fa-file-lines'   },
+    { id: 'evidencias',    label: 'Testes e Exames', icon: 'fa-file-lines'   },
   ];
 
   return (
@@ -794,12 +794,23 @@ tr { page-break-inside:avoid; }
 
         {/* KPIs */}
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-          <StatCard label="Total de Testes"   value={totalTestes}      icon="fa-clipboard-check"  color="#4F46E5" sub={`no período selecionado`} />
-          <StatCard label="Taxa de Aprovação" value={`${taxaAprovacao}%`} icon="fa-circle-check"  color="#059669" sub={`${totalAprovados} aprovações`} />
-          <StatCard label="Média Geral"       value={`${mediaGeral}%`} icon="fa-chart-bar"        color="#D97706" sub="média das notas" />
+          <StatCard label="Total de Testes"   value={totalTestes}      icon="fa-clipboard-check"  color="#4F46E5" sub={`${coberturaISO.avaliados} de ${coberturaISO.totalColab} colaboradores avaliados`} />
+          <StatCard label="Taxa de Aprovação" value={`${taxaAprovacao}%`} icon="fa-circle-check"  color="#059669" sub={`${totalAprovados} de ${totalTestes} avaliações — só quem fez prova`} />
+          <StatCard label="Média Geral"       value={`${mediaGeral}%`} icon="fa-chart-bar"        color="#D97706" sub="só entre quem já foi avaliado" />
           <StatCard label="Certificados"      value={totalCerts}       icon="fa-certificate"      color="#7C3AED" sub="emitidos no total" />
           <StatCard label="Risco Alto"        value={riscoAltoCount}   icon="fa-shield-halved"    color="#DC2626" sub="colaboradores em atenção" />
         </div>
+
+        {(coberturaISO.semAvaliacao + coberturaISO.semAtividade) > 0 && (
+          <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
+            <i className="fa-solid fa-circle-info mt-0.5"></i>
+            <p>
+              <strong>{coberturaISO.semAvaliacao + coberturaISO.semAtividade} colaborador{(coberturaISO.semAvaliacao + coberturaISO.semAtividade) !== 1 ? 'es' : ''} ainda não fizeram nenhuma prova</strong> —
+              não entram na Taxa de Aprovação nem na Média Geral acima (essas duas só contam quem já foi avaliado).
+              Veja a lista completa em <strong>Indicadores ISO</strong>.
+            </p>
+          </div>
+        )}
 
         {/* Abas */}
         <div className="bg-white border border-slate-200 rounded-[16px] shadow-sm overflow-hidden">
@@ -1116,7 +1127,7 @@ tr { page-break-inside:avoid; }
               </div>
             )}
 
-            {/* ── EVIDÊNCIAS DE TRILHAS ───────────────────────────────────────── */}
+            {/* ── PROGRESSO DAS TRILHAS ───────────────────────────────────────── */}
             {tab === 'trilhas_evidencias' && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between flex-wrap gap-3">
@@ -1126,7 +1137,7 @@ tr { page-break-inside:avoid; }
                       className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-gold w-64" />
                     <span className="text-xs text-slate-500 font-bold">
                       {progressoEvidencia.length} registros
-                      <span className="text-slate-400 font-normal ml-2">— um registro por colaborador × trilha, válido como evidência de conclusão</span>
+                      <span className="text-slate-400 font-normal ml-2">— % de módulos concluídos por colaborador em cada trilha (não é nota de prova)</span>
                     </span>
                   </div>
                   <button onClick={exportCSVTrilhas} className="flex items-center gap-2 bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-gold px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-sm">
@@ -1281,13 +1292,13 @@ tr { page-break-inside:avoid; }
               </div>
             )}
 
-            {/* ── EVIDÊNCIAS ───────────────────────────────────────────────── */}
+            {/* ── TESTES E EXAMES ───────────────────────────────────────────────── */}
             {tab === 'evidencias' && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-black text-slate-700">
-                    {filteredAvaliacoes.length} registros no período
-                    <span className="text-slate-500 font-normal ml-2">— válidos como evidência para dossiê CNJ (Provimentos 149, 161 e 213)</span>
+                    {filteredAvaliacoes.length} avaliações no período (nota e aprovação)
+                    <span className="text-slate-500 font-normal ml-2">— válidas como evidência para dossiê CNJ (Provimentos 149, 161 e 213)</span>
                   </p>
                   <button onClick={gerarRelatorioPDF} className="flex items-center gap-2 bg-white border border-slate-200 hover:border-slate-400 text-slate-600 px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm"><i className="fa-solid fa-file-pdf text-xs"></i>Relatório em PDF</button><button onClick={exportCSV}
                     className="flex items-center gap-2 bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-gold px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-sm">
