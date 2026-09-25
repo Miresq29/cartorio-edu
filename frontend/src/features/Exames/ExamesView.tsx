@@ -105,6 +105,10 @@ const ExamesView: React.FC = () => {
 
     carrega('treinamentos',  'treinamento',   'descricao',  'titulo');
     carrega('knowledgeBase', 'knowledgeBase', 'rawText',    'title');
+    // Repositório (vídeos/áudios) também é fonte de exame — faltava aqui, por isso
+    // treinamentos exclusivos de um cartório (ex.: 2rimontesclaros) nunca apareciam
+    // na lista de conteúdo para gerar exame, só os de "treinamentos"/"trilhas".
+    carrega('repositorio',   'video',         'descricao',  'titulo');
 
     // Trilhas de capacitação também servem de fonte de conteúdo — concatena o
     // texto de todos os módulos, que é onde o conteúdo real das trilhas mora.
