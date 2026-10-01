@@ -32,6 +32,9 @@ interface Tenant {
   criarConteudoHabilitado?: boolean;
   demoExpiraEm?: Timestamp | null;
   demoAvisoEnviado?: boolean;
+  horarioAcessoHabilitado?: boolean;
+  horarioAcessoInicio?: string;
+  horarioAcessoFim?: string;
   createdAt: any;
 }
 
@@ -204,6 +207,22 @@ const TenantsView: React.FC = () => {
   const reativarAposDemo = async (t: Tenant) => {
     await updateDoc(doc(db, 'tenants', t.id), { active: true, demoExpiraEm: null, demoAvisoEnviado: false, ...religarModulosBase() });
     showToast(`"${t.name}" reativado com acesso pleno.`, 'success');
+  };
+
+  // Horário de acesso — fora do período, colaborador/gestor/admin do cartório veem uma
+  // tela de bloqueio (AccessWindowGate); SUPERADMIN/Equipe MJ nunca são restritos.
+  const toggleHorarioAcesso = async (t: Tenant) => {
+    const habilitar = !t.horarioAcessoHabilitado;
+    await updateDoc(doc(db, 'tenants', t.id), {
+      horarioAcessoHabilitado: habilitar,
+      horarioAcessoInicio: t.horarioAcessoInicio || '08:00',
+      horarioAcessoFim: t.horarioAcessoFim || '18:00',
+    });
+    showToast(habilitar ? `Horário de acesso ativado para "${t.name}".` : `Horário de acesso desativado para "${t.name}".`, 'success');
+  };
+
+  const atualizarHorarioAcesso = async (t: Tenant, campo: 'horarioAcessoInicio' | 'horarioAcessoFim', valor: string) => {
+    await updateDoc(doc(db, 'tenants', t.id), { [campo]: valor });
   };
 
   return (
@@ -404,6 +423,33 @@ const TenantsView: React.FC = () => {
                         className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-200 transition-all">
                         <i className="fa-solid fa-hourglass-start mr-1"></i>Ativar Demonstração
                       </button>
+                    </div>
+                  )}
+                </div>
+                )}
+
+                {/* Horário de acesso — exclusivo SUPERADMIN */}
+                {isSuperAdmin && (
+                <div className="flex items-center gap-3 flex-wrap pt-2 border-t border-slate-100">
+                  <button type="button" onClick={() => toggleHorarioAcesso(t)}
+                    className={`flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-lg border transition-all ${
+                      t.horarioAcessoHabilitado
+                        ? 'bg-blue-50 text-blue-600 border-blue-200'
+                        : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'
+                    }`}>
+                    <i className="fa-solid fa-clock"></i>
+                    Horário de acesso: {t.horarioAcessoHabilitado ? 'ativado' : 'desativado'}
+                  </button>
+                  {t.horarioAcessoHabilitado && (
+                    <div className="flex items-center gap-1.5">
+                      <input type="time" defaultValue={t.horarioAcessoInicio || '08:00'}
+                        onBlur={e => atualizarHorarioAcesso(t, 'horarioAcessoInicio', e.target.value)}
+                        className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-[11px] text-navy outline-none focus:border-blue-500" />
+                      <span className="text-[9px] text-slate-400 font-bold uppercase">até</span>
+                      <input type="time" defaultValue={t.horarioAcessoFim || '18:00'}
+                        onBlur={e => atualizarHorarioAcesso(t, 'horarioAcessoFim', e.target.value)}
+                        className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-[11px] text-navy outline-none focus:border-blue-500" />
+                      <span className="text-[9px] text-slate-400 font-bold uppercase">todos os dias</span>
                     </div>
                   )}
                 </div>

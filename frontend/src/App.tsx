@@ -3,6 +3,7 @@ import { AppProvider, useApp } from './context/AppContext';
 import { ToastProvider } from './context/ToastContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import Sidebar from './components/Sidebar';
+import AccessWindowGate from './components/AccessWindowGate';
 
 const LoginView          = lazy(() => import('./features/Auth/LoginView'));
 const ChangePasswordView = lazy(() => import('./features/Auth/ChangePasswordView'));
@@ -105,7 +106,7 @@ const MainLayout: React.FC = () => {
     }
   };
 
-  return (
+  const shell = (
     <div className="app-shell flex h-screen overflow-hidden bg-bg-base">
       <Sidebar />
       <main className="app-main flex-1 overflow-y-auto relative custom-scrollbar bg-slate-50">
@@ -131,6 +132,11 @@ const MainLayout: React.FC = () => {
       </main>
     </div>
   );
+
+  // Equipe MJ/SUPERADMIN nunca sao restritos por horario, mesmo "dentro" de um
+  // cartorio em modo preview — a trava vale so para quem pertence de fato ao cartorio.
+  if (isPlatformStaff) return shell;
+  return <AccessWindowGate tenantId={state.user.tenantId}>{shell}</AccessWindowGate>;
 };
 
 const App: React.FC = () => (
