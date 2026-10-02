@@ -105,10 +105,26 @@ const ExamesView: React.FC = () => {
 
     carrega('treinamentos',  'treinamento',   'descricao',  'titulo');
     carrega('knowledgeBase', 'knowledgeBase', 'rawText',    'title');
+
     // Repositório (vídeos/áudios) também é fonte de exame — faltava aqui, por isso
-    // treinamentos exclusivos de um cartório (ex.: 2rimontesclaros) nunca apareciam
-    // na lista de conteúdo para gerar exame, só os de "treinamentos"/"trilhas".
-    carrega('repositorio',   'video',         'descricao',  'titulo');
+    // treinamentos exclusivos de um cartório nunca apareciam na lista para gerar exame.
+    // A descrição sozinha costuma ser curta/vazia (é só um link de vídeo/áudio), então
+    // junta categoria e trilha associada para dar mais contexto à IA gerar as questões.
+    const uRepositorio = onSnapshot(query(collection(db, 'repositorio'), where('tenantIds', 'array-contains-any', tenantFilter)), snap => {
+      const novos = snap.docs.map(d => {
+        const data = d.data();
+        const conteudo = [data.titulo, data.categoria, data.trilhaTitulo, data.descricao].filter(Boolean).join('\n');
+        return {
+          id: d.id, titulo: data.titulo || 'Sem título', conteudo, tipo: 'video' as const,
+          cargaHoraria: data.duracaoMin ? Math.max(1, Math.round(data.duracaoMin / 60)) : undefined,
+        };
+      });
+      const filtered = allFontes.filter(f => f.tipo !== 'video');
+      allFontes.splice(0, allFontes.length, ...filtered, ...novos);
+      setFontes([...allFontes]);
+      setLoadingFontes(false);
+    });
+    unsubs.push(uRepositorio);
 
     // Trilhas de capacitação também servem de fonte de conteúdo — concatena o
     // texto de todos os módulos, que é onde o conteúdo real das trilhas mora.
@@ -176,7 +192,7 @@ const ExamesView: React.FC = () => {
       return;
     }
 
-    if (!fonteEscolhida.conteudo || fonteEscolhida.conteudo.length < 50) {
+    if (!fonteEscolhida.conteudo || fonteEscolhida.conteudo.length < 10) {
       showToast('Este conteúdo não possui texto suficiente para gerar um exame.', 'error');
       return;
     }
@@ -534,14 +550,14 @@ const ExamesView: React.FC = () => {
 
         {loadingFontes ? (
           <div className="text-slate-500 text-sm italic">Carregando conteúdos...</div>
-        ) : fontes.filter(f => f.conteudo && f.conteudo.length >= 50).length === 0 ? (
+        ) : fontes.filter(f => f.conteudo && f.conteudo.length >= 10).length === 0 ? (
           <div className="bg-white border border-slate-200 rounded-[20px] p-8 text-center text-slate-500 text-sm italic">
             Nenhum conteúdo com texto suficiente encontrado.<br/>
             Adicione treinamentos ou documentos na Base de Conhecimento.
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {fontes.filter(f => f.conteudo && f.conteudo.length >= 50).map(fonte => {
+            {fontes.filter(f => f.conteudo && f.conteudo.length >= 10).map(fonte => {
               const bloqueio = verificaBloqueio(fonte.id);
               const aprovado = jaAprovado(fonte.id);
               const ultimoResult = resultados.find(r => r.fonteId === fonte.id);
