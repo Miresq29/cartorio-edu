@@ -111,14 +111,16 @@ const ExamesView: React.FC = () => {
     // A descrição sozinha costuma ser curta/vazia (é só um link de vídeo/áudio), então
     // junta categoria e trilha associada para dar mais contexto à IA gerar as questões.
     const uRepositorio = onSnapshot(query(collection(db, 'repositorio'), where('tenantIds', 'array-contains-any', tenantFilter)), snap => {
-      const novos = snap.docs.map(d => {
-        const data = d.data();
-        const conteudo = [data.titulo, data.categoria, data.trilhaTitulo, data.descricao].filter(Boolean).join('\n');
-        return {
-          id: d.id, titulo: data.titulo || 'Sem título', conteudo, tipo: 'video' as const,
-          cargaHoraria: data.duracaoMin ? Math.max(1, Math.round(data.duracaoMin / 60)) : undefined,
-        };
-      });
+      const novos = snap.docs
+        .filter(d => d.data().ativo !== false) // itens "removidos" (soft delete) nao viram opcao de exame
+        .map(d => {
+          const data = d.data();
+          const conteudo = [data.titulo, data.categoria, data.trilhaTitulo, data.descricao].filter(Boolean).join('\n');
+          return {
+            id: d.id, titulo: data.titulo || 'Sem título', conteudo, tipo: 'video' as const,
+            cargaHoraria: data.duracaoMin ? Math.max(1, Math.round(data.duracaoMin / 60)) : undefined,
+          };
+        });
       const filtered = allFontes.filter(f => f.tipo !== 'video');
       allFontes.splice(0, allFontes.length, ...filtered, ...novos);
       setFontes([...allFontes]);
