@@ -23,11 +23,37 @@ interface TrilhaProg  { id:string; userId:string; userName:string; trilhaId:stri
 interface Trilha      { id:string; titulo:string; descricao:string; icone:string; cor:string; modulos:any[]; tenantId:string; }
 interface UserData    { id:string; name:string; cargo?:string; role:string; tenantId:string; }
 interface Certificado { id:string; colaboradorNome:string; trilhaTitulo:string; notaFinal:number; emitidoEm:any; tenantId:string; }
-interface ExameResultado { id:string; userId:string; fonteTitulo:string; score:number; aprovado:boolean; createdAt:any; tenantId?:string; }
+interface ExameResultado { id:string; userId:string; fonteId?:string; fonteTitulo:string; score:number; aprovado:boolean; createdAt:any; proximaTentativa?:any; tenantId?:string; }
+interface Pendencia { userId:string; fonteTitulo:string; score:number; diasDesdeLiberacao:number; atrasado:boolean; }
 
 function pct(a:number,b:number){ return b===0?0:Math.round((a/b)*100); }
 function getMonth(ts:any){ if(!ts)return ''; const d=ts?.toDate?ts.toDate():new Date(ts); return d.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'}); }
 function fmtDate(ts:any){ if(!ts)return '–'; const d=ts?.toDate?ts.toDate():new Date(ts); return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}); }
+
+// Reprovados com a prova ja liberada para nova tentativa (ou ja atrasados ha 10+ dias
+// sem refazer) — so considera a tentativa MAIS RECENTE de cada par usuario+fonte, senao
+// uma reprovacao antiga ja superada por um reexame volta a aparecer como pendencia.
+function calcPendencias(exames:ExameResultado[]):Pendencia[] {
+  const porChave = new Map<string, ExameResultado>();
+  exames.forEach(e=>{
+    if(!e.userId||!e.fonteId) return;
+    const chave = `${e.userId}_${e.fonteId}`;
+    const atual = porChave.get(chave);
+    const tAtual = atual?.createdAt?.toMillis?.() ?? 0;
+    const tNovo = e.createdAt?.toMillis?.() ?? 0;
+    if(!atual||tNovo>tAtual) porChave.set(chave,e);
+  });
+  const agora = Date.now();
+  const resultado:Pendencia[] = [];
+  porChave.forEach(e=>{
+    if(e.aprovado!==false || !e.proximaTentativa) return;
+    const liberadoEm = e.proximaTentativa.toDate ? e.proximaTentativa.toDate() : new Date(e.proximaTentativa);
+    if(agora < liberadoEm.getTime()) return;
+    const dias = Math.floor((agora-liberadoEm.getTime())/86_400_000);
+    resultado.push({ userId:e.userId, fonteTitulo:e.fonteTitulo, score:e.score, diasDesdeLiberacao:dias, atrasado: dias>=10 });
+  });
+  return resultado;
+}
 
 const Tip:React.FC<any> = ({active,payload,label}) => {
   if(!active||!payload?.length) return null;
@@ -81,10 +107,11 @@ const CardHeader:React.FC<{title:string;charts:CT[];active:CT;onChange:(t:CT)=>v
 );
 
 // ── COLAB DASHBOARD ───────────────────────────────────────────────────────────
-const ColabDashboard:React.FC<{trilhas:Trilha[];progresso:TrilhaProg[];quizResults:QuizResult[];certificados:Certificado[];userName:string;userId:string}> = ({trilhas,progresso,quizResults,certificados,userName,userId}) => {
+const ColabDashboard:React.FC<{trilhas:Trilha[];progresso:TrilhaProg[];quizResults:QuizResult[];certificados:Certificado[];exames:ExameResultado[];userName:string;userId:string}> = ({trilhas,progresso,quizResults,certificados,exames,userName,userId}) => {
   const myProg  = progresso.filter(p=>p.userId===userId||p.userName===userName);
   const myRes   = quizResults.filter(r=>r.userId===userId||r.colaborador===userName);
   const myCerts = certificados.filter(c=>c.colaboradorNome===userName);
+  const minhasPendencias = useMemo(()=>calcPendencias(exames.filter(e=>e.userId===userId)),[exames,userId]);
   const totalMods = trilhas.reduce((a,t)=>a+(t.modulos?.length??0),0);
   const doneMods  = myProg.filter(p=>p.concluido).length;
   const aprovados = myRes.filter(r=>r.aprovado).length;
@@ -124,6 +151,23 @@ const ColabDashboard:React.FC<{trilhas:Trilha[];progresso:TrilhaProg[];quizResul
 
   return (
     <div style={{display:'flex',flexDirection:'column',gap:20}}>
+      {minhasPendencias.length>0 && (
+        <div style={{display:'flex',flexDirection:'column',gap:8}}>
+          {minhasPendencias.map((p,i)=>(
+            <div key={i} style={{display:'flex',alignItems:'center',gap:12,background:p.atrasado?'#fee2e2':'#fef3c7',border:`1px solid ${p.atrasado?RED:AMBER}`,borderRadius:14,padding:'14px 18px'}}>
+              <i className={'fa-solid '+(p.atrasado?'fa-triangle-exclamation':'fa-rotate-right')} style={{color:p.atrasado?RED:AMBER,fontSize:18,flexShrink:0}}></i>
+              <div style={{flex:1}}>
+                <p style={{fontSize:12,fontWeight:900,color:NAVY}}>
+                  {p.atrasado
+                    ? `Prova "${p.fonteTitulo}" pendente há ${p.diasDesdeLiberacao} dias`
+                    : `Prova "${p.fonteTitulo}" já liberada para nova tentativa`}
+                </p>
+                <p style={{fontSize:11,color:'#5A6E8A'}}>Última nota: {p.score}% · Refaça a prova em Exames IA.</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
       <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:16}}>
         <KPI label="Modulos" value={`${doneMods}/${totalMods}`} sub={`${gPct}% do programa`} icon="fa-book-open" color={GOLD} />
         <KPI label="Aprovacoes" value={aprovados} sub={`de ${myRes.length} testes`} icon="fa-circle-check" color={GREEN} />
@@ -228,8 +272,9 @@ const ColabDashboard:React.FC<{trilhas:Trilha[];progresso:TrilhaProg[];quizResul
 };
 
 // ── ADMIN DASHBOARD ───────────────────────────────────────────────────────────
-const AdminDashboard:React.FC<{trilhas:Trilha[];progresso:TrilhaProg[];quizResults:QuizResult[];usuarios:UserData[];certificados:Certificado[];tenantId:string}> = ({trilhas,progresso,quizResults,usuarios,certificados}) => {
+const AdminDashboard:React.FC<{trilhas:Trilha[];progresso:TrilhaProg[];quizResults:QuizResult[];usuarios:UserData[];certificados:Certificado[];exames:ExameResultado[];tenantId:string}> = ({trilhas,progresso,quizResults,usuarios,certificados,exames}) => {
   const colab = usuarios.filter(u=>!['SUPERADMIN','gestor'].includes(u.role));
+  const pendencias = useMemo(()=>calcPendencias(exames).map(p=>({...p,nome:usuarios.find(u=>u.id===p.userId)?.name||'–'})),[exames,usuarios]);
   const allPass = quizResults.filter(r=>r.aprovado).length;
   const taxaAprov = pct(allPass,quizResults.length);
   const mediaGeral = quizResults.length?Math.round(quizResults.reduce((a,r)=>a+r.nota,0)/quizResults.length):0;
@@ -271,6 +316,25 @@ const AdminDashboard:React.FC<{trilhas:Trilha[];progresso:TrilhaProg[];quizResul
 
   return (
     <div style={{display:'flex',flexDirection:'column',gap:20}}>
+      {pendencias.length>0 && (
+        <div style={card}>
+          <p style={{fontSize:11,fontWeight:900,color:'#8A9BB0',textTransform:'uppercase',letterSpacing:'0.12em',marginBottom:12}}>
+            <i className="fa-solid fa-triangle-exclamation" style={{color:AMBER,marginRight:6}}></i>
+            Pendências de Reexame ({pendencias.length})
+          </p>
+          <div style={{display:'flex',flexDirection:'column',gap:6}}>
+            {pendencias.map((p,i)=>(
+              <div key={i} style={{display:'flex',alignItems:'center',gap:10,background:p.atrasado?'#fee2e2':'#fef3c7',borderRadius:10,padding:'10px 14px'}}>
+                <i className={'fa-solid '+(p.atrasado?'fa-circle-exclamation':'fa-rotate-right')} style={{color:p.atrasado?RED:AMBER,fontSize:13,flexShrink:0}}></i>
+                <div style={{flex:1,minWidth:0}}>
+                  <p style={{fontSize:12,fontWeight:700,color:NAVY}}>{p.nome} — {p.fonteTitulo}</p>
+                  <p style={{fontSize:10,color:'#5A6E8A'}}>Última nota: {p.score}% · {p.atrasado?`${p.diasDesdeLiberacao} dias sem refazer`:'Liberado para nova tentativa'}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:16}}>
         <KPI label="Colaboradores" value={colab.length} sub="cadastrados" icon="fa-users" color={GOLD}/>
         <KPI label="Taxa Aprovacao" value={`${taxaAprov}%`} sub={`${allPass}/${quizResults.length} testes`} icon="fa-circle-check" color={GREEN}/>
@@ -436,8 +500,8 @@ const DashboardView:React.FC = () => {
           </div>
         </div>
         {isGestor
-          ? <AdminDashboard trilhas={trilhas} progresso={progresso} quizResults={quizResults} usuarios={usuarios} certificados={certificados} tenantId={tenantId}/>
-          : <ColabDashboard trilhas={trilhas} progresso={progresso} quizResults={quizResults} certificados={certificados} userName={user.name} userId={user.id}/>
+          ? <AdminDashboard trilhas={trilhas} progresso={progresso} quizResults={quizResults} usuarios={usuarios} certificados={certificados} exames={exames} tenantId={tenantId}/>
+          : <ColabDashboard trilhas={trilhas} progresso={progresso} quizResults={quizResults} certificados={certificados} exames={exames} userName={user.name} userId={user.id}/>
         }
       </div>
     </div>

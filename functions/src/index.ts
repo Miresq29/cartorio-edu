@@ -3,7 +3,7 @@ import * as admin from "firebase-admin";
 
 admin.initializeApp();
 
-export { notificarComunicado, notificarTrilha, verificarExpiracoes, testarEnvioEmail, notificarReforco } from "./email";
+export { notificarComunicado, notificarTrilha, verificarExpiracoes, testarEnvioEmail, notificarReforco, verificarReexamesPendentes } from "./email";
 export { notificarSimulacaoPhishing, phishClick } from "./phishing";
 export { verificarDemoExpirada } from "./demo";
 

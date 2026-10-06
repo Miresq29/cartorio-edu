@@ -255,6 +255,80 @@ export const verificarExpiracoes = onSchedule(
   }
 );
 
+// ─── Agendado diário: reprovações com prova já liberada para nova tentativa ──
+// 1º lembrete assim que a prova é liberada de novo (DIAS_BLOQUEIO, hoje 5 dias, já
+// definido no momento da reprovação em ExamesView); 2º lembrete 10 dias depois
+// dessa liberação, caso a pessoa ainda não tenha refeito a prova.
+const DIAS_LEMBRETE_ATRASO = 10;
+
+export const verificarReexamesPendentes = onSchedule(
+  { schedule: "every day 09:00", timeZone: "America/Sao_Paulo", secrets: [GMAIL_APP_PASSWORD] },
+  async () => {
+    const user = GMAIL_USER;
+    const pass = GMAIL_APP_PASSWORD.value();
+
+    // Limita a janela pra nao varrer o historico inteiro todo dia — uma reprovacao
+    // relevante pra lembrete sempre tem uma tentativa (ou falta dela) recente.
+    const desde = admin.firestore.Timestamp.fromMillis(Date.now() - 90 * 86_400_000);
+    const snap = await db().collection("examesResultados").where("createdAt", ">=", desde).get();
+
+    // So interessa a tentativa MAIS RECENTE de cada par usuario+fonte — se a pessoa
+    // já refez (passando ou não) depois da reprovação que gerou o bloqueio, aquela
+    // reprovação antiga não deve mais gerar lembrete.
+    const porChave = new Map<string, FirebaseFirestore.QueryDocumentSnapshot>();
+    for (const doc of snap.docs) {
+      const data = doc.data();
+      if (!data.userId || !data.fonteId) continue;
+      const chave = `${data.userId}_${data.fonteId}`;
+      const atual = porChave.get(chave);
+      const tAtual = atual?.data().createdAt?.toMillis?.() ?? 0;
+      const tNovo = data.createdAt?.toMillis?.() ?? 0;
+      if (!atual || tNovo > tAtual) porChave.set(chave, doc);
+    }
+
+    const agora = Date.now();
+    for (const doc of porChave.values()) {
+      const data = doc.data();
+      if (data.aprovado !== false || !data.proximaTentativa) continue; // aprovado na ultima tentativa, ou sem bloqueio registrado
+
+      const liberadoEm = data.proximaTentativa.toDate ? data.proximaTentativa.toDate() : new Date(data.proximaTentativa);
+      if (agora < liberadoEm.getTime()) continue; // ainda dentro do bloqueio — nada a avisar
+
+      const userSnap = await db().collection("users").doc(data.userId).get();
+      const userData = userSnap.data();
+      if (!userSnap.exists || !userData?.email) continue;
+
+      const diasDesdeLiberacao = Math.floor((agora - liberadoEm.getTime()) / 86_400_000);
+
+      if (!data.lembreteLiberacaoEnviado) {
+        const assunto = `Prova liberada novamente: ${data.fonteTitulo || "seu treinamento"}`;
+        const result = await sendEmail(user, pass, userData.email, assunto,
+          htmlAviso("Prova liberada para nova tentativa",
+            `Você já pode refazer a prova "${data.fonteTitulo}" (última nota: ${data.score}%).\n\nAcesse a plataforma MJ Consultoria e tente novamente.`,
+            "Aviso automático da plataforma MJ Consultoria."));
+        await logEmailEvidencia({
+          tenantId: data.tenantId || userData.tenantId || "", destinatarioEmail: userData.email, destinatarioNome: userData.name || userData.email,
+          tipoNotificacao: "reexame_liberado", assunto, ok: result.ok, erro: result.error, messageId: result.id, relatedId: doc.id,
+        });
+        await doc.ref.update({ lembreteLiberacaoEnviado: true, lembreteLiberacaoEnviadoEm: admin.firestore.FieldValue.serverTimestamp() });
+      }
+
+      if (diasDesdeLiberacao >= DIAS_LEMBRETE_ATRASO && !data.lembreteAtrasoEnviado) {
+        const assunto = `Pendente: prova "${data.fonteTitulo || ""}" ainda não foi refeita`;
+        const result = await sendEmail(user, pass, userData.email, assunto,
+          htmlAviso("Prova pendente há mais de 10 dias",
+            `Já se passaram ${diasDesdeLiberacao} dias desde que a prova "${data.fonteTitulo}" foi liberada para nova tentativa e você ainda não refez. Regularize o quanto antes.`,
+            "Aviso automático da plataforma MJ Consultoria."));
+        await logEmailEvidencia({
+          tenantId: data.tenantId || userData.tenantId || "", destinatarioEmail: userData.email, destinatarioNome: userData.name || userData.email,
+          tipoNotificacao: "reexame_atrasado", assunto, ok: result.ok, erro: result.error, messageId: result.id, relatedId: doc.id,
+        });
+        await doc.ref.update({ lembreteAtrasoEnviado: true, lembreteAtrasoEnviadoEm: admin.firestore.FieldValue.serverTimestamp() });
+      }
+    }
+  }
+);
+
 // ─── Callable de teste: SUPERADMIN dispara um e-mail de teste pra si mesmo ──
 export const testarEnvioEmail = onCall({ secrets: [GMAIL_APP_PASSWORD] }, async (request) => {
   if (!request.auth) throw new HttpsError("unauthenticated", "Login necessário.");
