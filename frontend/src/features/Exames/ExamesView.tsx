@@ -68,6 +68,10 @@ const ExamesView: React.FC = () => {
   /* resultados anteriores do usuário */
   const [resultados, setResultados] = useState<ExameResultado[]>([]);
 
+  /* o que o colaborador já assistiu — controla se a prova pode ser liberada */
+  const [repoVisto, setRepoVisto] = useState<Record<string, boolean>>({});
+  const [trilhaCompleta, setTrilhaCompleta] = useState<Record<string, boolean>>({});
+
   /* estado do exame */
   const [fase, setFase] = useState<Fase>('escolher');
   const [fonteEscolhida, setFonteEscolhida] = useState<FonteConteudo | null>(null);
@@ -171,6 +175,39 @@ const ExamesView: React.FC = () => {
     });
   }, [user?.id, tenantId]);
 
+  /* ── carrega o que o colaborador já assistiu (repositório e trilhas) ───── */
+  useEffect(() => {
+    if (!user?.id) return;
+    const uRepo = onSnapshot(
+      query(collection(db, 'repositorioProgresso'), where('userId', '==', user.id), where('tenantId', '==', tenantId)),
+      snap => {
+        const mapa: Record<string, boolean> = {};
+        snap.docs.forEach(d => { if (d.data().visto) mapa[d.data().midiaId] = true; });
+        setRepoVisto(mapa);
+      }
+    );
+    const uTrilha = onSnapshot(
+      query(collection(db, 'trilhasProgresso'), where('userId', '==', user.id), where('tenantId', '==', tenantId)),
+      snap => {
+        const mapa: Record<string, boolean> = {};
+        snap.docs.forEach(d => {
+          const data = d.data();
+          if (data.concluida || data.percentualObrigatorios === 100) mapa[data.trilhaId] = true;
+        });
+        setTrilhaCompleta(mapa);
+      }
+    );
+    return () => { uRepo(); uTrilha(); };
+  }, [user?.id, tenantId]);
+
+  // Treinamento/Base de Conhecimento sao so texto, sem nenhum "marcar como visto" na
+  // plataforma — nao tem como saber se a pessoa leu, entao nao da pra travar por eles.
+  const assistiuFonte = useCallback((fonte: FonteConteudo): boolean => {
+    if (fonte.tipo === 'video') return !!repoVisto[fonte.id];
+    if (fonte.tipo === 'trilha') return !!trilhaCompleta[fonte.id];
+    return true;
+  }, [repoVisto, trilhaCompleta]);
+
   /* ── verifica bloqueio para uma fonte ───────────────────── */
   const verificaBloqueio = useCallback((fonteId: string) => {
     const ultimo = resultados.find(r => r.fonteId === fonteId && !r.aprovado);
@@ -191,6 +228,11 @@ const ExamesView: React.FC = () => {
     const bloqueio = verificaBloqueio(fonteEscolhida.id);
     if (bloqueio) {
       showToast(`Você está bloqueado por mais ${bloqueio} dia(s). Aguarde antes de tentar novamente.`, 'error');
+      return;
+    }
+
+    if (!assistiuFonte(fonteEscolhida)) {
+      showToast('Você ainda não assistiu esse treinamento por completo. Assista o conteúdo antes de fazer a prova.', 'error');
       return;
     }
 
@@ -564,12 +606,14 @@ const ExamesView: React.FC = () => {
               const aprovado = jaAprovado(fonte.id);
               const ultimoResult = resultados.find(r => r.fonteId === fonte.id);
               const selecionada = fonteEscolhida?.id === fonte.id;
+              const precisaAssistir = !bloqueio && !assistiuFonte(fonte);
+              const travada = !!bloqueio || precisaAssistir;
 
               return (
                 <div key={fonte.id}
-                  onClick={() => !bloqueio && setFonteEscolhida(selecionada ? null : fonte)}
+                  onClick={() => !travada && setFonteEscolhida(selecionada ? null : fonte)}
                   className={`bg-white border rounded-[20px] p-5 cursor-pointer transition-all space-y-3 ${
-                    bloqueio
+                    travada
                       ? 'border-slate-200 opacity-50 cursor-not-allowed'
                       : selecionada
                         ? 'border-blue-500 bg-blue-500/10'
@@ -607,6 +651,11 @@ const ExamesView: React.FC = () => {
                     <div className="flex items-center gap-2 text-[10px] text-red-400 font-black">
                       <i className="fa-solid fa-lock"></i>
                       Disponível em {bloqueio} dia(s)
+                    </div>
+                  ) : precisaAssistir ? (
+                    <div className="flex items-center gap-2 text-[10px] text-amber-500 font-black">
+                      <i className="fa-solid fa-triangle-exclamation"></i>
+                      {fonte.tipo === 'trilha' ? 'Conclua a trilha' : 'Assista ao conteúdo'} antes de fazer a prova
                     </div>
                   ) : aprovado ? (
                     <div className="flex items-center gap-2 text-[10px] text-emerald-400 font-black">

@@ -166,6 +166,7 @@ const RelatoriosView: React.FC = () => {
   const [tab, setTab] = useState<Tab>('visao_geral');
   const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
   const [progresso, setProgresso] = useState<TrilhaProgresso[]>([]);
+  const [repositorioProgresso, setRepositorioProgresso] = useState<{ userId: string; visto: boolean }[]>([]);
   const [usuarios, setUsuarios] = useState<UserData[]>([]);
   const [certificados, setCertificados] = useState<Certificado[]>([]);
   const [exames, setExames] = useState<ExameResultado[]>([]);
@@ -188,6 +189,12 @@ const RelatoriosView: React.FC = () => {
     const q2 = query(collection(db, 'trilhasProgresso'), where('tenantId', '==', tenantId));
     const u2 = onSnapshot(q2, s => setProgresso(s.docs.map(d => ({ id: d.id, ...d.data() } as TrilhaProgresso))));
 
+    // Assistir um conteudo direto no Repositorio (sem passar por uma trilha) tambem conta
+    // como "participou de treinamento" — sem isso, colaboradores que so assistem video/audio
+    // direto no Repositorio apareciam como "sem nenhuma atividade" mesmo tendo assistido.
+    const q2b = query(collection(db, 'repositorioProgresso'), where('tenantId', '==', tenantId));
+    const u2b = onSnapshot(q2b, s => setRepositorioProgresso(s.docs.map(d => d.data() as { userId: string; visto: boolean })));
+
     const q3 = query(collection(db, 'users'), where('tenantId', '==', tenantId));
     const u3 = onSnapshot(q3, s => setUsuarios(s.docs.map(d => ({ id: d.id, ...d.data() } as UserData))));
 
@@ -209,7 +216,7 @@ const RelatoriosView: React.FC = () => {
       return { id: d.id, titulo: data.titulo || 'Sem título', tipo: 'treinamento', instrutor: data.instrutor, formato: data.formato, cargaHoraria: data.cargaHoraria, createdAt: data.createdAt } as CatalogoTreinamento;
     })));
 
-    return () => { u1(); u2(); u3(); u4(); u5(); u6(); u7(); };
+    return () => { u1(); u2(); u2b(); u3(); u4(); u5(); u6(); u7(); };
   }, [tenantId]);
 
   // Filtrar por período
@@ -342,7 +349,8 @@ const RelatoriosView: React.FC = () => {
   const coberturaISO = useMemo(() => {
     const linhas = colab.map(u => {
       const progUser = progresso.filter(p => p.userId === u.id);
-      const iniciouTreinamento = progUser.length > 0;
+      const assistiuRepositorio = repositorioProgresso.some(r => r.userId === u.id && r.visto);
+      const iniciouTreinamento = progUser.length > 0 || assistiuRepositorio;
       const testesUser = filteredResults.filter(r => r.userId === u.id || r.colaborador === u.name);
       const examesUser = filteredExames.filter(e => e.userId === u.id);
       const totalAvaliacoes = testesUser.length + examesUser.length;
@@ -363,7 +371,7 @@ const RelatoriosView: React.FC = () => {
     const semAvaliacao = linhas.filter(l => l.status === 'sem_avaliacao').length;
     const semAtividade = linhas.filter(l => l.status === 'sem_atividade').length;
     return { linhas, totalColab, participaram, avaliados, aprovados, reprovados, semAvaliacao, semAtividade };
-  }, [colab, progresso, filteredResults, filteredExames]);
+  }, [colab, progresso, repositorioProgresso, filteredResults, filteredExames]);
 
   const exportCSVCobertura = () => {
     const rows = ['Colaborador;Cargo;Iniciou Treinamento;Fez Avaliacao;Situacao'];
