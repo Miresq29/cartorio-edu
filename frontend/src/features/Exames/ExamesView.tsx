@@ -4,7 +4,7 @@ import { useToast } from '../../context/ToastContext';
 import { db } from '../../services/firebase';
 import {
   collection, onSnapshot, query, where, addDoc, serverTimestamp,
-  Timestamp,
+  Timestamp, doc, setDoc,
 } from 'firebase/firestore';
 import { GeminiService, QuestaoExame } from '../../services/geminiService';
 
@@ -71,6 +71,9 @@ const ExamesView: React.FC = () => {
   /* o que o colaborador já assistiu — controla se a prova pode ser liberada */
   const [repoVisto, setRepoVisto] = useState<Record<string, boolean>>({});
   const [trilhaCompleta, setTrilhaCompleta] = useState<Record<string, boolean>>({});
+  const [leituraLida, setLeituraLida] = useState<Record<string, boolean>>({});
+  const [modalLeitura, setModalLeitura] = useState<FonteConteudo | null>(null);
+  const [confirmandoLeitura, setConfirmandoLeitura] = useState(false);
 
   /* estado do exame */
   const [fase, setFase] = useState<Fase>('escolher');
@@ -197,16 +200,41 @@ const ExamesView: React.FC = () => {
         setTrilhaCompleta(mapa);
       }
     );
-    return () => { uRepo(); uTrilha(); };
+    const uLeitura = onSnapshot(
+      query(collection(db, 'leituraProgresso'), where('userId', '==', user.id), where('tenantId', '==', tenantId)),
+      snap => {
+        const mapa: Record<string, boolean> = {};
+        snap.docs.forEach(d => { if (d.data().lido) mapa[d.data().fonteId] = true; });
+        setLeituraLida(mapa);
+      }
+    );
+    return () => { uRepo(); uTrilha(); uLeitura(); };
   }, [user?.id, tenantId]);
 
-  // Treinamento/Base de Conhecimento sao so texto, sem nenhum "marcar como visto" na
-  // plataforma — nao tem como saber se a pessoa leu, entao nao da pra travar por eles.
   const assistiuFonte = useCallback((fonte: FonteConteudo): boolean => {
     if (fonte.tipo === 'video') return !!repoVisto[fonte.id];
     if (fonte.tipo === 'trilha') return !!trilhaCompleta[fonte.id];
-    return true;
-  }, [repoVisto, trilhaCompleta]);
+    return !!leituraLida[fonte.id];
+  }, [repoVisto, trilhaCompleta, leituraLida]);
+
+  /* ── confirma leitura de treinamento/base de conhecimento ───────────── */
+  const confirmarLeitura = async (fonte: FonteConteudo) => {
+    if (!user?.id || confirmandoLeitura) return;
+    setConfirmandoLeitura(true);
+    try {
+      const key = `${user.id}_${fonte.id}`;
+      await setDoc(doc(db, 'leituraProgresso', key), {
+        userId: user.id, fonteId: fonte.id, fonteTitulo: fonte.titulo, tipo: fonte.tipo,
+        tenantId, lido: true, lidoEm: serverTimestamp(),
+      }, { merge: true });
+      setModalLeitura(null);
+      showToast('Leitura confirmada! A prova já está liberada.', 'success');
+    } catch {
+      showToast('Não foi possível confirmar a leitura. Tente novamente.', 'error');
+    } finally {
+      setConfirmandoLeitura(false);
+    }
+  };
 
   /* ── verifica bloqueio para uma fonte ───────────────────── */
   const verificaBloqueio = useCallback((fonteId: string) => {
@@ -232,7 +260,10 @@ const ExamesView: React.FC = () => {
     }
 
     if (!assistiuFonte(fonteEscolhida)) {
-      showToast('Você ainda não assistiu esse treinamento por completo. Assista o conteúdo antes de fazer a prova.', 'error');
+      const msg = fonteEscolhida.tipo === 'treinamento' || fonteEscolhida.tipo === 'knowledgeBase'
+        ? 'Você ainda não leu esse conteúdo por completo. Leia o conteúdo antes de fazer a prova.'
+        : 'Você ainda não assistiu esse treinamento por completo. Assista o conteúdo antes de fazer a prova.';
+      showToast(msg, 'error');
       return;
     }
 
@@ -607,11 +638,16 @@ const ExamesView: React.FC = () => {
               const ultimoResult = resultados.find(r => r.fonteId === fonte.id);
               const selecionada = fonteEscolhida?.id === fonte.id;
               const precisaAssistir = !bloqueio && !assistiuFonte(fonte);
-              const travada = !!bloqueio || precisaAssistir;
+              const podeLer = fonte.tipo === 'treinamento' || fonte.tipo === 'knowledgeBase';
+              const travada = !!bloqueio || (precisaAssistir && !podeLer);
 
               return (
                 <div key={fonte.id}
-                  onClick={() => !travada && setFonteEscolhida(selecionada ? null : fonte)}
+                  onClick={() => {
+                    if (travada) return;
+                    if (precisaAssistir && podeLer) { setModalLeitura(fonte); return; }
+                    setFonteEscolhida(selecionada ? null : fonte);
+                  }}
                   className={`bg-white border rounded-[20px] p-5 cursor-pointer transition-all space-y-3 ${
                     travada
                       ? 'border-slate-200 opacity-50 cursor-not-allowed'
@@ -655,7 +691,9 @@ const ExamesView: React.FC = () => {
                   ) : precisaAssistir ? (
                     <div className="flex items-center gap-2 text-[10px] text-amber-500 font-black">
                       <i className="fa-solid fa-triangle-exclamation"></i>
-                      {fonte.tipo === 'trilha' ? 'Conclua a trilha' : 'Assista ao conteúdo'} antes de fazer a prova
+                      {fonte.tipo === 'trilha' ? 'Conclua a trilha antes de fazer a prova'
+                        : podeLer ? 'Leia o conteúdo para liberar a prova'
+                        : 'Assista ao conteúdo antes de fazer a prova'}
                     </div>
                   ) : aprovado ? (
                     <div className="flex items-center gap-2 text-[10px] text-emerald-400 font-black">
@@ -730,6 +768,36 @@ const ExamesView: React.FC = () => {
                 <p className={`text-sm font-black ${r.aprovado ? 'text-emerald-400' : 'text-red-400'}`}>{r.score}%</p>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* modal de leitura — confirma leitura de treinamento/base de conhecimento */}
+      {modalLeitura && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/70 backdrop-blur-sm">
+          <div className="bg-white border border-slate-200 w-full max-w-3xl max-h-[85vh] rounded-[32px] flex flex-col overflow-hidden shadow-2xl">
+            <header className="p-6 border-b border-slate-200 flex justify-between items-start bg-slate-50 flex-shrink-0">
+              <div>
+                <p className="text-[9px] text-slate-500 uppercase tracking-widest font-black mb-1">
+                  {modalLeitura.tipo === 'treinamento' ? 'Treinamento' : 'Base de Conhecimento'}
+                </p>
+                <h3 className="text-navy font-black uppercase italic tracking-tight">{modalLeitura.titulo}</h3>
+              </div>
+              <button onClick={() => setModalLeitura(null)}
+                className="w-10 h-10 rounded-full bg-slate-200 text-navy flex items-center justify-center hover:bg-red-500 hover:text-white transition-all flex-shrink-0">
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </header>
+            <div className="flex-1 overflow-y-auto p-8 bg-white">
+              <pre className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap font-sans">{modalLeitura.conteudo}</pre>
+            </div>
+            <div className="p-5 border-t border-slate-200 bg-slate-50 flex-shrink-0 flex justify-end">
+              <button onClick={() => confirmarLeitura(modalLeitura)} disabled={confirmandoLeitura}
+                className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-black uppercase tracking-widest rounded-xl transition-all text-xs">
+                <i className="fa-solid fa-check mr-2"></i>
+                {confirmandoLeitura ? 'Confirmando...' : 'Confirmo que li este conteúdo'}
+              </button>
+            </div>
           </div>
         </div>
       )}

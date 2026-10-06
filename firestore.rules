@@ -243,6 +243,11 @@ service cloud.firestore {
       allow create, update: if canWriteOwnPrivate();
       allow delete: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
     }
+    match /leituraProgresso/{docId} {
+      allow read: if canReadPrivate();
+      allow create, update: if canWriteOwnPrivate();
+      allow delete: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
+    }
     match /certificados/{docId} {
       allow read: if canReadPrivate();
       // Emissao de certificado exige gestor/admin — evita autoemissao de aprovacao sem concluir o treinamento
