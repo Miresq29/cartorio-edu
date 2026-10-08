@@ -40,7 +40,10 @@ const KnowledgeBase: React.FC = () => {
   const canManage = isSuperAdmin || user?.role === 'gestor' || user?.role === 'curador';
   const podeDistribuir = isSuperAdmin || user?.role === 'curador';
   const { podeUsar: podeCriar } = useRecursoTenant('criarConteudoHabilitado');
-  const [tenantIdsForm, setTenantIdsForm] = useState<string[]>([tenantId]);
+  // Conteúdo criado pela equipe MJ (SUPERADMIN/curador) começa sem nenhum cartório marcado —
+  // fica só com a equipe MJ até alguém decidir direcionar para clientes específicos. Quem
+  // cria pelo próprio cartório (gestor/admin) continua vendo logo seu próprio conteúdo.
+  const [tenantIdsForm, setTenantIdsForm] = useState<string[]>(podeDistribuir ? [] : [tenantId]);
 
   useEffect(() => {
     if (!user) return;

@@ -396,7 +396,10 @@ const FormMidia: React.FC<{
   });
   const [linkErro, setLinkErro] = useState('');
   const [saving, setSaving] = useState(false);
-  const [tenantIdsForm, setTenantIdsForm] = useState<string[]>([ownTenantId]);
+  // Conteúdo criado pela equipe MJ (SUPERADMIN/curador) começa sem nenhum cartório marcado —
+  // fica só com a equipe MJ até alguém decidir direcionar para clientes específicos. Quem
+  // cria pelo próprio cartório (gestor/admin) continua vendo logo seu próprio conteúdo.
+  const [tenantIdsForm, setTenantIdsForm] = useState<string[]>(podeDistribuir ? [] : [ownTenantId]);
 
   // Trilha a que este conteúdo pertence — quem distribui (SUPERADMIN/curador) escolhe uma
   // trilha existente ou cria uma nova aqui mesmo, em vez de ir depois em Trilhas vincular
@@ -435,10 +438,10 @@ const FormMidia: React.FC<{
     } else {
       setTipo(podeUsarYoutube ? 'youtube' : 'audio');
       setForm({ titulo: '', descricao: '', categoria: 'onboarding', trilhaTitulo: '', duracaoMin: 5, link: '' });
-      setTenantIdsForm([ownTenantId]);
+      setTenantIdsForm(podeDistribuir ? [] : [ownTenantId]);
       setNovaTrilhaNome('');
     }
-  }, [editando, ownTenantId, podeUsarYoutube]);
+  }, [editando, ownTenantId, podeUsarYoutube, podeDistribuir]);
 
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
 

@@ -108,7 +108,9 @@ const SimulacaoPhishingView: React.FC = () => {
   // destravado. Ao "entrar" num cartório específico (activeTenantId), deve ver
   // exatamente o que aquele cliente vê — inclusive travado, para conferir a config.
   const superAdminGlobal = isSuperAdmin && !state.activeTenantId;
-  const [tenantIdsForm, setTenantIdsForm] = useState<string[]>([tenantId]);
+  // Conteúdo criado pela equipe MJ (SUPERADMIN) começa sem nenhum cartório marcado — fica só
+  // com a equipe MJ até alguém decidir direcionar para clientes específicos.
+  const [tenantIdsForm, setTenantIdsForm] = useState<string[]>(isSuperAdmin ? [] : [tenantId]);
 
   const [tab, setTab] = useState<'simulacoes' | 'analises'>('simulacoes');
   const [simulacoes, setSimulacoes] = useState<Simulacao[]>([]);

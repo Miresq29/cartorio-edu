@@ -748,7 +748,10 @@ const TrailsView: React.FC = () => {
   const isSuperAdmin = user.role === 'SUPERADMIN';
   const podeDistribuir = isSuperAdmin || user.role === 'curador';
   const { podeUsar: podeCriar } = useRecursoTenant('criarConteudoHabilitado');
-  const [tenantIdsForm, setTenantIdsForm] = useState<string[]>([tenantId]);
+  // Conteúdo criado pela equipe MJ (SUPERADMIN/curador) começa sem nenhum cartório marcado —
+  // fica só com a equipe MJ até alguém decidir direcionar para clientes específicos. Quem
+  // cria pelo próprio cartório (gestor/admin) continua vendo logo seu próprio conteúdo.
+  const [tenantIdsForm, setTenantIdsForm] = useState<string[]>(podeDistribuir ? [] : [tenantId]);
 
   const [tab, setTab] = useState<'minhas' | 'todas' | 'criar' | 'progresso'>(isGestor ? 'todas' : 'minhas');
   const [trilhas, setTrilhas] = useState<Trilha[]>([]);
@@ -804,7 +807,7 @@ const TrailsView: React.FC = () => {
     } else {
       setEditando(null);
       setForm({ titulo: '', descricao: '', perfis: [], modulos: [], ativa: true, oficial: false, notificarEmail: false, instrutor: '', formato: '', cargaHoraria: '' });
-      setTenantIdsForm([tenantId]);
+      setTenantIdsForm(podeDistribuir ? [] : [tenantId]);
     }
     setTab('criar');
   };

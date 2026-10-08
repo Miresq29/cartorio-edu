@@ -37,7 +37,10 @@ const BannersView: React.FC = () => {
   const isSuperAdmin = state.user?.role === 'SUPERADMIN';
   const podeDistribuir = isSuperAdmin || state.user?.role === 'curador';
   const { podeUsar: podeCriar } = useRecursoTenant('criarConteudoHabilitado');
-  const [tenantIdsForm, setTenantIdsForm] = useState<string[]>([tenantId]);
+  // Conteúdo criado pela equipe MJ (SUPERADMIN/curador) começa sem nenhum cartório marcado —
+  // fica só com a equipe MJ até alguém decidir direcionar para clientes específicos. Quem
+  // cria pelo próprio cartório (gestor/admin) continua vendo logo seu próprio conteúdo.
+  const [tenantIdsForm, setTenantIdsForm] = useState<string[]>(podeDistribuir ? [] : [tenantId]);
 
   const [materiais, setMateriais] = useState<Material[]>([]);
   const [filtroTipo, setFiltroTipo] = useState('');
