@@ -13,6 +13,7 @@ import { termos } from '../../utils/terminologia';
 import { useToast } from '../../context/ToastContext';
 import { useRecursoTenant } from '../../hooks/useRecursoTenant';
 import VisibilidadeCartorioPicker from '../../components/VisibilidadeCartorioPicker';
+import { loadYouTubeApi } from '../../utils/youtubeApi';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -107,19 +108,70 @@ function processarLink(url: string, tipo: MidiaTipo): { youtubeId?: string; driv
 
 const PlayerModal: React.FC<{
   midia: Midia;
+  jaConcluida: boolean;
   onClose: () => void;
-}> = ({ midia, onClose }) => {
+  onConcluir: () => void;
+}> = ({ midia, jaConcluida, onClose, onConcluir }) => {
   const tipo = TIPO_CONFIG[midia.tipo];
+  const concluidoRef = useRef(jaConcluida);
+  const [concluido, setConcluido] = useState(jaConcluida);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Dispara a conclusão no máximo uma vez por sessão do player.
+  const marcarConcluido = () => {
+    if (concluidoRef.current) return;
+    concluidoRef.current = true;
+    setConcluido(true);
+    onConcluir();
+  };
+
+  // YouTube: usa a IFrame Player API presa ao <iframe> já existente (que já tem
+  // enablejsapi=1) para saber de verdade quando o vídeo chega ao fim — sem isso só
+  // dava pra saber que a pessoa "abriu" o player, não que assistiu até o final.
+  useEffect(() => {
+    if (jaConcluida || midia.tipo !== 'youtube' || !midia.youtubeId) return;
+    let player: any;
+    let destruido = false;
+    loadYouTubeApi().then(YT => {
+      if (destruido || !iframeRef.current) return;
+      player = new YT.Player(iframeRef.current, {
+        events: {
+          onStateChange: (e: any) => { if (e.data === YT.PlayerState.ENDED) marcarConcluido(); },
+        },
+      });
+    });
+    return () => { destruido = true; player?.destroy?.(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [midia.id]);
+
+  // Áudio/vídeo hospedado no Drive não expõe nenhum evento de "terminou" pro player
+  // pai (iframe de outra origem) — a melhor aproximação possível é exigir que o
+  // player fique aberto pela duração cadastrada do conteúdo, pausando a contagem se
+  // a aba for pra segundo plano (evita "deixar tocando" escondido).
+  useEffect(() => {
+    if (jaConcluida || (midia.tipo !== 'audio' && midia.tipo !== 'mp4')) return;
+    const duracaoSeg = Math.max(60, (midia.duracaoMin || 1) * 60);
+    let acumulado = 0;
+    const intervalo = setInterval(() => {
+      if (document.visibilityState !== 'visible') return;
+      acumulado += 1;
+      if (acumulado >= duracaoSeg) marcarConcluido();
+    }, 1000);
+    return () => clearInterval(intervalo);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [midia.id]);
 
   const renderContent = () => {
     if (midia.tipo === 'youtube' && midia.youtubeId) {
       return (
         <div className="space-y-3">
           {/* sandbox sem allow-popups/allow-top-navigation: impede que o player abra o
-              YouTube em outra aba ou navegue a página para fora do vídeo selecionado. */}
+              YouTube em outra aba ou navegue a página para fora do vídeo selecionado.
+              enablejsapi=1 é o que permite detectar o fim real da reprodução. */}
           <div className="aspect-video rounded-2xl overflow-hidden shadow-2xl">
             <iframe
-              src={`https://www.youtube-nocookie.com/embed/${midia.youtubeId}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1`}
+              ref={iframeRef}
+              src={`https://www.youtube-nocookie.com/embed/${midia.youtubeId}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&enablejsapi=1`}
               className="w-full h-full"
               allow="autoplay; fullscreen"
               allowFullScreen
@@ -189,6 +241,16 @@ const PlayerModal: React.FC<{
           </button>
         </div>
         {renderContent()}
+        {!concluido ? (
+          <p className="text-[10px] text-amber-500 font-black uppercase tracking-widest text-center">
+            <i className="fa-solid fa-triangle-exclamation mr-1"></i>
+            Assista/ouça até o fim sem fechar — só assim este conteúdo libera a prova correspondente.
+          </p>
+        ) : (
+          <p className="text-[10px] text-emerald-500 font-black uppercase tracking-widest text-center">
+            <i className="fa-solid fa-circle-check mr-1"></i>Concluído — a prova já pode ser liberada.
+          </p>
+        )}
         {midia.descricao && (
           <p className="text-slate-500 text-sm leading-relaxed">{midia.descricao}</p>
         )}
@@ -562,8 +624,13 @@ const RepositorioView: React.FC = () => {
     });
   }, [user?.id, tenantId]);
 
-  const abrirPlayer = async (midia: Midia) => {
+  const abrirPlayer = (midia: Midia) => {
     setPlayerMidia(midia);
+  };
+
+  // Só grava "visto" quando o PlayerModal confirma que o conteúdo foi assistido/ouvido
+  // até o fim — abrir o player sozinho não basta mais pra liberar a prova.
+  const concluirMidia = async (midia: Midia) => {
     if (!user?.id) return;
     const key = `${user.id}_${midia.id}`;
     await setDoc(doc(db, 'repositorioProgresso', key), {
@@ -623,7 +690,12 @@ const RepositorioView: React.FC = () => {
 
       {/* Player Modal */}
       {playerMidia && (
-        <PlayerModal midia={playerMidia} onClose={() => setPlayerMidia(null)} />
+        <PlayerModal
+          midia={playerMidia}
+          jaConcluida={assistidas.has(playerMidia.id)}
+          onClose={() => setPlayerMidia(null)}
+          onConcluir={() => concluirMidia(playerMidia)}
+        />
       )}
 
       {/* Header */}

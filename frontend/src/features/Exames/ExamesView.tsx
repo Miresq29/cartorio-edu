@@ -4,7 +4,7 @@ import { useToast } from '../../context/ToastContext';
 import { db } from '../../services/firebase';
 import {
   collection, onSnapshot, query, where, addDoc, serverTimestamp,
-  Timestamp, doc, setDoc,
+  Timestamp, doc, setDoc, getDoc,
 } from 'firebase/firestore';
 import { GeminiService, QuestaoExame } from '../../services/geminiService';
 
@@ -74,6 +74,15 @@ const ExamesView: React.FC = () => {
   const [leituraLida, setLeituraLida] = useState<Record<string, boolean>>({});
   const [modalLeitura, setModalLeitura] = useState<FonteConteudo | null>(null);
   const [confirmandoLeitura, setConfirmandoLeitura] = useState(false);
+
+  /* nome da empresa/cartório do colaborador — vai impresso no certificado */
+  const [empresaNome, setEmpresaNome] = useState('');
+  useEffect(() => {
+    if (!tenantId) return;
+    getDoc(doc(db, 'tenants', tenantId)).then(snap => {
+      if (snap.exists()) setEmpresaNome(snap.data().name || snap.data().nome || tenantId);
+    }).catch(() => setEmpresaNome(tenantId));
+  }, [tenantId]);
 
   /* estado do exame */
   const [fase, setFase] = useState<Fase>('escolher');
@@ -359,6 +368,7 @@ const ExamesView: React.FC = () => {
       .tipo { font-size: 11px; letter-spacing: 5px; text-transform: uppercase; color: #c9a84c; margin-bottom: 34px; font-weight: 700; }
       .texto { font-size: 15px; color: #555; line-height: 1.8; margin-bottom: 10px; }
       .nome { font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 900; color: #1e3a5f; margin: 6px 0; border-bottom: 1.5px solid #c9a84c; display: inline-block; padding-bottom: 8px; }
+      .empresa { font-size: 12px; letter-spacing: 1px; color: #888; text-transform: uppercase; margin: 0 0 4px; }
       .curso { font-size: 21px; font-weight: 700; color: #1e3a5f; margin: 20px 0 6px; }
       .detalhes { font-size: 13px; color: #666; margin: 14px 0 0; }
       .detalhes strong { color: #1e3a5f; }
@@ -381,6 +391,7 @@ const ExamesView: React.FC = () => {
       <div class="tipo">✦ Exame de Avaliação ✦</div>
       <p class="texto">Certificamos, para os devidos fins, que</p>
       <p class="nome">${user.name}</p>
+      ${empresaNome ? `<p class="empresa">${empresaNome}</p>` : ''}
       <p class="texto" style="margin-top:16px">foi aprovado(a) no exame de avaliação de conhecimentos referente a</p>
       <p class="curso">"${fonteEscolhida?.titulo || 'Treinamento'}"</p>
       <p class="detalhes">

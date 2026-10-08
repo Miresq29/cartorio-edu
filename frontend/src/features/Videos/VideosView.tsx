@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { loadYouTubeApi } from '../../utils/youtubeApi';
 import { useApp } from '../../context/AppContext';
 import { termos } from '../../utils/terminologia';
 import { useToast } from '../../context/ToastContext';
@@ -87,8 +88,13 @@ const VideosView: React.FC = () => {
     return matchCat && matchBusca;
   });
 
-  const abrirPlayer = async (video: Video) => {
+  const abrirPlayer = (video: Video) => {
     setPlayerVideo(video);
+  };
+
+  // Só grava "assistido" quando o player confirma que o vídeo chegou ao fim — abrir o
+  // player sozinho não basta mais pra contar como assistido.
+  const concluirVideo = async (video: Video) => {
     if (!state.user?.id) return;
     const key = `${state.user.id}_${video.id}`;
     await setDoc(doc(db, 'videosProgresso', key), {
@@ -96,6 +102,32 @@ const VideosView: React.FC = () => {
       tenantId, assistido: true, assistidoEm: serverTimestamp(),
     }, { merge: true });
   };
+
+  const playerIframeRef = useRef<HTMLIFrameElement>(null);
+  const concluidoRef = useRef(false);
+
+  useEffect(() => {
+    if (!playerVideo) return;
+    concluidoRef.current = assistidos.has(playerVideo.id);
+    if (concluidoRef.current) return;
+    let player: any;
+    let destruido = false;
+    loadYouTubeApi().then(YT => {
+      if (destruido || !playerIframeRef.current) return;
+      player = new YT.Player(playerIframeRef.current, {
+        events: {
+          onStateChange: (e: any) => {
+            if (e.data === YT.PlayerState.ENDED && !concluidoRef.current) {
+              concluidoRef.current = true;
+              concluirVideo(playerVideo);
+            }
+          },
+        },
+      });
+    });
+    return () => { destruido = true; player?.destroy?.(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playerVideo?.id]);
 
   const salvarVideo = async () => {
     const yid = extractYouTubeId(form.youtubeUrl);
@@ -317,12 +349,14 @@ const VideosView: React.FC = () => {
               {/* sandbox sem allow-popups/allow-top-navigation: impede que o player abra o
                   YouTube em outra aba ou navegue a página para fora do vídeo selecionado. */}
               <iframe
-                src={`https://www.youtube-nocookie.com/embed/${playerVideo.youtubeId}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1`}
+                ref={playerIframeRef}
+                src={`https://www.youtube-nocookie.com/embed/${playerVideo.youtubeId}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&enablejsapi=1`}
                 className="w-full h-full" allow="autoplay; fullscreen" allowFullScreen title={playerVideo.titulo}
                 sandbox="allow-scripts allow-same-origin allow-presentation" referrerPolicy="strict-origin-when-cross-origin" />
             </div>
-            <p className="text-[10px] text-slate-400 text-center">
-              Reprodução restrita a este vídeo — sem acesso ao YouTube ou à internet em geral.
+            <p className={`text-[10px] font-black uppercase tracking-widest text-center ${assistidos.has(playerVideo.id) ? 'text-emerald-500' : 'text-amber-500'}`}>
+              <i className={`fa-solid ${assistidos.has(playerVideo.id) ? 'fa-circle-check' : 'fa-triangle-exclamation'} mr-1`}></i>
+              {assistidos.has(playerVideo.id) ? 'Concluído — a prova já pode ser liberada.' : 'Assista até o fim sem fechar — só assim este vídeo libera a prova correspondente.'}
             </p>
             {playerVideo.descricao && (
               <p className="text-slate-500 text-sm leading-relaxed">{playerVideo.descricao}</p>
