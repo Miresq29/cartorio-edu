@@ -40,8 +40,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   // Console Master (dashboard) e as demais telas de Sistema Master mostram dados agregados de
-  // TODOS os cartorios — so SUPERADMIN/Equipe MJ devem cair ali por padrao ao logar.
-  const tabInicial = (role?: string) => (role === 'SUPERADMIN' || role === 'equipe_mj') ? 'dashboard' : 'unit';
+  // TODOS os cartorios — so SUPERADMIN/Equipe MJ devem cair ali por padrao ao logar. Colaborador
+  // não tem acesso ao Dashboard/Relatórios (só usa a Capacitação), então cai direto em Trilhas.
+  const tabInicial = (role?: string) => {
+    if (role === 'SUPERADMIN' || role === 'equipe_mj') return 'dashboard';
+    if (role === 'colaborador') return 'trails';
+    return 'unit';
+  };
 
   useEffect(() => {
     const unsubscribe = AuthService.onAuthUpdate((user, token) => {

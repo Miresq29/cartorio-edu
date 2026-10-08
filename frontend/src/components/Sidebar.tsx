@@ -75,35 +75,39 @@ const Sidebar: React.FC = () => {
     {
       label: 'GESTAO', icon: 'fa-chart-column',
       items: [
-        { tab: 'unit',     icon: 'fa-border-all',        label: 'Dashboard',     desc: 'Resumo operacional da sua empresa'                                           },
+        { tab: 'unit',     icon: 'fa-border-all',        label: 'Dashboard',     desc: 'Resumo operacional da sua empresa',   roles: ['SUPERADMIN', 'equipe_mj', 'gestor', 'admin'] },
         { tab: 'users',    icon: 'fa-users-gear',        label: 'Colaboradores', desc: 'Gerenciar colaboradores e permissoes', roles: ['SUPERADMIN', 'gestor', 'admin'] },
-        { tab: 'reports',  icon: 'fa-chart-column',      label: 'Relatorios',    desc: 'Metricas de treinamento e engajamento'                                        },
+        { tab: 'reports',  icon: 'fa-chart-column',      label: 'Relatorios',    desc: 'Metricas de treinamento e engajamento', roles: ['SUPERADMIN', 'equipe_mj', 'gestor', 'admin'] },
         { tab: 'audit',    icon: 'fa-clock-rotate-left', label: 'Auditoria',     desc: 'Historico de acessos e alteracoes',   roles: ['SUPERADMIN', 'gestor'], locked: !superAdminGlobal && !recursos.auditoriaHabilitado },
         { tab: 'security', icon: 'fa-lock',              label: 'Seguranca',     desc: 'Senhas, bloqueios e politicas',       roles: ['SUPERADMIN', 'gestor'], locked: !superAdminGlobal && !recursos.segurancaHabilitado },
         { tab: 'analytics', icon: 'fa-chart-pie',        label: 'IA Analitica',  desc: 'Analise de auditoria e base legal',   roles: ['SUPERADMIN', 'gestor'], locked: !superAdminGlobal && !recursos.iaAnaliticaHabilitado },
         { tab: 'phishing',  icon: 'fa-shield-halved',     label: 'Simulacao Phishing', desc: 'Recurso opcional: teste de conscientizacao por e-mail', roles: ['SUPERADMIN', 'gestor', 'admin'], color: 'text-red-400', locked: !superAdminGlobal && !recursos.phishingHabilitado },
         { tab: 'dossie',    icon: 'fa-file-shield',       label: 'Dossie de Conformidade', desc: 'Evidencias consolidadas para inspecao CNJ e LGPD', roles: ['SUPERADMIN', 'gestor', 'admin'], color: 'text-[#C9A84C]', locked: !superAdminGlobal && !recursos.dossieHabilitado },
         { tab: 'maturidade', icon: 'fa-gauge-high',       label: 'Diagnostico de Maturidade', desc: '40 indicadores, plano de acao e evolucao no tempo', roles: ['SUPERADMIN', 'gestor', 'admin'], color: 'text-[#C9A84C]', locked: !superAdminGlobal && !recursos.maturidadeHabilitado },
+        { tab: 'training',  icon: 'fa-graduation-cap',    label: 'Treinamento AI', desc: 'Roteiros, quizzes e certificados com IA', roles: ['SUPERADMIN', 'equipe_mj', 'gestor', 'admin'], color: 'text-emerald-400' },
+        { tab: 'campanhas', icon: 'fa-rocket',            label: 'Campanhas',     desc: 'Campanhas motivacionais com IA',      roles: ['SUPERADMIN', 'gestor', 'admin'], color: 'text-pink-400' },
       ]
     },
     {
+      // Conteudo bruto (Repositorio/Videos/Base Legal/Comunicados) e so para quem monta o
+      // material — o colaborador consome tudo isso indiretamente, dentro das Trilhas.
       label: 'CONTEUDO', icon: 'fa-layer-group',
       items: [
-        { tab: 'trails',       icon: 'fa-road',          label: 'Trilhas',        desc: 'Trilhas de aprendizagem por perfil', color: 'text-teal-400'   },
-        { tab: 'repositorio',  icon: 'fa-photo-film',    label: 'Repositorio',    desc: 'Audios e PDFs',                     color: 'text-sky-400'    },
-        { tab: 'videos',       icon: 'fa-video',         label: 'Videos',         desc: 'Videos de treinamento (YouTube)',   color: 'text-rose-400'   },
-        { tab: 'knowledge',    icon: 'fa-scale-balanced', label: 'Base Legal',    desc: 'Documentos normativos indexados',   color: 'text-amber-400'  },
-        { tab: 'comunicados',  icon: 'fa-bullhorn',      label: 'Comunicados',   desc: 'Mural de avisos da empresa',         color: 'text-amber-400'  },
-        { tab: 'banners',      icon: 'fa-images',        label: 'Banners',       desc: 'Banners e materiais de divulgacao',  color: 'text-pink-400', roles: ['SUPERADMIN', 'gestor', 'admin'] },
+        { tab: 'repositorio',  icon: 'fa-photo-film',    label: 'Repositorio',    desc: 'Audios e PDFs',                     color: 'text-sky-400',   roles: ['SUPERADMIN', 'equipe_mj', 'curador', 'gestor', 'admin'] },
+        { tab: 'videos',       icon: 'fa-video',         label: 'Videos',         desc: 'Videos de treinamento (YouTube)',   color: 'text-rose-400',  roles: ['SUPERADMIN', 'equipe_mj', 'curador', 'gestor', 'admin'] },
+        { tab: 'knowledge',    icon: 'fa-scale-balanced', label: 'Base Legal',    desc: 'Documentos normativos indexados',   color: 'text-amber-400', roles: ['SUPERADMIN', 'equipe_mj', 'curador', 'gestor', 'admin'] },
+        { tab: 'comunicados',  icon: 'fa-bullhorn',      label: 'Comunicados',   desc: 'Mural de avisos da empresa',         color: 'text-amber-400', roles: ['SUPERADMIN', 'equipe_mj', 'curador', 'gestor', 'admin'] },
+        { tab: 'banners',      icon: 'fa-images',        label: 'Banners',       desc: 'Banners e materiais de divulgacao',  color: 'text-pink-400',  roles: ['SUPERADMIN', 'gestor', 'admin'] },
       ]
     },
     {
+      // Tudo que o colaborador usa mora aqui — ele so consome (trilha, prova, ranking,
+      // progresso, certificado); criacao/gestao de cada um desses fica em outras abas.
       label: 'CAPACITACAO', icon: 'fa-graduation-cap',
       items: [
-        { tab: 'training',      icon: 'fa-graduation-cap', label: 'Treinamento AI',  desc: 'Roteiros, quizzes e certificados com IA', color: 'text-emerald-400' },
+        { tab: 'trails',        icon: 'fa-road',           label: 'Trilhas',         desc: 'Trilhas de aprendizagem por perfil',        color: 'text-teal-400'  },
         { tab: 'exames',        icon: 'fa-file-pen',       label: 'Exames',          desc: 'Avaliacoes com IA e Bloom',               color: 'text-sky-400'    },
         { tab: 'metas',         icon: 'fa-trophy',         label: 'Metas & Premiacao', desc: 'Rankings e desempate Bloom Alto',        color: 'text-amber-400'  },
-        { tab: 'campanhas',     icon: 'fa-rocket',         label: 'Campanhas',       desc: 'Campanhas motivacionais com IA',           color: 'text-pink-400', roles: ['SUPERADMIN', 'gestor', 'admin'] },
         { tab: 'meu-progresso', icon: 'fa-chart-line',     label: 'Meu Progresso',   desc: 'Trilhas, quizzes e certificados pessoais', color: 'text-teal-400'  },
         { tab: 'certificado',   icon: 'fa-certificate',    label: 'Certificados',    desc: 'Emitir e baixar certificados PDF',         color: 'text-amber-400' },
       ]
