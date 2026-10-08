@@ -114,14 +114,23 @@ const PlayerModal: React.FC<{
   const renderContent = () => {
     if (midia.tipo === 'youtube' && midia.youtubeId) {
       return (
-        <div className="aspect-video rounded-2xl overflow-hidden shadow-2xl">
-          <iframe
-            src={`https://www.youtube-nocookie.com/embed/${midia.youtubeId}?autoplay=1&rel=0`}
-            className="w-full h-full"
-            allow="autoplay; fullscreen"
-            allowFullScreen
-            title={midia.titulo}
-          />
+        <div className="space-y-3">
+          {/* sandbox sem allow-popups/allow-top-navigation: impede que o player abra o
+              YouTube em outra aba ou navegue a página para fora do vídeo selecionado. */}
+          <div className="aspect-video rounded-2xl overflow-hidden shadow-2xl">
+            <iframe
+              src={`https://www.youtube-nocookie.com/embed/${midia.youtubeId}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1`}
+              className="w-full h-full"
+              allow="autoplay; fullscreen"
+              allowFullScreen
+              title={midia.titulo}
+              sandbox="allow-scripts allow-same-origin allow-presentation"
+              referrerPolicy="strict-origin-when-cross-origin"
+            />
+          </div>
+          <p className="text-[10px] text-slate-400 text-center">
+            Reprodução restrita a este vídeo — sem acesso ao YouTube ou à internet em geral.
+          </p>
         </div>
       );
     }
@@ -306,8 +315,11 @@ const FormMidia: React.FC<{
   podeDistribuir: boolean;
   ownTenantId: string;
   editando: Midia | null;
-}> = ({ onSave, onCancel, podeDistribuir, ownTenantId, editando }) => {
-  const [tipo, setTipo] = useState<MidiaTipo>('youtube');
+  podeUsarYoutube: boolean;
+}> = ({ onSave, onCancel, podeDistribuir, ownTenantId, editando, podeUsarYoutube }) => {
+  const { tipoOrganizacao } = useApp();
+  const t = termos(tipoOrganizacao);
+  const [tipo, setTipo] = useState<MidiaTipo>(podeUsarYoutube ? 'youtube' : 'audio');
   const [form, setForm] = useState({
     titulo: '', descricao: '', categoria: 'onboarding',
     trilhaTitulo: '', duracaoMin: 5, link: '',
@@ -331,11 +343,11 @@ const FormMidia: React.FC<{
       });
       setTenantIdsForm(editando.tenantIds || [ownTenantId]);
     } else {
-      setTipo('youtube');
+      setTipo(podeUsarYoutube ? 'youtube' : 'audio');
       setForm({ titulo: '', descricao: '', categoria: 'onboarding', trilhaTitulo: '', duracaoMin: 5, link: '' });
       setTenantIdsForm([ownTenantId]);
     }
-  }, [editando, ownTenantId]);
+  }, [editando, ownTenantId, podeUsarYoutube]);
 
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
 
@@ -378,15 +390,21 @@ const FormMidia: React.FC<{
       <div className="space-y-2">
         <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Tipo de Conteúdo</label>
         <div className="grid grid-cols-3 gap-3">
-          {(Object.entries(TIPO_CONFIG) as [MidiaTipo, typeof TIPO_CONFIG[MidiaTipo]][]).map(([key, cfg]) => (
-            <button type="button" key={key} onClick={() => { setTipo(key); setLinkErro(''); set('link', ''); }}
-              className={`p-3 rounded-xl border text-center transition-all ${
-                tipo === key ? `border-${cfg.color}-500 bg-${cfg.color}-500/10` : 'border-slate-200 hover:border-slate-600'
-              }`}>
-              <i className={`${cfg.icon} text-xl mb-1 block ${tipo === key ? `text-${cfg.color}-400` : 'text-slate-500'}`}></i>
-              <p className={`text-[10px] font-black ${tipo === key ? `text-${cfg.color}-300` : 'text-slate-500'}`}>{cfg.label}</p>
-            </button>
-          ))}
+          {(Object.entries(TIPO_CONFIG) as [MidiaTipo, typeof TIPO_CONFIG[MidiaTipo]][]).map(([key, cfg]) => {
+            const bloqueado = key === 'youtube' && !podeUsarYoutube;
+            return (
+              <button type="button" key={key} disabled={bloqueado}
+                onClick={() => { setTipo(key); setLinkErro(''); set('link', ''); }}
+                title={bloqueado ? `Vídeos do YouTube não habilitados para ${t.seu}` : undefined}
+                className={`p-3 rounded-xl border text-center transition-all ${
+                  bloqueado ? 'border-slate-200 opacity-40 cursor-not-allowed' :
+                  tipo === key ? `border-${cfg.color}-500 bg-${cfg.color}-500/10` : 'border-slate-200 hover:border-slate-600'
+                }`}>
+                <i className={`${bloqueado ? 'fa-solid fa-lock' : cfg.icon} text-xl mb-1 block ${tipo === key && !bloqueado ? `text-${cfg.color}-400` : 'text-slate-500'}`}></i>
+                <p className={`text-[10px] font-black ${tipo === key && !bloqueado ? `text-${cfg.color}-300` : 'text-slate-500'}`}>{cfg.label}</p>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -509,6 +527,7 @@ const RepositorioView: React.FC = () => {
   // Só quem atende múltiplos cartórios pode direcionar o conteúdo para cartórios específicos/todos.
   const podeDistribuir = isSuperAdmin || user.role === 'curador';
   const { podeUsar: podeCriar } = useRecursoTenant('criarConteudoHabilitado');
+  const { podeUsar: podeUsarYoutube } = useRecursoTenant('youtubeHabilitado');
 
   const [midias, setMidias] = useState<Midia[]>([]);
   const [assistidas, setAssistidas] = useState<Set<string>>(new Set());
@@ -656,6 +675,7 @@ const RepositorioView: React.FC = () => {
           podeDistribuir={podeDistribuir}
           ownTenantId={tenantId}
           editando={editando}
+          podeUsarYoutube={podeUsarYoutube}
         />
       )}
 

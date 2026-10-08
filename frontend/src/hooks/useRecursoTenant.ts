@@ -11,7 +11,7 @@ import { useApp } from '../context/AppContext';
 // Campos cujo padrão é DESLIGADO até o SUPERADMIN habilitar explicitamente.
 // Os demais campos usados com este hook têm padrão LIGADO (só desligam se
 // o SUPERADMIN gravar `false`, como acontece ao ativar uma demonstração).
-const PADRAO_DESLIGADO = new Set(['phishingHabilitado', 'backupHabilitado']);
+const PADRAO_DESLIGADO = new Set(['phishingHabilitado', 'backupHabilitado', 'youtubeHabilitado']);
 
 // "criarConteudoHabilitado" trava o CLIENTE (gestor/admin do cartório) durante a
 // demonstração, mas nunca deve travar o próprio SUPERADMIN — criar/distribuir

@@ -50,6 +50,7 @@ const VideosView: React.FC = () => {
   // Curador (equipe MJ Consultoria) distribui conteúdo entre cartórios como SUPERADMIN.
   const podeDistribuir = isSuperAdmin || state.user?.role === 'curador';
   const { podeUsar: podeCriar } = useRecursoTenant('criarConteudoHabilitado');
+  const { podeUsar: podeUsarYoutube } = useRecursoTenant('youtubeHabilitado');
   const [tenantIdsForm, setTenantIdsForm] = useState<string[]>([tenantId]);
 
   const [videos, setVideos] = useState<Video[]>([]);
@@ -130,7 +131,12 @@ const VideosView: React.FC = () => {
           <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">Biblioteca de conteúdo em vídeo</p>
         </div>
         {isGestor && (
-          podeCriar ? (
+          !podeUsarYoutube ? (
+            <button disabled title={`Vídeos do YouTube não habilitados para ${t.seu} — fale com a MJ Consultoria para liberar`}
+              className="bg-slate-100 text-slate-400 px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 cursor-not-allowed">
+              <i className="fa-solid fa-lock"></i> Adicionar Vídeo
+            </button>
+          ) : podeCriar ? (
             <button onClick={() => setShowForm(!showForm)}
               className="bg-red-600 hover:bg-red-500 text-navy px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
               <i className="fa-solid fa-plus"></i> Adicionar Vídeo
@@ -144,8 +150,15 @@ const VideosView: React.FC = () => {
         )}
       </header>
 
+      {isGestor && !podeUsarYoutube && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs text-amber-700 flex items-start gap-3">
+          <i className="fa-solid fa-circle-info mt-0.5"></i>
+          <span>Vídeos do YouTube são um recurso opcional, desligado por padrão — a inserção de novos links só é liberada mediante solicitação à MJ Consultoria. Os vídeos já cadastrados continuam disponíveis normalmente.</span>
+        </div>
+      )}
+
       {/* Formulário */}
-      {showForm && isGestor && (
+      {showForm && isGestor && podeUsarYoutube && (
         <div className="bg-white border border-slate-200 rounded-[24px] p-6 space-y-4">
           <h3 className="text-navy font-black uppercase text-sm">Novo Vídeo de Treinamento</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -301,10 +314,16 @@ const VideosView: React.FC = () => {
               </button>
             </div>
             <div className="aspect-video rounded-2xl overflow-hidden shadow-2xl">
+              {/* sandbox sem allow-popups/allow-top-navigation: impede que o player abra o
+                  YouTube em outra aba ou navegue a página para fora do vídeo selecionado. */}
               <iframe
-                src={`https://www.youtube-nocookie.com/embed/${playerVideo.youtubeId}?autoplay=1&rel=0`}
-                className="w-full h-full" allow="autoplay; fullscreen" allowFullScreen title={playerVideo.titulo} />
+                src={`https://www.youtube-nocookie.com/embed/${playerVideo.youtubeId}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1`}
+                className="w-full h-full" allow="autoplay; fullscreen" allowFullScreen title={playerVideo.titulo}
+                sandbox="allow-scripts allow-same-origin allow-presentation" referrerPolicy="strict-origin-when-cross-origin" />
             </div>
+            <p className="text-[10px] text-slate-400 text-center">
+              Reprodução restrita a este vídeo — sem acesso ao YouTube ou à internet em geral.
+            </p>
             {playerVideo.descricao && (
               <p className="text-slate-500 text-sm leading-relaxed">{playerVideo.descricao}</p>
             )}

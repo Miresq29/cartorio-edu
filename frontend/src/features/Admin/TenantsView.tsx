@@ -31,6 +31,7 @@ interface Tenant {
   dossieHabilitado?: boolean;
   maturidadeHabilitado?: boolean;
   criarConteudoHabilitado?: boolean;
+  youtubeHabilitado?: boolean;
   demoExpiraEm?: Timestamp | null;
   demoAvisoEnviado?: boolean;
   horarioAcessoHabilitado?: boolean;
@@ -52,6 +53,10 @@ const RECURSOS: { campo: keyof Tenant; label: string; icon: string; padraoLigado
   { campo: 'criarConteudoHabilitado', label: 'Criar Conteúdo', icon: 'fa-plus',          padraoLigado: true  },
   { campo: 'phishingHabilitado',    label: 'Phishing',     icon: 'fa-shield-halved',     padraoLigado: false },
   { campo: 'backupHabilitado',      label: 'Backup',       icon: 'fa-database',          padraoLigado: false },
+  // Inserção de link do YouTube no Repositório/Vídeos — fica desligada por padrão; alguns
+  // clientes preferem não expor nenhum link que leve o colaborador para fora da plataforma,
+  // então só habilita quando o próprio cliente pede.
+  { campo: 'youtubeHabilitado',     label: 'YouTube',      icon: 'fa-video',             padraoLigado: false },
 ];
 
 function recursoHabilitado(t: Tenant, r: typeof RECURSOS[number]): boolean {
