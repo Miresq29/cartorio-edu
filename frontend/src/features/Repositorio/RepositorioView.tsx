@@ -664,13 +664,18 @@ const RepositorioView: React.FC = () => {
   const [editando, setEditando] = useState<Midia | null>(null);
   const [playerMidia, setPlayerMidia] = useState<Midia | null>(null);
 
-  // Load mídias
+  // Load mídias — SUPERADMIN fora de um cartório específico (modo global) precisa ver
+  // TUDO, de todos os clientes, pra poder auditar/organizar o conteúdo em trilhas; dentro
+  // de um cartório (preview) ou pra qualquer outro perfil, continua filtrado por tenant.
+  const superAdminGlobal = isSuperAdmin && !state.activeTenantId;
   useEffect(() => {
-    const q = query(collection(db, 'repositorio'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']), orderBy('createdAt', 'desc'));
+    const q = superAdminGlobal
+      ? query(collection(db, 'repositorio'), orderBy('createdAt', 'desc'))
+      : query(collection(db, 'repositorio'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']), orderBy('createdAt', 'desc'));
     return onSnapshot(q, s =>
       setMidias(s.docs.map(d => ({ id: d.id, ...d.data() } as Midia)).filter(m => m.ativo !== false))
     );
-  }, [tenantId]);
+  }, [tenantId, superAdminGlobal]);
 
   // Load progresso (assistidas) — filtro por tenantId obrigatório nas rules
   useEffect(() => {
