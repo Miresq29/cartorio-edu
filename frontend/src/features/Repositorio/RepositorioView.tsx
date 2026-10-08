@@ -5,7 +5,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   collection, addDoc, updateDoc, deleteDoc, doc,
-  onSnapshot, query, orderBy, where, serverTimestamp, setDoc
+  onSnapshot, query, orderBy, where, serverTimestamp, setDoc, getDoc
 } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
@@ -36,6 +36,12 @@ interface Midia {
   driveUrl?: string;
   driveId?: string;
 }
+
+// Trilha à qual este conteúdo deve ser vinculado ao salvar — ver FormMidia/sincronizarTrilha.
+type TrilhaEscolha =
+  | { tipo: 'nenhuma' }
+  | { tipo: 'nova'; nome: string }
+  | { tipo: 'existente'; trilhaId: string };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -371,8 +377,10 @@ const MidiaCard: React.FC<{
 
 // ─── Formulário de Adição ─────────────────────────────────────────────────────
 
+const NOVA_TRILHA = '__nova__';
+
 const FormMidia: React.FC<{
-  onSave: (data: Omit<Midia, 'id' | 'tenantIds' | 'createdAt' | 'ativo'>, tenantIds: string[]) => Promise<void>;
+  onSave: (data: Omit<Midia, 'id' | 'tenantIds' | 'createdAt' | 'ativo'>, tenantIds: string[], trilhaEscolha: TrilhaEscolha) => Promise<void>;
   onCancel: () => void;
   podeDistribuir: boolean;
   ownTenantId: string;
@@ -389,6 +397,26 @@ const FormMidia: React.FC<{
   const [linkErro, setLinkErro] = useState('');
   const [saving, setSaving] = useState(false);
   const [tenantIdsForm, setTenantIdsForm] = useState<string[]>([ownTenantId]);
+
+  // Trilha a que este conteúdo pertence — quem distribui (SUPERADMIN/curador) escolhe uma
+  // trilha existente ou cria uma nova aqui mesmo, em vez de ir depois em Trilhas vincular
+  // manualmente o conteúdo módulo a módulo.
+  const [trilhasTodas, setTrilhasTodas] = useState<{ id: string; titulo: string; modulos: any[] }[]>([]);
+  const [trilhaSelecionada, setTrilhaSelecionada] = useState('');
+  const [novaTrilhaNome, setNovaTrilhaNome] = useState('');
+
+  useEffect(() => {
+    if (!podeDistribuir) return;
+    return onSnapshot(collection(db, 'trilhas'), snap =>
+      setTrilhasTodas(snap.docs.map(d => ({ id: d.id, titulo: d.data().titulo, modulos: d.data().modulos || [] })))
+    );
+  }, [podeDistribuir]);
+
+  useEffect(() => {
+    if (!editando) { setTrilhaSelecionada(''); return; }
+    const encontrada = trilhasTodas.find(tr => tr.modulos.some((m: any) => m.conteudoRef?.tipo === 'repositorio' && m.conteudoRef?.itemId === editando.id));
+    setTrilhaSelecionada(encontrada?.id || '');
+  }, [editando, trilhasTodas]);
 
   useEffect(() => {
     if (editando) {
@@ -408,6 +436,7 @@ const FormMidia: React.FC<{
       setTipo(podeUsarYoutube ? 'youtube' : 'audio');
       setForm({ titulo: '', descricao: '', categoria: 'onboarding', trilhaTitulo: '', duracaoMin: 5, link: '' });
       setTenantIdsForm([ownTenantId]);
+      setNovaTrilhaNome('');
     }
   }, [editando, ownTenantId, podeUsarYoutube]);
 
@@ -423,20 +452,31 @@ const FormMidia: React.FC<{
       setLinkErro(result.erro || 'Link inválido.');
       return;
     }
+    if (podeDistribuir && trilhaSelecionada === NOVA_TRILHA && !novaTrilhaNome.trim()) {
+      setLinkErro('Dê um nome para a nova trilha.');
+      return;
+    }
     setLinkErro('');
     setSaving(true);
+    const trilhaEscolha: TrilhaEscolha = !podeDistribuir || !trilhaSelecionada
+      ? { tipo: 'nenhuma' }
+      : trilhaSelecionada === NOVA_TRILHA
+        ? { tipo: 'nova', nome: novaTrilhaNome.trim() }
+        : { tipo: 'existente', trilhaId: trilhaSelecionada };
     try {
       await onSave({
         titulo: form.titulo.trim(),
         descricao: form.descricao.trim(),
         tipo,
         categoria: form.categoria,
-        trilhaTitulo: form.trilhaTitulo.trim(),
+        trilhaTitulo: podeDistribuir
+          ? (trilhaSelecionada === NOVA_TRILHA ? novaTrilhaNome.trim() : trilhasTodas.find(tr => tr.id === trilhaSelecionada)?.titulo || '')
+          : form.trilhaTitulo.trim(),
         duracaoMin: Number(form.duracaoMin),
         youtubeId: result.youtubeId,
         driveId: result.driveId,
         driveUrl: tipo !== 'youtube' ? form.link.trim() : undefined,
-      }, tenantIdsForm);
+      }, tenantIdsForm, trilhaEscolha);
     } finally {
       setSaving(false);
     }
@@ -531,10 +571,34 @@ const FormMidia: React.FC<{
 
         {/* Trilha */}
         <div className="space-y-1 md:col-span-2">
-          <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Trilha Associada (opcional)</label>
-          <input value={form.trilhaTitulo} onChange={e => set('trilhaTitulo', e.target.value)}
-            placeholder="Ex: Trilha do Atendente"
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-blue-500" />
+          {podeDistribuir ? (
+            <>
+              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">
+                Trilha — onde este conteúdo vai aparecer para o colaborador
+              </label>
+              <select value={trilhaSelecionada} onChange={e => setTrilhaSelecionada(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-blue-500">
+                <option value="">Nenhuma — não aparece em trilha (uso interno/por link direto)</option>
+                <option value={NOVA_TRILHA}>+ Criar nova trilha com este conteúdo</option>
+                {trilhasTodas.map(tr => <option key={tr.id} value={tr.id}>{tr.titulo}</option>)}
+              </select>
+              {trilhaSelecionada === NOVA_TRILHA && (
+                <input value={novaTrilhaNome} onChange={e => setNovaTrilhaNome(e.target.value)}
+                  placeholder="Nome da nova trilha (ex: PQTA 2026)"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-blue-500 mt-2" />
+              )}
+              <p className="text-[9px] text-slate-400">
+                Ao escolher uma trilha, este conteúdo vira um módulo dela para os cartórios marcados abaixo em "Visibilidade".
+              </p>
+            </>
+          ) : (
+            <>
+              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Trilha Associada (opcional)</label>
+              <input value={form.trilhaTitulo} onChange={e => set('trilhaTitulo', e.target.value)}
+                placeholder="Ex: Trilha do Atendente"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-blue-500" />
+            </>
+          )}
         </div>
 
         {/* Descrição */}
@@ -639,24 +703,63 @@ const RepositorioView: React.FC = () => {
     }, { merge: true });
   };
 
-  const handleSave = async (data: Omit<Midia, 'id' | 'tenantIds' | 'createdAt' | 'ativo'>, tenantIdsForm: string[]) => {
+  // Grava/atualiza o módulo que aponta para este item de repositório dentro da trilha
+  // escolhida — é isso que faz o conteúdo realmente aparecer pro colaborador (que só
+  // consome conteúdo através de Trilhas, nunca do Repositório diretamente).
+  const sincronizarTrilha = async (escolha: TrilhaEscolha, itemId: string, itemTitulo: string, tenantIdsForm: string[]) => {
+    if (escolha.tipo === 'nenhuma') return;
+    const modulo = {
+      id: Math.random().toString(36).slice(2, 10),
+      titulo: itemTitulo,
+      descricao: '',
+      tipo: 'obrigatorio' as const,
+      conteudo: '',
+      temQuiz: false,
+      notaMinima: 0,
+      conteudoRef: { tipo: 'repositorio' as const, itemId },
+    };
+    if (escolha.tipo === 'nova') {
+      await addDoc(collection(db, 'trilhas'), {
+        titulo: escolha.nome, descricao: '', perfis: ['colaborador', 'gestor', 'admin'],
+        modulos: [modulo], ativa: true, tenantIds: tenantIdsForm, oficial: false,
+        formato: 'ead', cargaHoraria: 0, notificarEmail: false, createdAt: serverTimestamp(),
+      });
+      return;
+    }
+    const trilhaRef = doc(db, 'trilhas', escolha.trilhaId);
+    const snap = await getDoc(trilhaRef);
+    if (!snap.exists()) return;
+    const data = snap.data();
+    // Remove um módulo antigo apontando pro mesmo item (caso esteja reeditando e trocando
+    // de trilha) antes de inserir a versão atual, evitando módulo duplicado.
+    const modulos = (data.modulos || []).filter((m: any) => m.conteudoRef?.itemId !== itemId);
+    modulos.push(modulo);
+    const tenantIdsAtual: string[] = data.tenantIds || [];
+    const tenantIdsNovo = Array.from(new Set([...tenantIdsAtual, ...tenantIdsForm]));
+    await updateDoc(trilhaRef, { modulos, tenantIds: tenantIdsNovo });
+  };
+
+  const handleSave = async (data: Omit<Midia, 'id' | 'tenantIds' | 'createdAt' | 'ativo'>, tenantIdsForm: string[], trilhaEscolha: TrilhaEscolha) => {
     // Firestore rejeita campos undefined — remove antes de salvar
     const cleanData = Object.fromEntries(
       Object.entries(data).filter(([, v]) => v !== undefined)
     );
+    const tenantIdsFinal = podeDistribuir ? tenantIdsForm : (editando ? editando.tenantIds : [tenantId]);
+    let itemId: string;
     if (editando) {
-      await updateDoc(doc(db, 'repositorio', editando.id), {
-        ...cleanData,
-        tenantIds: podeDistribuir ? tenantIdsForm : editando.tenantIds,
-      });
+      await updateDoc(doc(db, 'repositorio', editando.id), { ...cleanData, tenantIds: tenantIdsFinal });
+      itemId = editando.id;
       showToast('Conteúdo atualizado!', 'success');
     } else {
-      await addDoc(collection(db, 'repositorio'), {
-        ...cleanData, ativo: true,
-        tenantIds: podeDistribuir ? tenantIdsForm : [tenantId], criadoPor: user.id,
+      const ref = await addDoc(collection(db, 'repositorio'), {
+        ...cleanData, ativo: true, tenantIds: tenantIdsFinal, criadoPor: user.id,
         createdAt: serverTimestamp(),
       });
+      itemId = ref.id;
       showToast('Conteúdo adicionado ao repositório!', 'success');
+    }
+    if (podeDistribuir) {
+      await sincronizarTrilha(trilhaEscolha, itemId, cleanData.titulo as string, tenantIdsFinal);
     }
     setShowForm(false);
     setEditando(null);
