@@ -59,7 +59,7 @@ const DashboardMasterView: React.FC = () => {
       {/* KPIs Consolidados */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="bg-white border border-slate-200 p-8 rounded-[40px] shadow-xl hover:border-blue-500/30 transition-all group">
-          <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest group-hover:text-blue-500">Cartórios Ativos</p>
+          <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest group-hover:text-blue-500">Clientes Ativos</p>
           <p className="text-5xl font-black text-navy mt-2 tracking-tighter">
             {loading ? <span className="animate-pulse text-slate-300">—</span> : ativos}
           </p>
@@ -112,7 +112,7 @@ const DashboardMasterView: React.FC = () => {
 
           {!loading && tenants.length === 0 && (
             <div className="text-center py-10 border-2 border-dashed border-slate-200 rounded-3xl">
-              <p className="text-slate-600 italic text-sm font-bold uppercase tracking-widest">Aguardando ativação do primeiro cartório...</p>
+              <p className="text-slate-600 italic text-sm font-bold uppercase tracking-widest">Aguardando ativação do primeiro cliente...</p>
             </div>
           )}
         </div>

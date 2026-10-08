@@ -5,6 +5,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
+import { termos } from '../../utils/terminologia';
 import { useToast } from '../../context/ToastContext';
 import { useRecursoTenant } from '../../hooks/useRecursoTenant';
 import VisibilidadeCartorioPicker from '../../components/VisibilidadeCartorioPicker';
@@ -739,7 +740,8 @@ Nota mínima para aprovação: ${modulo.notaMinima}/10`;
 // ─── Main View ────────────────────────────────────────────────────────────────
 
 const TrailsView: React.FC = () => {
-  const { state, tenantId, setActiveTab } = useApp();
+  const { state, tenantId, tipoOrganizacao, setActiveTab } = useApp();
+  const t = termos(tipoOrganizacao);
   const { showToast } = useToast();
   const user = state.user!;
   const isGestor = ['SUPERADMIN', 'gestor', 'admin', 'curador'].includes(user.role);
@@ -894,7 +896,7 @@ const TrailsView: React.FC = () => {
             <i className="fa-solid fa-list" style={{ marginRight: 6 }}></i>Todas as Trilhas
           </button>
           <button onClick={() => {
-              if (!editando && !podeCriar) { showToast('Criação de novas trilhas não habilitada para o seu cartório.', 'info'); return; }
+              if (!editando && !podeCriar) { showToast(`Criação de novas trilhas não habilitada para ${t.seu}.`, 'info'); return; }
               iniciarEditar();
             }}
             style={{ padding: '10px 20px', borderRadius: 12, border: 'none', cursor: 'pointer', fontWeight: 900, fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, background: tab === 'criar' ? '#0A1628' : '#f1f5f9', color: !editando && !podeCriar ? '#c2c9d6' : tab === 'criar' ? '#ffffff' : '#8A9BB0' }}>
@@ -954,7 +956,7 @@ const TrailsView: React.FC = () => {
                 </button>
               ) : (
                 <p style={{ marginTop: 16, fontSize: 12, color: '#8A9BB0' }}>
-                  <i className="fa-solid fa-lock" style={{ marginRight: 6 }}></i>Criação de trilhas não habilitada para o seu cartório.
+                  <i className="fa-solid fa-lock" style={{ marginRight: 6 }}></i>Criação de trilhas não habilitada para {t.seu}.
                 </p>
               )}
             </div>

@@ -8,6 +8,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
+import { termos } from '../../utils/terminologia';
 import { useToast } from '../../context/ToastContext';
 
 // ─── Coleções que fazem parte do backup por tenant ────────────────────────────
@@ -75,7 +76,8 @@ function downloadJSON(data: any, filename: string) {
 // ─── Main View ────────────────────────────────────────────────────────────────
 
 const BackupView: React.FC = () => {
-  const { state, tenantId } = useApp();
+  const { state, tenantId, tipoOrganizacao } = useApp();
+  const t = termos(tipoOrganizacao);
   const { showToast } = useToast();
   const user = state.user!;
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(user.role);
@@ -106,7 +108,7 @@ const BackupView: React.FC = () => {
       return;
     }
     if (!podeUsar) {
-      showToast('Backup é um recurso pago, ainda não habilitado para o seu cartório.', 'error');
+      showToast(`Backup é um recurso pago, ainda não habilitado para ${t.seu}.`, 'error');
       return;
     }
 
@@ -234,7 +236,7 @@ const BackupView: React.FC = () => {
           <div>
             <h2 className="text-2xl font-black text-navy">Backup de Dados</h2>
             <p className="text-sm text-slate-500 mt-0.5">
-              Exportação segura dos dados do cartório <strong className="text-slate-700">{tenantId}</strong>
+              Exportação segura dos dados {t.doArtigo} <strong className="text-slate-700">{tenantId}</strong>
             </p>
           </div>
           {ultimoBackup && (
@@ -258,10 +260,10 @@ const BackupView: React.FC = () => {
         <div className="bg-emerald-50 border border-emerald-200 rounded-[14px] p-4 flex items-start gap-3">
           <i className="fa-solid fa-shield-halved text-emerald-500 text-lg mt-0.5 flex-shrink-0"></i>
           <div>
-            <p className="text-sm font-black text-emerald-700">Backup isolado por cartório</p>
+            <p className="text-sm font-black text-emerald-700">Backup isolado por cliente</p>
             <p className="text-xs text-emerald-600 mt-0.5 leading-relaxed">
-              Este backup exporta <strong>exclusivamente</strong> os dados do cartório <strong>{tenantId}</strong>.
-              Nenhum dado de outros cartórios é acessado ou incluído — o isolamento é garantido pelo filtro
+              Este backup exporta <strong>exclusivamente</strong> os dados {t.doArtigo} <strong>{tenantId}</strong>.
+              Nenhum dado de outros clientes é acessado ou incluído — o isolamento é garantido pelo filtro
               de <code className="bg-emerald-100 px-1 rounded">tenantId</code> em todas as consultas.
             </p>
           </div>
@@ -380,7 +382,7 @@ const BackupView: React.FC = () => {
           <div className="space-y-1">
             <p className="text-xs font-black text-blue-700 uppercase tracking-widest">Sobre os backups</p>
             <p className="text-xs text-blue-600 leading-relaxed">
-              Os arquivos JSON exportados contêm todos os dados do cartório e devem ser armazenados com segurança.
+              Os arquivos JSON exportados contêm todos os dados {t.doArtigo} e devem ser armazenados com segurança.
               Recomendamos salvar em local seguro e criptografado. O backup automático é executado 2x ao dia via GitHub Actions.
               Para restaurar dados entre em contato com a MJ Consultoria.
             </p>

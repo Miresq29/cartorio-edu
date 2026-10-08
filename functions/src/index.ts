@@ -43,18 +43,22 @@ export const createTenant = onCall(async (request) => {
   const rawName = String(request.data?.name || "").trim();
   const rawSlug = String(request.data?.slug || "").trim();
   if (!rawName || !rawSlug) {
-    throw new HttpsError("invalid-argument", "Nome e ID do cartório são obrigatórios.");
+    throw new HttpsError("invalid-argument", "Nome e ID do cliente são obrigatórios.");
   }
+  // Define se a UI falará "cartório" ou "empresa" para este cliente — "cartorio" é o
+  // padrão (compatível com todos os clientes criados antes deste campo existir).
+  const tipoOrganizacao = request.data?.tipoOrganizacao === "empresa" ? "empresa" : "cartorio";
 
   const slug = rawSlug.toLowerCase().replace(/\s+/g, "-");
   const tenantRef = db.collection("tenants").doc(slug);
   const existing = await tenantRef.get();
   if (existing.exists) {
-    throw new HttpsError("already-exists", `Já existe um cartório com o ID "${slug}".`);
+    throw new HttpsError("already-exists", `Já existe um cliente com o ID "${slug}".`);
   }
 
   await tenantRef.set({
     name: rawName,
+    tipoOrganizacao,
     active: true,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     createdBy: caller.uid,

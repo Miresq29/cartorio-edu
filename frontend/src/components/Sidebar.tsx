@@ -5,9 +5,11 @@ import { AppTab } from '../types';
 import { AuthService } from '../services/authService';
 import { db } from '../services/firebase';
 import { doc, onSnapshot, Timestamp } from 'firebase/firestore';
+import { termos } from '../utils/terminologia';
 
 const Sidebar: React.FC = () => {
-  const { state, tenantId, setActiveTab, setActiveTenant, logout: appLogout } = useApp();
+  const { state, tenantId, tipoOrganizacao, setActiveTab, setActiveTenant, logout: appLogout } = useApp();
+  const t = termos(tipoOrganizacao);
   const { showToast } = useToast();
   // No modo global (fora de qualquer cartório) o SUPERADMIN sempre enxerga os recursos
   // pagos destravados. Ao "entrar" num cartório específico (activeTenantId), deve ver
@@ -40,7 +42,7 @@ const Sidebar: React.FC = () => {
   const diasDemoRestantes = demoExpiraEm ? Math.ceil((demoExpiraEm.toDate().getTime() - Date.now()) / 86_400_000) : null;
 
   const avisarRecursoBloqueado = (nome: string) => {
-    showToast(`"${nome}" ainda não está habilitado para o seu cartório. Fale com a MJ Consultoria para liberar.`, 'info');
+    showToast(`"${nome}" ainda não está habilitado para ${t.seu}. Fale com a MJ Consultoria para liberar.`, 'info');
   };
 
   const toggleSection = (idx: number) => {
@@ -65,8 +67,8 @@ const Sidebar: React.FC = () => {
         // (preview) — os controles de criar/excluir cartorio, demonstracao e habilitar recursos
         // continuam exclusivos do SUPERADMIN de verdade (a propria tela esconde esses controles).
         { tab: 'admin',     icon: 'fa-server',        label: 'Gestao de Empresas', desc: 'Criar e gerenciar tenants',         roles: ['SUPERADMIN'], color: 'text-blue-400' },
-        { tab: 'treinamentos-oficiais', icon: 'fa-wand-magic-sparkles', label: 'Treinamentos Oficiais', desc: 'Publicar conteudo pronto para todos os cartorios', roles: ['SUPERADMIN'], color: 'text-[#C9A84C]' },
-        { tab: 'reports-master', icon: 'fa-chart-column', label: 'Relatorio por Cartorio', desc: 'Numeros reais de cada cartorio, sem precisar acessar um por um', roles: ['SUPERADMIN'], color: 'text-blue-400' },
+        { tab: 'treinamentos-oficiais', icon: 'fa-wand-magic-sparkles', label: 'Treinamentos Oficiais', desc: 'Publicar conteudo pronto para todos os clientes', roles: ['SUPERADMIN'], color: 'text-[#C9A84C]' },
+        { tab: 'reports-master', icon: 'fa-chart-column', label: 'Relatorio por Empresa', desc: 'Numeros reais de cada cliente, sem precisar acessar um por um', roles: ['SUPERADMIN'], color: 'text-blue-400' },
         { tab: 'audit',     icon: 'fa-layer-group',   label: 'Atividades Master',  desc: 'Log global de todas as acoes',      roles: ['SUPERADMIN'], color: 'text-emerald-400' },
       ]
     },
@@ -109,7 +111,7 @@ const Sidebar: React.FC = () => {
     {
       label: 'PLATAFORMA', icon: 'fa-gear',
       items: [
-        { tab: 'backup',   icon: 'fa-database',      label: 'Backup',       desc: 'Exportar dados do cartorio',        color: 'text-[#c9a84c]', roles: ['SUPERADMIN','gestor','admin'], locked: !superAdminGlobal && !recursos.backupHabilitado },
+        { tab: 'backup',   icon: 'fa-database',      label: 'Backup',       desc: `Exportar dados ${t.doArtigo}`,        color: 'text-[#c9a84c]', roles: ['SUPERADMIN','gestor','admin'], locked: !superAdminGlobal && !recursos.backupHabilitado },
         { tab: 'support',  icon: 'fa-headset',       label: 'Suporte',      desc: 'Contatar a MJ Consultoria'          },
         { tab: 'tutorial', icon: 'fa-book-open',     label: 'Tutorial',     desc: 'Guia completo de uso da plataforma' },
         { tab: 'terms',    icon: 'fa-file-contract', label: 'Termos de Uso', desc: 'Politicas e conformidade'          },
@@ -174,7 +176,7 @@ const Sidebar: React.FC = () => {
               <button
                 type="button"
                 onClick={() => { setActiveTenant(null); setActiveTab('dashboard'); }}
-                title="Sair do cartório"
+                title={`Sair ${t.doArtigo}`}
                 className="w-6 h-6 flex-shrink-0 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-600 flex items-center justify-center transition-all"
               >
                 <i className="fa-solid fa-xmark text-[10px]"></i>
@@ -184,7 +186,7 @@ const Sidebar: React.FC = () => {
             <button
               type="button"
               onClick={() => { setActiveTenant(null); setActiveTab('dashboard'); }}
-              title="Sair do cartório"
+              title={`Sair ${t.doArtigo}`}
               className="w-full flex items-center justify-center text-amber-600"
             >
               <i className="fa-solid fa-building-circle-xmark text-sm"></i>

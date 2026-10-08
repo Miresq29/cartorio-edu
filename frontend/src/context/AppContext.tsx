@@ -4,6 +4,7 @@ import { User, AppTab } from '../types';
 import { AuthService } from '../services/authService';
 import { db } from '../services/firebase';
 import { doc, onSnapshot } from 'firebase/firestore';
+import { TipoOrganizacao } from '../utils/terminologia';
 
 interface AppState {
   user: User | null;
@@ -22,6 +23,8 @@ interface AppContextType {
   setActiveTenant: (id: string | null, name?: string | null) => void;
   /** tenantId efetivo: activeTenantId quando SUPERADMIN está em modo cartório, senão user.tenantId */
   tenantId: string;
+  /** tipo de organização do tenant em foco — define se a UI fala "cartório" ou "empresa" */
+  tipoOrganizacao: TipoOrganizacao;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -80,18 +83,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ? state.activeTenantId
     : state.user?.tenantId ?? '';
 
-  // Se o cartório do usuário logado for desativado (ex.: demonstração expirada),
-  // derruba a sessão em tempo real em vez de esperar o próximo login/refresh de token.
+  const [tipoOrganizacao, setTipoOrganizacao] = useState<TipoOrganizacao>('cartorio');
+
+  // Acompanha o tenant em foco: define se a UI fala "cartório" ou "empresa" e, para quem
+  // pertence de fato ao tenant (não staff em preview), derruba a sessão em tempo real se o
+  // cartório do usuário logado for desativado (ex.: demonstração expirada).
   useEffect(() => {
-    if (!tenantId || isPlatformStaff) return;
+    if (!tenantId) { setTipoOrganizacao('cartorio'); return; }
     return onSnapshot(doc(db, 'tenants', tenantId), snap => {
-      if (snap.exists() && snap.data().active === false) logout();
+      const data = snap.data();
+      setTipoOrganizacao(data?.tipoOrganizacao === 'empresa' ? 'empresa' : 'cartorio');
+      if (!isPlatformStaff && snap.exists() && data?.active === false) logout();
     });
-  }, [tenantId, state.user?.role]);
+  }, [tenantId, isPlatformStaff]);
 
   const contextValue = useMemo(() => ({
-    state, login, logout, setActiveTab, setActiveTenant, tenantId,
-  }), [state, login, logout, setActiveTab, setActiveTenant, tenantId]);
+    state, login, logout, setActiveTab, setActiveTenant, tenantId, tipoOrganizacao,
+  }), [state, login, logout, setActiveTab, setActiveTenant, tenantId, tipoOrganizacao]);
 
   return (
     <AppContext.Provider value={contextValue}>

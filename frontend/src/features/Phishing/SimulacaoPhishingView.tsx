@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { termos } from '../../utils/terminologia';
 import { useToast } from '../../context/ToastContext';
 import { db } from '../../services/firebase';
 import { collection, onSnapshot, query, orderBy, where, addDoc, serverTimestamp, doc } from 'firebase/firestore';
@@ -99,7 +100,8 @@ function getMonth(ts: any): string {
 const COLORS = ['#D97706', '#DC2626', '#4F46E5', '#059669', '#7C3AED', '#0891B2'];
 
 const SimulacaoPhishingView: React.FC = () => {
-  const { state, tenantId } = useApp();
+  const { state, tenantId, tipoOrganizacao } = useApp();
+  const t = termos(tipoOrganizacao);
   const { showToast } = useToast();
   const isSuperAdmin = state.user?.role === 'SUPERADMIN';
   // No modo global (fora de qualquer cartório) o SUPERADMIN sempre enxerga o recurso
@@ -146,7 +148,7 @@ const SimulacaoPhishingView: React.FC = () => {
 
   const salvar = async () => {
     if (!superAdminGlobal && !phishingHabilitado) {
-      showToast('Este recurso opcional não está habilitado para o seu cartório. Solicite a ativação à MJ Consultoria.', 'error'); return;
+      showToast(`Este recurso opcional não está habilitado para ${t.seu}. Solicite a ativação à MJ Consultoria.`, 'error'); return;
     }
     if (!form.titulo.trim() || !form.assuntoEmail.trim() || !form.corpoEmail.trim()) {
       showToast('Título, assunto e corpo do e-mail são obrigatórios.', 'error'); return;
@@ -247,7 +249,7 @@ Por tema: ${porTema.map(t => `${t.tema}: ${t['Taxa de clique (%)']}%`).join('; '
 Por cargo: ${porCargo.map(c => `${c.cargo}: ${c['Taxa de clique (%)']}%`).join('; ')}.
 Colaboradores com mais cliques: ${rankingRisco.slice(0, 5).map(r => `${r.nome} (${r.cliques}x)`).join(', ') || 'nenhum'}.`;
 
-      const prompt = `Você é um analista de segurança da informação de um cartório notarial brasileiro. Com base nestes dados de simulações internas de phishing, escreva um plano de ação objetivo em português, em tópicos curtos, com: 1) diagnóstico resumido, 2) até 5 ações prioritárias de treinamento/reforço (mencionando temas ou cargos mais vulneráveis quando fizer sentido), 3) uma recomendação de frequência para novas simulações. Seja direto, sem introduções genéricas.\n\nDados:\n${resumo}`;
+      const prompt = `Você é um analista de segurança da informação de ${tipoOrganizacao === 'empresa' ? 'uma empresa brasileira' : 'um cartório notarial brasileiro'}. Com base nestes dados de simulações internas de phishing, escreva um plano de ação objetivo em português, em tópicos curtos, com: 1) diagnóstico resumido, 2) até 5 ações prioritárias de treinamento/reforço (mencionando temas ou cargos mais vulneráveis quando fizer sentido), 3) uma recomendação de frequência para novas simulações. Seja direto, sem introduções genéricas.\n\nDados:\n${resumo}`;
 
       const texto = await GeminiService.getGeminiResponse(prompt);
       if (!texto || texto.startsWith('Erro ')) {
@@ -292,7 +294,7 @@ Colaboradores com mais cliques: ${rankingRisco.slice(0, 5).map(r => `${r.nome} (
           <p className="font-black uppercase text-xs tracking-widest">
             <i className="fa-solid fa-lock mr-2"></i>Recurso opcional não habilitado
           </p>
-          <p>Este é um módulo opcional — sua ativação para o cartório precisa ser feita pela MJ Consultoria. Fale com o suporte para habilitar a simulação de phishing.</p>
+          <p>Este é um módulo opcional — sua ativação para {t.doArtigo} precisa ser feita pela MJ Consultoria. Fale com o suporte para habilitar a simulação de phishing.</p>
         </div>
       ) : (
         <>

@@ -21,6 +21,7 @@ interface Curador {
 interface Tenant {
   id: string;
   name: string;
+  tipoOrganizacao?: 'cartorio' | 'empresa';
   active: boolean;
   phishingHabilitado?: boolean;
   backupHabilitado?: boolean;
@@ -70,13 +71,13 @@ function diasRestantes(ts?: Timestamp | null): number | null {
 const GUIA_GESTAO: { icon: string; title: string; desc: string }[] = [
   {
     icon: 'fa-building-circle-check',
-    title: '1. Ativar um novo cartório cliente',
-    desc: 'No formulário "Ativar Novo Cartório Cliente", informe o nome da serventia e um ID do sistema (sem espaços, ex: cartorio-bh-01). Esse ID vira o tenantId de todos os colaboradores daquele cartório e não pode ser alterado depois.',
+    title: '1. Ativar um novo cliente',
+    desc: 'No formulário "Ativar Novo Cliente", escolha se é um cartório ou uma empresa, informe o nome e um ID do sistema (sem espaços, ex: empresa-bh-01). Esse ID vira o tenantId de todos os colaboradores daquele cliente e não pode ser alterado depois.',
   },
   {
     icon: 'fa-toggle-on',
-    title: '2. Habilitar ou desligar módulos por cartório',
-    desc: 'Em cada cartório listado em "Instâncias Ativas", clique nos chips de módulo (Auditoria, Segurança, IA Analítica, Phishing, Dossiê, Diagnóstico, Backup) para ligar/desligar. Quando desligado, o item aparece travado (cadeado) no menu daquele cliente.',
+    title: '2. Habilitar ou desligar módulos por cliente',
+    desc: 'Em cada cliente listado em "Instâncias Ativas", clique nos chips de módulo (Auditoria, Segurança, IA Analítica, Phishing, Dossiê, Diagnóstico, Backup) para ligar/desligar. Quando desligado, o item aparece travado (cadeado) no menu daquele cliente.',
   },
   {
     icon: 'fa-hourglass-half',
@@ -85,18 +86,18 @@ const GUIA_GESTAO: { icon: string; title: string; desc: string }[] = [
   },
   {
     icon: 'fa-arrow-right-to-bracket',
-    title: '4. Acessar um cartório para conferir o que o cliente vê',
-    desc: 'Clique em "Acessar" ao lado do cartório. Você entra no ambiente exatamente como aquele cliente enxerga — inclusive módulos travados — para validar a configuração. Use "Sair do cartório" no menu lateral para voltar ao modo global.',
+    title: '4. Acessar um cliente para conferir o que ele vê',
+    desc: 'Clique em "Acessar" ao lado do cliente. Você entra no ambiente exatamente como aquele cliente enxerga — inclusive módulos travados — para validar a configuração. Use "Sair do cliente" no menu lateral para voltar ao modo global.',
   },
   {
     icon: 'fa-wand-magic-sparkles',
     title: '5. Publicar treinamentos oficiais prontos',
-    desc: 'Em "Treinamentos Oficiais" (menu Sistema Master), vincule um vídeo já cadastrado a cada tema pronto (Provimento 213/2026, Compliance, Provimento 149, LGPD) e clique em "Criar Trilha Oficial" — a trilha é publicada automaticamente para todos os cartórios, com quiz gerado por IA.',
+    desc: 'Em "Treinamentos Oficiais" (menu Sistema Master), vincule um vídeo já cadastrado a cada tema pronto (Provimento 213/2026, Compliance, Provimento 149, LGPD) e clique em "Criar Trilha Oficial" — a trilha é publicada automaticamente para todos os clientes, com quiz gerado por IA.',
   },
   {
     icon: 'fa-user-shield',
     title: '6. Montar a equipe interna da MJ Consultoria',
-    desc: 'Nesta página, em "Equipe de Curadoria de Conteúdo", cadastre pessoas que só vão inserir/distribuir conteúdo (Curador). Para alguém que vai te ajudar de forma mais ampla — colaboradores, relatórios, auditoria de qualquer cartório —, cadastre em "Colaboradores" escolhendo o perfil "Equipe MJ" (não pede cartório).',
+    desc: 'Nesta página, em "Equipe de Curadoria de Conteúdo", cadastre pessoas que só vão inserir/distribuir conteúdo (Curador). Para alguém que vai te ajudar de forma mais ampla — colaboradores, relatórios, auditoria de qualquer cliente —, cadastre em "Colaboradores" escolhendo o perfil "Equipe MJ" (não pede cliente).',
   },
 ];
 
@@ -110,6 +111,7 @@ const TenantsView: React.FC = () => {
   const { showToast } = useToast();
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
+  const [tipoOrganizacao, setTipoOrganizacao] = useState<'cartorio' | 'empresa'>('cartorio');
   const [saving, setSaving] = useState(false);
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [loading, setLoading] = useState(true);
@@ -140,14 +142,15 @@ const TenantsView: React.FC = () => {
     if (!tenantId || !name.trim()) return;
     setSaving(true);
     try {
-      await createTenantFn({ name: name.trim(), slug: tenantId });
-      showToast(`Cartório "${name.trim()}" ativado com sucesso!`, 'success');
+      await createTenantFn({ name: name.trim(), slug: tenantId, tipoOrganizacao });
+      showToast(`Cliente "${name.trim()}" ativado com sucesso!`, 'success');
       setName('');
       setSlug('');
+      setTipoOrganizacao('cartorio');
     } catch (err: any) {
       const msg = err.code === 'functions/already-exists'
-        ? `Já existe um cartório com o ID "${tenantId}".`
-        : err.message || 'Erro ao criar cartório.';
+        ? `Já existe um cliente com o ID "${tenantId}".`
+        : err.message || 'Erro ao criar cliente.';
       showToast(msg, 'error');
     }
     setSaving(false);
@@ -229,7 +232,7 @@ const TenantsView: React.FC = () => {
     <div className="p-12 min-h-full bg-slate-50 animate-in fade-in space-y-12">
       <header>
         <h2 className="text-4xl font-black text-navy italic uppercase tracking-tighter">
-          Gestão de <span className="text-blue-500">Cartórios</span>
+          Gestão <span className="text-blue-500">Organizacional</span>
         </h2>
         <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.4em] mt-2">
           Ativação de Novas Instâncias // MJ Consultoria Master
@@ -250,7 +253,7 @@ const TenantsView: React.FC = () => {
             <div>
               <p className="text-navy font-black uppercase text-sm italic">Guia passo a passo desta tela</p>
               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
-                Como ativar cartórios, controlar demonstração e montar a equipe MJ
+                Como ativar clientes, controlar demonstração e montar a equipe MJ
               </p>
             </div>
           </div>
@@ -276,20 +279,34 @@ const TenantsView: React.FC = () => {
       <div className={isSuperAdmin ? 'grid grid-cols-1 lg:grid-cols-2 gap-12' : 'grid grid-cols-1'}>
         {isSuperAdmin && (
         <form onSubmit={handleCreateTenant} className="bg-white border border-slate-200 rounded-[40px] p-12 space-y-6 shadow-2xl">
-          <h3 className="text-navy font-bold uppercase text-sm italic">Ativar Novo Cartório Cliente</h3>
+          <h3 className="text-navy font-bold uppercase text-sm italic">Ativar Novo Cliente</h3>
           <div className="space-y-4">
+            <div className="flex gap-2">
+              <button type="button" onClick={() => setTipoOrganizacao('cartorio')}
+                className={`flex-1 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest border transition-all ${
+                  tipoOrganizacao === 'cartorio' ? 'bg-blue-50 border-blue-400 text-blue-700' : 'bg-white border-slate-200 text-slate-400'
+                }`}>
+                <i className="fa-solid fa-landmark mr-2"></i>Cartório
+              </button>
+              <button type="button" onClick={() => setTipoOrganizacao('empresa')}
+                className={`flex-1 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest border transition-all ${
+                  tipoOrganizacao === 'empresa' ? 'bg-blue-50 border-blue-400 text-blue-700' : 'bg-white border-slate-200 text-slate-400'
+                }`}>
+                <i className="fa-solid fa-building mr-2"></i>Empresa
+              </button>
+            </div>
             <input
               type="text" value={name} onChange={e => setName(e.target.value)}
-              placeholder="Nome da Serventia (Ex: 1º Ofício de Notas)"
+              placeholder={tipoOrganizacao === 'cartorio' ? 'Nome da Serventia (Ex: 1º Ofício de Notas)' : 'Nome da Empresa'}
               className="w-full bg-white border border-slate-200 rounded-3xl p-5 text-navy outline-none focus:border-blue-600 transition-all" required
             />
             <input
               type="text" value={slug} onChange={e => setSlug(e.target.value)}
-              placeholder="ID do Sistema (Ex: cartorio-bh-01)"
+              placeholder="ID do Sistema (Ex: empresa-bh-01)"
               className="w-full bg-white border border-slate-200 rounded-3xl p-5 text-blue-400 font-mono outline-none focus:border-blue-600 transition-all" required
             />
             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest px-1">
-              O ID será usado como <code className="bg-slate-100 px-1 rounded">tenantId</code> de todos os usuários deste cartório.
+              O ID será usado como <code className="bg-slate-100 px-1 rounded">tenantId</code> de todos os usuários deste cliente.
             </p>
           </div>
           <button type="submit" disabled={saving}
@@ -302,16 +319,16 @@ const TenantsView: React.FC = () => {
         <div className="bg-white border border-slate-200 rounded-[40px] p-10 space-y-6 shadow-lg">
           <p className="text-[10px] text-slate-400 px-2">
             <i className="fa-solid fa-circle-info mr-1"></i>
-            Cada módulo abaixo pode ser ligado/desligado por cartório — aparecem no menu, mas travados, quando desligados.
+            Cada módulo abaixo pode ser ligado/desligado por cliente — aparecem no menu, mas travados, quando desligados.
             "Criar Conteúdo" trava só a criação (Repositório, Vídeos, Comunicados, Banners, Base Legal, Nova Trilha) — o consumo
             (fazer as trilhas já cadastradas, assistir vídeos, etc.) continua liberado mesmo desligado.
             "Ativar Demonstração" desliga todos por N dias, deixando só a Capacitação disponível;
-            ao expirar, o cartório é suspenso automaticamente e um e-mail é enviado ao gestor sugerindo a compra.
+            ao expirar, o cliente é suspenso automaticamente e um e-mail é enviado ao gestor sugerindo a compra.
           </p>
           <div className="flex items-center justify-between">
             <h3 className="text-slate-500 font-bold uppercase text-[10px] tracking-[0.3em] px-2">Instâncias Ativas</h3>
             <span className="text-[10px] font-black text-blue-500 bg-blue-50 px-3 py-1 rounded-lg border border-blue-100">
-              {loading ? '...' : `${tenants.filter(t => t.active).length} cartório${tenants.filter(t => t.active).length !== 1 ? 's' : ''}`}
+              {loading ? '...' : `${tenants.filter(t => t.active).length} cliente${tenants.filter(t => t.active).length !== 1 ? 's' : ''}`}
             </span>
           </div>
           <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
@@ -319,7 +336,7 @@ const TenantsView: React.FC = () => {
               <p className="text-slate-500 text-xs font-bold uppercase text-center py-10 animate-pulse">Carregando...</p>
             )}
             {!loading && tenants.length === 0 && (
-              <p className="text-slate-700 text-xs font-bold uppercase text-center py-10 italic">Nenhum cartório cadastrado</p>
+              <p className="text-slate-700 text-xs font-bold uppercase text-center py-10 italic">Nenhum cliente cadastrado</p>
             )}
             {tenants.map(t => {
               const restantes = diasRestantes(t.demoExpiraEm);
@@ -332,6 +349,9 @@ const TenantsView: React.FC = () => {
                     <div className={`w-2 h-2 rounded-full flex-shrink-0 ${t.active ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`}></div>
                     <div>
                       <span className="text-navy font-bold italic uppercase text-sm">{t.name}</span>
+                      <span className={`ml-2 text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${t.tipoOrganizacao === 'empresa' ? 'bg-purple-50 text-purple-600' : 'bg-blue-50 text-blue-600'}`}>
+                        {t.tipoOrganizacao === 'empresa' ? 'Empresa' : 'Cartório'}
+                      </span>
                       <p className="text-[10px] font-mono text-slate-400">{t.id}</p>
                     </div>
                   </div>
@@ -469,7 +489,7 @@ const TenantsView: React.FC = () => {
           <p className="text-[10px] text-slate-400 mt-2">
             <i className="fa-solid fa-circle-info mr-1"></i>
             Curadores inserem Vídeos, Repositório, Comunicados, Banners, Base Legal e Trilhas oficiais e escolhem para quais
-            cartórios distribuir (ou "Todos os cartórios") — sem os demais poderes de SUPERADMIN (gestão de cartórios,
+            clientes distribuir (ou "Todos os clientes") — sem os demais poderes de SUPERADMIN (gestão organizacional,
             colaboradores, demonstração etc.).
           </p>
         </div>

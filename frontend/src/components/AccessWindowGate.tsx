@@ -6,6 +6,7 @@
 import React, { useEffect, useState } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
+import { termos, TipoOrganizacao } from '../utils/terminologia';
 
 interface Props {
   tenantId: string;
@@ -23,7 +24,7 @@ function paraMinutos(hhmm: string): number {
 }
 
 const AccessWindowGate: React.FC<Props> = ({ tenantId, children }) => {
-  const [config, setConfig] = useState<{ habilitado: boolean; inicio: string; fim: string } | null>(null);
+  const [config, setConfig] = useState<{ habilitado: boolean; inicio: string; fim: string; tipoOrganizacao: TipoOrganizacao } | null>(null);
   const [agora, setAgora] = useState(() => horaAtualMinutos());
 
   useEffect(() => {
@@ -34,6 +35,7 @@ const AccessWindowGate: React.FC<Props> = ({ tenantId, children }) => {
         habilitado: !!data?.horarioAcessoHabilitado,
         inicio: data?.horarioAcessoInicio || '00:00',
         fim: data?.horarioAcessoFim || '23:59',
+        tipoOrganizacao: data?.tipoOrganizacao === 'empresa' ? 'empresa' : 'cartorio',
       });
     });
   }, [tenantId]);
@@ -53,6 +55,8 @@ const AccessWindowGate: React.FC<Props> = ({ tenantId, children }) => {
 
   if (dentroDoHorario) return <>{children}</>;
 
+  const t = termos(config.tipoOrganizacao);
+
   return (
     <div className="h-screen w-screen flex items-center justify-center bg-slate-50 p-6">
       <div className="max-w-md w-full bg-white border border-slate-200 rounded-[24px] p-8 text-center space-y-4 shadow-xl">
@@ -61,7 +65,7 @@ const AccessWindowGate: React.FC<Props> = ({ tenantId, children }) => {
         </div>
         <h2 className="text-lg font-black text-navy uppercase tracking-tight">Acesso Limitado ao Período</h2>
         <p className="text-sm text-slate-500 leading-relaxed">
-          Esta plataforma está disponível para o seu cartório apenas entre{' '}
+          Esta plataforma está disponível para {t.seu} apenas entre{' '}
           <strong className="text-navy">{config.inicio}</strong> e <strong className="text-navy">{config.fim}</strong>, todos os dias.
           Volte dentro desse horário para acessar.
         </p>

@@ -71,19 +71,19 @@ const RelatoriosMasterView: React.FC = () => {
     <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
       <header>
         <h2 className="text-3xl font-black text-navy italic uppercase tracking-tighter">
-          Relatório <span className="text-blue-500">por Cartório</span>
+          Relatório <span className="text-blue-500">por Empresa</span>
         </h2>
         <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">
-          Números reais de cada cartório, sem precisar acessar um por um
+          Números reais de cada cliente, sem precisar acessar um por um
         </p>
       </header>
 
       <div className="flex items-center gap-3">
         <input value={busca} onChange={e => setBusca(e.target.value)}
-          placeholder="Buscar cartório..."
+          placeholder="Buscar cliente..."
           className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-navy outline-none focus:border-blue-500 w-64" />
         <span className="text-[10px] text-slate-500 font-black uppercase tracking-widest">
-          {linhas.length} cartório{linhas.length !== 1 ? 's' : ''}
+          {linhas.length} cliente{linhas.length !== 1 ? 's' : ''}
         </span>
       </div>
 
@@ -92,7 +92,7 @@ const RelatoriosMasterView: React.FC = () => {
           <table className="w-full text-xs">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200">
-                {['Cartório', 'Colaboradores', 'Testes', 'Taxa de Aprovação', 'Média', 'Trilhas Concluídas', 'Certificados', ''].map(h => (
+                {['Empresa', 'Colaboradores', 'Testes', 'Taxa de Aprovação', 'Média', 'Trilhas Concluídas', 'Certificados', ''].map(h => (
                   <th key={h} className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -102,7 +102,7 @@ const RelatoriosMasterView: React.FC = () => {
                 <tr><td colSpan={8} className="text-center p-10 text-slate-500">Carregando...</td></tr>
               )}
               {!loading && linhas.length === 0 && (
-                <tr><td colSpan={8} className="text-center p-10 text-slate-500">Nenhum cartório encontrado.</td></tr>
+                <tr><td colSpan={8} className="text-center p-10 text-slate-500">Nenhum cliente encontrado.</td></tr>
               )}
               {!loading && linhas.map(l => (
                 <tr key={l.tenant.id} className="border-b border-slate-100 hover:bg-slate-50 transition-all">

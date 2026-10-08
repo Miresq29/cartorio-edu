@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { termos } from '../../utils/terminologia';
 import { useToast } from '../../context/ToastContext';
 import { useRecursoTenant } from '../../hooks/useRecursoTenant';
 import { db } from '../../services/firebase';
@@ -40,7 +41,8 @@ const PERIODOS = [
 ];
 
 const DossieConformidadeView: React.FC = () => {
-  const { state, tenantId } = useApp();
+  const { state, tenantId, tipoOrganizacao } = useApp();
+  const t = termos(tipoOrganizacao);
   const { showToast } = useToast();
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(state.user?.role || '');
   const { podeUsar } = useRecursoTenant('dossieHabilitado');
@@ -266,7 +268,7 @@ ${resumoAtual ? `<div class="section">
       <div className="p-8 min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-sm text-amber-800 space-y-2 max-w-md">
           <p className="font-black uppercase text-xs tracking-widest"><i className="fa-solid fa-lock mr-2"></i>Recurso não habilitado</p>
-          <p>Este módulo não está habilitado para o seu cartório. Fale com a MJ Consultoria para liberar o acesso.</p>
+          <p>Este módulo não está habilitado para {t.seu}. Fale com a MJ Consultoria para liberar o acesso.</p>
         </div>
       </div>
     );

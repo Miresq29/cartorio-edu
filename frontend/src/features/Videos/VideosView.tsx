@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
+import { termos } from '../../utils/terminologia';
 import { useToast } from '../../context/ToastContext';
 import { useRecursoTenant } from '../../hooks/useRecursoTenant';
 import { db } from '../../services/firebase';
@@ -41,7 +42,8 @@ function extractYouTubeId(url: string): string | null {
 }
 
 const VideosView: React.FC = () => {
-  const { state, tenantId } = useApp();
+  const { state, tenantId, tipoOrganizacao } = useApp();
+  const t = termos(tipoOrganizacao);
   const { showToast } = useToast();
   const isGestor = ['SUPERADMIN', 'gestor', 'admin', 'curador'].includes(state.user?.role || '');
   const isSuperAdmin = state.user?.role === 'SUPERADMIN';
@@ -134,7 +136,7 @@ const VideosView: React.FC = () => {
               <i className="fa-solid fa-plus"></i> Adicionar Vídeo
             </button>
           ) : (
-            <button disabled title="Criação de conteúdo não habilitada para o seu cartório"
+            <button disabled title={`Criação de conteúdo não habilitada para ${t.seu}`}
               className="bg-slate-100 text-slate-400 px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 cursor-not-allowed">
               <i className="fa-solid fa-lock"></i> Adicionar Vídeo
             </button>

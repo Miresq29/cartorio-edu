@@ -5,6 +5,7 @@ import { useRecursoTenant } from '../../hooks/useRecursoTenant';
 import { extractTextFromFile } from '../../services/extractor';
 import { useToast } from '../../context/ToastContext';
 import { db } from '../../services/firebase';
+import { termos } from '../../utils/terminologia';
 import {
   collection, addDoc, deleteDoc, doc, onSnapshot,
   query, orderBy, serverTimestamp, where
@@ -23,7 +24,8 @@ interface KBDoc {
 }
 
 const KnowledgeBase: React.FC = () => {
-  const { state, tenantId } = useApp();
+  const { state, tenantId, tipoOrganizacao } = useApp();
+  const t = termos(tipoOrganizacao);
   const [isUploading, setIsUploading] = useState(false);
   const [viewingDoc, setViewingDoc] = useState<KBDoc | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
@@ -154,7 +156,7 @@ const KnowledgeBase: React.FC = () => {
                 <input type="file" className="hidden" onChange={handleFileUpload} disabled={isUploading} accept=".pdf,.docx,.txt,.jpg,.jpeg,.png,.webp,.bmp,.gif" />
               </label>
             ) : (
-              <button disabled title="Criação de conteúdo não habilitada para o seu cartório"
+              <button disabled title={`Criação de conteúdo não habilitada para ${t.seu}`}
                 className="bg-slate-100 text-slate-400 px-6 py-3 rounded-2xl flex items-center gap-3 text-xs font-black uppercase cursor-not-allowed">
                 <i className="fa-solid fa-lock"></i>Adicionar
               </button>

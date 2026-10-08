@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
+import { termos } from '../../utils/terminologia';
 import { useToast } from '../../context/ToastContext';
 import { db, functions } from '../../services/firebase';
 import { httpsCallable } from 'firebase/functions';
@@ -71,9 +72,9 @@ const NIVEL_CONFIG: Record<Nivel, { label: string; color: string; bg: string; ic
 };
 
 const ROLES: { id: Role; label: string; color: string; desc: string }[] = [
-  { id: 'SUPERADMIN', label: 'Super Admin',  color: '#059669', desc: 'Acesso total a todos os cartórios' },
-  { id: 'equipe_mj',  label: 'Equipe MJ',    color: '#0891B2', desc: 'Suporte MJ Consultoria — ajuda em todos os cartórios' },
-  { id: 'gestor',     label: 'Gestor',       color: '#4F46E5', desc: 'Gestão completa do cartório'       },
+  { id: 'SUPERADMIN', label: 'Super Admin',  color: '#059669', desc: 'Acesso total a todos os clientes' },
+  { id: 'equipe_mj',  label: 'Equipe MJ',    color: '#0891B2', desc: 'Suporte MJ Consultoria — ajuda em todos os clientes' },
+  { id: 'gestor',     label: 'Gestor',       color: '#4F46E5', desc: 'Gestão completa da empresa'       },
   { id: 'admin',      label: 'Admin',        color: '#D97706', desc: 'Administração de colaboradores'    },
   { id: 'colaborador',label: 'Colaborador',  color: '#64748b', desc: 'Acesso aos próprios dados'         },
 ];
@@ -96,7 +97,8 @@ function formatDate(ts: any): string {
 type Tab = 'colaboradores' | 'permissoes';
 
 const UsersView: React.FC = () => {
-  const { state, tenantId } = useApp();
+  const { state, tenantId, tipoOrganizacao } = useApp();
+  const t = termos(tipoOrganizacao);
   const { showToast } = useToast();
   const user = state.user!;
   const isGestor = ['SUPERADMIN', 'equipe_mj', 'gestor', 'admin'].includes(user.role);
@@ -176,7 +178,7 @@ const UsersView: React.FC = () => {
 
   const handleSave = async () => {
     if (!form.name || !form.email) { showToast('Preencha nome e e-mail.', 'error'); return; }
-    if (superAdminGlobal && form.role !== 'equipe_mj' && form.role !== 'SUPERADMIN' && !form.tenantId) { showToast('Selecione o cartório para este colaborador.', 'error'); return; }
+    if (superAdminGlobal && form.role !== 'equipe_mj' && form.role !== 'SUPERADMIN' && !form.tenantId) { showToast('Selecione o cliente para este colaborador.', 'error'); return; }
     setSaving(true);
     try {
       if (editUser) {
@@ -275,7 +277,7 @@ const UsersView: React.FC = () => {
               <div>
                 <h3 className="text-lg font-black text-navy mb-1">Redefinir senha de todos os colaboradores</h3>
                 <p className="text-sm text-slate-500">
-                  Cartório: <span className="font-mono text-blue-600">{tenantEmFoco}</span>. Todos os colaboradores desse cartório
+                  Cliente: <span className="font-mono text-blue-600">{tenantEmFoco}</span>. Todos os colaboradores desse cliente
                   passarão a usar a senha abaixo e serão obrigados a trocá-la no próximo login.
                 </p>
               </div>
@@ -374,7 +376,7 @@ const UsersView: React.FC = () => {
                     <div className="space-y-1">
                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">E-mail *</label>
                       <input value={form.email} onChange={e => setF('email', e.target.value)}
-                        placeholder="email@cartorio.com.br" type="email"
+                        placeholder="email@suaempresa.com.br" type="email"
                         className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-gold" />
                     </div>
                     <div className="space-y-1">
@@ -400,7 +402,7 @@ const UsersView: React.FC = () => {
                     </div>
                     <div className="space-y-1">
                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Senha Inicial</label>
-                      <input value={(form as any).senhaInicial || ''} onChange={e => setF('senhaInicial', e.target.value)} placeholder="Ex: cartorio123" type="text" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-gold" />
+                      <input value={(form as any).senhaInicial || ''} onChange={e => setF('senhaInicial', e.target.value)} placeholder="Ex: empresa123" type="text" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-gold" />
                     </div>
                     <div className="space-y-1">
                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Cargo</label>
@@ -413,23 +415,23 @@ const UsersView: React.FC = () => {
                     </div>
                     {isPlatformStaff && (form.role === 'equipe_mj' || form.role === 'SUPERADMIN') && (
                       <div className="space-y-1 md:col-span-2">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Cartório</label>
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Cliente</label>
                         <div className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-400 italic">
                           {form.role === 'SUPERADMIN'
-                            ? 'Não se aplica — Super Admin tem acesso total a todos os cartórios'
-                            : 'Não se aplica — Equipe MJ atende todos os cartórios'}
+                            ? 'Não se aplica — Super Admin tem acesso total a todos os clientes'
+                            : 'Não se aplica — Equipe MJ atende todos os clientes'}
                         </div>
                       </div>
                     )}
                     {isPlatformStaff && form.role !== 'equipe_mj' && form.role !== 'SUPERADMIN' && (
                       <div className="space-y-1 md:col-span-2">
                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                          Cartório <span className="text-red-400">*</span>
+                          Cliente <span className="text-red-400">*</span>
                         </label>
                         <select value={form.tenantId} onChange={e => setF('tenantId', e.target.value)}
-                          title="Cartório do colaborador"
+                          title="Cliente do colaborador"
                           className="w-full bg-white border border-gold/60 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-gold">
-                          <option value="">Selecione o cartório...</option>
+                          <option value="">Selecione o cliente...</option>
                           {tenants.map(t => (
                             <option key={t.id} value={t.id}>{t.name} — {t.id}</option>
                           ))}
@@ -476,9 +478,9 @@ const UsersView: React.FC = () => {
                   className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-gold w-72" />
                 {verTodasEmpresas && (
                   <select value={filtroCartorio} onChange={e => setFiltroCartorio(e.target.value)}
-                    title="Filtrar por cartório"
+                    title="Filtrar por cliente"
                     className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-gold">
-                    <option value="">Todos os cartórios</option>
+                    <option value="">Todos os clientes</option>
                     {tenants.map(t => (
                       <option key={t.id} value={t.id}>{t.name} — {t.id}</option>
                     ))}
@@ -490,9 +492,9 @@ const UsersView: React.FC = () => {
               {equipeMjSemCartorioSelecionado ? (
                 <div className="flex flex-col items-center justify-center gap-3 py-14 text-center bg-white border border-slate-200 rounded-[14px]">
                   <i className="fa-solid fa-building-circle-arrow-right text-2xl text-slate-300"></i>
-                  <p className="text-sm font-bold text-slate-600">Selecione um cartório para ver os colaboradores dele</p>
+                  <p className="text-sm font-bold text-slate-600">Selecione um cliente para ver os colaboradores dele</p>
                   <p className="text-xs text-slate-400 max-w-md">
-                    Para ver e gerenciar os colaboradores de um cliente específico, acesse "Gestão de Empresas" e clique em "Acessar" no cartório desejado.
+                    Para ver e gerenciar os colaboradores de um cliente específico, acesse "Gestão de Empresas" e clique em "Acessar" no cliente desejado.
                   </p>
                 </div>
               ) : loading ? (
@@ -505,7 +507,7 @@ const UsersView: React.FC = () => {
                   <table className="w-full text-xs">
                     <thead>
                       <tr className="bg-white border-b border-slate-200">
-                        {['Colaborador', 'E-mail', 'Cargo', ...(isPlatformStaff ? ['Cartório'] : []), 'Perfil', 'Status', 'Desde', 'Ações'].map(h => (
+                        {['Colaborador', 'E-mail', 'Cargo', ...(isPlatformStaff ? ['Cliente'] : []), 'Perfil', 'Status', 'Desde', 'Ações'].map(h => (
                           <th key={h} className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
                         ))}
                       </tr>

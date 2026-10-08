@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { db } from '../../services/firebase';
 import { collection, onSnapshot, query, orderBy, limit, where } from 'firebase/firestore';
 import { useApp } from '../../context/AppContext';
+import { termos } from '../../utils/terminologia';
 import { useRecursoTenant } from '../../hooks/useRecursoTenant';
 import { GeminiService } from '../../services/geminiService';
 
@@ -41,7 +42,8 @@ interface AnaliseResult {
 type Tab = 'painel' | 'analise' | 'chat';
 
 const IAAnaliticaView: React.FC = () => {
-  const { state, tenantId } = useApp();
+  const { state, tenantId, tipoOrganizacao } = useApp();
+  const t = termos(tipoOrganizacao);
   const { podeUsar } = useRecursoTenant('iaAnaliticaHabilitado');
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [knowledgeDocs, setKnowledgeDocs] = useState<KnowledgeDoc[]>([]);
@@ -260,7 +262,7 @@ Responda de forma objetiva e prática. Pergunta: ${msg}`;
       <div className="p-8 min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-sm text-amber-800 space-y-2 max-w-md">
           <p className="font-black uppercase text-xs tracking-widest"><i className="fa-solid fa-lock mr-2"></i>Recurso não habilitado</p>
-          <p>Este módulo não está habilitado para o seu cartório. Fale com a MJ Consultoria para liberar o acesso.</p>
+          <p>Este módulo não está habilitado para {t.seu}. Fale com a MJ Consultoria para liberar o acesso.</p>
         </div>
       </div>
     );
