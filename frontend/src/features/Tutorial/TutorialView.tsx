@@ -257,7 +257,7 @@ const TutorialView: React.FC = () => {
   const current = visibleSections[currentIdx] ?? visibleSections[0];
 
   const exportPDF = () => {
-    const win = window.open('', '_blank');
+    const win = window.open('', '_blank', 'noopener');
     if (!win) return;
 
     const allContent = visibleSections.map((s, si) => `

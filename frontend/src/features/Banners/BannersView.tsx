@@ -10,6 +10,7 @@ import {
 } from 'firebase/firestore';
 import { GeminiService } from '../../services/geminiService';
 import VisibilidadeCartorioPicker from '../../components/VisibilidadeCartorioPicker';
+import { escapeHtml } from '../../utils/escapeHtml';
 
 interface Material {
   id: string;
@@ -138,15 +139,12 @@ CTA: [chamada para ação aqui]`;
   };
 
   /* ── imprime banner ───────────────────────────────── */
-  const escapeHtml = (s: string): string => String(s ?? '')
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-
   const imprimirBanner = (texto: string) => {
     const parsed = parseBannerText(texto);
     const titulo = escapeHtml(parsed.titulo);
     const subtitulo = escapeHtml(parsed.subtitulo);
     const cta = escapeHtml(parsed.cta);
-    const win = window.open('', '_blank');
+    const win = window.open('', '_blank', 'noopener');
     if (!win) return;
     win.document.write(`<!DOCTYPE html><html><head><title>Banner</title>
       <style>

@@ -487,7 +487,7 @@ const RelatoriosView: React.FC = () => {
     const cargaHorariaColab = trilhasDoColab.filter(p => p.concluida).reduce((a, p) => a + cargaHorariaTrilha(p.trilhaId), 0);
     const codigo = `MJ-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
 
-    const win = window.open('', '_blank');
+    const win = window.open('', '_blank', 'noopener');
     if (!win) return;
 
     const linhasTrilhas = trilhasDoColab.length
@@ -602,7 +602,7 @@ td { background:#fdfbf5; }
       '365': 'Último ano', '99999': 'Todo o período',
     };
     const codigo = `MJ-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
-    const win = window.open('', '_blank');
+    const win = window.open('', '_blank', 'noopener');
     if (!win) return;
 
     const linhasColab = porColab.length

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
 import { collection, onSnapshot, query, orderBy, where } from 'firebase/firestore';
+import { escapeHtml } from '../../utils/escapeHtml';
 
 interface Participant {
   id: string;
@@ -97,7 +98,7 @@ const TrainingReport: React.FC = () => {
 
   // ---- EXPORTAR PDF (via print) ----
   const exportPDF = () => {
-    const printWindow = window.open('', '_blank');
+    const printWindow = window.open('', '_blank', 'noopener');
     if (!printWindow) return;
 
     const rows = filtered.map(p => {
@@ -105,9 +106,9 @@ const TrainingReport: React.FC = () => {
       const statusColor = p.status === 'concluído' ? '#10b981' : p.status === 'pendente' ? '#f59e0b' : '#ef4444';
       return `
         <tr>
-          <td>${p.nomeColaborador}</td>
-          <td>${p.cargo || '-'}</td>
-          <td>${p.treinamento}</td>
+          <td>${escapeHtml(p.nomeColaborador)}</td>
+          <td>${escapeHtml(p.cargo || '-')}</td>
+          <td>${escapeHtml(p.treinamento)}</td>
           <td>${new Date(p.dataConclusao + 'T00:00:00').toLocaleDateString('pt-BR')}</td>
           <td style="color:${statusColor};font-weight:bold">${p.status.toUpperCase()}</td>
           <td>${quiz ? `${quiz.nota}%` : '-'}</td>
@@ -175,7 +176,7 @@ const TrainingReport: React.FC = () => {
   const printCertificate = (p: Participant) => {
     setSelectedParticipant(p);
     const quiz = getQuiz(p.nomeColaborador, p.treinamento);
-    const printWindow = window.open('', '_blank');
+    const printWindow = window.open('', '_blank', 'noopener');
     if (!printWindow) return;
 
     printWindow.document.write(`
@@ -183,7 +184,7 @@ const TrainingReport: React.FC = () => {
       <html>
       <head>
         <meta charset="utf-8">
-        <title>Certificado — ${p.nomeColaborador}</title>
+        <title>Certificado — ${escapeHtml(p.nomeColaborador)}</title>
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
           body { font-family: Georgia, serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8fafc; }
@@ -210,10 +211,10 @@ const TrainingReport: React.FC = () => {
           <div class="subtitle">Gestão do Conhecimento Notarial</div>
           <div class="cert-title">Certificado de Conclusão</div>
           <div class="label">Certificamos que</div>
-          <div class="name">${p.nomeColaborador}</div>
-          ${p.cargo ? `<div class="role">${p.cargo}</div>` : '<div style="margin-bottom:28px"></div>'}
+          <div class="name">${escapeHtml(p.nomeColaborador)}</div>
+          ${p.cargo ? `<div class="role">${escapeHtml(p.cargo)}</div>` : '<div style="margin-bottom:28px"></div>'}
           <div class="training-label">concluiu com êxito o treinamento</div>
-          <div class="training">${p.treinamento}</div>
+          <div class="training">${escapeHtml(p.treinamento)}</div>
           <div class="date">em ${new Date(p.dataConclusao + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}</div>
           ${quiz ? `<div class="quiz-badge">Avaliação de conhecimento: <strong>${quiz.nota}%</strong> — ${quiz.aprovado ? '✓ Aprovado' : '✗ Reprovado'}</div>` : ''}
           <div class="signatures">

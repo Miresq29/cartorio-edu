@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { db } from '../../services/firebase';
 import { collection, onSnapshot, query, orderBy, where } from 'firebase/firestore';
 import { useApp } from '../../context/AppContext';
+import { escapeHtml } from '../../utils/escapeHtml';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -78,10 +79,10 @@ const DASH_TABS = [
 // ─── Certificate Generator ──────────────────────────────────────────────────
 
 const printTrilhaCertificate = (userName: string, cargo: string, trilhaTitulo: string, nota?: number) => {
-  const win = window.open('', '_blank');
+  const win = window.open('', '_blank', 'noopener');
   if (!win) return;
   win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
-  <title>Certificado — ${userName}</title>
+  <title>Certificado — ${escapeHtml(userName)}</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:Georgia,serif;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f8fafc}
@@ -113,10 +114,10 @@ const printTrilhaCertificate = (userName: string, cargo: string, trilhaTitulo: s
     <div class="subtitle">Gestão do Conhecimento Notarial</div>
     <div class="cert-title">Certificado de Conclusão de Trilha</div>
     <div class="label">Certificamos que</div>
-    <div class="name">${userName}</div>
-    ${cargo ? `<div class="role">${cargo}</div>` : '<div style="margin-bottom:28px"></div>'}
+    <div class="name">${escapeHtml(userName)}</div>
+    ${cargo ? `<div class="role">${escapeHtml(cargo)}</div>` : '<div style="margin-bottom:28px"></div>'}
     <div class="trail-label">concluiu com êxito a Trilha de Aprendizagem</div>
-    <div class="trail">${trilhaTitulo}</div>
+    <div class="trail">${escapeHtml(trilhaTitulo)}</div>
     <div class="date">em ${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}</div>
     ${nota !== undefined ? `<div class="badge">Nota média: <strong>${nota}%</strong> — ✓ Aprovado</div>` : ''}
     <div class="sigs">

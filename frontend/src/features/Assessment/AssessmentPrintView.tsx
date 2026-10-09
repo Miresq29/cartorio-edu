@@ -51,7 +51,7 @@ function recomendacaoPadrao(dimNome: string, ref: string): string {
 }
 
 export function gerarPDFAssessment(assessment: Assessment, opts: Opts) {
-  const win = window.open('', '_blank');
+  const win = window.open('', '_blank', 'noopener');
   if (!win) return;
 
   const dataGeracao = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
