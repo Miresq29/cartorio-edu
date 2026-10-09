@@ -22,7 +22,7 @@ interface QuizResult  { id:string; colaborador:string; userId?:string; nota:numb
 interface TrilhaProg  { id:string; userId:string; userName:string; trilhaId:string; trilhaTitulo?:string; concluido:boolean; tenantId:string; }
 interface Trilha      { id:string; titulo:string; descricao:string; icone:string; cor:string; modulos:any[]; tenantId:string; }
 interface UserData    { id:string; name:string; cargo?:string; role:string; tenantId:string; }
-interface Certificado { id:string; colaboradorNome:string; trilhaTitulo:string; notaFinal:number; emitidoEm:any; tenantId:string; }
+interface Certificado { id:string; colaboradorId?:string; colaboradorNome:string; trilhaTitulo:string; notaFinal:number; emitidoEm:any; tenantId:string; }
 interface ExameResultado { id:string; userId:string; fonteId?:string; fonteTitulo:string; score:number; aprovado:boolean; createdAt:any; proximaTentativa?:any; tenantId?:string; }
 interface Pendencia { userId:string; fonteTitulo:string; score:number; diasDesdeLiberacao:number; atrasado:boolean; }
 
@@ -110,7 +110,7 @@ const CardHeader:React.FC<{title:string;charts:CT[];active:CT;onChange:(t:CT)=>v
 const ColabDashboard:React.FC<{trilhas:Trilha[];progresso:TrilhaProg[];quizResults:QuizResult[];certificados:Certificado[];exames:ExameResultado[];userName:string;userId:string}> = ({trilhas,progresso,quizResults,certificados,exames,userName,userId}) => {
   const myProg  = progresso.filter(p=>p.userId===userId||p.userName===userName);
   const myRes   = quizResults.filter(r=>r.userId===userId||r.colaborador===userName);
-  const myCerts = certificados.filter(c=>c.colaboradorNome===userName);
+  const myCerts = certificados.filter(c=>c.colaboradorId===userId||c.colaboradorNome===userName);
   const minhasPendencias = useMemo(()=>calcPendencias(exames.filter(e=>e.userId===userId)),[exames,userId]);
   const totalMods = trilhas.reduce((a,t)=>a+(t.modulos?.length??0),0);
   const doneMods  = myProg.filter(p=>p.concluido).length;

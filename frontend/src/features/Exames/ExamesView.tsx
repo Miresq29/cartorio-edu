@@ -7,6 +7,7 @@ import {
   Timestamp, doc, setDoc, getDoc,
 } from 'firebase/firestore';
 import { GeminiService, QuestaoExame } from '../../services/geminiService';
+import { escapeHtml } from '../../utils/escapeHtml';
 
 /* ─── tipos internos ──────────────────────────────────────── */
 type Fase = 'escolher' | 'gerando' | 'fazendo' | 'resultado';
@@ -342,7 +343,7 @@ const ExamesView: React.FC = () => {
 
   /* ── certificado ────────────────────────────────────────── */
   const imprimirCertificado = () => {
-    const win = window.open('', '_blank');
+    const win = window.open('', '_blank', 'noopener');
     if (!win) return;
     const data = new Date().toLocaleDateString('pt-BR');
     const codigo = gerarCodigoVerificacao();
@@ -390,13 +391,13 @@ const ExamesView: React.FC = () => {
       <h1>Certificado de Conclusão</h1>
       <div class="tipo">✦ Exame de Avaliação ✦</div>
       <p class="texto">Certificamos, para os devidos fins, que</p>
-      <p class="nome">${user.name}</p>
-      ${empresaNome ? `<p class="empresa">${empresaNome}</p>` : ''}
+      <p class="nome">${escapeHtml(user.name)}</p>
+      ${empresaNome ? `<p class="empresa">${escapeHtml(empresaNome)}</p>` : ''}
       <p class="texto" style="margin-top:16px">foi aprovado(a) no exame de avaliação de conhecimentos referente a</p>
-      <p class="curso">"${fonteEscolhida?.titulo || 'Treinamento'}"</p>
+      <p class="curso">"${escapeHtml(fonteEscolhida?.titulo || 'Treinamento')}"</p>
       <p class="detalhes">
-        com aproveitamento de <strong>${resultado?.score}%</strong> e carga horária de <strong>${cargaHoraria} hora${cargaHoraria !== 1 ? 's' : ''}</strong>,
-        sob instrução de <strong>${instrutor}</strong>.
+        com aproveitamento de <strong>${Number(resultado?.score) || 0}%</strong> e carga horária de <strong>${cargaHoraria} hora${cargaHoraria !== 1 ? 's' : ''}</strong>,
+        sob instrução de <strong>${escapeHtml(instrutor)}</strong>.
       </p>
       <div class="rodape">
         <div class="rodape-bloco">

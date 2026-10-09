@@ -11,6 +11,7 @@ interface QuizResult {
   quizTitulo: string;
   treinamento: string;
   colaborador: string;
+  userId?: string;
   cargo: string;
   nota: number;
   total: number;
@@ -238,22 +239,26 @@ const TrainingDashboard: React.FC = () => {
   // ── Ranking de colaboradores ─────────────────────────────────────────────
 
   const ranking = useMemo(() => {
-    const byUser: Record<string, { nome: string; cargo: string; quizzes: number; aprovados: number; notas: number[] }> = {};
+    // Agrupa por userId (não por nome) — o nome em quizResults/trilhasProgresso é só um
+    // snapshot do momento da gravação e fica desatualizado quando o colaborador é renomeado
+    // depois. Registros antigos sem userId caem no fallback por nome.
+    const byUser: Record<string, { userId?: string; nome: string; cargo: string; quizzes: number; aprovados: number; notas: number[] }> = {};
 
     quizResults.forEach(r => {
-      if (!byUser[r.colaborador]) {
-        byUser[r.colaborador] = { nome: r.colaborador, cargo: r.cargo || '', quizzes: 0, aprovados: 0, notas: [] };
+      const chave = r.userId || r.colaborador;
+      if (!byUser[chave]) {
+        byUser[chave] = { userId: r.userId, nome: r.colaborador, cargo: r.cargo || '', quizzes: 0, aprovados: 0, notas: [] };
       }
-      byUser[r.colaborador].quizzes++;
-      if (r.aprovado) byUser[r.colaborador].aprovados++;
-      byUser[r.colaborador].notas.push(r.nota);
+      byUser[chave].quizzes++;
+      if (r.aprovado) byUser[chave].aprovados++;
+      byUser[chave].notas.push(r.nota);
     });
 
     return Object.values(byUser)
       .map(u => ({
         ...u,
         media: u.notas.length > 0 ? Math.round(u.notas.reduce((a, b) => a + b, 0) / u.notas.length) : 0,
-        trilhasConcluidas: progressoDoTenant.filter(p => p.userName === u.nome && p.concluida).length,
+        trilhasConcluidas: progressoDoTenant.filter(p => (u.userId ? p.userId === u.userId : p.userName === u.nome) && p.concluida).length,
       }))
       .sort((a, b) => b.media - a.media);
   }, [quizResults, progressoDoTenant]);
@@ -637,7 +642,7 @@ const TrainingDashboard: React.FC = () => {
                     type="button"
                     title="Emitir certificado"
                     onClick={() => {
-                      const trilhaConcluida = progressoDoTenant.find(p => p.userName === user.nome && p.concluida);
+                      const trilhaConcluida = progressoDoTenant.find(p => (user.userId ? p.userId === user.userId : p.userName === user.nome) && p.concluida);
                       if (trilhaConcluida) {
                         printTrilhaCertificate(user.nome, user.cargo, trilhaConcluida.trilhaTitulo, user.media);
                       }

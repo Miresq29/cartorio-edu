@@ -9,7 +9,7 @@ import { useApp } from '../../context/AppContext';
 interface Trilha { id: string; titulo: string; descricao: string; icone: string; cor: string; modulos: any[]; tenantId: string; }
 interface TrilhaProgresso { id: string; userId: string; userName: string; trilhaId: string; trilhaTitulo?: string; concluido: boolean; tenantId: string; }
 interface QuizResult { id: string; colaborador: string; userId?: string; nota: number; aprovado: boolean; trailTitle?: string; moduleTitle?: string; ia?: boolean; createdAt: any; }
-interface Certificado { id: string; colaboradorNome: string; trilhaTitulo: string; notaFinal: number; emitidoEm: any; tenantId: string; codigoVerificacao?: string; }
+interface Certificado { id: string; colaboradorId?: string; colaboradorNome: string; trilhaTitulo: string; notaFinal: number; emitidoEm: any; tenantId: string; codigoVerificacao?: string; }
 
 function pct(a: number, b: number) { return b === 0 ? 0 : Math.round((a / b) * 100); }
 function formatDate(ts: any) {
@@ -116,7 +116,7 @@ const MeuProgressoView: React.FC = () => {
 
   const myProg  = progresso.filter(p => p.userId === userId || p.userName === userName);
   const myRes   = quizResults.filter(r => r.userId === userId || r.colaborador === userName);
-  const myCerts = certificados.filter(c => c.colaboradorNome === userName);
+  const myCerts = certificados.filter(c => c.colaboradorId === userId || c.colaboradorNome === userName);
 
   const totalMods  = trilhas.reduce((a, t) => a + (t.modulos?.length ?? 0), 0);
   const doneMods   = myProg.filter(p => p.concluido).length;

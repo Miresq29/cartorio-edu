@@ -60,6 +60,7 @@ interface UserData {
 
 interface Certificado {
   id: string;
+  colaboradorId?: string;
   colaboradorNome: string;
   trilhaTitulo: string;
   notaFinal: number;
@@ -331,7 +332,7 @@ const RelatoriosView: React.FC = () => {
         const media = totalAvaliacoes ? Math.round(notas.reduce((a, n) => a + n, 0) / totalAvaliacoes) : 0;
         const prog = progresso.filter(p => p.userId === u.id && p.concluida);
         const cargaHoraria = prog.reduce((a, p) => a + cargaHorariaTrilha(p.trilhaId), 0);
-        const certs = certificados.filter(c => c.colaboradorNome === u.name).length;
+        const certs = certificados.filter(c => c.colaboradorId === u.id || c.colaboradorNome === u.name).length;
         return {
           id: u.id, name: u.name, cargo: u.cargo || '',
           testes: totalAvaliacoes, aprovados: aprov,
@@ -396,7 +397,7 @@ const RelatoriosView: React.FC = () => {
       .map(u => {
         const res = filteredAvaliacoes.filter(r => r.userId === u.id || r.colaborador === u.name);
         const media = res.length ? Math.round(res.reduce((a, r) => a + r.nota, 0) / res.length) : null;
-        const certsUsuario = certificados.filter(c => c.colaboradorNome === u.name);
+        const certsUsuario = certificados.filter(c => c.colaboradorId === u.id || c.colaboradorNome === u.name);
         const certVencido = certsUsuario.length > 0 && certsUsuario.every(c => c.validoAte && new Date(c.validoAte).getTime() < Date.now());
         const semAtividade = res.length === 0;
 
@@ -481,7 +482,7 @@ const RelatoriosView: React.FC = () => {
     const trilhasDoColab = progresso.filter(p => p.userId === colabId);
     const testesDoColab = quizResults.filter(r => r.userId === colabId || r.colaborador === nome);
     const examesDoColab = exames.filter(e => e.userId === colabId);
-    const certsDoColab = certificados.filter(c => c.colaboradorNome === nome);
+    const certsDoColab = certificados.filter(c => c.colaboradorId === colabId || c.colaboradorNome === nome);
     const dadosUser = colab.find(u => u.id === colabId);
     const cargaHorariaColab = trilhasDoColab.filter(p => p.concluida).reduce((a, p) => a + cargaHorariaTrilha(p.trilhaId), 0);
     const codigo = `MJ-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
