@@ -5,6 +5,8 @@ import ErrorBoundary from './components/ErrorBoundary';
 import Sidebar from './components/Sidebar';
 import AccessWindowGate from './components/AccessWindowGate';
 
+const VerificarCertificadoView = lazy(() => import('./features/Certificado/VerificarCertificadoView'));
+
 const LoginView          = lazy(() => import('./features/Auth/LoginView'));
 const ChangePasswordView = lazy(() => import('./features/Auth/ChangePasswordView'));
 const DashboardView      = lazy(() => import('./features/Dashboard/DashboardView'));
@@ -139,14 +141,28 @@ const MainLayout: React.FC = () => {
   return <AccessWindowGate tenantId={state.user.tenantId}>{shell}</AccessWindowGate>;
 };
 
-const App: React.FC = () => (
-  <ErrorBoundary>
-    <ToastProvider>
-      <AppProvider>
-        <MainLayout />
-      </AppProvider>
-    </ToastProvider>
-  </ErrorBoundary>
-);
+const App: React.FC = () => {
+  // Verificação pública de certificado — fica fora do AppProvider de propósito, não exige
+  // login (o caso de uso típico é um auditor externo do CNJ abrindo o link sem conta).
+  if (window.location.pathname.startsWith('/verificar')) {
+    return (
+      <ErrorBoundary>
+        <Suspense fallback={<div style={{ background: '#0A1628', minHeight: '100vh' }} />}>
+          <VerificarCertificadoView />
+        </Suspense>
+      </ErrorBoundary>
+    );
+  }
+
+  return (
+    <ErrorBoundary>
+      <ToastProvider>
+        <AppProvider>
+          <MainLayout />
+        </AppProvider>
+      </ToastProvider>
+    </ErrorBoundary>
+  );
+};
 
 export default App;

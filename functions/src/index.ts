@@ -358,3 +358,52 @@ export const reportLoginResult = onCall(async (request) => {
   });
   return { ok: true };
 });
+
+// ── Verificação pública de certificado ───────────────────────────────────────
+// O "código de verificação" impresso no certificado era antes uma string aleatória
+// puramente decorativa — não existia nada que a conferisse. Agora é um hash SHA-256
+// derivado do próprio ID do documento + dados do certificado (colaborador, treinamento,
+// nota, tenant), calculado aqui e em CertificadoView.tsx (mesma fórmula). Essa function
+// é pública de propósito (sem request.auth) — o caso de uso é um auditor externo do CNJ
+// digitar o código e confirmar autenticidade sem precisar de login.
+function gerarHashVerificacao(docId: string, colaboradorId: string, trilhaTitulo: string, notaFinal: number, tenantId: string): string {
+  const input = `${docId}|${colaboradorId}|${trilhaTitulo}|${notaFinal}|${tenantId}`;
+  const hex = createHash("sha256").update(input).digest("hex").toUpperCase();
+  const code = hex.slice(0, 16);
+  return `MJ-${code.slice(0, 4)}-${code.slice(4, 8)}-${code.slice(8, 12)}-${code.slice(12, 16)}`;
+}
+
+export const verificarCertificado = onCall(async (request) => {
+  const codigo = String(request.data?.codigo || "").trim().toUpperCase();
+  if (!codigo) {
+    throw new HttpsError("invalid-argument", "Código é obrigatório.");
+  }
+
+  const snap = await db.collection("certificados").where("codigoVerificacao", "==", codigo).limit(1).get();
+  if (snap.empty) {
+    return { valido: false };
+  }
+
+  const docSnap = snap.docs[0];
+  const c = docSnap.data();
+  const esperado = gerarHashVerificacao(docSnap.id, c.colaboradorId, c.trilhaTitulo, c.notaFinal, c.tenantId);
+  if (esperado !== codigo) {
+    // O código bate com algum registro, mas os dados do certificado foram alterados
+    // depois da emissão (nota, treinamento etc.) — o hash recalculado não confere mais.
+    return { valido: false, adulterado: true };
+  }
+
+  return {
+    valido: true,
+    colaboradorNome: c.colaboradorNome as string,
+    cargo: (c.cargo as string) || "",
+    cartorio: (c.cartorio as string) || "",
+    trilhaTitulo: c.trilhaTitulo as string,
+    tipo: c.tipo as string,
+    notaFinal: c.notaFinal as number,
+    cargaHoraria: c.cargaHoraria as number,
+    instrutor: (c.instrutor as string) || "",
+    emitidoEm: c.emitidoEm?.toDate ? c.emitidoEm.toDate().toISOString() : null,
+    validoAte: (c.validoAte as string) || null,
+  };
+});
