@@ -485,6 +485,7 @@ const CertificadoView: React.FC = () => {
   const [cartorioNome, setCartorioNome] = useState(tenantId);
   const [showModal, setShowModal] = useState(false);
   const [imprimindo, setImprimindo] = useState<Certificado | null>(null);
+  const [emitindoPendentes, setEmitindoPendentes] = useState(false);
 
   // Load data
   useEffect(() => {
@@ -543,6 +544,67 @@ const CertificadoView: React.FC = () => {
     } catch {
       showToast('Erro ao emitir certificado.', 'error');
     }
+  };
+
+  // Emite em lote o certificado de "exame" para todo colaborador aprovado em algo que ainda
+  // não tem certificado — cobre o caso comum de muita gente passar em provas/trilhas e nenhum
+  // certificado nunca ter sido emitido manualmente (que exige um clique por pessoa/trilha).
+  const emitirPendentes = async () => {
+    setEmitindoPendentes(true);
+    try {
+      const existentes = new Set(certificados.map(c => `${c.colaboradorId}__${c.trilhaTitulo}`));
+      const melhorPorPar = new Map<string, ExameResultado>();
+      exames.filter(e => e.aprovado).forEach(e => {
+        const key = `${e.userId}__${e.fonteTitulo}`;
+        const atual = melhorPorPar.get(key);
+        if (!atual || e.score > atual.score) melhorPorPar.set(key, e);
+      });
+
+      let criados = 0;
+      for (const e of melhorPorPar.values()) {
+        const dedupeKey = `${e.userId}__${e.fonteTitulo}`;
+        if (existentes.has(dedupeKey)) continue;
+        const colabUser = usuarios.find(u => u.id === e.userId);
+        if (!colabUser) continue;
+        const trilhaRef = trilhas.find(t => t.titulo === e.fonteTitulo);
+        const instrutor = trilhaRef?.oficial ? 'Mirian Jabur' : (trilhaRef?.instrutor || 'Mirian Jabur');
+        const cargaHoraria = Math.max(1, trilhaRef?.cargaHoraria || 1);
+        const validoAte = new Date();
+        validoAte.setFullYear(validoAte.getFullYear() + 1);
+
+        await addDoc(collection(db, 'certificados'), {
+          colaboradorId: e.userId,
+          colaboradorNome: colabUser.name,
+          cargo: colabUser.cargo || colabUser.role || '',
+          cartorio: cartorioNome,
+          trilhaTitulo: e.fonteTitulo,
+          tipo: 'exame',
+          notaFinal: e.score,
+          cargaHoraria,
+          instrutor,
+          codigoVerificacao: gerarCodigo(),
+          emitidoEm: serverTimestamp(),
+          emitidoPor: user.name,
+          tenantId,
+          validoAte: validoAte.toISOString(),
+        });
+        existentes.add(dedupeKey);
+        criados++;
+      }
+
+      if (criados > 0) {
+        await addDoc(collection(db, 'auditLogs'), {
+          tipo: 'certificados_emitidos_lote', descricao: `${criados} certificado(s) emitido(s) em lote`,
+          usuario: user.name, usuarioId: user.id, tenantId, createdAt: serverTimestamp(),
+        }).catch(() => {});
+        showToast(`${criados} certificado(s) emitido(s)!`, 'success');
+      } else {
+        showToast('Nenhum certificado pendente — todo mundo aprovado já tem o seu.', 'info');
+      }
+    } catch {
+      showToast('Erro ao emitir certificados pendentes.', 'error');
+    }
+    setEmitindoPendentes(false);
   };
 
   // Imprimir / gerar PDF
@@ -605,10 +667,18 @@ const CertificadoView: React.FC = () => {
             </p>
           </div>
           {isGestor && (
-            <button onClick={() => setShowModal(true)}
-              className="bg-amber-600 hover:bg-amber-500 text-navy px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
-              <i className="fa-solid fa-certificate"></i>Emitir Certificado
-            </button>
+            <div className="flex gap-2">
+              <button onClick={emitirPendentes} disabled={emitindoPendentes}
+                title="Gera automaticamente o certificado de todo colaborador aprovado que ainda não tem um"
+                className="bg-slate-100 hover:bg-slate-200 disabled:opacity-50 text-navy border border-slate-200 px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
+                <i className={`fa-solid ${emitindoPendentes ? 'fa-spinner fa-spin' : 'fa-bolt'}`}></i>
+                {emitindoPendentes ? 'Emitindo...' : 'Emitir Pendentes'}
+              </button>
+              <button onClick={() => setShowModal(true)}
+                className="bg-amber-600 hover:bg-amber-500 text-navy px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
+                <i className="fa-solid fa-certificate"></i>Emitir Certificado
+              </button>
+            </div>
           )}
         </header>
 
