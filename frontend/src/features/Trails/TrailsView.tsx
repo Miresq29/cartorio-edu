@@ -915,7 +915,7 @@ const TrailsView: React.FC = () => {
           Trilhas de <span style={{ color: '#C9A84C' }}>Treinamento</span>
         </h2>
         <p style={{ fontSize: 11, color: '#8A9BB0', fontWeight: 900, textTransform: 'uppercase', letterSpacing: 3, marginTop: 4 }}>
-          Capacitação por perfil de usuário · CartórioEdu
+          Capacitação por perfil de usuário · MJ Consultoria
         </p>
       </div>
 
