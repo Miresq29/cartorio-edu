@@ -291,7 +291,7 @@ const TrilhaCard: React.FC<{
           {tenantLabels && tenantLabels.length > 0 && (
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 8 }}>
               {tenantLabels.map(label => (
-                <span key={label} style={{ background: label === 'Todos os cartórios' ? '#0A162810' : '#eef2ff', color: label === 'Todos os cartórios' ? '#0A1628' : '#4338ca', fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                <span key={label} style={{ background: label === 'Todos os clientes' ? '#0A162810' : '#eef2ff', color: label === 'Todos os clientes' ? '#0A1628' : '#4338ca', fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                   <i className="fa-solid fa-building" style={{ marginRight: 4 }}></i>{label}
                 </span>
               ))}
@@ -800,7 +800,7 @@ const TrailsView: React.FC = () => {
   }, [superAdminGlobal]);
 
   const rotulosCartorio = (t: Trilha) =>
-    t.tenantIds.includes('GLOBAL') ? ['Todos os cartórios'] : t.tenantIds.map(id => tenantNomes[id] || id);
+    t.tenantIds.includes('GLOBAL') ? ['Todos os clientes'] : t.tenantIds.map(id => tenantNomes[id] || id);
 
   const [filtroCartorio, setFiltroCartorio] = useState('todos');
   const trilhasFiltradas = (!superAdminGlobal || filtroCartorio === 'todos')
@@ -983,10 +983,10 @@ const TrailsView: React.FC = () => {
         <div>
           {superAdminGlobal && trilhas.length > 0 && (
             <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
-              <label style={{ fontSize: 10, fontWeight: 900, color: '#8A9BB0', textTransform: 'uppercase', letterSpacing: 1 }}>Cartório</label>
+              <label style={{ fontSize: 10, fontWeight: 900, color: '#8A9BB0', textTransform: 'uppercase', letterSpacing: 1 }}>Cliente</label>
               <select value={filtroCartorio} onChange={e => setFiltroCartorio(e.target.value)}
                 style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '8px 12px', color: '#0A1628', fontSize: 12, fontWeight: 700 }}>
-                <option value="todos">Todos os cartórios ({trilhas.length})</option>
+                <option value="todos">Todos os clientes ({trilhas.length})</option>
                 {Object.entries(tenantNomes).sort((a, b) => a[1].localeCompare(b[1])).map(([id, nome]) => (
                   <option key={id} value={id}>{nome}</option>
                 ))}
