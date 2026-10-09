@@ -178,6 +178,7 @@ const UsersView: React.FC = () => {
 
   const handleSave = async () => {
     if (!form.name || !form.email) { showToast('Preencha nome e e-mail.', 'error'); return; }
+    if (!/^\S{2,}(\s+\S{2,})+$/.test(form.name.trim())) { showToast('Informe nome e sobrenome completos.', 'error'); return; }
     if (superAdminGlobal && form.role !== 'equipe_mj' && form.role !== 'SUPERADMIN' && !form.tenantId) { showToast('Selecione o cliente para este colaborador.', 'error'); return; }
     setSaving(true);
     try {

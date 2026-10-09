@@ -86,6 +86,11 @@ export const createCollaborator = onCall(async (request) => {
   if (!name || !email || !password) {
     throw new HttpsError("invalid-argument", "Nome, e-mail e senha são obrigatórios.");
   }
+  // Exige nome e sobrenome — pelo menos duas palavras com 2+ letras cada, para evitar
+  // cadastros incompletos como "João" ou iniciais soltas tipo "J S".
+  if (!/^\S{2,}(\s+\S{2,})+$/.test(name)) {
+    throw new HttpsError("invalid-argument", "Informe nome e sobrenome completos.");
+  }
   if (!CREATABLE_ROLES.includes(role)) {
     throw new HttpsError("invalid-argument", "Perfil de acesso inválido.");
   }
