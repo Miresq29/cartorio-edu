@@ -261,7 +261,8 @@ const TrilhaCard: React.FC<{
   onDelete?: () => void;
   onView?: () => void;
   isGestor: boolean;
-}> = ({ trilha, progresso, onEdit, onDelete, onView, isGestor }) => {
+  tenantLabels?: string[];
+}> = ({ trilha, progresso, onEdit, onDelete, onView, isGestor, tenantLabels }) => {
   const obrigatorios = trilha.modulos.filter(m => m.tipo === 'obrigatorio').length;
   const opcionais = trilha.modulos.filter(m => m.tipo === 'opcional').length;
   const perc = progresso ? progresso.percentualObrigatorios : 0;
@@ -287,6 +288,15 @@ const TrilhaCard: React.FC<{
             )}
           </div>
           <p style={{ fontSize: 12, color: '#8A9BB0', lineHeight: 1.5 }}>{trilha.descricao}</p>
+          {tenantLabels && tenantLabels.length > 0 && (
+            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 8 }}>
+              {tenantLabels.map(label => (
+                <span key={label} style={{ background: label === 'Todos os cartórios' ? '#0A162810' : '#eef2ff', color: label === 'Todos os cartórios' ? '#0A1628' : '#4338ca', fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                  <i className="fa-solid fa-building" style={{ marginRight: 4 }}></i>{label}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
         {isGestor && (
           <div style={{ display: 'flex', gap: 6, flexShrink: 0, marginLeft: 12 }}>
@@ -778,6 +788,25 @@ const TrailsView: React.FC = () => {
     });
   }, [tenantId, superAdminGlobal]);
 
+  // Nomes dos cartórios, para exibir/filtrar trilhas por cliente no modo global SUPERADMIN
+  const [tenantNomes, setTenantNomes] = useState<Record<string, string>>({});
+  useEffect(() => {
+    if (!superAdminGlobal) return;
+    return onSnapshot(collection(db, 'tenants'), snap => {
+      const mapa: Record<string, string> = {};
+      snap.docs.forEach(d => { mapa[d.id] = (d.data() as any).name || d.id; });
+      setTenantNomes(mapa);
+    });
+  }, [superAdminGlobal]);
+
+  const rotulosCartorio = (t: Trilha) =>
+    t.tenantIds.includes('GLOBAL') ? ['Todos os cartórios'] : t.tenantIds.map(id => tenantNomes[id] || id);
+
+  const [filtroCartorio, setFiltroCartorio] = useState('todos');
+  const trilhasFiltradas = (!superAdminGlobal || filtroCartorio === 'todos')
+    ? trilhas
+    : trilhas.filter(t => t.tenantIds.includes(filtroCartorio));
+
   // Load my progressos
   useEffect(() => {
     const q = query(collection(db, 'trilhasProgresso'),
@@ -952,7 +981,19 @@ const TrailsView: React.FC = () => {
       {/* ── Todas as Trilhas (gestor) ── */}
       {tab === 'todas' && isGestor && (
         <div>
-          {trilhas.length === 0 ? (
+          {superAdminGlobal && trilhas.length > 0 && (
+            <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
+              <label style={{ fontSize: 10, fontWeight: 900, color: '#8A9BB0', textTransform: 'uppercase', letterSpacing: 1 }}>Cartório</label>
+              <select value={filtroCartorio} onChange={e => setFiltroCartorio(e.target.value)}
+                style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '8px 12px', color: '#0A1628', fontSize: 12, fontWeight: 700 }}>
+                <option value="todos">Todos os cartórios ({trilhas.length})</option>
+                {Object.entries(tenantNomes).sort((a, b) => a[1].localeCompare(b[1])).map(([id, nome]) => (
+                  <option key={id} value={id}>{nome}</option>
+                ))}
+              </select>
+            </div>
+          )}
+          {trilhasFiltradas.length === 0 ? (
             <div style={{ textAlign: 'center', padding: 60, color: '#8A9BB0' }}>
               <i className="fa-solid fa-folder-open" style={{ fontSize: 40, marginBottom: 16, display: 'block', color: '#C9A84C' }}></i>
               <p style={{ fontWeight: 900, fontSize: 16, marginBottom: 8, color: '#0A1628' }}>Nenhuma trilha criada</p>
@@ -968,11 +1009,11 @@ const TrailsView: React.FC = () => {
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 16 }}>
-              {trilhas.map(t => {
+              {trilhasFiltradas.map(t => {
                 const stats = statsProgresso(t.id);
                 return (
                   <div key={t.id} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 24, padding: 24 }}>
-                    <TrilhaCard trilha={t} isGestor={true} onEdit={() => iniciarEditar(t)} onDelete={() => deletarTrilha(t.id)} onView={() => abrirTrilha(t)} />
+                    <TrilhaCard trilha={t} isGestor={true} onEdit={() => iniciarEditar(t)} onDelete={() => deletarTrilha(t.id)} onView={() => abrirTrilha(t)} tenantLabels={superAdminGlobal ? rotulosCartorio(t) : undefined} />
                     <div style={{ marginTop: 16, padding: '12px 16px', background: '#f8fafc', borderRadius: 12, display: 'flex', justifyContent: 'space-between' }}>
                       <span style={{ fontSize: 11, color: '#8A9BB0' }}>
                         <i className="fa-solid fa-users" style={{ marginRight: 6, color: '#0A1628' }}></i>{stats.total} participante{stats.total !== 1 ? 's' : ''}
