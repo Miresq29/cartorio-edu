@@ -155,7 +155,7 @@ const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
         padding: '0 16mm',
       }}>
         <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '7pt' }}>
-          Plataforma CartórioLearn · MJ Consultoria LGPD
+          Plataforma Integra-Academy · MJ Consultoria LGPD
         </span>
         <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '7pt' }}>
           Código: {cert.codigoVerificacao}
@@ -176,7 +176,7 @@ const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
           }}>⚖️</div>
           <div>
             <div className="text-navy" style={{ fontSize: '10pt', fontWeight: 800, letterSpacing: '2px', textTransform: 'uppercase' }}>
-              CartórioLearn
+              Integra-Academy
             </div>
             <div style={{ fontSize: '6pt', color: '#888', letterSpacing: '1px', textTransform: 'uppercase' }}>
               MJ Consultoria · Plataforma de Conformidade Notarial
