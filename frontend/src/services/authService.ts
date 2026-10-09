@@ -1,4 +1,5 @@
-import { auth, db } from "./firebase";
+import { auth, db, functions } from "./firebase";
+import { httpsCallable } from "firebase/functions";
 import {
   signInWithEmailAndPassword,
   signOut,
@@ -10,7 +11,7 @@ import {
   EmailAuthProvider
 } from "firebase/auth";
 import {
-  doc, getDoc, updateDoc, setDoc,
+  doc, getDoc, updateDoc,
   collection, addDoc, serverTimestamp
 } from "firebase/firestore";
 import { User } from "../types";
@@ -36,46 +37,31 @@ const logAudit = async (action: string, userId: string, email: string, details: 
   } catch { /* silencioso — auditoria é best-effort */ }
 };
 
-const BRUTE_FORCE_MAX_ATTEMPTS = 20;
-const BRUTE_FORCE_LOCKOUT_MS = 1 * 60 * 1000;
+// Controle de tentativas de login agora roda nas cloud functions checkLoginLock/
+// reportLoginResult (functions/src/index.ts) — o Firestore nao aceita mais leitura/escrita
+// direta em loginAttempts (fechava um oraculo de enumeracao de e-mail + DoS de bloqueio
+// direcionado que existia quando o client lia/gravava isso direto, sem autenticacao).
+const checkLoginLockFn = httpsCallable<{ email: string }, { locked: boolean; minutesLeft?: number }>(functions, "checkLoginLock");
+const reportLoginResultFn = httpsCallable<{ email: string; success: boolean }, { ok: boolean }>(functions, "reportLoginResult");
 
 const checkBruteForce = async (email: string): Promise<void> => {
   try {
-    const lockRef = doc(db, "loginAttempts", email.toLowerCase().replace(/[.@]/g, "_"));
-    const lockDoc = await getDoc(lockRef);
-    if (lockDoc.exists()) {
-      const { lockedUntil } = lockDoc.data();
-      if (lockedUntil) {
-        const lockedUntilDate = lockedUntil.toDate ? lockedUntil.toDate() : new Date(lockedUntil);
-        if (new Date() < lockedUntilDate) {
-          const minutesLeft = Math.ceil((lockedUntilDate.getTime() - Date.now()) / 60000);
-          throw new Error(`Conta bloqueada por tentativas invalidas. Tente novamente em ${minutesLeft} minuto(s).`);
-        }
-      }
+    const { data } = await checkLoginLockFn({ email });
+    if (data.locked) {
+      throw new Error(`Conta bloqueada por tentativas invalidas. Tente novamente em ${data.minutesLeft} minuto(s).`);
     }
   } catch (e: any) {
     if (e.message?.includes("Conta bloqueada")) throw e;
-    console.warn("loginAttempts check ignorado:", e.code || e.message);
+    console.warn("checkLoginLock ignorado:", e.code || e.message);
   }
 };
 
 const registerFailedAttempt = async (email: string): Promise<void> => {
-  try {
-    const key = email.toLowerCase().replace(/[.@]/g, "_");
-    const lockRef = doc(db, "loginAttempts", key);
-    const lockDoc = await getDoc(lockRef);
-    let attempts = lockDoc.exists() ? (lockDoc.data().attempts || 0) + 1 : 1;
-    const updateData: any = { attempts, lastAttempt: serverTimestamp() };
-    if (attempts >= BRUTE_FORCE_MAX_ATTEMPTS) { updateData.lockedUntil = new Date(Date.now() + BRUTE_FORCE_LOCKOUT_MS); updateData.attempts = 0; }
-    await setDoc(lockRef, updateData, { merge: true });
-  } catch (e: any) { console.warn("registerFailedAttempt ignorado:", e.code || e.message); }
+  try { await reportLoginResultFn({ email, success: false }); } catch (e: any) { console.warn("reportLoginResult (fail) ignorado:", e.code || e.message); }
 };
 
 const clearFailedAttempts = async (email: string): Promise<void> => {
-  try {
-    const key = email.toLowerCase().replace(/[.@]/g, "_");
-    await setDoc(doc(db, "loginAttempts", key), { attempts: 0, lockedUntil: null, lastAttempt: serverTimestamp() }, { merge: true });
-  } catch (e: any) { console.warn("clearFailedAttempts ignorado:", e.code || e.message); }
+  try { await reportLoginResultFn({ email, success: true }); } catch (e: any) { console.warn("reportLoginResult (success) ignorado:", e.code || e.message); }
 };
 
 export const AuthService = {

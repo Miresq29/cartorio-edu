@@ -1,5 +1,6 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
+import { createHash } from "node:crypto";
 
 admin.initializeApp();
 
@@ -31,6 +32,26 @@ async function getCallerProfile(uid: string): Promise<CallerProfile> {
   return { uid, role: data.role || "", tenantId: data.tenantId || "", active: true };
 }
 
+// Limita quantas vezes um usuário pode chamar uma função sensível em uma janela de tempo —
+// uma conta comprometida (ou gestor mal-intencionado) não consegue criar contas/cartorios em
+// massa ou martelar reset de senhas só porque tem um token valido. Contador por uid+acao em
+// rateLimits/, nunca exposto ao cliente (só gravado aqui, via Admin SDK).
+async function enforceRateLimit(uid: string, action: string, maxPerWindow: number, windowMs: number): Promise<void> {
+  const ref = db.collection("rateLimits").doc(`${uid}_${action}`);
+  await db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const now = Date.now();
+    if (!snap.exists || now - (snap.data()!.windowStart as number) > windowMs) {
+      tx.set(ref, { count: 1, windowStart: now });
+      return;
+    }
+    if ((snap.data()!.count as number) >= maxPerWindow) {
+      throw new HttpsError("resource-exhausted", "Muitas solicitações em pouco tempo. Aguarde um instante e tente novamente.");
+    }
+    tx.update(ref, { count: admin.firestore.FieldValue.increment(1) });
+  });
+}
+
 export const createTenant = onCall(async (request) => {
   if (!request.auth) {
     throw new HttpsError("unauthenticated", "Login necessário.");
@@ -39,6 +60,7 @@ export const createTenant = onCall(async (request) => {
   if (caller.role !== "SUPERADMIN") {
     throw new HttpsError("permission-denied", "Apenas SUPERADMIN pode criar cartórios.");
   }
+  await enforceRateLimit(caller.uid, "createTenant", 5, 60_000);
 
   const rawName = String(request.data?.name || "").trim();
   const rawSlug = String(request.data?.slug || "").trim();
@@ -75,6 +97,7 @@ export const createCollaborator = onCall(async (request) => {
   if (!GESTOR_ROLES.includes(caller.role)) {
     throw new HttpsError("permission-denied", "Sem permissão para criar colaboradores.");
   }
+  await enforceRateLimit(caller.uid, "createCollaborator", 20, 60_000);
 
   const name = String(request.data?.name || "").trim();
   const email = String(request.data?.email || "").trim().toLowerCase();
@@ -183,6 +206,7 @@ export const resetTenantPasswords = onCall(async (request) => {
   if (!["SUPERADMIN", "equipe_mj"].includes(caller.role)) {
     throw new HttpsError("permission-denied", "Sem permissão para redefinir senhas em massa.");
   }
+  await enforceRateLimit(caller.uid, "resetTenantPasswords", 3, 60_000);
 
   const tenantId = String(request.data?.tenantId || "").trim();
   const password = String(request.data?.password || "");
@@ -218,4 +242,58 @@ export const resetTenantPasswords = onCall(async (request) => {
   }
 
   return { total: usersSnap.size, updated, failed };
+});
+
+// ── Controle de tentativas de login (anti brute-force) ──────────────────────
+// Roda ANTES da sessao Firebase Auth existir, entao estas duas funcoes nao exigem
+// request.auth de proposito. Antes, o client gravava direto no Firestore num doc
+// cujo ID era so o e-mail com "." e "@" trocados por "_" — reversivel e com leitura
+// publica, dava pra qualquer um verificar/isolar o status de bloqueio de qualquer
+// e-mail (oraculo de enumeracao) e empurrar lockedUntil pra frente em loop (DoS
+// direcionado). Mover pra ca: o ID agora e um hash, e o Firestore nao aceita mais
+// leitura/escrita direta nessa colecao (ver firestore.rules) — so por aqui.
+const LOGIN_MAX_ATTEMPTS = 20;
+const LOGIN_LOCKOUT_MS = 60_000;
+
+function loginAttemptKey(email: string): string {
+  return createHash("sha256").update(email.trim().toLowerCase()).digest("hex");
+}
+
+export const checkLoginLock = onCall(async (request) => {
+  const email = String(request.data?.email || "").trim().toLowerCase();
+  if (!email) throw new HttpsError("invalid-argument", "E-mail é obrigatório.");
+  const snap = await db.collection("loginAttempts").doc(loginAttemptKey(email)).get();
+  if (!snap.exists) return { locked: false };
+  const lockedUntil = snap.data()!.lockedUntil as admin.firestore.Timestamp | null | undefined;
+  if (lockedUntil && lockedUntil.toMillis() > Date.now()) {
+    return { locked: true, minutesLeft: Math.ceil((lockedUntil.toMillis() - Date.now()) / 60_000) };
+  }
+  return { locked: false };
+});
+
+export const reportLoginResult = onCall(async (request) => {
+  const email = String(request.data?.email || "").trim().toLowerCase();
+  const success = request.data?.success === true;
+  if (!email) throw new HttpsError("invalid-argument", "E-mail é obrigatório.");
+  const ref = db.collection("loginAttempts").doc(loginAttemptKey(email));
+
+  if (success) {
+    await ref.set(
+      { attempts: 0, lockedUntil: null, lastAttempt: admin.firestore.FieldValue.serverTimestamp() },
+      { merge: true }
+    );
+    return { ok: true };
+  }
+
+  await db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const attempts = (snap.exists ? (snap.data()!.attempts as number) || 0 : 0) + 1;
+    const update: Record<string, unknown> = { attempts, lastAttempt: admin.firestore.FieldValue.serverTimestamp() };
+    if (attempts >= LOGIN_MAX_ATTEMPTS) {
+      update.lockedUntil = admin.firestore.Timestamp.fromMillis(Date.now() + LOGIN_LOCKOUT_MS);
+      update.attempts = 0;
+    }
+    tx.set(ref, update, { merge: true });
+  });
+  return { ok: true };
 });

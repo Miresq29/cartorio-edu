@@ -27,6 +27,11 @@ service cloud.firestore {
     function newSameTenant() { return request.resource.data.get('tenantId', myTenant()) == myTenant(); }
     function tenantUnchanged() { return request.resource.data.get('tenantId', '') == resource.data.get('tenantId', ''); }
     function isSelfData() { return request.resource.data.get('userId', '') == request.auth.uid; }
+    // So valida o formato quando o nome de fato muda nesta escrita — evita travar updates
+    // de campos nao relacionados (ativo, cargo, tenantId etc.) em cadastros antigos que ainda
+    // tem nome de uma palavra so, de antes dessa regra existir.
+    function nameChanged() { return request.resource.data.get('name', '') != resource.data.get('name', ''); }
+    function validNameOnChange() { return !nameChanged() || request.resource.data.name.matches('^\\S{2,}(\\s+\\S{2,})+$'); }
 
     // Troca de senha no primeiro acesso: o proprio usuario grava isFirstLogin/passwordHistory
     // no seu doc. Restrito a esses campos e proibido alterar role/tenantId/active/email.
@@ -76,29 +81,25 @@ service cloud.firestore {
         || isEquipeMJ()
         || request.auth.uid == userId
         || (isActive() && resource.data.get('tenantId', '') == myTenant());
-      allow create: if isSuperAdmin() || isEquipeMJ() || (isGestor() && newSameTenant());
+      allow create: if request.resource.data.name.matches('^\\S{2,}(\\s+\\S{2,})+$')
+        && (isSuperAdmin() || isEquipeMJ() || (isGestor() && newSameTenant()));
       // Equipe MJ pode editar colaboradores de qualquer cartorio, mas nao pode trocar role
       // (evita promover a si mesmo ou a terceiros a SUPERADMIN/equipe_mj).
-      allow update: if isSuperAdmin()
-        || ((isEquipeMJ() || (isGestor() && sameTenant())) && tenantUnchanged()
-            && request.resource.data.get('role', '') == resource.data.get('role', ''))
-        || selfPasswordUpdate(userId);
+      allow update: if validNameOnChange()
+        && (isSuperAdmin()
+            || ((isEquipeMJ() || (isGestor() && sameTenant())) && tenantUnchanged()
+                && request.resource.data.get('role', '') == resource.data.get('role', ''))
+            || selfPasswordUpdate(userId));
       allow delete: if isSuperAdmin() || isEquipeMJ();
     }
 
-    // Fluxo de login roda sem sessao Firebase Auth ainda (nao da pra exigir isAuthenticated aqui).
-    // Restringe o formato do documento para impedir bloqueio arbitrario/indefinido de contas alheias.
+    // Controle de tentativas de login agora roda só nas cloud functions checkLoginLock/
+    // reportLoginResult (Admin SDK, ignora estas regras) — antes o client lia/gravava direto
+    // aqui sem autenticação, o que permitia enumerar e-mails cadastrados (lendo o doc por ID
+    // reversível) e manter uma conta alheia bloqueada indefinidamente (empurrando lockedUntil
+    // em loop). Bloqueado por completo pro cliente.
     match /loginAttempts/{docId} {
-      allow read: if true;
-      allow create: if request.resource.data.keys().hasOnly(['attempts', 'lastAttempt'])
-                    && request.resource.data.attempts == 1;
-      allow update: if request.resource.data.keys().hasOnly(['attempts', 'lastAttempt', 'lockedUntil'])
-                    && request.resource.data.attempts is int
-                    && request.resource.data.attempts >= 0
-                    && request.resource.data.attempts <= resource.data.get('attempts', 0) + 1
-                    && (!('lockedUntil' in request.resource.data)
-                        || request.resource.data.lockedUntil == null
-                        || request.resource.data.lockedUntil <= request.time + duration.value(5, 'm'));
+      allow read, write: if false;
     }
 
     match /auditLogs/{docId} {
