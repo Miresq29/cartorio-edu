@@ -1,7 +1,8 @@
 /**
- * SERVIÇO DE INTEGRAÇÃO COM GEMINI (FRONTEND DIRETO)
- * Chama a API do Google Gemini diretamente.
- * Chave configurada via VITE_GEMINI_API_KEY no Vercel.
+ * SERVIÇO DE INTEGRAÇÃO COM GEMINI
+ * Chama a cloud function `geminiGenerate`, que faz a requisição para a API do Google
+ * Gemini no servidor — a chave de API nunca é enviada ao navegador (antes ficava em
+ * VITE_GEMINI_API_KEY, extraível por qualquer um que inspecionasse o bundle JS publicado).
  *
  * OTIMIZAÇÕES APLICADAS:
  * - maxOutputTokens ajustado por função (era 8192 em todas)
@@ -10,11 +11,10 @@
  * - generateTrainingOptions: context truncado + estrutura simplificada
  */
 
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+import { httpsCallable } from 'firebase/functions';
+import { functions } from './firebase';
 
-// gemini-2.0-flash: 1500 req/dia grátis, bom custo-benefício
-const GEMINI_MODEL = 'gemini-flash-latest';
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+const geminiGenerateFn = httpsCallable<{ prompt: string; maxOutputTokens: number; jsonMode: boolean }, { text: string }>(functions, 'geminiGenerate');
 
 // ─── Cache persistente para resumos (localStorage) ───────────────────────────
 // Persiste entre sessões — evita rechamar a API para o mesmo doc+tipo
@@ -78,54 +78,15 @@ const callGemini = async (
   maxOutputTokens: number = 1024,
   jsonMode: boolean = false
 ): Promise<string> => {
-  if (!GEMINI_API_KEY) {
-    console.error('[Gemini] VITE_GEMINI_API_KEY não configurada.');
-    throw new Error('Chave da API Gemini não configurada. Contate o administrador.');
+  console.info(`[Gemini] input: ${prompt.length} chars | maxOut: ${maxOutputTokens}`);
+  try {
+    const { data } = await geminiGenerateFn({ prompt, maxOutputTokens, jsonMode });
+    return data.text;
+  } catch (err: any) {
+    // HttpsError do callable chega aqui com err.code tipo "functions/resource-exhausted" —
+    // repassa a mensagem que a function já formatou em pt-BR.
+    throw new Error(err.message || 'Falha ao gerar conteúdo com IA.');
   }
-  console.info(
-    `[Gemini] ${GEMINI_MODEL} | input: ${prompt.length} chars | maxOut: ${maxOutputTokens}`
-  );
-
-  const response = await fetch(GEMINI_API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-goog-api-key': GEMINI_API_KEY },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: 0.2,
-        maxOutputTokens,
-        // gemini-flash-latest (2.5) "pensa" antes de responder por padrão, consumindo
-        // parte do maxOutputTokens com raciocínio interno — sobrava pouco (ou nada)
-        // para o JSON em si, cortando a resposta mesmo com limite alto. Desliga o
-        // thinking pra reservar o budget inteiro pra resposta.
-        thinkingConfig: { thinkingBudget: 0 },
-        ...(jsonMode ? { responseMimeType: 'application/json' } : {}),
-      },
-    }),
-  });
-
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    const msg = err?.error?.message || response.statusText;
-    const status = response.status;
-    if (status === 400 && msg?.includes('blocked')) {
-      throw new Error('Chave de API bloqueada. Configure VITE_GEMINI_API_KEY no Vercel.');
-    }
-    if (status === 429) {
-      throw new Error('Cota da API Gemini esgotada. Aguarde ou verifique ai.google.dev.');
-    }
-    throw new Error(`[Gemini ${status}] ${msg}`);
-  }
-
-  const data = await response.json();
-  const candidate = data?.candidates?.[0];
-  // MAX_TOKENS = a resposta foi cortada no meio antes de terminar — se for JSON,
-  // vira "Unterminated string"/"Unexpected end of JSON input" confuso no JSON.parse.
-  // Falha aqui com uma mensagem clara em vez de deixar o parser explodir.
-  if (candidate?.finishReason === 'MAX_TOKENS') {
-    throw new Error('A resposta da IA foi cortada por exceder o limite de tokens. Tente novamente com menos questões/itens.');
-  }
-  return candidate?.content?.parts?.[0]?.text || 'Sem resposta da IA.';
 };
 
 // ─── Chat principal ───────────────────────────────────────────────────────────

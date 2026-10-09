@@ -1,4 +1,5 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { defineSecret } from "firebase-functions/params";
 import * as admin from "firebase-admin";
 import { createHash } from "node:crypto";
 
@@ -242,6 +243,66 @@ export const resetTenantPasswords = onCall(async (request) => {
   }
 
   return { total: usersSnap.size, updated, failed };
+});
+
+// ── Proxy para a API do Gemini ───────────────────────────────────────────────
+// Antes, o frontend chamava generativelanguage.googleapis.com direto do navegador com
+// a chave em VITE_GEMINI_API_KEY — qualquer um que inspecionasse o bundle JS publicado
+// extraía a chave e usava a cota (e a fatura) da MJ Consultoria. Agora a chave fica só
+// aqui, como secret do Cloud Functions, e o cliente chama esta function autenticada.
+const GEMINI_API_KEY = defineSecret("GEMINI_API_KEY");
+const GEMINI_MODEL = "gemini-flash-latest";
+
+export const geminiGenerate = onCall({ secrets: [GEMINI_API_KEY] }, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Login necessário.");
+  }
+  const caller = await getCallerProfile(request.auth.uid);
+  await enforceRateLimit(caller.uid, "geminiGenerate", 30, 60_000);
+
+  const prompt = String(request.data?.prompt || "");
+  if (!prompt) {
+    throw new HttpsError("invalid-argument", "Prompt é obrigatório.");
+  }
+  const maxOutputTokens = Number(request.data?.maxOutputTokens) || 1024;
+  const jsonMode = request.data?.jsonMode === true;
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-goog-api-key": GEMINI_API_KEY.value() },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.2,
+        maxOutputTokens,
+        // gemini-flash-latest (2.5) "pensa" antes de responder por padrao, consumindo
+        // parte do maxOutputTokens com raciocinio interno — desliga pra reservar o
+        // budget inteiro pra resposta (igual ao comportamento anterior no frontend).
+        thinkingConfig: { thinkingBudget: 0 },
+        ...(jsonMode ? { responseMimeType: "application/json" } : {}),
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const err: any = await response.json().catch(() => ({}));
+    const msg = err?.error?.message || response.statusText;
+    if (response.status === 429) {
+      throw new HttpsError("resource-exhausted", "Cota da API Gemini esgotada. Aguarde ou verifique ai.google.dev.");
+    }
+    throw new HttpsError("internal", `[Gemini ${response.status}] ${msg}`);
+  }
+
+  const data: any = await response.json();
+  const candidate = data?.candidates?.[0];
+  if (candidate?.finishReason === "MAX_TOKENS") {
+    throw new HttpsError(
+      "resource-exhausted",
+      "A resposta da IA foi cortada por exceder o limite de tokens. Tente novamente com menos questões/itens."
+    );
+  }
+  return { text: candidate?.content?.parts?.[0]?.text || "Sem resposta da IA." };
 });
 
 // ── Controle de tentativas de login (anti brute-force) ──────────────────────
