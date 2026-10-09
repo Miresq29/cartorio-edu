@@ -768,12 +768,15 @@ const TrailsView: React.FC = () => {
   });
 
   // Load trilhas
+  const superAdminGlobal = isSuperAdmin && !state.activeTenantId;
   useEffect(() => {
-    const q = query(collection(db, 'trilhas'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']));
+    const q = superAdminGlobal
+      ? query(collection(db, 'trilhas'))
+      : query(collection(db, 'trilhas'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']));
     return onSnapshot(q, snap => {
       setTrilhas(snap.docs.map(d => ({ id: d.id, ...d.data() } as Trilha)));
     });
-  }, [tenantId]);
+  }, [tenantId, superAdminGlobal]);
 
   // Load my progressos
   useEffect(() => {
