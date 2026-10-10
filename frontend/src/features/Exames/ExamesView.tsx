@@ -13,7 +13,7 @@ import { VERIFICACAO_BASE_URL } from '../../utils/certificadoVerificacao';
 
 const emitirCertificadoExameFn = httpsCallable<
   { trilhaTitulo: string },
-  { codigoVerificacao: string; novo: boolean; cpf?: string; instrutor?: string; instrutorCargo?: string; assinaturaUrl?: string; localEmissao?: string }
+  { codigoVerificacao: string; novo: boolean; instrutor?: string; instrutorCargo?: string; assinaturaUrl?: string; localEmissao?: string }
 >(functions, 'emitirCertificadoExame');
 
 /* ─── tipos internos ──────────────────────────────────────── */
@@ -358,7 +358,6 @@ const ExamesView: React.FC = () => {
     let instrutorCargo = 'DPO · MJ Consultoria LGPD';
     let assinaturaUrl = '';
     let localEmissao = 'Belo Horizonte';
-    let cpf = '';
     try {
       // Grava direto no Firestore exigiria que o colaborador tivesse permissao de escrita
       // em certificados/ (coleção é somente-leitura pro cliente) — por isso a emissao roda numa
@@ -370,7 +369,6 @@ const ExamesView: React.FC = () => {
       if (data.instrutorCargo) instrutorCargo = data.instrutorCargo;
       if (data.assinaturaUrl) assinaturaUrl = data.assinaturaUrl;
       if (data.localEmissao) localEmissao = data.localEmissao.split('/')[0];
-      if (data.cpf) cpf = data.cpf;
     } catch {
       showToast('Não foi possível registrar o certificado — tente novamente.', 'error');
       return;
@@ -420,7 +418,7 @@ const ExamesView: React.FC = () => {
       <div class="tipo">✦ Exame de Avaliação ✦</div>
       <p class="texto">Certificamos, para os devidos fins, que</p>
       <p class="nome">${escapeHtml(user.name)}</p>
-      ${empresaNome ? `<p class="empresa">${escapeHtml(empresaNome)}${cpf ? ' · CPF ' + escapeHtml(cpf) : ''}</p>` : ''}
+      ${empresaNome ? `<p class="empresa">${escapeHtml(empresaNome)}</p>` : ''}
       <p class="texto" style="margin-top:16px">foi aprovado(a) no exame de avaliação de conhecimentos referente a</p>
       <p class="curso">"${escapeHtml(fonteEscolhida?.titulo || 'Treinamento')}"</p>
       <p class="detalhes">

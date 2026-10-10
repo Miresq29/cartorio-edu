@@ -439,14 +439,41 @@ interface DadosCertificado {
   emissoraRazaoSocial: string;
   emissoraCnpj: string;
   localEmissao: string;
+  dataInicio: string;
   dataConclusao: string;
   dataEmissao: string;
   emitidoPor: string;
   validoAte: string;
 }
 
+// O hash cobre só os campos que atestam o conteúdo em si do certificado (identidade,
+// curso, nota, datas) — exatamente o conjunto pedido: codigo, versaoModelo, tenantId, uid,
+// nome, cpf, cargo, serventia, curso, cargaHorariaHoras, modalidade, dataInicio, dataConclusao,
+// aproveitamento, notaMinima, dataEmissao. Os nomes gravados no Firestore (colaboradorId,
+// trilhaTitulo, cartorio, notaFinal, cargaHoraria...) são os mesmos de sempre, pra não quebrar
+// Relatórios/Dossiê/Meu Progresso, que já leem esses campos — o mapeamento pro nome "canônico"
+// acontece só na hora de montar o JSON que é hasheado. Instrutor/assinatura/emissora NÃO entram
+// no hash (são metadados de exibição, config da plataforma — não "fatos" sobre a aprovação).
 function hashCertificado(codigo: string, dados: DadosCertificado): string {
-  return createHash("sha256").update(canonicalStringify({ codigo, versaoModelo: 2, ...dados })).digest("hex");
+  const canonico = {
+    codigo,
+    versaoModelo: 2,
+    tenantId: dados.tenantId,
+    uid: dados.colaboradorId,
+    nome: dados.colaboradorNome,
+    cpf: dados.cpf || "",
+    cargo: dados.cargo,
+    serventia: dados.cartorio,
+    curso: dados.trilhaTitulo,
+    cargaHorariaHoras: dados.cargaHoraria,
+    modalidade: dados.modalidade,
+    dataInicio: dados.dataInicio,
+    dataConclusao: dados.dataConclusao,
+    aproveitamento: dados.notaFinal,
+    notaMinima: dados.notaMinima,
+    dataEmissao: dados.dataEmissao,
+  };
+  return createHash("sha256").update(canonicalStringify(canonico)).digest("hex");
 }
 
 // Mesma combinação de campos usada desde o modelo 1 pra identificar "o mesmo certificado":
@@ -517,7 +544,7 @@ export const verificarCertificado = onCall(async (request) => {
       modalidade: c.modalidade || "", instrutor: c.instrutor || "", instrutorCargo: c.instrutorCargo || "",
       instrutorQualificacoes: c.instrutorQualificacoes || "", assinaturaUrl: c.assinaturaUrl || "",
       emissoraRazaoSocial: c.emissoraRazaoSocial || "", emissoraCnpj: c.emissoraCnpj || "",
-      localEmissao: c.localEmissao || "", dataConclusao: c.dataConclusao || "", dataEmissao: c.dataEmissao || "",
+      localEmissao: c.localEmissao || "", dataInicio: c.dataInicio || "", dataConclusao: c.dataConclusao || "", dataEmissao: c.dataEmissao || "",
       emitidoPor: c.emitidoPor || "", validoAte: c.validoAte || "",
     };
     adulterado = hashCertificado(docSnap.id, dados) !== c.hash;
@@ -531,18 +558,22 @@ export const verificarCertificado = onCall(async (request) => {
     return { valido: false, adulterado: true };
   }
 
+  // Minimização LGPD: esta function é pública (sem login) — nunca devolve CPF, uid ou e-mail,
+  // só o que é necessário pra confirmar autenticidade (nome, curso, nota, datas, status do hash).
   return {
     valido: true,
     versaoModelo,
     colaboradorNome: c.colaboradorNome as string,
-    cpf: (c.cpf as string) || "",
     cargo: (c.cargo as string) || "",
     cartorio: (c.cartorio as string) || "",
     trilhaTitulo: c.trilhaTitulo as string,
     tipo: c.tipo as string,
     notaFinal: c.notaFinal as number,
+    notaMinima: (c.notaMinima as number) || null,
     cargaHoraria: c.cargaHoraria as number,
     modalidade: (c.modalidade as string) || "",
+    dataInicio: (c.dataInicio as string) || null,
+    dataConclusao: (c.dataConclusao as string) || null,
     instrutor: (c.instrutor as string) || "",
     instrutorCargo: (c.instrutorCargo as string) || "",
     emissoraRazaoSocial: (c.emissoraRazaoSocial as string) || "",
@@ -578,6 +609,13 @@ export const emitirCertificadoExame = onCall(async (request) => {
     throw new HttpsError("failed-precondition", "Nenhuma aprovação encontrada para esse treinamento.");
   }
   const melhorScore = Math.max(...examesSnap.docs.map((d) => (d.data().score as number) || 0));
+  // Data de conclusão = aprovação mais antiga nesse exame (não a mais recente), e dataInicio =
+  // o createdAt do primeiro registro de tentativa — não existe "matrícula" pra exame avulso
+  // (não é uma trilha com progresso), então usamos a primeira tentativa registrada como proxy
+  // de início. Se só houver uma tentativa, dataInicio e dataConclusao coincidem.
+  const tentativas = examesSnap.docs.map((d) => d.data().createdAt?.toDate?.() as Date | undefined).filter(Boolean) as Date[];
+  const dataInicioDate = tentativas.length ? new Date(Math.min(...tentativas.map((d) => d.getTime()))) : new Date();
+  const dataConclusaoDate = tentativas.length ? new Date(Math.max(...tentativas.map((d) => d.getTime()))) : new Date();
 
   const userSnap = await db.collection("users").doc(caller.uid).get();
   const userData = userSnap.data() || {};
@@ -593,7 +631,7 @@ export const emitirCertificadoExame = onCall(async (request) => {
   const modalidade = (trilhaData?.modalidade as string) || config.modalidadePadrao;
 
   const agora = new Date();
-  const dataIso = agora.toISOString().slice(0, 10);
+  const dataEmissaoIso = agora.toISOString().slice(0, 10);
   const validoAte = new Date(agora);
   validoAte.setFullYear(validoAte.getFullYear() + 1);
 
@@ -618,15 +656,17 @@ export const emitirCertificadoExame = onCall(async (request) => {
     emissoraRazaoSocial: config.emissoraRazaoSocial,
     emissoraCnpj: config.emissoraCnpj,
     localEmissao: config.localEmissaoPadrao,
-    dataConclusao: dataIso,
-    dataEmissao: dataIso,
+    dataInicio: dataInicioDate.toISOString().slice(0, 10),
+    dataConclusao: dataConclusaoDate.toISOString().slice(0, 10),
+    dataEmissao: dataEmissaoIso,
     emitidoPor: (userData.name as string) || "Sistema",
     validoAte: validoAte.toISOString().slice(0, 10),
   });
+  // CPF entra no hash (identidade), mas nunca é devolvido pro cliente pra exibição — o
+  // certificado não mostra CPF em lugar nenhum (só nome, cargo e serventia).
   return {
     codigoVerificacao: codigo,
     novo,
-    cpf: (userData.cpf as string) || "",
     instrutor,
     instrutorCargo: config.instrutorCargo,
     assinaturaUrl: config.assinaturaUrl,
@@ -685,8 +725,31 @@ export const emitirCertificadoManual = onCall(async (request) => {
   const callerSnap = await db.collection("users").doc(caller.uid).get();
   const emitidoPorNome = (callerSnap.data()?.name as string) || "Sistema";
 
+  // Data de início: pra trilha/módulo, usa quando o colaborador abriu a trilha pela primeira
+  // vez (trilhasProgresso.iniciadoEm, se existir); pra exame, a tentativa mais antiga registrada.
+  // Data de conclusão: quando concluiu a trilha, ou a aprovação mais recente no exame. Sem
+  // nenhum desses dados (trilha antiga, sem o campo), cai no fallback: a própria data de emissão.
   const agora = new Date();
-  const dataIso = agora.toISOString().slice(0, 10);
+  const dataEmissaoIso = agora.toISOString().slice(0, 10);
+  let dataInicioIso = dataEmissaoIso;
+  let dataConclusaoIso = dataEmissaoIso;
+
+  if (tipo === "exame") {
+    const tentativasSnap = await db.collection("examesResultados")
+      .where("userId", "==", colaboradorId).where("fonteTitulo", "==", trilhaTitulo).get();
+    const datas = tentativasSnap.docs.map((d) => d.data().createdAt?.toDate?.() as Date | undefined).filter(Boolean) as Date[];
+    if (datas.length) {
+      dataInicioIso = new Date(Math.min(...datas.map((d) => d.getTime()))).toISOString().slice(0, 10);
+      dataConclusaoIso = new Date(Math.max(...datas.map((d) => d.getTime()))).toISOString().slice(0, 10);
+    }
+  } else {
+    const progressoSnap = await db.collection("trilhasProgresso")
+      .where("userId", "==", colaboradorId).where("trilhaTitulo", "==", trilhaTitulo).limit(1).get();
+    const progresso = progressoSnap.empty ? null : progressoSnap.docs[0].data();
+    if (progresso?.iniciadoEm?.toDate) dataInicioIso = progresso.iniciadoEm.toDate().toISOString().slice(0, 10);
+    if (progresso?.updatedAt?.toDate) dataConclusaoIso = progresso.updatedAt.toDate().toISOString().slice(0, 10);
+  }
+
   const validoAte = new Date(agora);
   validoAte.setFullYear(validoAte.getFullYear() + 1);
 
@@ -711,8 +774,9 @@ export const emitirCertificadoManual = onCall(async (request) => {
     emissoraRazaoSocial: config.emissoraRazaoSocial,
     emissoraCnpj: config.emissoraCnpj,
     localEmissao: config.localEmissaoPadrao,
-    dataConclusao: dataIso,
-    dataEmissao: dataIso,
+    dataInicio: dataInicioIso,
+    dataConclusao: dataConclusaoIso,
+    dataEmissao: dataEmissaoIso,
     emitidoPor: emitidoPorNome,
     validoAte: validoAte.toISOString().slice(0, 10),
   });

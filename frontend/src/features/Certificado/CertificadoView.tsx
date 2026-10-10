@@ -200,7 +200,7 @@ const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
             {cert.colaboradorNome}
           </p>
           <p style={{ fontSize: '12pt', color: '#777', margin: '3mm 0 5mm 0' }}>
-            {cert.cargo}{cert.cartorio ? ` · ${cert.cartorio}` : ''}{cert.cpf ? ` · CPF ${cert.cpf}` : ''}
+            {cert.cargo}{cert.cartorio ? ` · ${cert.cartorio}` : ''}
           </p>
           <p style={{ fontSize: '14pt', color: '#333', margin: '0 0 2mm 0', lineHeight: 1.6 }}>
             concluiu com êxito o{cert.tipo === 'modulo' ? ' módulo' : cert.tipo === 'exame' ? ' exame' : 'a trilha'}
