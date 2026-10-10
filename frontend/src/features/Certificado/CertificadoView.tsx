@@ -5,11 +5,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   collection, query, where, onSnapshot, orderBy,
-  addDoc, updateDoc, serverTimestamp, doc, getDoc
+  addDoc, serverTimestamp, doc, getDoc
 } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
+import { obterOuCriarCertificado, VERIFICACAO_BASE_URL } from '../../utils/certificadoVerificacao';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -82,18 +83,6 @@ interface UserData {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-// Hash SHA-256 derivado do ID do documento + dados do certificado — mesma fórmula da
-// cloud function verificarCertificado (functions/src/index.ts). Precisa ser calculado
-// DEPOIS do addDoc, já com o ID real do documento, por isso emissão vira 2 passos
-// (cria o doc, calcula o hash, grava em seguida) em vez de um gerarCodigo() solto.
-async function gerarHashVerificacao(docId: string, colaboradorId: string, trilhaTitulo: string, notaFinal: number, tenantId: string): Promise<string> {
-  const input = `${docId}|${colaboradorId}|${trilhaTitulo}|${notaFinal}|${tenantId}`;
-  const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input));
-  const hex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
-  const code = hex.slice(0, 16);
-  return `MJ-${code.slice(0, 4)}-${code.slice(4, 8)}-${code.slice(8, 12)}-${code.slice(12, 16)}`;
-}
-
 function formatDate(ts: any): string {
   if (!ts) return '–';
   const d = ts?.toDate ? ts.toDate() : new Date(ts);
@@ -160,7 +149,7 @@ const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
           Plataforma Integra-Academy · MJ Consultoria LGPD
         </span>
         <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '7pt' }}>
-          Código: {cert.codigoVerificacao}
+          Verifique em {VERIFICACAO_BASE_URL.replace('https://', '')} · Código: {cert.codigoVerificacao}
         </span>
       </div>
 
@@ -264,6 +253,17 @@ const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
                 CERTIFICADO<br/>VÁLIDO
               </div>
             </div>
+          </div>
+
+          {/* QR de verificação — escaneia e abre a pagina publica /verificar ja com o
+              codigo preenchido, sem precisar digitar os 16 caracteres na mao. */}
+          <div style={{ textAlign: 'center' }}>
+            <img
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&margin=0&data=${encodeURIComponent(`${VERIFICACAO_BASE_URL}?codigo=${cert.codigoVerificacao}`)}`}
+              alt="QR de verificação"
+              style={{ width: '18mm', height: '18mm', display: 'block', margin: '0 auto' }}
+            />
+            <div style={{ fontSize: '5pt', color: '#888', marginTop: '1mm', letterSpacing: 0.5 }}>Verificar autenticidade</div>
           </div>
 
           {/* Assinatura */}
@@ -529,19 +529,13 @@ const CertificadoView: React.FC = () => {
   // Emitir certificado
   const handleEmitir = async (data: Omit<Certificado, 'id' | 'codigoVerificacao' | 'emitidoEm' | 'tenantId' | 'emitidoPor'>) => {
     try {
-      const validoAte = new Date();
-      validoAte.setFullYear(validoAte.getFullYear() + 1);
-      const novo: Omit<Certificado, 'id' | 'codigoVerificacao'> = {
-        ...data,
-        emitidoEm: serverTimestamp(),
-        emitidoPor: user.name,
-        tenantId,
-        validoAte: validoAte.toISOString(),
-      };
-      const ref = await addDoc(collection(db, 'certificados'), novo);
-      const codigoVerificacao = await gerarHashVerificacao(ref.id, data.colaboradorId, data.trilhaTitulo, data.notaFinal, tenantId);
-      await updateDoc(ref, { codigoVerificacao });
-      await addDoc(collection(db, 'auditLogs'), { tipo: 'certificado_emitido', descricao: 'Certificado emitido: ' + (novo.trilhaTitulo || '') + ' | Nota: ' + (novo.notaFinal || '') + '%', usuario: user.name, usuarioId: user.id, tenantId, createdAt: serverTimestamp() });
+      const { novo } = await obterOuCriarCertificado({ ...data, tenantId, emitidoPor: user.name });
+      if (!novo) {
+        showToast('Esse colaborador já tem certificado para esse treinamento.', 'info');
+        setShowModal(false);
+        return;
+      }
+      await addDoc(collection(db, 'auditLogs'), { tipo: 'certificado_emitido', descricao: 'Certificado emitido: ' + (data.trilhaTitulo || '') + ' | Nota: ' + (data.notaFinal || '') + '%', usuario: user.name, usuarioId: user.id, tenantId, createdAt: serverTimestamp() });
       showToast('Certificado emitido com sucesso!', 'success');
       setShowModal(false);
     } catch {
@@ -555,7 +549,6 @@ const CertificadoView: React.FC = () => {
   const emitirPendentes = async () => {
     setEmitindoPendentes(true);
     try {
-      const existentes = new Set(certificados.map(c => `${c.colaboradorId}__${c.trilhaTitulo}`));
       const melhorPorPar = new Map<string, ExameResultado>();
       exames.filter(e => e.aprovado).forEach(e => {
         const key = `${e.userId}__${e.fonteTitulo}`;
@@ -565,17 +558,13 @@ const CertificadoView: React.FC = () => {
 
       let criados = 0;
       for (const e of melhorPorPar.values()) {
-        const dedupeKey = `${e.userId}__${e.fonteTitulo}`;
-        if (existentes.has(dedupeKey)) continue;
         const colabUser = usuarios.find(u => u.id === e.userId);
         if (!colabUser) continue;
         const trilhaRef = trilhas.find(t => t.titulo === e.fonteTitulo);
         const instrutor = trilhaRef?.oficial ? 'Mirian Jabur' : (trilhaRef?.instrutor || 'Mirian Jabur');
         const cargaHoraria = Math.max(1, trilhaRef?.cargaHoraria || 1);
-        const validoAte = new Date();
-        validoAte.setFullYear(validoAte.getFullYear() + 1);
 
-        const ref = await addDoc(collection(db, 'certificados'), {
+        const { novo } = await obterOuCriarCertificado({
           colaboradorId: e.userId,
           colaboradorNome: colabUser.name,
           cargo: colabUser.cargo || colabUser.role || '',
@@ -585,15 +574,10 @@ const CertificadoView: React.FC = () => {
           notaFinal: e.score,
           cargaHoraria,
           instrutor,
-          emitidoEm: serverTimestamp(),
           emitidoPor: user.name,
           tenantId,
-          validoAte: validoAte.toISOString(),
         });
-        const codigoVerificacao = await gerarHashVerificacao(ref.id, e.userId, e.fonteTitulo, e.score, tenantId);
-        await updateDoc(ref, { codigoVerificacao });
-        existentes.add(dedupeKey);
-        criados++;
+        if (novo) criados++;
       }
 
       if (criados > 0) {
@@ -768,6 +752,10 @@ const CertificadoView: React.FC = () => {
                         className="bg-slate-50 hover:bg-slate-200 border border-slate-200 text-slate-500 px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5">
                         <i className="fa-solid fa-copy"></i>Cód.
                       </button>
+                      <a href={`${VERIFICACAO_BASE_URL}?codigo=${cert.codigoVerificacao}`} target="_blank" rel="noopener noreferrer"
+                        className="bg-slate-50 hover:bg-slate-200 border border-slate-200 text-slate-500 px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5">
+                        <i className="fa-solid fa-shield-halved"></i>Verificar
+                      </a>
                     </div>
                   </div>
                 </div>

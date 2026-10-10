@@ -407,3 +407,72 @@ export const verificarCertificado = onCall(async (request) => {
     validoAte: (c.validoAte as string) || null,
   };
 });
+
+// ── Certificado automático após aprovação em exame ───────────────────────────
+// A regra do Firestore só deixa gestor/admin/SUPERADMIN/equipe_mj criar documentos em
+// certificados/ (evita colaborador se autocertificar escrevendo direto no banco). Mas o
+// certificado agora precisa nascer sozinho assim que o PRÓPRIO colaborador passa num exame
+// (ExamesView) — então isso roda aqui, server-side, onde dá pra confirmar contra
+// examesResultados que a aprovação é real antes de emitir qualquer coisa.
+export const emitirCertificadoExame = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Login necessário.");
+  }
+  const caller = await getCallerProfile(request.auth.uid);
+  const trilhaTitulo = String(request.data?.trilhaTitulo || "").trim();
+  if (!trilhaTitulo) {
+    throw new HttpsError("invalid-argument", "Treinamento é obrigatório.");
+  }
+
+  const examesSnap = await db.collection("examesResultados")
+    .where("userId", "==", caller.uid)
+    .where("fonteTitulo", "==", trilhaTitulo)
+    .where("aprovado", "==", true)
+    .get();
+  if (examesSnap.empty) {
+    throw new HttpsError("failed-precondition", "Nenhuma aprovação encontrada para esse treinamento.");
+  }
+  const melhorScore = Math.max(...examesSnap.docs.map((d) => (d.data().score as number) || 0));
+
+  // Já existe certificado pra esse colaborador+treinamento? Devolve o mesmo em vez de duplicar.
+  const existenteSnap = await db.collection("certificados")
+    .where("colaboradorId", "==", caller.uid)
+    .where("trilhaTitulo", "==", trilhaTitulo)
+    .where("tipo", "==", "exame")
+    .where("tenantId", "==", caller.tenantId)
+    .get();
+  if (!existenteSnap.empty) {
+    return { codigoVerificacao: existenteSnap.docs[0].data().codigoVerificacao as string };
+  }
+
+  const userSnap = await db.collection("users").doc(caller.uid).get();
+  const userData = userSnap.data() || {};
+  const tenantSnap = await db.collection("tenants").doc(caller.tenantId).get();
+  const cartorioNome = (tenantSnap.data()?.name as string) || caller.tenantId;
+
+  const trilhaSnap = await db.collection("trilhas").where("titulo", "==", trilhaTitulo).limit(1).get();
+  const trilhaData = trilhaSnap.empty ? null : trilhaSnap.docs[0].data();
+  const instrutor = trilhaData?.oficial ? "Mirian Jabur" : ((trilhaData?.instrutor as string) || "Mirian Jabur");
+  const cargaHoraria = Math.max(1, (trilhaData?.cargaHoraria as number) || 1);
+
+  const validoAte = new Date();
+  validoAte.setFullYear(validoAte.getFullYear() + 1);
+  const ref = await db.collection("certificados").add({
+    colaboradorId: caller.uid,
+    colaboradorNome: (userData.name as string) || "",
+    cargo: (userData.cargo as string) || (userData.role as string) || "",
+    cartorio: cartorioNome,
+    trilhaTitulo,
+    tipo: "exame",
+    notaFinal: melhorScore,
+    cargaHoraria,
+    instrutor,
+    emitidoEm: admin.firestore.FieldValue.serverTimestamp(),
+    emitidoPor: (userData.name as string) || "Sistema",
+    tenantId: caller.tenantId,
+    validoAte: validoAte.toISOString().slice(0, 10),
+  });
+  const codigoVerificacao = gerarHashVerificacao(ref.id, caller.uid, trilhaTitulo, melhorScore, caller.tenantId);
+  await ref.update({ codigoVerificacao });
+  return { codigoVerificacao };
+});

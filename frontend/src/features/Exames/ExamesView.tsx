@@ -1,13 +1,17 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
-import { db } from '../../services/firebase';
+import { db, functions } from '../../services/firebase';
 import {
   collection, onSnapshot, query, where, addDoc, serverTimestamp,
   Timestamp, doc, setDoc, getDoc,
 } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
 import { GeminiService, QuestaoExame } from '../../services/geminiService';
 import { escapeHtml } from '../../utils/escapeHtml';
+import { VERIFICACAO_BASE_URL } from '../../utils/certificadoVerificacao';
+
+const emitirCertificadoExameFn = httpsCallable<{ trilhaTitulo: string }, { codigoVerificacao: string }>(functions, 'emitirCertificadoExame');
 
 /* ─── tipos internos ──────────────────────────────────────── */
 type Fase = 'escolher' | 'gerando' | 'fazendo' | 'resultado';
@@ -20,10 +24,6 @@ interface FonteConteudo {
   cargaHoraria?: number;
   instrutor?: string;
   oficial?: boolean;
-}
-
-function gerarCodigoVerificacao(): string {
-  return `MJ-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
 }
 
 interface ExameResultado {
@@ -342,16 +342,31 @@ const ExamesView: React.FC = () => {
   };
 
   /* ── certificado ────────────────────────────────────────── */
-  const imprimirCertificado = () => {
+  // Persiste (ou reaproveita, se já existir) o certificado oficial em certificados/ antes de
+  // imprimir — antes isso aqui so abria um popup com um codigo decorativo, sem nenhum registro
+  // real por tras; agora é o mesmo certificado unico que aparece na secao "Certificados", so
+  // que gerado automaticamente na hora em que o colaborador passa no exame.
+  const imprimirCertificado = async () => {
+    if (!fonteEscolhida || !resultado) return;
+    const instrutor = fonteEscolhida.oficial ? 'Mirian Jabur' : (fonteEscolhida.instrutor || 'Mirian Jabur');
+    const cargaHoraria = Math.max(1, fonteEscolhida.cargaHoraria || 1);
+
+    let codigoVerificacao = '';
+    try {
+      // Grava direto no Firestore exigiria que o colaborador tivesse permissao de escrita
+      // em certificados/ (so gestor/admin tem) — por isso a emissao roda numa cloud function,
+      // que confirma contra examesResultados que a aprovacao e real antes de criar o registro.
+      const { data } = await emitirCertificadoExameFn({ trilhaTitulo: fonteEscolhida.titulo });
+      codigoVerificacao = data.codigoVerificacao;
+    } catch {
+      showToast('Não foi possível registrar o certificado — tente novamente.', 'error');
+      return;
+    }
+
     const win = window.open('', '_blank', 'noopener');
     if (!win) return;
     const data = new Date().toLocaleDateString('pt-BR');
-    const codigo = gerarCodigoVerificacao();
-    // Trilhas/treinamentos oficiais (distribuídos pela MJ Consultoria) sempre saem
-    // com "Mirian Jabur" como instrutora; carga horária nunca sai zerada — mínimo
-    // de 1h quando a fonte não informou.
-    const instrutor = fonteEscolhida?.oficial ? 'Mirian Jabur' : (fonteEscolhida?.instrutor || 'Mirian Jabur');
-    const cargaHoraria = Math.max(1, fonteEscolhida?.cargaHoraria || 1);
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&margin=0&data=${encodeURIComponent(`${VERIFICACAO_BASE_URL}?codigo=${codigoVerificacao}`)}`;
     win.document.write(`<!DOCTYPE html><html><head><title>Certificado</title>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Dancing+Script:wght@700&family=Inter:wght@400;600;800&display=swap');
@@ -405,7 +420,7 @@ const ExamesView: React.FC = () => {
           <div class="assinatura-linha">Data de Emissão</div>
         </div>
         <div class="selo">
-          <div class="selo-txt">CERTIFICADO<br>VÁLIDO</div>
+          <img src="${qrUrl}" alt="QR de verificação" style="width:72px;height:72px;" />
         </div>
         <div class="rodape-bloco">
           <div class="assinatura-nome">Mirian Jabur</div>
@@ -413,7 +428,7 @@ const ExamesView: React.FC = () => {
         </div>
       </div>
       <p class="conformidade">Documento emitido eletronicamente e válido como evidência de capacitação profissional, em conformidade com os Provimentos CNJ nº 161/2023, 213/2026 e 149/2023.</p>
-      <p class="verificacao">Código de verificação: ${codigo}</p>
+      <p class="verificacao">Verifique em ${VERIFICACAO_BASE_URL.replace('https://', '')} · Código: ${codigoVerificacao}</p>
     </div></body></html>`);
     win.document.close();
     win.print();
