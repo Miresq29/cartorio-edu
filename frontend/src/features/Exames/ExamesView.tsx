@@ -11,7 +11,10 @@ import { GeminiService, QuestaoExame } from '../../services/geminiService';
 import { escapeHtml } from '../../utils/escapeHtml';
 import { VERIFICACAO_BASE_URL } from '../../utils/certificadoVerificacao';
 
-const emitirCertificadoExameFn = httpsCallable<{ trilhaTitulo: string }, { codigoVerificacao: string }>(functions, 'emitirCertificadoExame');
+const emitirCertificadoExameFn = httpsCallable<
+  { trilhaTitulo: string },
+  { codigoVerificacao: string; novo: boolean; cpf?: string; instrutor?: string; instrutorCargo?: string; assinaturaUrl?: string; localEmissao?: string }
+>(functions, 'emitirCertificadoExame');
 
 /* ─── tipos internos ──────────────────────────────────────── */
 type Fase = 'escolher' | 'gerando' | 'fazendo' | 'resultado';
@@ -348,16 +351,26 @@ const ExamesView: React.FC = () => {
   // que gerado automaticamente na hora em que o colaborador passa no exame.
   const imprimirCertificado = async () => {
     if (!fonteEscolhida || !resultado) return;
-    const instrutor = fonteEscolhida.oficial ? 'Mirian Jabur' : (fonteEscolhida.instrutor || 'Mirian Jabur');
     const cargaHoraria = Math.max(1, fonteEscolhida.cargaHoraria || 1);
 
     let codigoVerificacao = '';
+    let instrutor = fonteEscolhida.oficial ? 'Mirian Jabur' : (fonteEscolhida.instrutor || 'Mirian Jabur');
+    let instrutorCargo = 'DPO · MJ Consultoria LGPD';
+    let assinaturaUrl = '';
+    let localEmissao = 'Belo Horizonte';
+    let cpf = '';
     try {
       // Grava direto no Firestore exigiria que o colaborador tivesse permissao de escrita
-      // em certificados/ (so gestor/admin tem) — por isso a emissao roda numa cloud function,
-      // que confirma contra examesResultados que a aprovacao e real antes de criar o registro.
+      // em certificados/ (coleção é somente-leitura pro cliente) — por isso a emissao roda numa
+      // cloud function, que confirma contra examesResultados que a aprovacao e real antes de
+      // criar o registro, e devolve os dados oficiais (assinatura/instrutor) já gravados nele.
       const { data } = await emitirCertificadoExameFn({ trilhaTitulo: fonteEscolhida.titulo });
       codigoVerificacao = data.codigoVerificacao;
+      if (data.instrutor) instrutor = data.instrutor;
+      if (data.instrutorCargo) instrutorCargo = data.instrutorCargo;
+      if (data.assinaturaUrl) assinaturaUrl = data.assinaturaUrl;
+      if (data.localEmissao) localEmissao = data.localEmissao.split('/')[0];
+      if (data.cpf) cpf = data.cpf;
     } catch {
       showToast('Não foi possível registrar o certificado — tente novamente.', 'error');
       return;
@@ -407,7 +420,7 @@ const ExamesView: React.FC = () => {
       <div class="tipo">✦ Exame de Avaliação ✦</div>
       <p class="texto">Certificamos, para os devidos fins, que</p>
       <p class="nome">${escapeHtml(user.name)}</p>
-      ${empresaNome ? `<p class="empresa">${escapeHtml(empresaNome)}</p>` : ''}
+      ${empresaNome ? `<p class="empresa">${escapeHtml(empresaNome)}${cpf ? ' · CPF ' + escapeHtml(cpf) : ''}</p>` : ''}
       <p class="texto" style="margin-top:16px">foi aprovado(a) no exame de avaliação de conhecimentos referente a</p>
       <p class="curso">"${escapeHtml(fonteEscolhida?.titulo || 'Treinamento')}"</p>
       <p class="detalhes">
@@ -416,15 +429,16 @@ const ExamesView: React.FC = () => {
       </p>
       <div class="rodape">
         <div class="rodape-bloco">
-          <p class="data-emissao">Belo Horizonte, ${data}</p>
+          <p class="data-emissao">${escapeHtml(localEmissao)}, ${data}</p>
           <div class="assinatura-linha">Data de Emissão</div>
         </div>
         <div class="selo">
           <img src="${qrUrl}" alt="QR de verificação" style="width:72px;height:72px;" />
         </div>
         <div class="rodape-bloco">
-          <div class="assinatura-nome">Mirian Jabur</div>
-          <div class="assinatura-linha">MJ Consultoria — Coordenação de Treinamento</div>
+          ${assinaturaUrl ? `<img src="${assinaturaUrl}" alt="Assinatura" style="height:32px;margin:0 auto 2px;display:block;" />` : ''}
+          <div class="assinatura-nome" style="${assinaturaUrl ? 'font-family: Inter, sans-serif; font-size: 14px; font-style: normal;' : ''}">${escapeHtml(instrutor)}</div>
+          <div class="assinatura-linha">${escapeHtml(instrutorCargo)}</div>
         </div>
       </div>
       <p class="conformidade">Documento emitido eletronicamente e válido como evidência de capacitação profissional, em conformidade com os Provimentos CNJ nº 161/2024, 213/2026 e 149/2023.</p>

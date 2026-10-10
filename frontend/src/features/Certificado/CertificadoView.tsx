@@ -18,6 +18,7 @@ interface Certificado {
   id: string;
   colaboradorId: string;
   colaboradorNome: string;
+  cpf?: string;
   cargo: string;
   cartorio: string;
   trilhaTitulo: string;
@@ -26,6 +27,9 @@ interface Certificado {
   notaFinal: number;
   cargaHoraria: number;
   instrutor?: string;
+  instrutorCargo?: string;
+  assinaturaUrl?: string;
+  localEmissao?: string;
   codigoVerificacao: string;
   emitidoEm: any;
   emitidoPor: string;
@@ -196,7 +200,7 @@ const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
             {cert.colaboradorNome}
           </p>
           <p style={{ fontSize: '8pt', color: '#777', margin: '2mm 0 4mm 0' }}>
-            {cert.cargo}{cert.cartorio ? ` · ${cert.cartorio}` : ''}
+            {cert.cargo}{cert.cartorio ? ` · ${cert.cartorio}` : ''}{cert.cpf ? ` · CPF ${cert.cpf}` : ''}
           </p>
           <p style={{ fontSize: '10pt', color: '#333', margin: '0 0 1mm 0', lineHeight: 1.6 }}>
             concluiu com êxito o{cert.tipo === 'modulo' ? ' módulo' : cert.tipo === 'exame' ? ' exame' : 'a trilha'}
@@ -232,7 +236,7 @@ const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
           {/* Data */}
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '8pt', color: '#333', marginBottom: '1mm' }}>
-              Belo Horizonte, {dataExtenso}
+              {cert.localEmissao || 'Belo Horizonte'}, {dataExtenso}
             </div>
             <div style={{ width: '60mm', borderTop: '1px solid #999', paddingTop: '1mm' }}>
               <div style={{ fontSize: '6pt', color: '#888', textAlign: 'center' }}>Data de Emissão</div>
@@ -266,14 +270,17 @@ const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
             <div style={{ fontSize: '5pt', color: '#888', marginTop: '1mm', letterSpacing: 0.5 }}>Verificar autenticidade</div>
           </div>
 
-          {/* Assinatura */}
+          {/* Assinatura — imagem vinda da configuração global do certificado, quando cadastrada */}
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '8pt', color: '#333', marginBottom: '1mm', fontStyle: 'italic' }}>
-              Mirian Jabur
+            {cert.assinaturaUrl && (
+              <img src={cert.assinaturaUrl} alt="Assinatura" style={{ height: '10mm', margin: '0 auto 1mm', display: 'block' }} />
+            )}
+            <div style={{ fontSize: '8pt', color: '#333', marginBottom: '1mm', fontStyle: cert.assinaturaUrl ? 'normal' : 'italic' }}>
+              {cert.instrutor || 'Mirian Jabur'}
             </div>
             <div style={{ width: '60mm', borderTop: '1px solid #999', paddingTop: '1mm' }}>
               <div style={{ fontSize: '6pt', color: '#888', textAlign: 'center' }}>
-                DPO · MJ Consultoria LGPD
+                {cert.instrutorCargo || 'DPO · MJ Consultoria LGPD'}
               </div>
             </div>
           </div>

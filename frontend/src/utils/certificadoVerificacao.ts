@@ -1,18 +1,5 @@
-import { collection, query, where, getDocs, addDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../services/firebase';
-
-// Hash de verificação do certificado — mesma fórmula usada pela cloud function
-// verificarCertificado (functions/src/index.ts). Precisa do ID real do documento, por isso
-// certificados sempre nascem em 2 passos: addDoc, calcula o hash, updateDoc com o código.
-export async function gerarHashVerificacao(
-  docId: string, colaboradorId: string, trilhaTitulo: string, notaFinal: number, tenantId: string
-): Promise<string> {
-  const input = `${docId}|${colaboradorId}|${trilhaTitulo}|${notaFinal}|${tenantId}`;
-  const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input));
-  const hex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
-  const code = hex.slice(0, 16);
-  return `MJ-${code.slice(0, 4)}-${code.slice(4, 8)}-${code.slice(8, 12)}-${code.slice(12, 16)}`;
-}
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '../services/firebase';
 
 // URL da página pública de verificação (fora do login) — usada no QR e no link do certificado.
 export const VERIFICACAO_BASE_URL = 'https://cartorio-edu.vercel.app/verificar';
@@ -32,32 +19,31 @@ export interface DadosCertificado {
   emitidoPor: string;
 }
 
-// Busca um certificado já emitido pro mesmo colaborador+treinamento+tenant, ou cria um novo
-// — nunca duplica. Usado por todo fluxo de emissão (manual, em lote, ou o certificado exibido
-// na hora logo após passar num exame) pra garantir um único registro por par colaborador+item.
-// A combinação trilhaTitulo+tipo(+moduloTitulo) é o que identifica "o mesmo certificado" —
-// um "exame" e um "módulo" da mesma trilha são certificados distintos, não duplicata um do outro.
-export async function obterOuCriarCertificado(dados: DadosCertificado): Promise<{ id: string; codigoVerificacao: string; novo: boolean }> {
-  const candidatosSnap = await getDocs(query(
-    collection(db, 'certificados'),
-    where('colaboradorId', '==', dados.colaboradorId),
-    where('trilhaTitulo', '==', dados.trilhaTitulo),
-    where('tipo', '==', dados.tipo),
-    where('tenantId', '==', dados.tenantId),
-  ));
-  const existente = candidatosSnap.docs.find(d => (d.data().moduloTitulo || '') === (dados.moduloTitulo || ''));
-  if (existente) {
-    return { id: existente.id, codigoVerificacao: existente.data().codigoVerificacao, novo: false };
-  }
+const emitirCertificadoManualFn = httpsCallable<
+  {
+    colaboradorId: string;
+    trilhaTitulo: string;
+    moduloTitulo?: string;
+    tipo: string;
+    notaFinal: number;
+    cargaHoraria: number;
+  },
+  { id: string; codigoVerificacao: string; novo: boolean }
+>(functions, 'emitirCertificadoManual');
 
-  const validoAte = new Date();
-  validoAte.setFullYear(validoAte.getFullYear() + 1);
-  const ref = await addDoc(collection(db, 'certificados'), {
-    ...dados,
-    emitidoEm: serverTimestamp(),
-    validoAte: validoAte.toISOString(),
+// Emite (ou reaproveita, se já existir) o certificado oficial pro colaborador+treinamento.
+// O cliente não grava mais direto em certificados/ — a coleção é somente-leitura pro cliente
+// (ver firestore.rules); quem cria o documento é sempre a Cloud Function emitirCertificadoManual,
+// que confirma o colaborador, preenche os dados oficiais (serventia, assinatura/instrutor vindos
+// da config global) e calcula o hash de verificação.
+export async function obterOuCriarCertificado(dados: DadosCertificado): Promise<{ id: string; codigoVerificacao: string; novo: boolean }> {
+  const { data } = await emitirCertificadoManualFn({
+    colaboradorId: dados.colaboradorId,
+    trilhaTitulo: dados.trilhaTitulo,
+    moduloTitulo: dados.moduloTitulo,
+    tipo: dados.tipo,
+    notaFinal: dados.notaFinal,
+    cargaHoraria: dados.cargaHoraria,
   });
-  const codigoVerificacao = await gerarHashVerificacao(ref.id, dados.colaboradorId, dados.trilhaTitulo, dados.notaFinal, dados.tenantId);
-  await updateDoc(ref, { codigoVerificacao });
-  return { id: ref.id, codigoVerificacao, novo: true };
+  return { id: data.id, codigoVerificacao: data.codigoVerificacao, novo: data.novo };
 }

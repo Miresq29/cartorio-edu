@@ -251,9 +251,11 @@ service cloud.firestore {
     }
     match /certificados/{docId} {
       allow read: if canReadPrivate();
-      // Emissao de certificado exige gestor/admin — evita autoemissao de aprovacao sem concluir o treinamento
-      allow create: if isSuperAdmin() || isEquipeMJ() || (isGestor() && newSameTenant());
-      allow update: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant() && tenantUnchanged());
+      // Emissao agora e sempre via Cloud Function (emitirCertificadoExame / emitirCertificadoManual)
+      // — nunca direto do cliente. Isso evita forjar nota/instrutor/hash escrevendo direto no
+      // documento; as functions usam o Admin SDK, que ignora estas regras. Exclusao continua
+      // permitida pra gestao (ex: certificado emitido por engano), mas nunca create/update.
+      allow create, update: if false;
       allow delete: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
     }
     match /resumos/{docId} {

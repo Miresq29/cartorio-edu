@@ -9,7 +9,9 @@ import { functions } from '../../services/firebase';
 interface Resultado {
   valido: boolean;
   adulterado?: boolean;
+  versaoModelo?: number;
   colaboradorNome?: string;
+  cpf?: string;
   cargo?: string;
   cartorio?: string;
   trilhaTitulo?: string;
@@ -99,6 +101,7 @@ const VerificarCertificadoView: React.FC = () => {
             </div>
             <dl style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 10, fontSize: 13 }}>
               <Campo label="Colaborador" valor={resultado.colaboradorNome} />
+              {resultado.cpf && <Campo label="CPF" valor={resultado.cpf} />}
               {resultado.cargo && <Campo label="Cargo" valor={resultado.cargo} />}
               {resultado.cartorio && <Campo label="Cliente" valor={resultado.cartorio} />}
               <Campo label="Treinamento" valor={resultado.trilhaTitulo} />

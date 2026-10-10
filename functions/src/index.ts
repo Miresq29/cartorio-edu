@@ -1,7 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { defineSecret } from "firebase-functions/params";
 import * as admin from "firebase-admin";
-import { createHash } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 
 admin.initializeApp();
 
@@ -361,13 +361,10 @@ export const reportLoginResult = onCall(async (request) => {
   return { ok: true };
 });
 
-// ── Verificação pública de certificado ───────────────────────────────────────
-// O "código de verificação" impresso no certificado era antes uma string aleatória
-// puramente decorativa — não existia nada que a conferisse. Agora é um hash SHA-256
-// derivado do próprio ID do documento + dados do certificado (colaborador, treinamento,
-// nota, tenant), calculado aqui e em CertificadoView.tsx (mesma fórmula). Essa function
-// é pública de propósito (sem request.auth) — o caso de uso é um auditor externo do CNJ
-// digitar o código e confirmar autenticidade sem precisar de login.
+// ── Verificação pública de certificado (modelo 1, legado) ────────────────────
+// Fórmula antiga: hash derivado do ID do doc (autoId do Firestore) + dados do certificado.
+// Mantida só para continuar verificando certificados emitidos ANTES do modelo 2 existir —
+// esses docs não têm "versaoModelo" nem o campo "hash".
 function gerarHashVerificacao(docId: string, colaboradorId: string, trilhaTitulo: string, notaFinal: number, tenantId: string): string {
   const input = `${docId}|${colaboradorId}|${trilhaTitulo}|${notaFinal}|${tenantId}`;
   const hex = createHash("sha256").update(input).digest("hex").toUpperCase();
@@ -375,21 +372,160 @@ function gerarHashVerificacao(docId: string, colaboradorId: string, trilhaTitulo
   return `MJ-${code.slice(0, 4)}-${code.slice(4, 8)}-${code.slice(8, 12)}-${code.slice(12, 16)}`;
 }
 
+// ── Certificados (modelo 2) ───────────────────────────────────────────────────
+// O código deixou de ser DERIVADO do hash (o que exigia o ID do doc, que só existe depois de
+// criado — uma circularidade) — agora é gerado ALEATORIAMENTE primeiro (crypto.randomBytes),
+// vira o próprio ID do documento (certificados/{codigo}, via transação com retry em caso de
+// colisão) e só DEPOIS entra como mais um campo no hash. O hash cobre TODOS os dados visíveis
+// no certificado (não só nota/treinamento) — qualquer alteração em qualquer campo depois da
+// emissão quebra a verificação. Assinatura/instrutor/emissora vêm de config/certificado e são
+// GRAVADOS no próprio certificado na hora da emissão (não lidos de novo depois), pra o
+// certificado continuar verificável do jeito que foi emitido mesmo se a config mudar depois.
+function gerarCodigoCertificado(): string {
+  const hex = randomBytes(8).toString("hex").toUpperCase();
+  return `MJ-${hex.slice(0, 4)}-${hex.slice(4, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}`;
+}
+
+function canonicalStringify(obj: Record<string, unknown>): string {
+  const sorted: Record<string, unknown> = {};
+  for (const k of Object.keys(obj).sort()) sorted[k] = obj[k];
+  return JSON.stringify(sorted);
+}
+
+interface ConfigCertificado {
+  instrutorNome: string;
+  instrutorCargo: string;
+  instrutorQualificacoes: string;
+  assinaturaUrl: string;
+  emissoraRazaoSocial: string;
+  emissoraCnpj: string;
+  localEmissaoPadrao: string;
+  modalidadePadrao: string;
+}
+
+async function obterConfigCertificado(): Promise<ConfigCertificado> {
+  const snap = await db.collection("config").doc("certificado").get();
+  const c = snap.exists ? snap.data()! : {};
+  return {
+    instrutorNome: (c.instrutorNome as string) || "Mirian Jabur",
+    instrutorCargo: (c.instrutorCargo as string) || "Instrutora e Responsável Técnica",
+    instrutorQualificacoes: (c.instrutorQualificacoes as string) || "DPO EXIN · CISM · ISO/IEC 27001 Lead Auditor",
+    assinaturaUrl: (c.assinaturaUrl as string) || "",
+    emissoraRazaoSocial: (c.emissoraRazaoSocial as string) || "AG Serviços em TI Ltda. (MJ Consultoria)",
+    emissoraCnpj: (c.emissoraCnpj as string) || "07.113.086/0001-08",
+    localEmissaoPadrao: (c.localEmissaoPadrao as string) || "Belo Horizonte/MG",
+    modalidadePadrao: (c.modalidadePadrao as string) || "EAD assíncrona",
+  };
+}
+
+interface DadosCertificado {
+  tenantId: string;
+  colaboradorId: string;
+  colaboradorNome: string;
+  cpf: string;
+  cargo: string;
+  cartorio: string;
+  trilhaTitulo: string;
+  moduloTitulo: string;
+  tipo: string;
+  notaFinal: number;
+  notaMinima: number;
+  cargaHoraria: number;
+  modalidade: string;
+  instrutor: string;
+  instrutorCargo: string;
+  instrutorQualificacoes: string;
+  assinaturaUrl: string;
+  emissoraRazaoSocial: string;
+  emissoraCnpj: string;
+  localEmissao: string;
+  dataConclusao: string;
+  dataEmissao: string;
+  emitidoPor: string;
+  validoAte: string;
+}
+
+function hashCertificado(codigo: string, dados: DadosCertificado): string {
+  return createHash("sha256").update(canonicalStringify({ codigo, versaoModelo: 2, ...dados })).digest("hex");
+}
+
+// Mesma combinação de campos usada desde o modelo 1 pra identificar "o mesmo certificado":
+// um colaborador só pode ter UM certificado por treinamento+tipo(+módulo) por tenant.
+async function buscarCertificadoExistente(dados: Pick<DadosCertificado, "tenantId" | "colaboradorId" | "trilhaTitulo" | "tipo" | "moduloTitulo">): Promise<string | null> {
+  const snap = await db.collection("certificados")
+    .where("tenantId", "==", dados.tenantId)
+    .where("colaboradorId", "==", dados.colaboradorId)
+    .where("trilhaTitulo", "==", dados.trilhaTitulo)
+    .where("tipo", "==", dados.tipo)
+    .get();
+  const match = snap.docs.find((d) => ((d.data().moduloTitulo as string) || "") === (dados.moduloTitulo || ""));
+  return match ? match.id : null;
+}
+
+async function criarCertificado(dados: DadosCertificado): Promise<{ codigo: string; novo: boolean }> {
+  const existente = await buscarCertificadoExistente(dados);
+  if (existente) return { codigo: existente, novo: false };
+
+  for (let tentativa = 0; tentativa < 5; tentativa++) {
+    const codigo = gerarCodigoCertificado();
+    const ref = db.collection("certificados").doc(codigo);
+    const criado = await db.runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      if (snap.exists) return false;
+      tx.set(ref, {
+        ...dados,
+        codigo,
+        versaoModelo: 2,
+        codigoVerificacao: codigo,
+        hash: hashCertificado(codigo, dados),
+        emitidoEm: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      return true;
+    });
+    if (criado) return { codigo, novo: true };
+  }
+  throw new HttpsError("internal", "Não foi possível gerar um código de certificado único. Tente novamente.");
+}
+
+// Função pública de propósito (sem request.auth) — o caso de uso é um auditor externo do CNJ
+// digitar o código e confirmar autenticidade sem precisar de login.
 export const verificarCertificado = onCall(async (request) => {
   const codigo = String(request.data?.codigo || "").trim().toUpperCase();
   if (!codigo) {
     throw new HttpsError("invalid-argument", "Código é obrigatório.");
   }
 
-  const snap = await db.collection("certificados").where("codigoVerificacao", "==", codigo).limit(1).get();
-  if (snap.empty) {
-    return { valido: false };
+  // Modelo 2: o código É o ID do documento. Fallback por query: certificados modelo 1, cujo
+  // código fica só no campo codigoVerificacao de um doc com ID autogerado pelo Firestore.
+  let docSnap = await db.collection("certificados").doc(codigo).get();
+  if (!docSnap.exists) {
+    const snap = await db.collection("certificados").where("codigoVerificacao", "==", codigo).limit(1).get();
+    if (snap.empty) return { valido: false };
+    docSnap = snap.docs[0];
   }
 
-  const docSnap = snap.docs[0];
-  const c = docSnap.data();
-  const esperado = gerarHashVerificacao(docSnap.id, c.colaboradorId, c.trilhaTitulo, c.notaFinal, c.tenantId);
-  if (esperado !== codigo) {
+  const c = docSnap.data()!;
+  const versaoModelo = (c.versaoModelo as number) || 1;
+  let adulterado: boolean;
+
+  if (versaoModelo >= 2) {
+    const dados: DadosCertificado = {
+      tenantId: c.tenantId, colaboradorId: c.colaboradorId, colaboradorNome: c.colaboradorNome,
+      cpf: c.cpf || "", cargo: c.cargo || "", cartorio: c.cartorio || "",
+      trilhaTitulo: c.trilhaTitulo, moduloTitulo: c.moduloTitulo || "", tipo: c.tipo,
+      notaFinal: c.notaFinal, notaMinima: c.notaMinima || 0, cargaHoraria: c.cargaHoraria,
+      modalidade: c.modalidade || "", instrutor: c.instrutor || "", instrutorCargo: c.instrutorCargo || "",
+      instrutorQualificacoes: c.instrutorQualificacoes || "", assinaturaUrl: c.assinaturaUrl || "",
+      emissoraRazaoSocial: c.emissoraRazaoSocial || "", emissoraCnpj: c.emissoraCnpj || "",
+      localEmissao: c.localEmissao || "", dataConclusao: c.dataConclusao || "", dataEmissao: c.dataEmissao || "",
+      emitidoPor: c.emitidoPor || "", validoAte: c.validoAte || "",
+    };
+    adulterado = hashCertificado(docSnap.id, dados) !== c.hash;
+  } else {
+    adulterado = gerarHashVerificacao(docSnap.id, c.colaboradorId, c.trilhaTitulo, c.notaFinal, c.tenantId) !== codigo;
+  }
+
+  if (adulterado) {
     // O código bate com algum registro, mas os dados do certificado foram alterados
     // depois da emissão (nota, treinamento etc.) — o hash recalculado não confere mais.
     return { valido: false, adulterado: true };
@@ -397,30 +533,37 @@ export const verificarCertificado = onCall(async (request) => {
 
   return {
     valido: true,
+    versaoModelo,
     colaboradorNome: c.colaboradorNome as string,
+    cpf: (c.cpf as string) || "",
     cargo: (c.cargo as string) || "",
     cartorio: (c.cartorio as string) || "",
     trilhaTitulo: c.trilhaTitulo as string,
     tipo: c.tipo as string,
     notaFinal: c.notaFinal as number,
     cargaHoraria: c.cargaHoraria as number,
+    modalidade: (c.modalidade as string) || "",
     instrutor: (c.instrutor as string) || "",
+    instrutorCargo: (c.instrutorCargo as string) || "",
+    emissoraRazaoSocial: (c.emissoraRazaoSocial as string) || "",
     emitidoEm: c.emitidoEm?.toDate ? c.emitidoEm.toDate().toISOString() : null,
     validoAte: (c.validoAte as string) || null,
   };
 });
 
-// ── Certificado automático após aprovação em exame ───────────────────────────
-// A regra do Firestore só deixa gestor/admin/SUPERADMIN/equipe_mj criar documentos em
-// certificados/ (evita colaborador se autocertificar escrevendo direto no banco). Mas o
-// certificado agora precisa nascer sozinho assim que o PRÓPRIO colaborador passa num exame
-// (ExamesView) — então isso roda aqui, server-side, onde dá pra confirmar contra
-// examesResultados que a aprovação é real antes de emitir qualquer coisa.
+// ── Certificado automático após aprovação em exame (autoatendimento) ─────────
+// A regra do Firestore não deixa mais NINGUÉM gravar direto em certificados/ (nem gestor) —
+// toda emissão passa por aqui ou por emitirCertificadoManual, nunca direto do cliente, pra não
+// permitir forjar nota/instrutor/hash. Aqui especificamente: o PRÓPRIO colaborador aciona a
+// emissão assim que passa num exame (ExamesView), então confirmamos contra examesResultados
+// que a aprovação é real antes de emitir qualquer coisa.
 export const emitirCertificadoExame = onCall(async (request) => {
   if (!request.auth) {
     throw new HttpsError("unauthenticated", "Login necessário.");
   }
   const caller = await getCallerProfile(request.auth.uid);
+  await enforceRateLimit(caller.uid, "emitirCertificadoExame", 30, 60_000);
+
   const trilhaTitulo = String(request.data?.trilhaTitulo || "").trim();
   if (!trilhaTitulo) {
     throw new HttpsError("invalid-argument", "Treinamento é obrigatório.");
@@ -436,45 +579,142 @@ export const emitirCertificadoExame = onCall(async (request) => {
   }
   const melhorScore = Math.max(...examesSnap.docs.map((d) => (d.data().score as number) || 0));
 
-  // Já existe certificado pra esse colaborador+treinamento? Devolve o mesmo em vez de duplicar.
-  const existenteSnap = await db.collection("certificados")
-    .where("colaboradorId", "==", caller.uid)
-    .where("trilhaTitulo", "==", trilhaTitulo)
-    .where("tipo", "==", "exame")
-    .where("tenantId", "==", caller.tenantId)
-    .get();
-  if (!existenteSnap.empty) {
-    return { codigoVerificacao: existenteSnap.docs[0].data().codigoVerificacao as string };
-  }
-
   const userSnap = await db.collection("users").doc(caller.uid).get();
   const userData = userSnap.data() || {};
   const tenantSnap = await db.collection("tenants").doc(caller.tenantId).get();
-  const cartorioNome = (tenantSnap.data()?.name as string) || caller.tenantId;
+  const tenantData = tenantSnap.data() || {};
+  const cartorioNome = (tenantData.nomeOficial as string) || (tenantData.name as string) || caller.tenantId;
 
   const trilhaSnap = await db.collection("trilhas").where("titulo", "==", trilhaTitulo).limit(1).get();
   const trilhaData = trilhaSnap.empty ? null : trilhaSnap.docs[0].data();
-  const instrutor = trilhaData?.oficial ? "Mirian Jabur" : ((trilhaData?.instrutor as string) || "Mirian Jabur");
+  const config = await obterConfigCertificado();
+  const instrutor = trilhaData?.oficial ? config.instrutorNome : ((trilhaData?.instrutor as string) || config.instrutorNome);
   const cargaHoraria = Math.max(1, (trilhaData?.cargaHoraria as number) || 1);
+  const modalidade = (trilhaData?.modalidade as string) || config.modalidadePadrao;
 
-  const validoAte = new Date();
+  const agora = new Date();
+  const dataIso = agora.toISOString().slice(0, 10);
+  const validoAte = new Date(agora);
   validoAte.setFullYear(validoAte.getFullYear() + 1);
-  const ref = await db.collection("certificados").add({
+
+  const { codigo, novo } = await criarCertificado({
+    tenantId: caller.tenantId,
     colaboradorId: caller.uid,
     colaboradorNome: (userData.name as string) || "",
+    cpf: (userData.cpf as string) || "",
     cargo: (userData.cargo as string) || (userData.role as string) || "",
     cartorio: cartorioNome,
     trilhaTitulo,
+    moduloTitulo: "",
     tipo: "exame",
     notaFinal: melhorScore,
+    notaMinima: 70,
     cargaHoraria,
+    modalidade,
     instrutor,
-    emitidoEm: admin.firestore.FieldValue.serverTimestamp(),
+    instrutorCargo: config.instrutorCargo,
+    instrutorQualificacoes: config.instrutorQualificacoes,
+    assinaturaUrl: config.assinaturaUrl,
+    emissoraRazaoSocial: config.emissoraRazaoSocial,
+    emissoraCnpj: config.emissoraCnpj,
+    localEmissao: config.localEmissaoPadrao,
+    dataConclusao: dataIso,
+    dataEmissao: dataIso,
     emitidoPor: (userData.name as string) || "Sistema",
-    tenantId: caller.tenantId,
     validoAte: validoAte.toISOString().slice(0, 10),
   });
-  const codigoVerificacao = gerarHashVerificacao(ref.id, caller.uid, trilhaTitulo, melhorScore, caller.tenantId);
-  await ref.update({ codigoVerificacao });
-  return { codigoVerificacao };
+  return {
+    codigoVerificacao: codigo,
+    novo,
+    cpf: (userData.cpf as string) || "",
+    instrutor,
+    instrutorCargo: config.instrutorCargo,
+    assinaturaUrl: config.assinaturaUrl,
+    localEmissao: config.localEmissaoPadrao,
+  };
+});
+
+// ── Certificado emitido pelo gestor/admin ─────────────────────────────────────
+// Substitui a gravação direta que o CertificadoView.tsx fazia em certificados/ — agora o
+// cliente só lê essa coleção, nunca escreve nela (ver firestore.rules). O gestor continua
+// escolhendo colaborador/treinamento/tipo na UI; aqui só confirmamos a permissão (mesmo
+// cartório, ou SUPERADMIN/equipe_mj) e montamos o certificado com os dados oficiais
+// (serventia, config de assinatura/instrutor) antes de gerar o código e o hash.
+export const emitirCertificadoManual = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Login necessário.");
+  }
+  const caller = await getCallerProfile(request.auth.uid);
+  if (!GESTOR_ROLES.includes(caller.role)) {
+    throw new HttpsError("permission-denied", "Sem permissão para emitir certificados.");
+  }
+  await enforceRateLimit(caller.uid, "emitirCertificadoManual", 200, 60_000);
+
+  const colaboradorId = String(request.data?.colaboradorId || "").trim();
+  const trilhaTitulo = String(request.data?.trilhaTitulo || "").trim();
+  const moduloTitulo = String(request.data?.moduloTitulo || "").trim();
+  const tipo = String(request.data?.tipo || "");
+  const notaFinal = Number(request.data?.notaFinal) || 0;
+  const cargaHorariaInformada = Number(request.data?.cargaHoraria) || 0;
+
+  if (!colaboradorId || !trilhaTitulo || !["trilha", "modulo", "exame"].includes(tipo)) {
+    throw new HttpsError("invalid-argument", "Colaborador, treinamento e tipo são obrigatórios.");
+  }
+
+  const colabSnap = await db.collection("users").doc(colaboradorId).get();
+  if (!colabSnap.exists) {
+    throw new HttpsError("not-found", "Colaborador não encontrado.");
+  }
+  const colabData = colabSnap.data()!;
+  const tenantId = (colabData.tenantId as string) || "";
+  if (!["SUPERADMIN", "equipe_mj"].includes(caller.role) && tenantId !== caller.tenantId) {
+    throw new HttpsError("permission-denied", "Só é possível emitir certificado para colaboradores do próprio cartório.");
+  }
+
+  const tenantSnap = await db.collection("tenants").doc(tenantId).get();
+  const tenantData = tenantSnap.data() || {};
+  const cartorioNome = (tenantData.nomeOficial as string) || (tenantData.name as string) || tenantId;
+
+  const trilhaSnap = await db.collection("trilhas").where("titulo", "==", trilhaTitulo).limit(1).get();
+  const trilhaData = trilhaSnap.empty ? null : trilhaSnap.docs[0].data();
+  const config = await obterConfigCertificado();
+  const instrutor = trilhaData?.oficial ? config.instrutorNome : ((trilhaData?.instrutor as string) || config.instrutorNome);
+  const cargaHoraria = Math.max(1, cargaHorariaInformada || (trilhaData?.cargaHoraria as number) || 1);
+  const modalidade = (trilhaData?.modalidade as string) || config.modalidadePadrao;
+
+  const callerSnap = await db.collection("users").doc(caller.uid).get();
+  const emitidoPorNome = (callerSnap.data()?.name as string) || "Sistema";
+
+  const agora = new Date();
+  const dataIso = agora.toISOString().slice(0, 10);
+  const validoAte = new Date(agora);
+  validoAte.setFullYear(validoAte.getFullYear() + 1);
+
+  const { codigo, novo } = await criarCertificado({
+    tenantId,
+    colaboradorId,
+    colaboradorNome: (colabData.name as string) || "",
+    cpf: (colabData.cpf as string) || "",
+    cargo: (colabData.cargo as string) || (colabData.role as string) || "",
+    cartorio: cartorioNome,
+    trilhaTitulo,
+    moduloTitulo,
+    tipo,
+    notaFinal,
+    notaMinima: 70,
+    cargaHoraria,
+    modalidade,
+    instrutor,
+    instrutorCargo: config.instrutorCargo,
+    instrutorQualificacoes: config.instrutorQualificacoes,
+    assinaturaUrl: config.assinaturaUrl,
+    emissoraRazaoSocial: config.emissoraRazaoSocial,
+    emissoraCnpj: config.emissoraCnpj,
+    localEmissao: config.localEmissaoPadrao,
+    dataConclusao: dataIso,
+    dataEmissao: dataIso,
+    emitidoPor: emitidoPorNome,
+    validoAte: validoAte.toISOString().slice(0, 10),
+  });
+  return { id: codigo, codigoVerificacao: codigo, novo };
 });
