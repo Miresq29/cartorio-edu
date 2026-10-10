@@ -11,16 +11,16 @@ interface Section {
   // colaboradores o funcionamento da simulação de phishing, que depende do
   // fator surpresa para ser eficaz.
   roles?: string[];
-  // Print real da tela (capturado com dados fictícios de um cartório de demonstração
+  // Print real da tela (capturado com dados fictícios de um cliente de demonstração
   // isolado) — caminho em /public/tutorial/. Opcional: nem toda seção tem uma imagem ainda.
   image?: string;
 }
 
 const SECTIONS: Section[] = [
   {
-    id: 'dashboard', icon: 'fa-border-all', title: 'Dashboard', subtitle: 'Painel operacional da sua serventia', image: '/tutorial/dashboard.png',
+    id: 'dashboard', icon: 'fa-border-all', title: 'Dashboard', subtitle: 'Painel operacional do seu cliente', image: '/tutorial/dashboard.png',
     steps: [
-      { title: 'Acessando o Dashboard', desc: 'Clique em "Dashboard" no menu lateral, na seção GESTÃO. Esta tela exibe dados em tempo real exclusivos da sua serventia.' },
+      { title: 'Acessando o Dashboard', desc: 'Clique em "Dashboard" no menu lateral, na seção GESTÃO. Esta tela exibe dados em tempo real exclusivos da sua empresa ou cartório.' },
       { title: 'KPIs em tempo real', desc: 'Os cards no topo mostram métricas como Documentos na Base, Protocolos Ativos, Treinamentos Concluídos e Ações Registradas. Todos atualizam automaticamente.' },
       { title: 'Atividade Recente', desc: 'O painel de atividade mostra as últimas ações realizadas na plataforma — tipo de evento, usuário responsável e horário.' },
       { title: 'Filtros de período', desc: 'Use os botões de período (7, 30, 90 dias) para filtrar o histórico de dados exibido nos gráficos e cards.' },
@@ -68,7 +68,7 @@ const SECTIONS: Section[] = [
       { title: 'Tipos de Evento', desc: 'Os eventos incluem: login/logout, criação e edição de usuários, acesso a módulos, geração de certificados, exportações, alterações de configuração e envio/erro de e-mail.' },
       { title: 'Evidência de comunicação', desc: 'O filtro "E-mails" mostra cada notificação enviada pela plataforma (comunicados, trilhas, expiração de certificado, reforço de treinamento) com data, destinatário e status de entrega.' },
       { title: 'Evidência de segurança', desc: 'O filtro "Segurança" registra cliques em simulações de phishing — quem clicou, quando e em qual simulação, para uso em ações de conscientização.' },
-      { title: 'Retenção de logs', desc: 'Os logs são retidos por no mínimo 5 anos conforme Provimento CNJ nº 149 e nº 213/2026, garantindo conformidade para inspeções da corregedoria.' },
+      { title: 'Retenção de logs', desc: 'Os logs são retidos por no mínimo 5 anos — prazo alinhado aos Provimentos CNJ nº 149 e nº 213/2026 para cartórios, e que também serve de evidência de conformidade e segurança para empresas privadas.' },
       { title: 'Exportação', desc: 'Exporte os registros em CSV ou PDF para auditorias externas ou inspeções regulatórias.' },
     ]
   },
@@ -83,9 +83,9 @@ const SECTIONS: Section[] = [
   {
     id: 'analytics', icon: 'fa-chart-pie', title: 'IA Analítica', subtitle: 'Análise inteligente de auditoria e base legal',
     steps: [
-      { title: 'O que é a IA Analítica', desc: 'Usa IA generativa para analisar os dados de auditoria e a Base Legal da sua serventia, identificando padrões e riscos que não são óbvios em uma leitura manual dos logs.' },
+      { title: 'O que é a IA Analítica', desc: 'Usa IA generativa para analisar os dados de auditoria e a Base Legal da sua empresa ou cartório, identificando padrões e riscos que não são óbvios em uma leitura manual dos logs.' },
       { title: 'Análises automáticas', desc: 'Clique em "Executar Análise" para que a IA gere um resumo executivo sobre volume de acessos, tendências de uso e possíveis inconsistências no período selecionado.' },
-      { title: 'Chat com a base legal', desc: 'Pergunte diretamente sobre os provimentos e normas cadastrados na Base Legal — a IA responde com base nos documentos reais da sua serventia.' },
+      { title: 'Chat com a base legal', desc: 'Pergunte diretamente sobre as normas e políticas cadastradas na Base Legal — a IA responde com base nos documentos reais do seu cliente.' },
     ]
   },
   {
@@ -100,10 +100,10 @@ const SECTIONS: Section[] = [
     ]
   },
   {
-    id: 'dossie', icon: 'fa-file-shield', title: 'Dossiê de Conformidade', subtitle: 'Evidências consolidadas para inspeção CNJ e LGPD',
+    id: 'dossie', icon: 'fa-file-shield', title: 'Dossiê de Conformidade', subtitle: 'Evidências consolidadas para auditoria, LGPD e, se for cartório, inspeção CNJ',
     steps: [
       { title: 'O que reúne o dossiê', desc: 'Consolida, para o período escolhido, colaboradores ativos, aprovação em testes, conclusão de trilhas, certificados válidos/vencidos, confirmações de comunicados críticos e resultado de simulações de phishing.' },
-      { title: 'Resumo executivo com IA', desc: 'O botão "Gerar resumo executivo com IA" redige um parágrafo formal citando os Provimentos CNJ 149 e 213/2026, com base apenas nos números reais do período — cada geração fica salva como evidência no histórico.' },
+      { title: 'Resumo executivo com IA', desc: 'O botão "Gerar resumo executivo com IA" redige um parágrafo formal com base apenas nos números reais do período — citando os Provimentos CNJ 149 e 213/2026 quando o cliente é um cartório — e cada geração fica salva como evidência no histórico.' },
       { title: 'Exportando o PDF', desc: '"Exportar PDF" gera um documento com capa, indicadores, tabela de confirmações de comunicados e o resumo executivo — pronto para apresentar em inspeções ou auditorias externas.' },
       { title: 'Diagnóstico de Maturidade incluído automaticamente', desc: 'Se houver um Diagnóstico de Maturidade concluído nos últimos 90 dias, o Dossiê já inclui o score global e o nível de maturidade daquele diagnóstico, sem precisar gerar nada de novo.' },
     ]
@@ -112,7 +112,7 @@ const SECTIONS: Section[] = [
     id: 'maturidade', icon: 'fa-gauge-high', title: 'Diagnóstico de Maturidade', subtitle: '40 indicadores, plano de ação e evolução no tempo',
     roles: ['SUPERADMIN', 'gestor', 'admin'],
     steps: [
-      { title: 'O que é este diagnóstico', desc: 'Avalia a maturidade da serventia em segurança da informação e LGPD em 10 dimensões (capacitação, proteção de dados, incidentes, governança, controle de acesso, backup, phishing, auditoria, comunicação e segurança física) e 40 indicadores, inspirado no Program Maturity Assessment e adaptado aos Provimentos CNJ e à LGPD.' },
+      { title: 'O que é este diagnóstico', desc: 'Avalia a maturidade da empresa ou cartório em segurança da informação e LGPD em 10 dimensões (capacitação, proteção de dados, incidentes, governança, controle de acesso, backup, phishing, auditoria, comunicação e segurança física) e 40 indicadores, inspirado no Program Maturity Assessment e adaptado à LGPD e, quando aplicável, aos Provimentos CNJ.' },
       { title: 'Iniciando um novo diagnóstico', desc: 'Clique em "Iniciar novo diagnóstico", informe o período de referência e responda os indicadores dimensão por dimensão — cada indicador é Sim/Não, "possui o documento?" ou um percentual (0-100%).' },
       { title: 'Score, nível e regra de bloqueio', desc: 'Ao concluir, a plataforma calcula um score global ponderado (0-100%) e um nível de maturidade de 1 a 5. Se a dimensão de Capacitação ou de LGPD (proteção de dados) ficar abaixo de 40%, o nível fica travado em no máximo 2, mesmo que o score global seja mais alto — essas duas dimensões são consideradas bloqueadoras.' },
       { title: 'Resumo executivo automático com IA', desc: 'Ao concluir o diagnóstico, a IA já gera automaticamente um resumo estruturado (cabeçalho, introdução, objetivo e análise) citando o artigo de lei correto para cada dimensão com gap — nunca um Provimento genérico. O botão "Gerar novamente" na tela de resultado permite atualizar o resumo a qualquer momento.' },
@@ -124,22 +124,22 @@ const SECTIONS: Section[] = [
   {
     id: 'trails', icon: 'fa-road', title: 'Trilhas', subtitle: 'Trilhas de aprendizagem por perfil', image: '/tutorial/trails.png',
     steps: [
-      { title: 'O que são Trilhas?', desc: 'Trilhas são sequências de conteúdos organizados por perfil profissional (atendente, escrevente, oficial substituto). Cada trilha guia o colaborador do básico ao avançado.' },
+      { title: 'O que são Trilhas?', desc: 'Trilhas são sequências de conteúdos organizados por perfil profissional (ex: atendente, analista, supervisor, escrevente) — servem tanto para empresas privadas quanto para cartórios. Cada trilha guia o colaborador do básico ao avançado.' },
       { title: 'Navegando em uma trilha', desc: 'Selecione uma trilha para ver os módulos disponíveis. Complete os módulos em sequência para liberar o próximo nível.' },
       { title: 'Progresso', desc: 'O progresso de cada trilha é salvo automaticamente. Acompanhe o avanço em "Meu Progresso" no menu CAPACITAÇÃO.' },
-      { title: 'Trilhas modelo MJ Consultoria', desc: 'SUPERADMIN pode marcar uma trilha como "modelo oficial MJ Consultoria" (badge dourado) e distribuí-la para todos os cartórios ou para uma lista específica de clientes.' },
-      { title: 'Trilhas de segurança inclusas', desc: 'Toda a base de clientes já recebe 4 trilhas oficiais de cyber-higiene: Senhas e Autenticação, Engenharia Social e Phishing, Dispositivos Móveis e Trabalho Remoto, e LGPD no Dia a Dia — disponíveis para todos os perfis.' },
+      { title: 'Trilhas modelo MJ Consultoria', desc: 'SUPERADMIN pode marcar uma trilha como "modelo oficial MJ Consultoria" (badge dourado) e distribuí-la para todos os clientes ou para uma lista específica.' },
+      { title: 'Trilhas de segurança inclusas', desc: 'Toda a base de clientes — empresas e cartórios — já recebe 4 trilhas oficiais de cyber-higiene: Senhas e Autenticação, Engenharia Social e Phishing, Dispositivos Móveis e Trabalho Remoto, e LGPD no Dia a Dia — disponíveis para todos os perfis.' },
       { title: 'Instrutor, forma e carga horária', desc: 'Ao criar ou editar uma trilha, preencha o instrutor responsável, a forma de treinamento (EAD, presencial ou híbrida) e a carga horária em horas — esses dados alimentam o Resumo de Treinamentos e a carga horária por colaborador em Relatórios.' },
       { title: 'Fonte de conteúdo para Exames', desc: 'O texto dos módulos de cada trilha também é usado como fonte de conteúdo na tela de Exames — não é preciso duplicar o material lá.' },
-      { title: 'Visibilidade', desc: 'Toda trilha pode ser publicada para "este cartório", "todos os cartórios" ou uma lista de "cartórios específicos" escolhida pelo SUPERADMIN.' },
+      { title: 'Visibilidade', desc: 'Toda trilha pode ser publicada para "este cliente", "todos os clientes" ou uma lista de "clientes específicos" escolhida pelo SUPERADMIN.' },
     ]
   },
   {
     id: 'knowledge', icon: 'fa-scale-balanced', title: 'Base Legal', subtitle: 'Documentos normativos indexados',
     steps: [
-      { title: 'O que é a Base Legal', desc: 'Repositório de provimentos, leis e normas relevantes para a serventia (LGPD, Provimentos CNJ, normas internas), indexado para consulta e para alimentar as IAs de treinamento e análise.' },
+      { title: 'O que é a Base Legal', desc: 'Repositório de leis, normas e políticas internas relevantes para o cliente (LGPD, políticas corporativas e, quando aplicável, Provimentos CNJ), indexado para consulta e para alimentar as IAs de treinamento e análise.' },
       { title: 'Cadastrando documentos', desc: 'Envie o PDF ou cole o texto do documento normativo. O conteúdo é extraído e indexado automaticamente para uso em roteiros de treinamento, exames e no chat da IA Analítica.' },
-      { title: 'Visibilidade', desc: 'SUPERADMIN pode publicar um documento para "todos os cartórios" ou para "cartórios específicos" — útil para normas que a MJ Consultoria mantém atualizadas centralmente.' },
+      { title: 'Visibilidade', desc: 'SUPERADMIN pode publicar um documento para "todos os clientes" ou para "clientes específicos" — útil para normas que a MJ Consultoria mantém atualizadas centralmente.' },
     ]
   },
   {
@@ -170,13 +170,13 @@ const SECTIONS: Section[] = [
     id: 'banners', icon: 'fa-images', title: 'Banners', subtitle: 'Materiais visuais de divulgação interna',
     steps: [
       { title: 'Publicando um banner', desc: 'Envie uma imagem ou link de campanha visual para divulgação interna (campanhas de segurança, datas comemorativas, avisos visuais).' },
-      { title: 'Visibilidade', desc: 'Assim como outros conteúdos, banners podem ser publicados para este cartório, todos os cartórios ou uma lista de cartórios específicos.' },
+      { title: 'Visibilidade', desc: 'Assim como outros conteúdos, banners podem ser publicados para este cliente, todos os clientes ou uma lista de clientes específicos.' },
     ]
   },
   {
     id: 'training', icon: 'fa-graduation-cap', title: 'Treinamento AI', subtitle: 'Capacitação com IA, roteiros e quizzes',
     steps: [
-      { title: 'IA de Treinamento', desc: 'Gere 3 opções de roteiro de treinamento com IA baseadas nos protocolos e documentos da sua serventia. Personalize o pedido para focar em um tema específico.' },
+      { title: 'IA de Treinamento', desc: 'Gere 3 opções de roteiro de treinamento com IA baseadas nos protocolos e documentos do seu cliente. Personalize o pedido para focar em um tema específico.' },
       { title: 'Salvando o roteiro', desc: 'Depois de expandir o roteiro escolhido, clique em "Salvar como treinamento" — ele passa a ficar disponível como fonte de conteúdo para gerar Exames. Ao salvar, informe o instrutor responsável e a forma de treinamento (EAD, presencial ou híbrida); a carga horária é calculada automaticamente a partir da duração do roteiro.' },
       { title: 'Resumos Inteligentes', desc: 'Selecione um documento e o tipo de resumo (Executivo, Técnico, Didático ou Operacional) para que a IA gere um resumo otimizado para cada audiência.' },
       { title: 'Participantes', desc: 'Registre quais colaboradores participaram de cada treinamento, controle a presença e acompanhe o status de conclusão.' },
@@ -224,7 +224,7 @@ const SECTIONS: Section[] = [
     id: 'certificado', icon: 'fa-certificate', title: 'Certificados', subtitle: 'Emitir e baixar certificados PDF', image: '/tutorial/certificado.png',
     steps: [
       { title: 'Elegibilidade', desc: 'Certificados são emitidos quando o colaborador conclui uma trilha (nota mínima do módulo definida pelo gestor, padrão 70%) ou é aprovado em um Exame IA (nota mínima 70%).' },
-      { title: 'Emitindo o certificado', desc: 'Na tela de Certificados, localize o certificado disponível e clique em "Emitir". O PDF é gerado com dados da serventia, nome, data e carga horária.' },
+      { title: 'Emitindo o certificado', desc: 'Na tela de Certificados, localize o certificado disponível e clique em "Emitir". O PDF é gerado com dados do cliente, nome, data e carga horária.' },
       { title: 'Validade e autenticidade', desc: 'Cada certificado possui um código único de verificação e validade de 1 ano a partir da emissão. O gestor pode validar a autenticidade de qualquer certificado emitido pela plataforma.' },
       { title: 'Aviso de expiração', desc: 'Sete dias antes do vencimento, o colaborador recebe automaticamente um e-mail de aviso para providenciar a renovação.' },
     ]
@@ -241,7 +241,7 @@ const SECTIONS: Section[] = [
     steps: [
       { title: 'Abrindo um chamado', desc: 'Descreva o problema ou dúvida e clique em Enviar. A equipe MJ Consultoria responderá em até 1 dia útil.' },
       { title: 'Informações úteis', desc: 'Inclua detalhes: qual módulo estava usando, a ação realizada, mensagem de erro exibida e capturas de tela quando possível.' },
-      { title: 'Urgências', desc: 'Para problemas críticos que impeçam o funcionamento da serventia, indique "URGENTE" no início da mensagem para priorização do atendimento.' },
+      { title: 'Urgências', desc: 'Para problemas críticos que impeçam o funcionamento da sua operação, indique "URGENTE" no início da mensagem para priorização do atendimento.' },
     ]
   },
 ];
@@ -332,7 +332,7 @@ body { font-family: Arial, sans-serif; color:#1e293b; background:white; padding:
 ${allContent}
 <div class="footer">
   MJ Consultoria · Plataforma de Treinamento Corporativo · Gerado em ${new Date().toLocaleDateString('pt-BR')}<br>
-  Em conformidade com LGPD Lei nº 13.709/2018 · Provimento CNJ nº 149 · Provimento CNJ nº 213/2026
+  Em conformidade com a LGPD (Lei nº 13.709/2018) e, para cartórios, os Provimentos CNJ nº 149 e nº 213/2026
 </div>
 </body>
 </html>`);
@@ -418,7 +418,7 @@ ${allContent}
             </div>
           </div>
 
-          {/* Print real da tela (dados fictícios de um cartório de demonstração) */}
+          {/* Print real da tela (dados fictícios de um cliente de demonstração) */}
           {current.image && (
             <div className="bg-white border border-gold/20 rounded-2xl p-2 shadow-sm">
               <img src={current.image} alt={`Tela de ${current.title}`} className="w-full rounded-xl border border-slate-100" />
