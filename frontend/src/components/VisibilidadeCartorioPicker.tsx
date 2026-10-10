@@ -14,10 +14,12 @@ interface Props {
   onChange: (tenantIds: string[]) => void;
 }
 
-type Modo = 'cartorio' | 'global' | 'especificos';
+type Modo = 'cartorio' | 'especificos';
 
+// Não existe mais um modo "global" que se aplica sozinho a clientes futuros — toda
+// distribuição é uma lista explícita de IDs, escolhida na hora. Um valor antigo ['GLOBAL']
+// (de antes dessa mudança) cai em "específicos" como qualquer outra lista, sem efeito especial.
 function detectarModo(value: string[], ownTenantId: string): Modo {
-  if (value.length === 1 && value[0] === 'GLOBAL') return 'global';
   if (value.length === 1 && value[0] === ownTenantId) return 'cartorio';
   return 'especificos';
 }
@@ -39,7 +41,6 @@ const VisibilidadeCartorioPicker: React.FC<Props> = ({ isSuperAdmin, ownTenantId
 
   const setModo = (m: Modo) => {
     if (m === 'cartorio') onChange([ownTenantId]);
-    else if (m === 'global') onChange(['GLOBAL']);
     else onChange(value.length && modo === 'especificos' ? value : []);
   };
 
@@ -47,6 +48,9 @@ const VisibilidadeCartorioPicker: React.FC<Props> = ({ isSuperAdmin, ownTenantId
     const atual = modo === 'especificos' ? value : [];
     onChange(atual.includes(id) ? atual.filter(t => t !== id) : [...atual, id]);
   };
+
+  const todosMarcados = tenants.length > 0 && tenants.every(t => value.includes(t.id));
+  const marcarTodos = () => onChange(todosMarcados ? [] : tenants.map(t => t.id));
 
   return (
     <div className="space-y-2">
@@ -58,12 +62,6 @@ const VisibilidadeCartorioPicker: React.FC<Props> = ({ isSuperAdmin, ownTenantId
           }`}>
           <i className="fa-solid fa-building"></i>Este cartório
         </button>
-        <button type="button" onClick={() => setModo('global')}
-          className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-bold uppercase transition-all ${
-            modo === 'global' ? 'bg-amber-50 border border-amber-300 text-amber-700' : 'bg-white border border-slate-200 text-slate-500'
-          }`}>
-          <i className="fa-solid fa-globe"></i>Todos os cartórios
-        </button>
         <button type="button" onClick={() => setModo('especificos')}
           className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-bold uppercase transition-all ${
             modo === 'especificos' ? 'bg-emerald-50 border border-emerald-300 text-emerald-700' : 'bg-white border border-slate-200 text-slate-500'
@@ -73,17 +71,30 @@ const VisibilidadeCartorioPicker: React.FC<Props> = ({ isSuperAdmin, ownTenantId
       </div>
 
       {modo === 'especificos' && (
-        <div className="flex flex-wrap gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl">
-          {tenants.length === 0 && <span className="text-xs text-slate-500">Nenhum cartório cadastrado.</span>}
-          {tenants.map(t => (
-            <button key={t.id} type="button" onClick={() => toggleTenant(t.id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all ${
-                value.includes(t.id) ? 'bg-emerald-600 text-white' : 'bg-white border border-slate-200 text-slate-600'
-              }`}>
-              {value.includes(t.id) && <i className="fa-solid fa-check text-[9px]"></i>}
-              {t.name}
+        <div className="space-y-2">
+          <div className="flex flex-wrap gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+            {tenants.length === 0 && <span className="text-xs text-slate-500">Nenhum cartório cadastrado.</span>}
+            {tenants.map(t => (
+              <button key={t.id} type="button" onClick={() => toggleTenant(t.id)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all ${
+                  value.includes(t.id) ? 'bg-emerald-600 text-white' : 'bg-white border border-slate-200 text-slate-600'
+                }`}>
+                {value.includes(t.id) && <i className="fa-solid fa-check text-[9px]"></i>}
+                {t.name}
+              </button>
+            ))}
+          </div>
+          {tenants.length > 0 && (
+            <button type="button" onClick={marcarTodos}
+              className="text-[10px] font-bold uppercase text-slate-400 hover:text-slate-600 flex items-center gap-1.5">
+              <i className={`fa-solid ${todosMarcados ? 'fa-square-check' : 'fa-square'}`}></i>
+              {todosMarcados ? 'Desmarcar todos' : `Marcar todos os ${tenants.length} clientes atuais`}
             </button>
-          ))}
+          )}
+          <p className="text-[9px] text-slate-400 leading-relaxed">
+            Marca só quem existe agora — um cliente novo criado depois não entra automaticamente;
+            direcione pra ele quando quiser.
+          </p>
         </div>
       )}
     </div>

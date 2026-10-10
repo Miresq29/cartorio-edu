@@ -99,7 +99,10 @@ const TreinamentosOficiaisPanel: React.FC = () => {
         notificarEmail: false,
         instrutor: 'Mirian Jabur',
         cargaHoraria: cargasHorarias[topico.chave] || 1,
-        tenantIds: ['GLOBAL'],
+        // Sem cartorio nenhum marcado — nao existe mais distribuicao automatica pra
+        // "todo mundo, inclusive clientes futuros". A equipe MJ direciona depois, na
+        // tela de Trilhas, pra quem realmente deve receber este treinamento.
+        tenantIds: [],
         createdAt: serverTimestamp(),
       });
     } finally {
