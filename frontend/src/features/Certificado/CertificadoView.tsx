@@ -1,16 +1,18 @@
 // frontend/src/features/Certificado/CertificadoView.tsx
-// Módulo de Certificados — geração em PDF direto no browser (sem backend)
-// Usa window.print() com CSS @media print para gerar PDF fiel
+// Módulo de Certificados — gera o PDF abrindo uma janela com o HTML de certificadoTemplate()
+// e chamando print() dentro dela (mesmo mecanismo usado em ExamesView.tsx).
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   collection, query, where, onSnapshot, orderBy,
   addDoc, serverTimestamp, doc, getDoc
 } from 'firebase/firestore';
+import QRCode from 'qrcode';
 import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { obterOuCriarCertificado, VERIFICACAO_BASE_URL } from '../../utils/certificadoVerificacao';
+import { certificadoTemplate } from '../../utils/certificadoTemplate';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -21,15 +23,25 @@ interface Certificado {
   cpf?: string;
   cargo: string;
   cartorio: string;
+  serventiaUf?: string;
   trilhaTitulo: string;
   moduloTitulo?: string;
   tipo: 'trilha' | 'modulo' | 'exame';
   notaFinal: number;
+  notaMinima?: number;
   cargaHoraria: number;
+  modalidade?: string;
   instrutor?: string;
   instrutorCargo?: string;
+  instrutorQualificacoes?: string;
   assinaturaUrl?: string;
+  emissoraRazaoSocial?: string;
+  emissoraCnpj?: string;
   localEmissao?: string;
+  dataInicio?: string;
+  dataConclusao?: string;
+  dataEmissao?: string;
+  hash?: string;
   codigoVerificacao: string;
   emitidoEm: any;
   emitidoPor: string;
@@ -98,197 +110,6 @@ function formatDateShort(ts: any): string {
   const d = ts?.toDate ? ts.toDate() : new Date(ts);
   return d.toLocaleDateString('pt-BR');
 }
-
-// ─── Componente do Certificado (para impressão) ───────────────────────────────
-
-const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
-  const dataExtenso = formatDate(cert.emitidoEm);
-
-  return (
-    <div id="certificado-print" style={{
-      width: '297mm', height: '210mm',
-      background: '#fff',
-      fontFamily: '"Plus Jakarta Sans", "Segoe UI", sans-serif',
-      position: 'relative',
-      overflow: 'hidden',
-      boxSizing: 'border-box',
-    }}>
-      {/* Borda decorativa externa */}
-      <div className="border-navy" style={{
-        position: 'absolute', inset: '8mm',
-        borderWidth: '2px', borderStyle: 'solid',
-        borderRadius: '4px',
-        pointerEvents: 'none',
-      }} />
-      <div style={{
-        position: 'absolute', inset: '10mm',
-        border: '0.5px solid #c8a84b',
-        borderRadius: '3px',
-        pointerEvents: 'none',
-      }} />
-
-      {/* Marca d'água */}
-      <div className="text-navy" style={{
-        position: 'absolute', inset: 0,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        opacity: 0.03, fontSize: '120px', fontWeight: 900,
-        transform: 'rotate(-30deg)', letterSpacing: '-4px',
-        userSelect: 'none', pointerEvents: 'none',
-      }}>CERTIFICADO</div>
-
-      {/* Faixa topo */}
-      <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0, height: '18mm',
-        background: 'linear-gradient(135deg, #0f2240 0%, #1e3a5f 60%, #c8a84b 100%)',
-      }} />
-
-      {/* Faixa rodapé */}
-      <div style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0, height: '12mm',
-        background: 'linear-gradient(90deg, #1e3a5f 0%, #0f2240 100%)',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 16mm',
-      }}>
-        <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: '8.5pt' }}>
-          Plataforma Integra-Academy · MJ Consultoria LGPD
-        </span>
-        <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: '8.5pt' }}>
-          Verifique em {VERIFICACAO_BASE_URL.replace('https://', '')} · Código: {cert.codigoVerificacao}
-        </span>
-      </div>
-
-      {/* Conteúdo principal */}
-      <div style={{
-        position: 'absolute', top: '22mm', left: '18mm', right: '18mm', bottom: '16mm',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      }}>
-        {/* Logo / título topo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6mm' }}>
-          <div className="bg-navy" style={{
-            width: '38px', height: '38px',
-            borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '19px',
-          }}>⚖️</div>
-          <div>
-            <div className="text-navy" style={{ fontSize: '13pt', fontWeight: 800, letterSpacing: '2px', textTransform: 'uppercase' }}>
-              Integra-Academy
-            </div>
-            <div style={{ fontSize: '8pt', color: '#888', letterSpacing: '1px', textTransform: 'uppercase' }}>
-              MJ Consultoria · Plataforma de Conformidade Notarial
-            </div>
-          </div>
-        </div>
-
-        {/* CERTIFICADO DE CONCLUSÃO */}
-        <div style={{
-          fontSize: '10pt', fontWeight: 800, color: '#c8a84b',
-          letterSpacing: '4px', textTransform: 'uppercase', marginBottom: '4mm',
-        }}>
-          ✦ Certificado de {cert.tipo === 'exame' ? 'Aprovação em Exame' : 'Conclusão'} ✦
-        </div>
-
-        {/* Texto central */}
-        <div style={{ textAlign: 'center', marginBottom: '6mm' }}>
-          <p style={{ fontSize: '13pt', color: '#555', margin: '0 0 5mm 0' }}>
-            Certificamos que
-          </p>
-          <p className="text-navy" style={{
-            fontSize: '32pt', fontWeight: 900,
-            margin: '0 0 3mm 0', lineHeight: 1.1,
-            borderBottom: '1.5px solid #c8a84b', paddingBottom: '4mm', paddingLeft: '12mm', paddingRight: '12mm',
-          }}>
-            {cert.colaboradorNome}
-          </p>
-          <p style={{ fontSize: '12pt', color: '#777', margin: '3mm 0 5mm 0' }}>
-            {cert.cargo}{cert.cartorio ? ` · ${cert.cartorio}` : ''}
-          </p>
-          <p style={{ fontSize: '14pt', color: '#333', margin: '0 0 2mm 0', lineHeight: 1.6 }}>
-            concluiu com êxito o{cert.tipo === 'modulo' ? ' módulo' : cert.tipo === 'exame' ? ' exame' : 'a trilha'}
-          </p>
-          <p style={{
-            fontSize: '21pt', fontWeight: 800, color: '#0f2240',
-            margin: '0 0 2mm 0',
-          }}>
-            "{cert.trilhaTitulo}"
-          </p>
-          {cert.moduloTitulo && (
-            <p style={{ fontSize: '13pt', color: '#666', margin: '0 0 3mm 0' }}>
-              Módulo: {cert.moduloTitulo}
-            </p>
-          )}
-          <p style={{ fontSize: '12pt', color: '#555', margin: '3mm 0 0 0' }}>
-            com aprovação de <strong className="text-navy">{cert.notaFinal}%</strong> e
-            carga horária de <strong className="text-navy">{cert.cargaHoraria} horas</strong>,
-            em conformidade com os Provimentos CNJ nº 161/2024, 213/2026 e 149/2023.
-          </p>
-          {cert.instrutor && (
-            <p style={{ fontSize: '12pt', color: '#555', margin: '1.5mm 0 0 0' }}>
-              Instrutor(a): <strong className="text-navy">{cert.instrutor}</strong>
-            </p>
-          )}
-        </div>
-
-        {/* Data e assinaturas */}
-        <div style={{
-          display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
-          width: '100%', marginTop: '8mm', paddingTop: '4mm',
-        }}>
-          {/* Data */}
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '10pt', color: '#333', marginBottom: '1.5mm' }}>
-              {cert.localEmissao || 'Belo Horizonte'}, {dataExtenso}
-            </div>
-            <div style={{ width: '60mm', borderTop: '1px solid #999', paddingTop: '1.5mm' }}>
-              <div style={{ fontSize: '7.5pt', color: '#888', textAlign: 'center' }}>Data de Emissão</div>
-            </div>
-          </div>
-
-          {/* Selo central */}
-          <div style={{ textAlign: 'center' }}>
-            <div style={{
-              width: '30mm', height: '30mm', border: '2px solid #c8a84b',
-              borderRadius: '50%', display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center',
-              background: 'radial-gradient(circle, #fff9ed, #fff)',
-              margin: '0 auto',
-            }}>
-              <div style={{ fontSize: '18px' }}>⚖️</div>
-              <div className="text-navy" style={{ fontSize: '6.5pt', fontWeight: 800, textAlign: 'center', lineHeight: 1.2 }}>
-                CERTIFICADO<br/>VÁLIDO
-              </div>
-            </div>
-          </div>
-
-          {/* QR de verificação — escaneia e abre a pagina publica /verificar ja com o
-              codigo preenchido, sem precisar digitar os 16 caracteres na mao. */}
-          <div style={{ textAlign: 'center' }}>
-            <img
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&margin=0&data=${encodeURIComponent(`${VERIFICACAO_BASE_URL}?codigo=${cert.codigoVerificacao}`)}`}
-              alt="QR de verificação"
-              style={{ width: '20mm', height: '20mm', display: 'block', margin: '0 auto' }}
-            />
-            <div style={{ fontSize: '7pt', color: '#888', marginTop: '1.5mm', letterSpacing: 0.5 }}>Verificar autenticidade</div>
-          </div>
-
-          {/* Assinatura — imagem vinda da configuração global do certificado, quando cadastrada */}
-          <div style={{ textAlign: 'center' }}>
-            {cert.assinaturaUrl && (
-              <img src={cert.assinaturaUrl} alt="Assinatura" style={{ height: '12mm', margin: '0 auto 1.5mm', display: 'block' }} />
-            )}
-            <div style={{ fontSize: '10pt', color: '#333', marginBottom: '1.5mm', fontStyle: cert.assinaturaUrl ? 'normal' : 'italic' }}>
-              {cert.instrutor || 'Mirian Jabur'}
-            </div>
-            <div style={{ width: '60mm', borderTop: '1px solid #999', paddingTop: '1.5mm' }}>
-              <div style={{ fontSize: '7.5pt', color: '#888', textAlign: 'center' }}>
-                {cert.instrutorCargo || 'DPO · MJ Consultoria LGPD'}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 // ─── Modal de Emissão ─────────────────────────────────────────────────────────
 
@@ -602,13 +423,55 @@ const CertificadoView: React.FC = () => {
     setEmitindoPendentes(false);
   };
 
-  // Imprimir / gerar PDF
-  const handleImprimir = (cert: Certificado) => {
+  // Imprimir / gerar PDF — usa o mesmo certificadoTemplate(dados) de ExamesView.tsx: uma
+  // janela nova com o HTML pronto (frente + verso), sem depender de CSS @media print na
+  // própria tela (evita o wrapper escondido e a complexidade de só revelar ele na impressão).
+  const handleImprimir = async (cert: Certificado) => {
+    // Abre a janela já no clique (antes de qualquer await), senão o bloqueador de pop-up barra.
+    // Sem 'noopener' no window.open — com ele o navegador devolve null e não dá pra escrever
+    // na janela; o opener é cortado manualmente logo em seguida.
+    const win = window.open('', '_blank');
+    if (!win) { showToast('Permita pop-ups pra abrir o certificado.', 'error'); return; }
+    win.opener = null;
+    win.document.write('<p style="font-family:sans-serif;padding:24px">Gerando certificado…</p>');
     setImprimindo(cert);
-    setTimeout(() => {
-      window.print();
-      setTimeout(() => setImprimindo(null), 1000);
-    }, 300);
+    try {
+      const qrDataUrl = await QRCode.toDataURL(`${VERIFICACAO_BASE_URL}?codigo=${cert.codigoVerificacao}`, { margin: 1, width: 240 });
+      const html = certificadoTemplate({
+        codigo: cert.codigoVerificacao,
+        hash: cert.hash || '',
+        nome: cert.colaboradorNome,
+        cargo: cert.cargo,
+        serventiaNome: cert.cartorio,
+        serventiaUf: cert.serventiaUf || '',
+        tipo: cert.tipo,
+        curso: cert.trilhaTitulo,
+        moduloTitulo: cert.moduloTitulo,
+        modalidade: cert.modalidade || 'EAD assíncrona',
+        cargaHoraria: cert.cargaHoraria,
+        dataInicio: cert.dataInicio,
+        dataConclusao: cert.dataConclusao,
+        dataEmissao: cert.dataEmissao || (cert.emitidoEm?.toDate ? cert.emitidoEm.toDate().toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10)),
+        aproveitamento: cert.notaFinal,
+        notaMinima: cert.notaMinima ?? 70,
+        instrutorNome: cert.instrutor || 'Mirian Jabur',
+        instrutorCargo: cert.instrutorCargo || 'Instrutora e Responsável Técnica',
+        instrutorQualificacoes: cert.instrutorQualificacoes || '',
+        assinaturaUrl: cert.assinaturaUrl || '',
+        emissoraRazaoSocial: cert.emissoraRazaoSocial || 'AG Serviços em TI Ltda. (MJ Consultoria)',
+        emissoraCnpj: cert.emissoraCnpj || '07.113.086/0001-08',
+        localEmissao: cert.localEmissao || 'Belo Horizonte/MG',
+        qrDataUrl,
+        verificacaoUrl: VERIFICACAO_BASE_URL,
+      });
+      win.document.open();
+      win.document.write(html);
+      win.document.close();
+    } catch {
+      win.close();
+      showToast('Erro ao gerar o certificado.', 'error');
+    }
+    setImprimindo(null);
   };
 
   const tipoLabel = { trilha: 'Trilha', modulo: 'Módulo', exame: 'Exame' };
@@ -616,24 +479,6 @@ const CertificadoView: React.FC = () => {
 
   return (
     <>
-      {/* CSS para impressão — usa visibility em vez de display: "#certificado-wrapper" fica
-          varios niveis dentro de #root, entao "body > * { display:none }" escondia o
-          ancestral inteiro (incluindo o proprio wrapper) e a impressao saia em branco. */}
-      <style>{`
-        @media print {
-          body * { visibility: hidden; }
-          #certificado-wrapper, #certificado-wrapper * { visibility: visible; }
-          #certificado-wrapper { display: block !important; position: absolute; top: 0; left: 0; }
-          @page { size: A4 landscape; margin: 0; }
-        }
-        #certificado-wrapper { display: none; }
-      `}</style>
-
-      {/* Wrapper de impressão (oculto em tela) */}
-      <div id="certificado-wrapper">
-        {imprimindo && <CertificadoImpressao cert={imprimindo} />}
-      </div>
-
       {/* Interface principal */}
       <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
 

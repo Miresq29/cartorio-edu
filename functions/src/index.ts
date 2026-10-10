@@ -425,6 +425,7 @@ interface DadosCertificado {
   cpf: string;
   cargo: string;
   cartorio: string;
+  serventiaUf: string;
   trilhaTitulo: string;
   moduloTitulo: string;
   tipo: string;
@@ -538,7 +539,7 @@ export const verificarCertificado = onCall(async (request) => {
   if (versaoModelo >= 2) {
     const dados: DadosCertificado = {
       tenantId: c.tenantId, colaboradorId: c.colaboradorId, colaboradorNome: c.colaboradorNome,
-      cpf: c.cpf || "", cargo: c.cargo || "", cartorio: c.cartorio || "",
+      cpf: c.cpf || "", cargo: c.cargo || "", cartorio: c.cartorio || "", serventiaUf: c.serventiaUf || "",
       trilhaTitulo: c.trilhaTitulo, moduloTitulo: c.moduloTitulo || "", tipo: c.tipo,
       notaFinal: c.notaFinal, notaMinima: c.notaMinima || 0, cargaHoraria: c.cargaHoraria,
       modalidade: c.modalidade || "", instrutor: c.instrutor || "", instrutorCargo: c.instrutorCargo || "",
@@ -642,6 +643,7 @@ export const emitirCertificadoExame = onCall(async (request) => {
     cpf: (userData.cpf as string) || "",
     cargo: (userData.cargo as string) || (userData.role as string) || "",
     cartorio: cartorioNome,
+    serventiaUf: (tenantData.uf as string) || "",
     trilhaTitulo,
     moduloTitulo: "",
     tipo: "exame",
@@ -662,16 +664,10 @@ export const emitirCertificadoExame = onCall(async (request) => {
     emitidoPor: (userData.name as string) || "Sistema",
     validoAte: validoAte.toISOString().slice(0, 10),
   });
-  // CPF entra no hash (identidade), mas nunca é devolvido pro cliente pra exibição — o
-  // certificado não mostra CPF em lugar nenhum (só nome, cargo e serventia).
-  return {
-    codigoVerificacao: codigo,
-    novo,
-    instrutor,
-    instrutorCargo: config.instrutorCargo,
-    assinaturaUrl: config.assinaturaUrl,
-    localEmissao: config.localEmissaoPadrao,
-  };
+  // O cliente lê o restante dos dados direto do documento criado (certificados/{codigo} — a
+  // leitura já é permitida pro próprio titular), em vez de duplicar aqui todos os campos
+  // precisados pra montar o certificadoTemplate(dados) no frontend.
+  return { codigoVerificacao: codigo, novo };
 });
 
 // ── Certificado emitido pelo gestor/admin ─────────────────────────────────────
@@ -760,6 +756,7 @@ export const emitirCertificadoManual = onCall(async (request) => {
     cpf: (colabData.cpf as string) || "",
     cargo: (colabData.cargo as string) || (colabData.role as string) || "",
     cartorio: cartorioNome,
+    serventiaUf: (tenantData.uf as string) || "",
     trilhaTitulo,
     moduloTitulo,
     tipo,

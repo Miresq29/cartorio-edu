@@ -7,9 +7,10 @@ import {
   Timestamp, doc, setDoc, getDoc,
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
+import QRCode from 'qrcode';
 import { GeminiService, QuestaoExame } from '../../services/geminiService';
-import { escapeHtml } from '../../utils/escapeHtml';
 import { VERIFICACAO_BASE_URL } from '../../utils/certificadoVerificacao';
+import { certificadoTemplate } from '../../utils/certificadoTemplate';
 
 const emitirCertificadoExameFn = httpsCallable<
   { trilhaTitulo: string },
@@ -346,104 +347,69 @@ const ExamesView: React.FC = () => {
 
   /* ── certificado ────────────────────────────────────────── */
   // Persiste (ou reaproveita, se já existir) o certificado oficial em certificados/ antes de
-  // imprimir — antes isso aqui so abria um popup com um codigo decorativo, sem nenhum registro
-  // real por tras; agora é o mesmo certificado unico que aparece na secao "Certificados", so
-  // que gerado automaticamente na hora em que o colaborador passa no exame.
+  // imprimir, via cloud function (coleção é somente-leitura pro cliente). Depois lê o próprio
+  // documento criado — único jeito de ter, no frontend, exatamente os dados gravados (hash,
+  // assinatura, instrutor, datas) sem duplicar essa lógica aqui — e monta o certificado com o
+  // mesmo certificadoTemplate(dados) usado em CertificadoView.tsx (modelo único na plataforma).
   const imprimirCertificado = async () => {
     if (!fonteEscolhida || !resultado) return;
-    const cargaHoraria = Math.max(1, fonteEscolhida.cargaHoraria || 1);
+    // Abre a janela já no clique (antes dos awaits da function/Firestore), senão o bloqueador de
+    // pop-up barra. Sem 'noopener' no window.open — com ele o navegador devolve null e não dá
+    // pra escrever na janela; o opener é cortado manualmente logo em seguida.
+    const win = window.open('', '_blank');
+    if (!win) { showToast('Permita pop-ups pra abrir o certificado.', 'error'); return; }
+    win.opener = null;
+    win.document.write('<p style="font-family:sans-serif;padding:24px">Gerando certificado…</p>');
+    const falhar = (msg: string) => { win.close(); showToast(msg, 'error'); };
 
     let codigoVerificacao = '';
-    let instrutor = fonteEscolhida.oficial ? 'Mirian Jabur' : (fonteEscolhida.instrutor || 'Mirian Jabur');
-    let instrutorCargo = 'DPO · MJ Consultoria LGPD';
-    let assinaturaUrl = '';
-    let localEmissao = 'Belo Horizonte';
     try {
-      // Grava direto no Firestore exigiria que o colaborador tivesse permissao de escrita
-      // em certificados/ (coleção é somente-leitura pro cliente) — por isso a emissao roda numa
-      // cloud function, que confirma contra examesResultados que a aprovacao e real antes de
-      // criar o registro, e devolve os dados oficiais (assinatura/instrutor) já gravados nele.
       const { data } = await emitirCertificadoExameFn({ trilhaTitulo: fonteEscolhida.titulo });
       codigoVerificacao = data.codigoVerificacao;
-      if (data.instrutor) instrutor = data.instrutor;
-      if (data.instrutorCargo) instrutorCargo = data.instrutorCargo;
-      if (data.assinaturaUrl) assinaturaUrl = data.assinaturaUrl;
-      if (data.localEmissao) localEmissao = data.localEmissao.split('/')[0];
     } catch {
-      showToast('Não foi possível registrar o certificado — tente novamente.', 'error');
+      falhar('Não foi possível registrar o certificado — tente novamente.');
       return;
     }
 
-    const win = window.open('', '_blank', 'noopener');
-    if (!win) return;
-    const data = new Date().toLocaleDateString('pt-BR');
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&margin=0&data=${encodeURIComponent(`${VERIFICACAO_BASE_URL}?codigo=${codigoVerificacao}`)}`;
-    win.document.write(`<!DOCTYPE html><html><head><title>Certificado</title>
-    <style>
-      @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Dancing+Script:wght@700&family=Inter:wght@400;600;800&display=swap');
-      body { margin: 0; font-family: 'Inter', sans-serif; background: #eee9dd; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-      .cert { width: 980px; background: #fffdf7; border: 14px double #1e3a5f; padding: 64px 90px; text-align: center; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.25); }
-      .cert::before { content: ''; position: absolute; inset: 10px; border: 1.5px solid #c9a84c; pointer-events: none; }
-      .corner { position: absolute; width: 34px; height: 34px; border: 3px solid #c9a84c; }
-      .corner.tl { top: 22px; left: 22px; border-right: none; border-bottom: none; }
-      .corner.tr { top: 22px; right: 22px; border-left: none; border-bottom: none; }
-      .corner.bl { bottom: 22px; left: 22px; border-right: none; border-top: none; }
-      .corner.br { bottom: 22px; right: 22px; border-left: none; border-top: none; }
-      .logo { font-size: 12px; font-weight: 800; letter-spacing: 4px; color: #1e3a5f; text-transform: uppercase; margin-bottom: 6px; }
-      .subrazao { font-size: 9px; letter-spacing: 2px; color: #999; text-transform: uppercase; margin-bottom: 28px; }
-      .cert h1 { font-family: 'Playfair Display', serif; font-weight: 900; font-size: 46px; color: #1e3a5f; margin: 0 0 8px; }
-      .tipo { font-size: 11px; letter-spacing: 5px; text-transform: uppercase; color: #c9a84c; margin-bottom: 34px; font-weight: 700; }
-      .texto { font-size: 15px; color: #555; line-height: 1.8; margin-bottom: 10px; }
-      .nome { font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 900; color: #1e3a5f; margin: 6px 0; border-bottom: 1.5px solid #c9a84c; display: inline-block; padding-bottom: 8px; }
-      .empresa { font-size: 12px; letter-spacing: 1px; color: #888; text-transform: uppercase; margin: 0 0 4px; }
-      .curso { font-size: 21px; font-weight: 700; color: #1e3a5f; margin: 20px 0 6px; }
-      .detalhes { font-size: 13px; color: #666; margin: 14px 0 0; }
-      .detalhes strong { color: #1e3a5f; }
-      .rodape { display: flex; align-items: flex-end; justify-content: space-between; margin-top: 56px; gap: 24px; }
-      .rodape-bloco { text-align: center; flex: 1; }
-      .data-emissao { font-size: 12px; color: #888; }
-      .assinatura-nome { font-family: 'Dancing Script', cursive; font-size: 34px; color: #1e3a5f; line-height: 1; margin-bottom: -4px; }
-      .assinatura-linha { border-top: 1px solid #bbb; padding-top: 8px; font-size: 11px; color: #888; }
-      .selo { width: 90px; height: 90px; border-radius: 50%; border: 2.5px solid #c9a84c; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle, #fffaf0, #fff); flex-shrink: 0; }
-      .selo-txt { font-family: 'Playfair Display', serif; font-weight: 900; font-size: 9px; color: #1e3a5f; line-height: 1.3; text-align: center; }
-      .verificacao { margin-top: 22px; font-size: 9px; color: #aaa; letter-spacing: 1px; text-transform: uppercase; }
-      .conformidade { margin-top: 6px; font-size: 10px; color: #999; max-width: 640px; margin-left: auto; margin-right: auto; line-height: 1.5; }
-      @media print { body { background: white; } .cert { box-shadow: none; print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
-    </style></head><body>
-    <div class="cert">
-      <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
-      <div class="logo">MJ Consultoria</div>
-      <div class="subrazao">Plataforma de Treinamento e Conformidade Notarial</div>
-      <h1>Certificado de Conclusão</h1>
-      <div class="tipo">✦ Exame de Avaliação ✦</div>
-      <p class="texto">Certificamos, para os devidos fins, que</p>
-      <p class="nome">${escapeHtml(user.name)}</p>
-      ${empresaNome ? `<p class="empresa">${escapeHtml(empresaNome)}</p>` : ''}
-      <p class="texto" style="margin-top:16px">foi aprovado(a) no exame de avaliação de conhecimentos referente a</p>
-      <p class="curso">"${escapeHtml(fonteEscolhida?.titulo || 'Treinamento')}"</p>
-      <p class="detalhes">
-        com aproveitamento de <strong>${Number(resultado?.score) || 0}%</strong> e carga horária de <strong>${cargaHoraria} hora${cargaHoraria !== 1 ? 's' : ''}</strong>,
-        sob instrução de <strong>${escapeHtml(instrutor)}</strong>.
-      </p>
-      <div class="rodape">
-        <div class="rodape-bloco">
-          <p class="data-emissao">${escapeHtml(localEmissao)}, ${data}</p>
-          <div class="assinatura-linha">Data de Emissão</div>
-        </div>
-        <div class="selo">
-          <img src="${qrUrl}" alt="QR de verificação" style="width:72px;height:72px;" />
-        </div>
-        <div class="rodape-bloco">
-          ${assinaturaUrl ? `<img src="${assinaturaUrl}" alt="Assinatura" style="height:32px;margin:0 auto 2px;display:block;" />` : ''}
-          <div class="assinatura-nome" style="${assinaturaUrl ? 'font-family: Inter, sans-serif; font-size: 14px; font-style: normal;' : ''}">${escapeHtml(instrutor)}</div>
-          <div class="assinatura-linha">${escapeHtml(instrutorCargo)}</div>
-        </div>
-      </div>
-      <p class="conformidade">Documento emitido eletronicamente e válido como evidência de capacitação profissional, em conformidade com os Provimentos CNJ nº 161/2024, 213/2026 e 149/2023.</p>
-      <p class="verificacao">Verifique em ${VERIFICACAO_BASE_URL.replace('https://', '')} · Código: ${codigoVerificacao}</p>
-    </div></body></html>`);
+    const certSnap = await getDoc(doc(db, 'certificados', codigoVerificacao)).catch(() => null);
+    if (!certSnap?.exists()) {
+      falhar('Certificado criado, mas não foi possível carregá-lo — tente novamente.');
+      return;
+    }
+    const c = certSnap.data();
+    const qrDataUrl = await QRCode.toDataURL(`${VERIFICACAO_BASE_URL}?codigo=${codigoVerificacao}`, { margin: 1, width: 240 });
+
+    const html = certificadoTemplate({
+      codigo: codigoVerificacao,
+      hash: c.hash || '',
+      nome: c.colaboradorNome || user.name,
+      cargo: c.cargo || '',
+      serventiaNome: c.cartorio || empresaNome,
+      serventiaUf: c.serventiaUf || '',
+      tipo: 'exame',
+      curso: c.trilhaTitulo || fonteEscolhida.titulo,
+      modalidade: c.modalidade || 'EAD assíncrona',
+      cargaHoraria: c.cargaHoraria || Math.max(1, fonteEscolhida.cargaHoraria || 1),
+      dataInicio: c.dataInicio,
+      dataConclusao: c.dataConclusao,
+      dataEmissao: c.dataEmissao || new Date().toISOString().slice(0, 10),
+      aproveitamento: c.notaFinal ?? (Number(resultado.score) || 0),
+      notaMinima: c.notaMinima ?? NOTA_APROVACAO,
+      instrutorNome: c.instrutor || 'Mirian Jabur',
+      instrutorCargo: c.instrutorCargo || 'Instrutora e Responsável Técnica',
+      instrutorQualificacoes: c.instrutorQualificacoes || '',
+      assinaturaUrl: c.assinaturaUrl || '',
+      emissoraRazaoSocial: c.emissoraRazaoSocial || 'AG Serviços em TI Ltda. (MJ Consultoria)',
+      emissoraCnpj: c.emissoraCnpj || '07.113.086/0001-08',
+      localEmissao: c.localEmissao || 'Belo Horizonte/MG',
+      qrDataUrl,
+      verificacaoUrl: VERIFICACAO_BASE_URL,
+      numQuestoes: numQuestoes,
+    });
+
+    win.document.open();
+    win.document.write(html);
     win.document.close();
-    win.print();
   };
 
   /* ── progresso do exame em curso ────────────────────────── */
