@@ -128,18 +128,18 @@ const DashboardMasterView: React.FC = () => {
           <i className="fa-solid fa-graduation-cap text-9xl text-gold"></i>
         </div>
         <div className="relative z-10">
-          <p className="text-gold text-[10px] font-black uppercase tracking-[0.4em] mb-2">Integra-Academy</p>
-          <h3 className="text-white text-2xl font-black italic uppercase tracking-tighter mb-3">
+          <p className="text-gold text-xs font-black uppercase tracking-[0.4em] mb-3">Integra-Academy</p>
+          <h3 className="text-white text-3xl font-black italic uppercase tracking-tighter mb-4">
             Capacitação e conformidade em um só lugar
           </h3>
-          <p className="text-slate-300 text-sm max-w-3xl leading-relaxed">
+          <p className="text-slate-300 text-base max-w-3xl leading-relaxed">
             Plataforma da MJ Consultoria para treinamento, certificação e conformidade — usada hoje por
             cartórios e empresas privadas de qualquer setor em todo o Brasil.
           </p>
 
-          <div className="mt-6 max-w-3xl">
-            <p className="text-gold text-[10px] font-black uppercase tracking-[0.3em] mb-1.5">Objetivo</p>
-            <p className="text-slate-300 text-sm leading-relaxed">
+          <div className="mt-7 max-w-3xl">
+            <p className="text-gold text-xs font-black uppercase tracking-[0.3em] mb-2">Objetivo</p>
+            <p className="text-slate-300 text-base leading-relaxed">
               Profissionalizar a capacitação de equipes e comprovar, com evidência auditável, a conformidade
               regulatória, de segurança da informação e de proteção de dados do cliente — sem depender de
               controle manual em planilha.
@@ -147,26 +147,26 @@ const DashboardMasterView: React.FC = () => {
           </div>
         </div>
 
-        <div className="relative z-10 mt-8">
-          <p className="text-gold text-[10px] font-black uppercase tracking-[0.3em] mb-3">Benefícios</p>
+        <div className="relative z-10 mt-9">
+          <p className="text-gold text-xs font-black uppercase tracking-[0.3em] mb-4">Benefícios</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {BENEFICIOS.map(b => (
-              <div key={b} className="flex items-start gap-3 bg-white/5 border border-white/10 rounded-2xl p-4">
-                <i className="fa-solid fa-circle-check text-emerald-400 text-sm mt-0.5 flex-shrink-0"></i>
-                <p className="text-slate-300 text-xs leading-relaxed">{b}</p>
+              <div key={b} className="flex items-start gap-3 bg-white/5 border border-white/10 rounded-2xl p-5">
+                <i className="fa-solid fa-circle-check text-emerald-400 text-base mt-0.5 flex-shrink-0"></i>
+                <p className="text-slate-300 text-sm leading-relaxed">{b}</p>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="relative z-10 mt-8">
-          <p className="text-gold text-[10px] font-black uppercase tracking-[0.3em] mb-3">O que a plataforma oferece</p>
+        <div className="relative z-10 mt-9">
+          <p className="text-gold text-xs font-black uppercase tracking-[0.3em] mb-4">O que a plataforma oferece</p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {DESTAQUES.map(d => (
               <div key={d.titulo} className="bg-white/5 border border-white/10 rounded-3xl p-5">
-                <i className={`fa-solid ${d.icon} text-gold text-lg mb-3`}></i>
-                <p className="text-white font-bold text-xs uppercase tracking-wide mb-1">{d.titulo}</p>
-                <p className="text-slate-400 text-xs leading-relaxed">{d.desc}</p>
+                <i className={`fa-solid ${d.icon} text-gold text-xl mb-3`}></i>
+                <p className="text-white font-bold text-sm uppercase tracking-wide mb-1.5">{d.titulo}</p>
+                <p className="text-slate-400 text-sm leading-relaxed">{d.desc}</p>
               </div>
             ))}
           </div>
