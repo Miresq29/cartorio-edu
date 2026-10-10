@@ -149,10 +149,10 @@ const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0 16mm',
       }}>
-        <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '7pt' }}>
+        <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: '8.5pt' }}>
           Plataforma Integra-Academy · MJ Consultoria LGPD
         </span>
-        <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '7pt' }}>
+        <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: '8.5pt' }}>
           Verifique em {VERIFICACAO_BASE_URL.replace('https://', '')} · Código: {cert.codigoVerificacao}
         </span>
       </div>
@@ -160,20 +160,20 @@ const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
       {/* Conteúdo principal */}
       <div style={{
         position: 'absolute', top: '22mm', left: '18mm', right: '18mm', bottom: '16mm',
-        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       }}>
         {/* Logo / título topo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4mm' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6mm' }}>
           <div className="bg-navy" style={{
-            width: '32px', height: '32px',
-            borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '16px',
+            width: '38px', height: '38px',
+            borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '19px',
           }}>⚖️</div>
           <div>
-            <div className="text-navy" style={{ fontSize: '10pt', fontWeight: 800, letterSpacing: '2px', textTransform: 'uppercase' }}>
+            <div className="text-navy" style={{ fontSize: '13pt', fontWeight: 800, letterSpacing: '2px', textTransform: 'uppercase' }}>
               Integra-Academy
             </div>
-            <div style={{ fontSize: '6pt', color: '#888', letterSpacing: '1px', textTransform: 'uppercase' }}>
+            <div style={{ fontSize: '8pt', color: '#888', letterSpacing: '1px', textTransform: 'uppercase' }}>
               MJ Consultoria · Plataforma de Conformidade Notarial
             </div>
           </div>
@@ -181,48 +181,48 @@ const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
 
         {/* CERTIFICADO DE CONCLUSÃO */}
         <div style={{
-          fontSize: '7pt', fontWeight: 800, color: '#c8a84b',
-          letterSpacing: '4px', textTransform: 'uppercase', marginBottom: '2mm',
+          fontSize: '10pt', fontWeight: 800, color: '#c8a84b',
+          letterSpacing: '4px', textTransform: 'uppercase', marginBottom: '4mm',
         }}>
           ✦ Certificado de {cert.tipo === 'exame' ? 'Aprovação em Exame' : 'Conclusão'} ✦
         </div>
 
         {/* Texto central */}
-        <div style={{ textAlign: 'center', marginBottom: '4mm' }}>
-          <p style={{ fontSize: '9pt', color: '#555', margin: '0 0 4mm 0' }}>
+        <div style={{ textAlign: 'center', marginBottom: '6mm' }}>
+          <p style={{ fontSize: '13pt', color: '#555', margin: '0 0 5mm 0' }}>
             Certificamos que
           </p>
           <p className="text-navy" style={{
-            fontSize: '26pt', fontWeight: 900,
-            margin: '0 0 2mm 0', lineHeight: 1.1,
-            borderBottom: '1.5px solid #c8a84b', paddingBottom: '3mm', paddingLeft: '12mm', paddingRight: '12mm',
+            fontSize: '32pt', fontWeight: 900,
+            margin: '0 0 3mm 0', lineHeight: 1.1,
+            borderBottom: '1.5px solid #c8a84b', paddingBottom: '4mm', paddingLeft: '12mm', paddingRight: '12mm',
           }}>
             {cert.colaboradorNome}
           </p>
-          <p style={{ fontSize: '8pt', color: '#777', margin: '2mm 0 4mm 0' }}>
+          <p style={{ fontSize: '12pt', color: '#777', margin: '3mm 0 5mm 0' }}>
             {cert.cargo}{cert.cartorio ? ` · ${cert.cartorio}` : ''}{cert.cpf ? ` · CPF ${cert.cpf}` : ''}
           </p>
-          <p style={{ fontSize: '10pt', color: '#333', margin: '0 0 1mm 0', lineHeight: 1.6 }}>
+          <p style={{ fontSize: '14pt', color: '#333', margin: '0 0 2mm 0', lineHeight: 1.6 }}>
             concluiu com êxito o{cert.tipo === 'modulo' ? ' módulo' : cert.tipo === 'exame' ? ' exame' : 'a trilha'}
           </p>
           <p style={{
-            fontSize: '15pt', fontWeight: 800, color: '#0f2240',
-            margin: '0 0 1mm 0',
+            fontSize: '21pt', fontWeight: 800, color: '#0f2240',
+            margin: '0 0 2mm 0',
           }}>
             "{cert.trilhaTitulo}"
           </p>
           {cert.moduloTitulo && (
-            <p style={{ fontSize: '9pt', color: '#666', margin: '0 0 2mm 0' }}>
+            <p style={{ fontSize: '13pt', color: '#666', margin: '0 0 3mm 0' }}>
               Módulo: {cert.moduloTitulo}
             </p>
           )}
-          <p style={{ fontSize: '8pt', color: '#555', margin: '2mm 0 0 0' }}>
+          <p style={{ fontSize: '12pt', color: '#555', margin: '3mm 0 0 0' }}>
             com aprovação de <strong className="text-navy">{cert.notaFinal}%</strong> e
             carga horária de <strong className="text-navy">{cert.cargaHoraria} horas</strong>,
             em conformidade com os Provimentos CNJ nº 161/2024, 213/2026 e 149/2023.
           </p>
           {cert.instrutor && (
-            <p style={{ fontSize: '8pt', color: '#555', margin: '1mm 0 0 0' }}>
+            <p style={{ fontSize: '12pt', color: '#555', margin: '1.5mm 0 0 0' }}>
               Instrutor(a): <strong className="text-navy">{cert.instrutor}</strong>
             </p>
           )}
@@ -231,29 +231,29 @@ const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
         {/* Data e assinaturas */}
         <div style={{
           display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
-          width: '100%', marginTop: 'auto', paddingTop: '4mm',
+          width: '100%', marginTop: '8mm', paddingTop: '4mm',
         }}>
           {/* Data */}
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '8pt', color: '#333', marginBottom: '1mm' }}>
+            <div style={{ fontSize: '10pt', color: '#333', marginBottom: '1.5mm' }}>
               {cert.localEmissao || 'Belo Horizonte'}, {dataExtenso}
             </div>
-            <div style={{ width: '60mm', borderTop: '1px solid #999', paddingTop: '1mm' }}>
-              <div style={{ fontSize: '6pt', color: '#888', textAlign: 'center' }}>Data de Emissão</div>
+            <div style={{ width: '60mm', borderTop: '1px solid #999', paddingTop: '1.5mm' }}>
+              <div style={{ fontSize: '7.5pt', color: '#888', textAlign: 'center' }}>Data de Emissão</div>
             </div>
           </div>
 
           {/* Selo central */}
           <div style={{ textAlign: 'center' }}>
             <div style={{
-              width: '28mm', height: '28mm', border: '2px solid #c8a84b',
+              width: '30mm', height: '30mm', border: '2px solid #c8a84b',
               borderRadius: '50%', display: 'flex', flexDirection: 'column',
               alignItems: 'center', justifyContent: 'center',
               background: 'radial-gradient(circle, #fff9ed, #fff)',
               margin: '0 auto',
             }}>
-              <div style={{ fontSize: '16px' }}>⚖️</div>
-              <div className="text-navy" style={{ fontSize: '5pt', fontWeight: 800, textAlign: 'center', lineHeight: 1.2 }}>
+              <div style={{ fontSize: '18px' }}>⚖️</div>
+              <div className="text-navy" style={{ fontSize: '6.5pt', fontWeight: 800, textAlign: 'center', lineHeight: 1.2 }}>
                 CERTIFICADO<br/>VÁLIDO
               </div>
             </div>
@@ -265,21 +265,21 @@ const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
             <img
               src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&margin=0&data=${encodeURIComponent(`${VERIFICACAO_BASE_URL}?codigo=${cert.codigoVerificacao}`)}`}
               alt="QR de verificação"
-              style={{ width: '18mm', height: '18mm', display: 'block', margin: '0 auto' }}
+              style={{ width: '20mm', height: '20mm', display: 'block', margin: '0 auto' }}
             />
-            <div style={{ fontSize: '5pt', color: '#888', marginTop: '1mm', letterSpacing: 0.5 }}>Verificar autenticidade</div>
+            <div style={{ fontSize: '7pt', color: '#888', marginTop: '1.5mm', letterSpacing: 0.5 }}>Verificar autenticidade</div>
           </div>
 
           {/* Assinatura — imagem vinda da configuração global do certificado, quando cadastrada */}
           <div style={{ textAlign: 'center' }}>
             {cert.assinaturaUrl && (
-              <img src={cert.assinaturaUrl} alt="Assinatura" style={{ height: '10mm', margin: '0 auto 1mm', display: 'block' }} />
+              <img src={cert.assinaturaUrl} alt="Assinatura" style={{ height: '12mm', margin: '0 auto 1.5mm', display: 'block' }} />
             )}
-            <div style={{ fontSize: '8pt', color: '#333', marginBottom: '1mm', fontStyle: cert.assinaturaUrl ? 'normal' : 'italic' }}>
+            <div style={{ fontSize: '10pt', color: '#333', marginBottom: '1.5mm', fontStyle: cert.assinaturaUrl ? 'normal' : 'italic' }}>
               {cert.instrutor || 'Mirian Jabur'}
             </div>
-            <div style={{ width: '60mm', borderTop: '1px solid #999', paddingTop: '1mm' }}>
-              <div style={{ fontSize: '6pt', color: '#888', textAlign: 'center' }}>
+            <div style={{ width: '60mm', borderTop: '1px solid #999', paddingTop: '1.5mm' }}>
+              <div style={{ fontSize: '7.5pt', color: '#888', textAlign: 'center' }}>
                 {cert.instrutorCargo || 'DPO · MJ Consultoria LGPD'}
               </div>
             </div>

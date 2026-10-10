@@ -14,10 +14,17 @@ interface Tenant {
 const DESTAQUES = [
   { icon: 'fa-graduation-cap', titulo: 'Trilhas de capacitação', desc: 'Conteúdo em vídeo, áudio e texto organizado por perfil, com quiz e liberação de prova só após assistir até o fim.' },
   { icon: 'fa-certificate', titulo: 'Certificado verificável', desc: 'Emissão automática ao passar na prova, com hash de integridade e página pública de validação — pronto para auditoria.' },
-  { icon: 'fa-shield-halved', titulo: 'Conformidade CNJ', desc: 'Conteúdo e relatórios alinhados aos Provimentos nº 149/2023, 161/2024 e 213/2026, com dossiê de conformidade exportável.' },
+  { icon: 'fa-shield-halved', titulo: 'Conformidade CNJ e LGPD', desc: 'Conteúdo e relatórios alinhados à LGPD e, para cartórios, aos Provimentos nº 149/2023, 161/2024 e 213/2026, com dossiê exportável.' },
   { icon: 'fa-user-secret', titulo: 'Simulação de phishing', desc: 'Campanhas de conscientização e teste de segurança da informação, com métricas por colaborador.' },
   { icon: 'fa-chart-line', titulo: 'Relatórios e auditoria', desc: 'Visão completa de desempenho, aprovações e trilha de auditoria para fiscalização e gestão interna.' },
   { icon: 'fa-building-shield', titulo: 'Multiempresa', desc: 'Um ambiente isolado por cliente — cartórios e empresas privadas, cada um só vê seus próprios dados.' },
+];
+
+const BENEFICIOS = [
+  'Reduz o risco de não conformidade — evidência pronta evita autuação por falta de comprovação de treinamento.',
+  'Corta o tempo gasto controlando certificados, presença e capacitação em planilha.',
+  'Dá visão executiva em tempo real para sócios e gestores, sem precisar pedir relatório pra ninguém.',
+  'Funciona do mesmo jeito para cartórios e empresas privadas de qualquer setor — sem adaptação.',
 ];
 
 const DashboardMasterView: React.FC = () => {
@@ -122,22 +129,47 @@ const DashboardMasterView: React.FC = () => {
         </div>
         <div className="relative z-10">
           <p className="text-gold text-[10px] font-black uppercase tracking-[0.4em] mb-2">Integra-Academy</p>
-          <h3 className="text-white text-2xl font-black italic uppercase tracking-tighter mb-2">
+          <h3 className="text-white text-2xl font-black italic uppercase tracking-tighter mb-3">
             Capacitação e conformidade em um só lugar
           </h3>
-          <p className="text-slate-300 text-sm max-w-2xl leading-relaxed">
-            Plataforma da MJ Consultoria para treinamento, certificação e conformidade notarial —
-            usada hoje por cartórios e empresas em todo o Brasil.
+          <p className="text-slate-300 text-sm max-w-3xl leading-relaxed">
+            Plataforma da MJ Consultoria para treinamento, certificação e conformidade — usada hoje por
+            cartórios e empresas privadas de qualquer setor em todo o Brasil.
           </p>
+
+          <div className="mt-6 max-w-3xl">
+            <p className="text-gold text-[10px] font-black uppercase tracking-[0.3em] mb-1.5">Objetivo</p>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Profissionalizar a capacitação de equipes e comprovar, com evidência auditável, a conformidade
+              regulatória, de segurança da informação e de proteção de dados do cliente — sem depender de
+              controle manual em planilha.
+            </p>
+          </div>
         </div>
-        <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
-          {DESTAQUES.map(d => (
-            <div key={d.titulo} className="bg-white/5 border border-white/10 rounded-3xl p-5">
-              <i className={`fa-solid ${d.icon} text-gold text-lg mb-3`}></i>
-              <p className="text-white font-bold text-xs uppercase tracking-wide mb-1">{d.titulo}</p>
-              <p className="text-slate-400 text-xs leading-relaxed">{d.desc}</p>
-            </div>
-          ))}
+
+        <div className="relative z-10 mt-8">
+          <p className="text-gold text-[10px] font-black uppercase tracking-[0.3em] mb-3">Benefícios</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {BENEFICIOS.map(b => (
+              <div key={b} className="flex items-start gap-3 bg-white/5 border border-white/10 rounded-2xl p-4">
+                <i className="fa-solid fa-circle-check text-emerald-400 text-sm mt-0.5 flex-shrink-0"></i>
+                <p className="text-slate-300 text-xs leading-relaxed">{b}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="relative z-10 mt-8">
+          <p className="text-gold text-[10px] font-black uppercase tracking-[0.3em] mb-3">O que a plataforma oferece</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {DESTAQUES.map(d => (
+              <div key={d.titulo} className="bg-white/5 border border-white/10 rounded-3xl p-5">
+                <i className={`fa-solid ${d.icon} text-gold text-lg mb-3`}></i>
+                <p className="text-white font-bold text-xs uppercase tracking-wide mb-1">{d.titulo}</p>
+                <p className="text-slate-400 text-xs leading-relaxed">{d.desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
