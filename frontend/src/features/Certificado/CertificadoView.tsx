@@ -215,7 +215,7 @@ const CertificadoImpressao: React.FC<{ cert: Certificado }> = ({ cert }) => {
           <p style={{ fontSize: '8pt', color: '#555', margin: '2mm 0 0 0' }}>
             com aprovação de <strong className="text-navy">{cert.notaFinal}%</strong> e
             carga horária de <strong className="text-navy">{cert.cargaHoraria} horas</strong>,
-            em conformidade com os Provimentos CNJ nº 161/2023, 213/2026 e 149/2023.
+            em conformidade com os Provimentos CNJ nº 161/2024, 213/2026 e 149/2023.
           </p>
           {cert.instrutor && (
             <p style={{ fontSize: '8pt', color: '#555', margin: '1mm 0 0 0' }}>
@@ -693,7 +693,7 @@ const CertificadoView: React.FC = () => {
             <p className="text-blue-400 font-black text-xs uppercase tracking-widest">Certificados para Dossiê CNJ</p>
             <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
               Os certificados gerados por esta plataforma são válidos como evidência de treinamento para o dossiê de conformidade CNJ, 
-              conforme Provimentos nº 149/2023, 161/2023 e 213/2026. Cada certificado possui código de verificação único.
+              conforme Provimentos nº 149/2023, 161/2024 e 213/2026. Cada certificado possui código de verificação único.
             </p>
           </div>
         </div>

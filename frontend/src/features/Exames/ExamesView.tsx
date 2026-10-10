@@ -427,7 +427,7 @@ const ExamesView: React.FC = () => {
           <div class="assinatura-linha">MJ Consultoria — Coordenação de Treinamento</div>
         </div>
       </div>
-      <p class="conformidade">Documento emitido eletronicamente e válido como evidência de capacitação profissional, em conformidade com os Provimentos CNJ nº 161/2023, 213/2026 e 149/2023.</p>
+      <p class="conformidade">Documento emitido eletronicamente e válido como evidência de capacitação profissional, em conformidade com os Provimentos CNJ nº 161/2024, 213/2026 e 149/2023.</p>
       <p class="verificacao">Verifique em ${VERIFICACAO_BASE_URL.replace('https://', '')} · Código: ${codigoVerificacao}</p>
     </div></body></html>`);
     win.document.close();

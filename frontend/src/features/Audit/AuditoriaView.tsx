@@ -385,7 +385,7 @@ const AuditoriaView: React.FC = () => {
           <i className="fa-solid fa-circle-info text-blue-500 text-base mt-0.5 flex-shrink-0"></i>
           <p className="text-xs text-blue-700 leading-relaxed">
             <strong>Trilha de Auditoria CNJ</strong> — Os registros desta tela compõem a trilha de auditoria exigida pelo
-            Provimento CNJ nº 213/2026 (art. 14, §2º) e Provimento nº 161/2023. Os logs são gravados automaticamente
+            Provimento CNJ nº 213/2026 (art. 14, §2º) e Provimento nº 161/2024. Os logs são gravados automaticamente
             a cada ação relevante na plataforma e não podem ser alterados pelos usuários.
           </p>
         </div>
