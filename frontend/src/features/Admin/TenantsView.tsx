@@ -7,6 +7,8 @@ import { httpsCallable } from 'firebase/functions';
 import {
   collection, onSnapshot, query, where, orderBy, doc, updateDoc, Timestamp
 } from 'firebase/firestore';
+import ConfigCertificadoPanel from './ConfigCertificadoPanel';
+
 const createTenantFn = httpsCallable(functions, 'createTenant');
 const createCollaboratorFn = httpsCallable(functions, 'createCollaborator');
 
@@ -37,6 +39,10 @@ interface Tenant {
   horarioAcessoHabilitado?: boolean;
   horarioAcessoInicio?: string;
   horarioAcessoFim?: string;
+  // Dados oficiais, usados no certificado novo (modelo 2) — "<cargo> · <nomeOficial>/<UF>".
+  nomeOficial?: string;
+  uf?: string;
+  municipio?: string;
   createdAt: any;
 }
 
@@ -233,6 +239,13 @@ const TenantsView: React.FC = () => {
     await updateDoc(doc(db, 'tenants', t.id), { [campo]: valor });
   };
 
+  // Dados oficiais da serventia/empresa — usados na linha "<cargo> · <nomeOficial>/<UF>" do
+  // certificado novo (modelo 2). Opcionais: sem eles, o certificado cai no formato antigo
+  // (sem esses dados no hash) ate alguem completar o cadastro.
+  const atualizarDadosServentia = async (t: Tenant, campo: 'nomeOficial' | 'uf' | 'municipio', valor: string) => {
+    await updateDoc(doc(db, 'tenants', t.id), { [campo]: valor });
+  };
+
   return (
     <div className="p-12 min-h-full bg-slate-50 animate-in fade-in space-y-12">
       <header>
@@ -280,6 +293,8 @@ const TenantsView: React.FC = () => {
           </div>
         )}
       </div>
+
+      {isSuperAdmin && <ConfigCertificadoPanel />}
 
       <div className={isSuperAdmin ? 'grid grid-cols-1 lg:grid-cols-2 gap-12' : 'grid grid-cols-1'}>
         {isSuperAdmin && (
@@ -477,6 +492,21 @@ const TenantsView: React.FC = () => {
                       <span className="text-[9px] text-slate-400 font-bold uppercase">todos os dias</span>
                     </div>
                   )}
+                </div>
+                )}
+
+                {/* Dados oficiais da serventia — usados no certificado novo (opcional) */}
+                {isSuperAdmin && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 pt-2 border-t border-slate-100">
+                  <input type="text" defaultValue={t.nomeOficial || ''} placeholder="Nome oficial (certificado)"
+                    onBlur={e => atualizarDadosServentia(t, 'nomeOficial', e.target.value)}
+                    className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-[11px] text-navy outline-none focus:border-blue-500" />
+                  <input type="text" defaultValue={t.municipio || ''} placeholder="Município"
+                    onBlur={e => atualizarDadosServentia(t, 'municipio', e.target.value)}
+                    className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-[11px] text-navy outline-none focus:border-blue-500" />
+                  <input type="text" defaultValue={t.uf || ''} placeholder="UF" maxLength={2}
+                    onBlur={e => atualizarDadosServentia(t, 'uf', e.target.value.toUpperCase())}
+                    className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-[11px] text-navy uppercase outline-none focus:border-blue-500" />
                 </div>
                 )}
               </div>

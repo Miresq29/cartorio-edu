@@ -40,6 +40,9 @@ interface Trilha {
   instrutor?: string;
   formato?: FormatoTreinamento;
   cargaHoraria?: number;      // horas totais da trilha, para relatórios de carga horária
+  // Modalidade de realização do curso (ex: "EAD assíncrona", "Presencial") — exibida no
+  // certificado. Distinto de `formato`, que é outro conceito (tipo de conteúdo/entrega).
+  modalidade?: string;
   createdAt: any;
 }
 
@@ -61,6 +64,7 @@ interface TrilhaProgresso {
   concluida: boolean;
   tenantId: string;
   updatedAt: any;
+  iniciadoEm?: any;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -774,7 +778,7 @@ const TrailsView: React.FC = () => {
   // Form state
   const [form, setForm] = useState({
     titulo: '', descricao: '', perfis: [] as Perfil[], modulos: [] as Modulo[], ativa: true, oficial: false, notificarEmail: false,
-    instrutor: '', formato: '' as FormatoTreinamento | '', cargaHoraria: '' as number | '',
+    instrutor: '', formato: '' as FormatoTreinamento | '', cargaHoraria: '' as number | '', modalidade: '',
   });
 
   // Load trilhas
@@ -833,12 +837,12 @@ const TrailsView: React.FC = () => {
       setEditando(trilha);
       setForm({
         titulo: trilha.titulo, descricao: trilha.descricao, perfis: trilha.perfis, modulos: trilha.modulos, ativa: trilha.ativa, oficial: !!trilha.oficial, notificarEmail: !!trilha.notificarEmail,
-        instrutor: trilha.instrutor || '', formato: trilha.formato || '', cargaHoraria: trilha.cargaHoraria ?? '',
+        instrutor: trilha.instrutor || '', formato: trilha.formato || '', cargaHoraria: trilha.cargaHoraria ?? '', modalidade: trilha.modalidade || '',
       });
       setTenantIdsForm(trilha.tenantIds || [tenantId]);
     } else {
       setEditando(null);
-      setForm({ titulo: '', descricao: '', perfis: [], modulos: [], ativa: true, oficial: false, notificarEmail: false, instrutor: '', formato: '', cargaHoraria: '' });
+      setForm({ titulo: '', descricao: '', perfis: [], modulos: [], ativa: true, oficial: false, notificarEmail: false, instrutor: '', formato: '', cargaHoraria: '', modalidade: '' });
       setTenantIdsForm(podeDistribuir ? [] : [tenantId]);
     }
     setTab('criar');
@@ -880,7 +884,9 @@ const TrailsView: React.FC = () => {
       const novoDoc = await addDoc(collection(db, 'trilhasProgresso'), {
         userId: user.id, userName: user.name, trilhaId: trilha.id,
         trilhaTitulo: trilha.titulo, modulos: {}, percentualObrigatorios: 0,
-        concluida: false, tenantId, updatedAt: serverTimestamp()
+        // iniciadoEm: gravado só aqui, na criação — usado como "data de início" no certificado
+        // novo. Diferente de updatedAt, que é sobrescrito a cada atualização de progresso.
+        concluida: false, tenantId, updatedAt: serverTimestamp(), iniciadoEm: serverTimestamp(),
       });
       prog = { id: novoDoc.id, userId: user.id, userName: user.name, trilhaId: trilha.id, trilhaTitulo: trilha.titulo, modulos: {}, percentualObrigatorios: 0, concluida: false, tenantId, updatedAt: null };
     }
@@ -1067,6 +1073,13 @@ const TrailsView: React.FC = () => {
                     placeholder="Ex: 2"
                     style={{ width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 16px', color: '#0A1628', fontSize: 14 }} />
                 </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: 10, fontWeight: 900, color: '#8A9BB0', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6 }}>Modalidade (exibida no certificado)</label>
+                <input value={form.modalidade} onChange={e => setForm(f => ({ ...f, modalidade: e.target.value }))}
+                  placeholder="Ex: EAD assíncrona"
+                  style={{ width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 16px', color: '#0A1628', fontSize: 14 }} />
               </div>
 
               <div>

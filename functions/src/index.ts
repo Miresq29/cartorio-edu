@@ -104,6 +104,7 @@ export const createCollaborator = onCall(async (request) => {
   const email = String(request.data?.email || "").trim().toLowerCase();
   const role = String(request.data?.role || "");
   const cargo = String(request.data?.cargo || "");
+  const cpf = String(request.data?.cpf || "").trim();
   const tenantId = String(request.data?.tenantId || "").trim();
   const password = String(request.data?.password || "");
 
@@ -166,6 +167,7 @@ export const createCollaborator = onCall(async (request) => {
         email,
         role,
         cargo,
+        ...(cpf ? { cpf } : {}),
         tenantId,
         active: true,
         ativo: true,

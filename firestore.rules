@@ -275,6 +275,12 @@ service cloud.firestore {
       allow write: if isSuperAdmin();
     }
 
+    // Config global da plataforma (ex: assinatura/instrutor do certificado) — primeira vez que
+    // existe uma config de escopo "plataforma inteira" em vez de por tenant.
+    match /config/{docId} {
+      allow read, write: if isSuperAdmin();
+    }
+
     match /{document=**} { allow read, write: if false; }
   }
 }

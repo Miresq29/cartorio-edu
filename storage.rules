@@ -18,6 +18,14 @@ service firebase.storage {
       allow write: if isSuperAdmin() || (isGestor() && myTenant() == tenantId);
     }
 
+    // Assinatura da instrutora, usada no certificado (config global única da plataforma) —
+    // qualquer colaborador autenticado precisa ler pra montar o PDF ao emitir o próprio
+    // certificado; só SUPERADMIN troca a imagem.
+    match /config/{allPaths=**} {
+      allow read: if isActiveUser();
+      allow write: if isSuperAdmin();
+    }
+
     // Deny-all fallback
     match /{allPaths=**} {
       allow read, write: if false;

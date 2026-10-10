@@ -25,6 +25,7 @@ interface UserData {
   email: string;
   role: Role;
   cargo?: string;
+  cpf?: string;
   tenantId: string;
   ativo?: boolean;
   createdAt?: any;
@@ -135,7 +136,7 @@ const UsersView: React.FC = () => {
   const tenantEmFoco = filtroCartorio || (!superAdminGlobal ? tenantId : '');
 
   const [form, setForm] = useState({
-    name: '', email: '', role: 'colaborador' as Role, cargo: '', tenantId: superAdminGlobal ? '' : tenantId,
+    name: '', email: '', role: 'colaborador' as Role, cargo: '', cpf: '', tenantId: superAdminGlobal ? '' : tenantId,
   });
   const [saving, setSaving] = useState(false);
 
@@ -168,10 +169,10 @@ const UsersView: React.FC = () => {
   const abrirForm = (u?: UserData) => {
     if (u) {
       setEditUser(u);
-      setForm({ name: u.name, email: u.email, role: u.role, cargo: u.cargo || '', tenantId: u.tenantId });
+      setForm({ name: u.name, email: u.email, role: u.role, cargo: u.cargo || '', cpf: u.cpf || '', tenantId: u.tenantId });
     } else {
       setEditUser(null);
-      setForm({ name: '', email: '', role: 'colaborador', cargo: '', tenantId: superAdminGlobal ? '' : tenantId });
+      setForm({ name: '', email: '', role: 'colaborador', cargo: '', cpf: '', tenantId: superAdminGlobal ? '' : tenantId });
     }
     setShowForm(true);
   };
@@ -413,6 +414,13 @@ const UsersView: React.FC = () => {
                         <option value="">Selecione...</option>
                         {CARGOS.map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">CPF (opcional)</label>
+                      <input value={form.cpf} onChange={e => setF('cpf', e.target.value)}
+                        placeholder="000.000.000-00"
+                        title="Usado apenas no hash de integridade do certificado — nunca exibido no PDF"
+                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-gold" />
                     </div>
                     {isPlatformStaff && (form.role === 'equipe_mj' || form.role === 'SUPERADMIN') && (
                       <div className="space-y-1 md:col-span-2">
