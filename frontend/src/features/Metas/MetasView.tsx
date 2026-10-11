@@ -508,8 +508,11 @@ const DesempatePlayer: React.FC<{
   }
 
   return (
-    <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-6 overflow-y-auto">
-      <div className="bg-white border border-amber-500/30 rounded-2xl w-full max-w-2xl space-y-5 p-6">
+    // items-start + my-auto: centraliza quando cabe na tela e, quando as questões passam da
+    // altura da tela, começa do topo e rola — com items-center o topo ficava cortado e as
+    // primeiras questões não podiam ser respondidas.
+    <div className="fixed inset-0 bg-black/90 z-50 flex items-start justify-center p-6 overflow-y-auto">
+      <div className="bg-white border border-amber-500/30 rounded-2xl w-full max-w-2xl space-y-5 p-6 my-auto">
         {/* Header */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
