@@ -9,6 +9,7 @@ export interface User {
   email: string;
   role: UserRole;
   sector?: string;
+  cargo?: string;
   active: boolean;
   isFirstLogin?: boolean;
   mustChangePassword?: boolean;
