@@ -610,10 +610,10 @@ export const emitirCertificadoExame = onCall(async (request) => {
     throw new HttpsError("failed-precondition", "Nenhuma aprovação encontrada para esse treinamento.");
   }
   const melhorScore = Math.max(...examesSnap.docs.map((d) => (d.data().score as number) || 0));
-  // Data de conclusão = aprovação mais antiga nesse exame (não a mais recente), e dataInicio =
-  // o createdAt do primeiro registro de tentativa — não existe "matrícula" pra exame avulso
-  // (não é uma trilha com progresso), então usamos a primeira tentativa registrada como proxy
-  // de início. Se só houver uma tentativa, dataInicio e dataConclusao coincidem.
+  // dataInicio = aprovação mais antiga nesse exame e dataConclusao = a mais recente (só as
+  // aprovadas entram na consulta acima) — não existe "matrícula" pra exame avulso (não é uma
+  // trilha com progresso), então a primeira aprovação registrada serve de proxy de início.
+  // Se só houver uma aprovação, dataInicio e dataConclusao coincidem.
   const tentativas = examesSnap.docs.map((d) => d.data().createdAt?.toDate?.() as Date | undefined).filter(Boolean) as Date[];
   const dataInicioDate = tentativas.length ? new Date(Math.min(...tentativas.map((d) => d.getTime()))) : new Date();
   const dataConclusaoDate = tentativas.length ? new Date(Math.max(...tentativas.map((d) => d.getTime()))) : new Date();

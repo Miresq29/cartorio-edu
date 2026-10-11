@@ -250,7 +250,10 @@ service cloud.firestore {
       allow delete: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
     }
     match /certificados/{docId} {
-      allow read: if canReadPrivate();
+      // Gestao le todos do proprio tenant; colaborador so o PROPRIO certificado — o doc modelo 2
+      // guarda CPF, entao nao pode ser legivel por colegas (antes era canReadPrivate()).
+      allow read: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant())
+        || (isActive() && resource.data.get('colaboradorId', '') == request.auth.uid);
       // Emissao agora e sempre via Cloud Function (emitirCertificadoExame / emitirCertificadoManual)
       // — nunca direto do cliente. Isso evita forjar nota/instrutor/hash escrevendo direto no
       // documento; as functions usam o Admin SDK, que ignora estas regras. Exclusao continua

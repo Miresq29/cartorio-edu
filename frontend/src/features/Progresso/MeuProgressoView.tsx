@@ -110,13 +110,14 @@ const MeuProgressoView: React.FC = () => {
     unsubs.push(onSnapshot(query(collection(db,'trilhas'), where('tenantIds','array-contains-any',[tenantId,'GLOBAL'])), s => setTrilhas(s.docs.map(d => ({id:d.id,...d.data()} as Trilha)))));
     unsubs.push(onSnapshot(query(collection(db,'trilhasProgresso'), where('tenantId','==',tenantId)), s => setProgresso(s.docs.map(d => ({id:d.id,...d.data()} as TrilhaProgresso)))));
     unsubs.push(onSnapshot(query(collection(db,'treinamentosQuizResults'), where('tenantId','==',tenantId), orderBy('createdAt','desc')), s => { setQuizResults(s.docs.map(d => ({id:d.id,...d.data()} as QuizResult))); setLoading(false); }));
-    unsubs.push(onSnapshot(query(collection(db,'certificados'), where('tenantId','==',tenantId)), s => setCertificados(s.docs.map(d => ({id:d.id,...d.data()} as Certificado)))));
+    // Só os próprios certificados — a regra do Firestore não deixa colaborador ler os dos colegas.
+    unsubs.push(onSnapshot(query(collection(db,'certificados'), where('tenantId','==',tenantId), where('colaboradorId','==',userId)), s => setCertificados(s.docs.map(d => ({id:d.id,...d.data()} as Certificado)))));
     return () => unsubs.forEach(u => u());
-  }, [tenantId]);
+  }, [tenantId, userId]);
 
   const myProg  = progresso.filter(p => p.userId === userId || p.userName === userName);
   const myRes   = quizResults.filter(r => r.userId === userId || r.colaborador === userName);
-  const myCerts = certificados.filter(c => c.colaboradorId === userId || c.colaboradorNome === userName);
+  const myCerts = certificados;
 
   const totalMods  = trilhas.reduce((a, t) => a + (t.modulos?.length ?? 0), 0);
   const doneMods   = myProg.filter(p => p.concluido).length;

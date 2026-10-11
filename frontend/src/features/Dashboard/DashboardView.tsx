@@ -445,6 +445,7 @@ const DashboardView:React.FC = () => {
   const {state, tenantId} = useApp();
   const user = state.user!;
   const isGestor = ['SUPERADMIN','gestor','admin'].includes(user.role);
+  const verTodosCerts = isGestor || user.role === 'equipe_mj';
 
   const [trilhas,      setTrilhas]      = useState<Trilha[]>([]);
   const [progresso,    setProgresso]    = useState<TrilhaProg[]>([]);
@@ -461,9 +462,13 @@ const DashboardView:React.FC = () => {
     u.push(onSnapshot(query(collection(db,'treinamentosQuizResults'),where('tenantId','==',tenantId),orderBy('createdAt','desc')),s=>{setQuizResultsRaw(s.docs.map(d=>({id:d.id,...d.data()} as QuizResult)));setLoading(false);}));
     u.push(onSnapshot(query(collection(db,'examesResultados'),where('tenantId','==',tenantId)),s=>setExames(s.docs.map(d=>({id:d.id,...d.data()} as ExameResultado)))));
     u.push(onSnapshot(query(collection(db,'users'),where('tenantId','==',tenantId)),s=>setUsuarios(s.docs.map(d=>({id:d.id,...d.data()} as UserData)))));
-    u.push(onSnapshot(query(collection(db,'certificados'),where('tenantId','==',tenantId)),s=>setCertificados(s.docs.map(d=>({id:d.id,...d.data()} as Certificado)))));
+    // Colaborador só pode ler os próprios certificados (regra do Firestore) — a consulta precisa do filtro.
+    const qCerts = verTodosCerts
+      ? query(collection(db,'certificados'),where('tenantId','==',tenantId))
+      : query(collection(db,'certificados'),where('tenantId','==',tenantId),where('colaboradorId','==',user.id));
+    u.push(onSnapshot(qCerts,s=>setCertificados(s.docs.map(d=>({id:d.id,...d.data()} as Certificado)))));
     return ()=>u.forEach(f=>f());
-  },[tenantId]);
+  },[tenantId, verTodosCerts, user.id]);
 
   // Une quizzes de trilha e Exames formais numa unica lista — sem isso os KPIs do
   // painel ficavam zerados para cartorios que so usam Exames (ex.: 2rimontesclaros).

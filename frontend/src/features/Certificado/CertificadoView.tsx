@@ -305,6 +305,7 @@ const CertificadoView: React.FC = () => {
   const { showToast } = useToast();
   const user = state.user!;
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(user.role);
+  const verTodos = isGestor || user.role === 'equipe_mj';
 
   const [certificados, setCertificados] = useState<Certificado[]>([]);
   const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
@@ -319,8 +320,16 @@ const CertificadoView: React.FC = () => {
 
   // Load data
   useEffect(() => {
-    const q1 = query(collection(db, 'certificados'), where('tenantId', '==', tenantId), orderBy('emitidoEm', 'desc'));
-    const u1 = onSnapshot(q1, s => setCertificados(s.docs.map(d => ({ id: d.id, ...d.data() } as Certificado))));
+    // Colaborador só pode ler os próprios certificados (regra do Firestore) — a consulta precisa
+    // do filtro; ordenação client-side nesse caso pra não exigir índice composto novo.
+    const q1 = verTodos
+      ? query(collection(db, 'certificados'), where('tenantId', '==', tenantId), orderBy('emitidoEm', 'desc'))
+      : query(collection(db, 'certificados'), where('tenantId', '==', tenantId), where('colaboradorId', '==', user.id));
+    const u1 = onSnapshot(q1, s => {
+      const docs = s.docs.map(d => ({ id: d.id, ...d.data() } as Certificado));
+      if (!verTodos) docs.sort((a, b) => ((b.emitidoEm as any)?.toMillis?.() ?? 0) - ((a.emitidoEm as any)?.toMillis?.() ?? 0));
+      setCertificados(docs);
+    });
 
     const q2 = query(collection(db, 'treinamentosQuizResults'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'));
     const u2 = onSnapshot(q2, s => setQuizResults(s.docs.map(d => ({ id: d.id, ...d.data() } as QuizResult))));
@@ -347,17 +356,15 @@ const CertificadoView: React.FC = () => {
     loadCartorio();
 
     return () => { u1(); u2(); u3(); u4(); u5(); u6(); };
-  }, [tenantId]);
+  }, [tenantId, verTodos, user.id]);
 
-  // Filtrar certificados do colaborador atual se não for gestor
-  const meusCerts = isGestor
-    ? certificados
-    : certificados.filter(c => c.colaboradorId === user.id || c.colaboradorNome === user.name);
+  // Para colaborador a consulta já vem filtrada pelo próprio colaboradorId.
+  const meusCerts = certificados;
 
   // Emitir certificado
   const handleEmitir = async (data: Omit<Certificado, 'id' | 'codigoVerificacao' | 'emitidoEm' | 'tenantId' | 'emitidoPor'>) => {
     try {
-      const { novo } = await obterOuCriarCertificado({ ...data, tenantId, emitidoPor: user.name });
+      const { novo } = await obterOuCriarCertificado(data);
       if (!novo) {
         showToast('Esse colaborador já tem certificado para esse treinamento.', 'info');
         setShowModal(false);
@@ -386,24 +393,15 @@ const CertificadoView: React.FC = () => {
 
       let criados = 0;
       for (const e of melhorPorPar.values()) {
-        const colabUser = usuarios.find(u => u.id === e.userId);
-        if (!colabUser) continue;
+        if (!usuarios.some(u => u.id === e.userId)) continue;
         const trilhaRef = trilhas.find(t => t.titulo === e.fonteTitulo);
-        const instrutor = trilhaRef?.oficial ? 'Mirian Jabur' : (trilhaRef?.instrutor || 'Mirian Jabur');
-        const cargaHoraria = Math.max(1, trilhaRef?.cargaHoraria || 1);
 
         const { novo } = await obterOuCriarCertificado({
           colaboradorId: e.userId,
-          colaboradorNome: colabUser.name,
-          cargo: colabUser.cargo || colabUser.role || '',
-          cartorio: cartorioNome,
           trilhaTitulo: e.fonteTitulo,
           tipo: 'exame',
           notaFinal: e.score,
-          cargaHoraria,
-          instrutor,
-          emitidoPor: user.name,
-          tenantId,
+          cargaHoraria: Math.max(1, trilhaRef?.cargaHoraria || 1),
         });
         if (novo) criados++;
       }

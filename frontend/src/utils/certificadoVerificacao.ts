@@ -4,19 +4,15 @@ import { functions } from '../services/firebase';
 // URL da página pública de verificação (fora do login) — usada no QR e no link do certificado.
 export const VERIFICACAO_BASE_URL = 'https://cartorio-edu.vercel.app/verificar';
 
+// Só o que a function de fato recebe — nome, cargo, serventia, instrutor e emissor são
+// resolvidos no servidor (users/tenants/config), nunca aceitos do cliente.
 export interface DadosCertificado {
   colaboradorId: string;
-  colaboradorNome: string;
-  cargo: string;
-  cartorio: string;
   trilhaTitulo: string;
   moduloTitulo?: string;
   tipo: 'trilha' | 'modulo' | 'exame';
   notaFinal: number;
   cargaHoraria: number;
-  instrutor?: string;
-  tenantId: string;
-  emitidoPor: string;
 }
 
 const emitirCertificadoManualFn = httpsCallable<
