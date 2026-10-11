@@ -5,7 +5,7 @@ import {
   PieChart, Pie, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
-import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, orderBy, doc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
 
@@ -473,7 +473,9 @@ const DashboardView:React.FC = () => {
       setQuizResultsRaw(docs);setLoading(false);
     }));
     u.push(onSnapshot(doTenant('examesResultados'),s=>setExames(s.docs.map(d=>({id:d.id,...d.data()} as ExameResultado)))));
-    u.push(onSnapshot(query(collection(db,'users'),where('tenantId','==',tenantId)),s=>setUsuarios(s.docs.map(d=>({id:d.id,...d.data()} as UserData)))));
+    // Cadastro dos colegas (e-mail, cargo…) só para a gestão — colaborador lê apenas o próprio.
+    if (verTodoTenant) u.push(onSnapshot(query(collection(db,'users'),where('tenantId','==',tenantId)),s=>setUsuarios(s.docs.map(d=>({id:d.id,...d.data()} as UserData)))));
+    else u.push(onSnapshot(doc(db,'users',user.id),s=>setUsuarios(s.exists()?[{id:s.id,...s.data()} as UserData]:[])));
     // Colaborador só pode ler os próprios certificados (regra do Firestore) — a consulta precisa do filtro.
     const qCerts = verTodoTenant
       ? query(collection(db,'certificados'),where('tenantId','==',tenantId))

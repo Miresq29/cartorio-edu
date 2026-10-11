@@ -14,7 +14,6 @@ export interface User {
   isFirstLogin?: boolean;
   mustChangePassword?: boolean;
   passwordHash?: string;
-  passwordHistory?: string[];
   failedAttempts?: number;
   lockUntil?: string | null;
   avatar?: string;

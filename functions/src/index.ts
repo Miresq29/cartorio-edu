@@ -1,7 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { defineSecret } from "firebase-functions/params";
 import * as admin from "firebase-admin";
-import { createHash, randomBytes } from "node:crypto";
+import { createHash, randomBytes, scrypt, timingSafeEqual } from "node:crypto";
 
 admin.initializeApp();
 
@@ -953,6 +953,85 @@ export const submeterDesempate = onCall(async (request) => {
     tx.update(ref, { resultados, ...(todosResponderam ? { status: "encerrado" } : {}) });
     return { score, nota, todosResponderam, gabarito: gabarito.map((q) => ({ correta: q.correta, justificativa: q.justificativa })) };
   });
+});
+
+// ── Histórico de senhas (não repetir as últimas 3) ───────────────────────────
+// Antes ficava em users/{uid}.passwordHistory como SHA-256 com um "sal" fixo que está no
+// bundle do site — e users/ é legível pelos colegas do mesmo cliente, o que permitia quebrar
+// senhas fracas offline. Agora: scrypt com sal aleatório por senha, em senhasHistorico/{uid}
+// (sem acesso pelo cliente). Entradas "legado-sha256" são as migradas do formato antigo,
+// mantidas só pra a regra das últimas 3 continuar valendo até serem empurradas pra fora.
+const SENHA_LEGADO_SAL = "cartorio-rag-salt-2026";
+const SENHA_HISTORICO_MAX = 3;
+// Chave pública da Web API do Firebase (a mesma que vai no bundle do site — não é segredo);
+// usada só pra confirmar, via REST, que a senha informada é de fato a senha atual da conta.
+const FIREBASE_WEB_API_KEY = "AIzaSyD7jXKOb1kmasmFppfT0PAto6FfsyEWfVw";
+
+interface EntradaSenha { tipo: "scrypt" | "legado-sha256"; hash: string; sal?: string }
+
+function senhaForte(s: string): boolean {
+  return s.length >= 12 && /[A-Z]/.test(s) && /[a-z]/.test(s) && /\d/.test(s) && /[!@#$%^&*(),.?":{}|<>_-]/.test(s);
+}
+
+function scryptHex(senha: string, sal: string): Promise<string> {
+  return new Promise((resolve, reject) =>
+    scrypt(senha, sal, 64, { N: 16384, r: 8, p: 1 }, (err, buf) => (err ? reject(err) : resolve(buf.toString("hex")))));
+}
+
+async function senhaJaUsada(senha: string, entradas: EntradaSenha[]): Promise<boolean> {
+  for (const e of entradas) {
+    const calculado = e.tipo === "scrypt"
+      ? await scryptHex(senha, e.sal || "")
+      : createHash("sha256").update(senha + SENHA_LEGADO_SAL).digest("hex");
+    if (calculado.length === e.hash.length && timingSafeEqual(Buffer.from(calculado), Buffer.from(e.hash))) return true;
+  }
+  return false;
+}
+
+export const validarNovaSenha = onCall(async (request) => {
+  if (!request.auth) throw new HttpsError("unauthenticated", "Login necessário.");
+  await enforceRateLimit(request.auth.uid, "validarNovaSenha", 10, 60_000);
+  const novaSenha = String(request.data?.novaSenha || "");
+  if (!senhaForte(novaSenha)) {
+    throw new HttpsError("invalid-argument", "Senha fraca. Mínimo 12 caracteres, com maiúscula, minúscula, número e caractere especial.");
+  }
+  const hist = ((await db.collection("senhasHistorico").doc(request.auth.uid).get()).data()?.entradas || []) as EntradaSenha[];
+  if (await senhaJaUsada(novaSenha, hist.slice(-SENHA_HISTORICO_MAX))) {
+    throw new HttpsError("failed-precondition", "Esta senha já foi utilizada recentemente. Escolha uma senha diferente das últimas 3.");
+  }
+  return { ok: true };
+});
+
+// Chamada DEPOIS que o cliente trocou a senha no Firebase Auth: confirma (login REST) que a
+// senha informada é mesmo a atual e só então registra no histórico e libera o primeiro acesso.
+export const registrarNovaSenha = onCall(async (request) => {
+  if (!request.auth) throw new HttpsError("unauthenticated", "Login necessário.");
+  const uid = request.auth.uid;
+  await enforceRateLimit(uid, "registrarNovaSenha", 5, 60_000);
+  const novaSenha = String(request.data?.novaSenha || "");
+  const email = (await admin.auth().getUser(uid)).email || "";
+
+  const resp = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${FIREBASE_WEB_API_KEY}`, {
+    method: "POST",
+    // Referer do site: a chave pode estar restrita por domínio no Google Cloud.
+    headers: { "Content-Type": "application/json", Referer: "https://cartorio-edu.vercel.app/" },
+    body: JSON.stringify({ email, password: novaSenha, returnSecureToken: false }),
+  });
+  if (!resp.ok) throw new HttpsError("permission-denied", "A senha informada não confere com a senha atual da conta.");
+
+  const sal = randomBytes(16).toString("hex");
+  const entrada: EntradaSenha = { tipo: "scrypt", sal, hash: await scryptHex(novaSenha, sal) };
+  const histRef = db.collection("senhasHistorico").doc(uid);
+  await db.runTransaction(async (tx) => {
+    const atuais = ((await tx.get(histRef)).data()?.entradas || []) as EntradaSenha[];
+    tx.set(histRef, { entradas: [...atuais, entrada].slice(-SENHA_HISTORICO_MAX), atualizadoEm: admin.firestore.FieldValue.serverTimestamp() });
+    tx.update(db.collection("users").doc(uid), {
+      isFirstLogin: false, mustChangePassword: false,
+      passwordUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      passwordHistory: admin.firestore.FieldValue.delete(),
+    });
+  });
+  return { ok: true };
 });
 
 // ── Controle de tentativas de login (anti brute-force) ──────────────────────

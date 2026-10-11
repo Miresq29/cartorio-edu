@@ -354,8 +354,10 @@ const CertificadoView: React.FC = () => {
     const q6 = doTenant('examesResultados');
     const u6 = onSnapshot(q6, s => setExames(s.docs.map(d => ({ id: d.id, ...d.data() } as ExameResultado))));
 
-    const q4 = query(collection(db, 'users'), where('tenantId', '==', tenantId));
-    const u4 = onSnapshot(q4, s => setUsuarios(s.docs.map(d => ({ id: d.id, ...d.data() } as UserData))));
+    // Cadastro dos colegas só para a gestão (modal de emissão) — colaborador lê apenas o próprio.
+    const u4 = verTodos
+      ? onSnapshot(query(collection(db, 'users'), where('tenantId', '==', tenantId)), s => setUsuarios(s.docs.map(d => ({ id: d.id, ...d.data() } as UserData))))
+      : onSnapshot(doc(db, 'users', user.id), s => setUsuarios(s.exists() ? [{ id: s.id, ...s.data() } as UserData] : []));
 
     // Pegar nome do cartório
     const loadCartorio = async () => {

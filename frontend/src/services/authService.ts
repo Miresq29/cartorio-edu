@@ -11,7 +11,7 @@ import {
   EmailAuthProvider
 } from "firebase/auth";
 import {
-  doc, getDoc, updateDoc,
+  doc, getDoc,
   collection, addDoc, serverTimestamp
 } from "firebase/firestore";
 import { User } from "../types";
@@ -23,13 +23,8 @@ const isStrongPassword = (pass: string): boolean =>
   && /\d/.test(pass)
   && /[!@#$%^&*(),.?":{}|<>_-]/.test(pass);
 
-const hashPassword = async (password: string): Promise<string> => {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password + "cartorio-rag-salt-2026");
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-};
+const validarNovaSenhaFn = httpsCallable<{ novaSenha: string }, { ok: boolean }>(functions, "validarNovaSenha");
+const registrarNovaSenhaFn = httpsCallable<{ novaSenha: string }, { ok: boolean }>(functions, "registrarNovaSenha");
 
 const logAudit = async (action: string, userId: string, email: string, details: string, severity: "INFO" | "WARNING" | "CRITICAL" = "INFO", tenantId: string = "") => {
   try {
@@ -114,10 +109,9 @@ export const AuthService = {
       const userDoc = await getDoc(userRef);
       if (!userDoc.exists()) throw new Error("Usuario nao encontrado.");
       const userData = userDoc.data();
-      const passwordHistory: string[] = userData.passwordHistory || [];
-      const newHash = await hashPassword(newPassword);
-      const lastThree = passwordHistory.slice(-3);
-      if (lastThree.includes(newHash)) throw new Error("Esta senha ja foi utilizada recentemente. Escolha uma senha diferente das ultimas 3.");
+      // Histórico das últimas 3 senhas verificado e gravado no servidor (scrypt, coleção sem
+      // acesso pelo cliente) — antes ficava em users/{uid}.passwordHistory, legível por colegas.
+      await validarNovaSenhaFn({ novaSenha: newPassword });
       const currentUser = auth.currentUser;
       if (currentUser) {
         try {
@@ -137,8 +131,7 @@ export const AuthService = {
           }
         }
       }
-      const updatedHistory = [...passwordHistory, newHash].slice(-3);
-      await updateDoc(userRef, { isFirstLogin: false, passwordHistory: updatedHistory, passwordUpdatedAt: serverTimestamp() });
+      await registrarNovaSenhaFn({ novaSenha: newPassword });
       await logAudit("PASSWORD_CHANGED", userId, userData.email || "", "Senha atualizada com sucesso", "INFO", userData.tenantId || "");
       return { success: true };
     } catch (error: any) {
