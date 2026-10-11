@@ -3,12 +3,12 @@ import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { db, functions } from '../../services/firebase';
 import {
-  collection, onSnapshot, query, where, addDoc, serverTimestamp,
-  Timestamp, doc, setDoc, getDoc,
+  collection, onSnapshot, query, where, serverTimestamp,
+  doc, setDoc, getDoc,
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import QRCode from 'qrcode';
-import { GeminiService, QuestaoExame } from '../../services/geminiService';
+import type { QuestaoExame } from '../../services/geminiService';
 import { VERIFICACAO_BASE_URL } from '../../utils/certificadoVerificacao';
 import { certificadoTemplate } from '../../utils/certificadoTemplate';
 
@@ -16,6 +16,18 @@ const emitirCertificadoExameFn = httpsCallable<
   { trilhaTitulo: string },
   { codigoVerificacao: string; novo: boolean; instrutor?: string; instrutorCargo?: string; assinaturaUrl?: string; localEmissao?: string }
 >(functions, 'emitirCertificadoExame');
+
+// Geração e correção acontecem no servidor: o cliente recebe as questões SEM gabarito e só
+// vê "correta"/"justificativa" depois de enviar (no retorno de submeterExame).
+type QuestaoProva = Omit<QuestaoExame, 'correta' | 'justificativa'> & Partial<Pick<QuestaoExame, 'correta' | 'justificativa'>>;
+const gerarExameFn = httpsCallable<
+  { fonteId: string; tipo: string },
+  { sessaoId: string; fonteTitulo: string; questoes: QuestaoProva[] }
+>(functions, 'gerarExame', { timeout: 130_000 });
+const submeterExameFn = httpsCallable<
+  { sessaoId: string; respostas: Record<number, string> },
+  { score: number; aprovado: boolean; gabarito: QuestaoExame[] }
+>(functions, 'submeterExame');
 
 /* ─── tipos internos ──────────────────────────────────────── */
 type Fase = 'escolher' | 'gerando' | 'fazendo' | 'resultado';
@@ -43,8 +55,10 @@ interface ExameResultado {
 }
 
 /* ─── helpers ────────────────────────────────────────────── */
+// Espelham as constantes EXAME_* de functions/src/index.ts (que é quem de fato aplica).
 const DIAS_BLOQUEIO = 5;
 const NOTA_APROVACAO = 70;
+const NUM_QUESTOES = 7;
 
 function diasRestantes(proximaTentativa: any): number {
   if (!proximaTentativa) return 0;
@@ -92,11 +106,11 @@ const ExamesView: React.FC = () => {
   /* estado do exame */
   const [fase, setFase] = useState<Fase>('escolher');
   const [fonteEscolhida, setFonteEscolhida] = useState<FonteConteudo | null>(null);
-  const [questoes, setQuestoes] = useState<QuestaoExame[]>([]);
+  const [questoes, setQuestoes] = useState<QuestaoProva[]>([]);
+  const [sessaoId, setSessaoId] = useState('');
   const [respostas, setRespostas] = useState<Record<number, string>>({});
   const [resultado, setResultado] = useState<{ score: number; aprovado: boolean } | null>(null);
   const [salvando, setSalvando] = useState(false);
-  const [numQuestoes, setNumQuestoes] = useState<5 | 7 | 10>(5);
 
   /* ── carrega fontes de conteúdo ─────────────────────────── */
   useEffect(() => {
@@ -288,8 +302,9 @@ const ExamesView: React.FC = () => {
 
     setFase('gerando');
     try {
-      const qs = await GeminiService.generateExam(fonteEscolhida.titulo, fonteEscolhida.conteudo, numQuestoes);
-      setQuestoes(qs);
+      const { data } = await gerarExameFn({ fonteId: fonteEscolhida.id, tipo: fonteEscolhida.tipo });
+      setSessaoId(data.sessaoId);
+      setQuestoes(data.questoes);
       setRespostas({});
       setFase('fazendo');
     } catch (e: any) {
@@ -305,41 +320,15 @@ const ExamesView: React.FC = () => {
       return;
     }
 
-    let acertos = 0;
-    const detalhes = questoes.map(q => {
-      const escolhida = respostas[q.id] || '';
-      const correta = q.correta;
-      if (escolhida === correta) acertos++;
-      return { questaoId: q.id, escolhida, correta };
-    });
-
-    const score = Math.round((acertos / questoes.length) * 100);
-    const aprovado = score >= NOTA_APROVACAO;
-
-    setResultado({ score, aprovado });
-    setFase('resultado');
-
-    /* salva no Firestore */
+    // Correção e gravação do resultado são feitas pela function (a nota não sai do cliente).
     setSalvando(true);
     try {
-      const proximaTentativa = aprovado
-        ? null
-        : Timestamp.fromDate(new Date(Date.now() + DIAS_BLOQUEIO * 86_400_000));
-
-      await addDoc(collection(db, 'examesResultados'), {
-        userId: user.id,
-        userName: user.name,
-        tenantId,
-        fonteId: fonteEscolhida!.id,
-        fonteTitulo: fonteEscolhida!.titulo,
-        score,
-        aprovado,
-        respostas: detalhes,
-        createdAt: serverTimestamp(),
-        proximaTentativa,
-      });
-    } catch {
-      showToast('Não foi possível salvar o resultado. Recarregue a página.', 'error');
+      const { data } = await submeterExameFn({ sessaoId, respostas });
+      setQuestoes(data.gabarito);
+      setResultado({ score: data.score, aprovado: data.aprovado });
+      setFase('resultado');
+    } catch (e: any) {
+      showToast(e?.message || 'Não foi possível enviar o exame. Tente novamente.', 'error');
     } finally {
       setSalvando(false);
     }
@@ -404,7 +393,7 @@ const ExamesView: React.FC = () => {
       localEmissao: c.localEmissao || 'Belo Horizonte/MG',
       qrDataUrl,
       verificacaoUrl: VERIFICACAO_BASE_URL,
-      numQuestoes: numQuestoes,
+      numQuestoes: questoes.length || NUM_QUESTOES,
     });
 
     win.document.open();
@@ -508,10 +497,10 @@ const ExamesView: React.FC = () => {
         <div className="flex justify-center pt-4 pb-8">
           <button
             onClick={handleSubmeter}
-            disabled={totalRespondidas < questoes.length}
+            disabled={totalRespondidas < questoes.length || salvando}
             className="px-10 py-4 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 text-navy font-black uppercase tracking-widest rounded-2xl transition-all text-sm shadow-lg shadow-blue-900/30">
-            <i className="fa-solid fa-paper-plane mr-2"></i>
-            Enviar Exame
+            <i className={`fa-solid ${salvando ? 'fa-spinner fa-spin' : 'fa-paper-plane'} mr-2`}></i>
+            {salvando ? 'Corrigindo...' : 'Enviar Exame'}
             {totalRespondidas < questoes.length && (
               <span className="ml-2 text-xs opacity-70">({questoes.length - totalRespondidas} restantes)</span>
             )}
@@ -588,7 +577,6 @@ const ExamesView: React.FC = () => {
           </button>
         </div>
 
-        {salvando && <p className="text-slate-500 text-xs">Salvando resultado...</p>}
       </div>
     );
   }
@@ -609,9 +597,9 @@ const ExamesView: React.FC = () => {
       {/* info bloom */}
       <div className="bg-white border border-slate-200 rounded-[20px] p-5 grid grid-cols-3 gap-4">
         {[
-          { bloom: 'compreensao', label: 'Compreensão', pct: '30%', color: 'blue',    desc: 'Identificar e descrever conceitos' },
-          { bloom: 'aplicacao',   label: 'Aplicação',   pct: '40%', color: 'emerald', desc: 'Utilizar e demonstrar na prática'  },
-          { bloom: 'analise',     label: 'Análise',     pct: '30%', color: 'purple',  desc: 'Comparar, examinar e avaliar'      },
+          { bloom: 'compreensao', label: 'Compreensão', pct: '2 de 7', color: 'blue',    desc: 'Identificar e descrever conceitos' },
+          { bloom: 'aplicacao',   label: 'Aplicação',   pct: '3 de 7', color: 'emerald', desc: 'Utilizar e demonstrar na prática'  },
+          { bloom: 'analise',     label: 'Análise',     pct: '2 de 7', color: 'purple',  desc: 'Comparar, examinar e avaliar'      },
         ].map(b => (
           <div key={b.bloom} className="text-center space-y-1">
             <span className={`text-xs font-black uppercase text-${b.color}-400`}>{b.label}</span>
@@ -722,33 +710,14 @@ const ExamesView: React.FC = () => {
         )}
       </div>
 
-      {/* seletor de questões + botão gerar */}
+      {/* botão gerar — sempre 7 questões (definido no servidor) */}
       {fonteEscolhida && (
         <div className="flex flex-col items-center gap-4 pt-2 pb-8">
-          {/* seletor de quantidade */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-black text-[#7a5c1e] uppercase tracking-widest">Questões:</span>
-            {([5, 7, 10] as const).map(n => (
-              <button
-                key={n}
-                type="button"
-                onClick={() => setNumQuestoes(n)}
-                className={`w-10 h-10 rounded-xl text-sm font-black transition-all border ${
-                  numQuestoes === n
-                    ? 'bg-gold text-navy border-gold shadow-sm'
-                    : 'bg-white text-[#8a6e2f] border-gold/30 hover:border-gold/60'
-                }`}
-              >
-                {n}
-              </button>
-            ))}
-          </div>
-
           <button onClick={handleGerarExame}
             className="px-10 py-4 bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-widest rounded-2xl transition-all text-sm shadow-lg shadow-blue-900/30 flex items-center gap-3">
             <i className="fa-solid fa-brain text-lg"></i>
             Gerar Exame com IA
-            <span className="text-blue-200 text-xs font-normal">{numQuestoes} questões · Bloom médio</span>
+            <span className="text-blue-200 text-xs font-normal">{NUM_QUESTOES} questões · Bloom médio</span>
           </button>
         </div>
       )}

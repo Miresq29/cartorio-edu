@@ -226,7 +226,9 @@ service cloud.firestore {
     }
     match /examesResultados/{docId} {
       allow read: if canReadPrivate();
-      allow create: if canWriteOwnPrivate();
+      // So a Cloud Function submeterExame grava resultado (corrige contra o gabarito guardado
+      // em examesSessoes) — antes o cliente gravava a propria nota/aprovacao.
+      allow create: if false;
       allow update, delete: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
     }
     match /metas/{docId} {
@@ -284,6 +286,11 @@ service cloud.firestore {
     // existe uma config de escopo "plataforma inteira" em vez de por tenant.
     match /config/{docId} {
       allow read, write: if isSuperAdmin();
+    }
+
+    // Gabarito dos exames em andamento — so as functions gerarExame/submeterExame acessam.
+    match /examesSessoes/{docId} {
+      allow read, write: if false;
     }
 
     match /{document=**} { allow read, write: if false; }

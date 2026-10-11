@@ -269,6 +269,10 @@ export const geminiGenerate = onCall({ secrets: [GEMINI_API_KEY] }, async (reque
   const maxOutputTokens = Number(request.data?.maxOutputTokens) || 1024;
   const jsonMode = request.data?.jsonMode === true;
 
+  return { text: await chamarGemini(prompt, maxOutputTokens, jsonMode) };
+});
+
+async function chamarGemini(prompt: string, maxOutputTokens: number, jsonMode: boolean): Promise<string> {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
   const response = await fetch(url, {
     method: "POST",
@@ -304,7 +308,265 @@ export const geminiGenerate = onCall({ secrets: [GEMINI_API_KEY] }, async (reque
       "A resposta da IA foi cortada por exceder o limite de tokens. Tente novamente com menos questões/itens."
     );
   }
-  return { text: candidate?.content?.parts?.[0]?.text || "Sem resposta da IA." };
+  return candidate?.content?.parts?.[0]?.text || "Sem resposta da IA.";
+}
+
+// ── Exames (geração e correção no servidor) ──────────────────────────────────
+// Antes a prova era gerada pela IA NO NAVEGADOR, com o gabarito junto, e a nota calculada e
+// gravada em examesResultados pelo próprio cliente — qualquer colaborador podia gravar
+// "aprovado: true, score: 100" direto no Firestore e depois pedir o certificado
+// (emitirCertificadoExame confia em examesResultados). Agora: gerarExame busca o conteúdo no
+// banco, gera as questões e guarda o gabarito em examesSessoes/ (sem acesso nenhum pelo
+// cliente — ver firestore.rules); o cliente recebe só enunciados/alternativas. submeterExame
+// corrige contra a sessão e é o ÚNICO caminho que grava examesResultados.
+const EXAME_NUM_QUESTOES = 7;
+const EXAME_NOTA_APROVACAO = 70;
+const EXAME_DIAS_BLOQUEIO = 5;
+const EXAME_SESSAO_VALIDADE_MS = 6 * 60 * 60 * 1000;
+const PLATFORM_STAFF_ROLES = ["SUPERADMIN", "equipe_mj"];
+
+type TipoFonteExame = "treinamento" | "knowledgeBase" | "video" | "trilha";
+const COLECAO_FONTE: Record<TipoFonteExame, string> = {
+  treinamento: "treinamentos",
+  knowledgeBase: "knowledgeBase",
+  video: "repositorio",
+  trilha: "trilhas",
+};
+
+interface QuestaoExameServidor {
+  id: number;
+  enunciado: string;
+  alternativas: { letra: string; texto: string }[];
+  correta: string;
+  bloom: string;
+  justificativa: string;
+}
+
+// Mesma montagem de título/conteúdo que ExamesView.tsx fazia no cliente — o fonteTitulo
+// gravado precisa continuar idêntico, porque emitirCertificadoExame e os relatórios casam por ele.
+function montarFonteExame(tipo: TipoFonteExame, d: FirebaseFirestore.DocumentData): { titulo: string; conteudo: string } {
+  if (tipo === "video") {
+    return {
+      titulo: d.titulo || "Sem título",
+      conteudo: [d.titulo, d.categoria, d.trilhaTitulo, d.descricao].filter(Boolean).join("\n"),
+    };
+  }
+  if (tipo === "trilha") {
+    return {
+      titulo: d.titulo || "Sem título",
+      conteudo: ((d.modulos || []) as { titulo?: string; conteudo?: string }[])
+        .map((m) => `${m.titulo ? m.titulo + ":\n" : ""}${m.conteudo || ""}`)
+        .join("\n\n"),
+    };
+  }
+  const campoTitulo = tipo === "treinamento" ? "titulo" : "title";
+  const campoConteudo = tipo === "treinamento" ? "descricao" : "rawText";
+  return {
+    titulo: d[campoTitulo] || d.title || d.nome || "Sem título",
+    conteudo: d[campoConteudo] || d.content || d.rawText || d.descricao || "",
+  };
+}
+
+// Mesmas regras de "assistiu/leu" que o cliente usa pra liberar a prova.
+async function concluiuFonte(uid: string, tipo: TipoFonteExame, fonteId: string): Promise<boolean> {
+  if (tipo === "video") {
+    const s = await db.collection("repositorioProgresso")
+      .where("userId", "==", uid).where("midiaId", "==", fonteId).get();
+    return s.docs.some((d) => d.data().visto === true);
+  }
+  if (tipo === "trilha") {
+    const s = await db.collection("trilhasProgresso")
+      .where("userId", "==", uid).where("trilhaId", "==", fonteId).get();
+    return s.docs.some((d) => d.data().concluida === true || d.data().percentualObrigatorios === 100);
+  }
+  const s = await db.collection("leituraProgresso").doc(`${uid}_${fonteId}`).get();
+  return s.exists && s.data()!.lido === true;
+}
+
+// Reprovação recente bloqueia nova tentativa até proximaTentativa.
+async function diasDeBloqueio(uid: string, fonteId: string): Promise<number> {
+  const s = await db.collection("examesResultados")
+    .where("userId", "==", uid).where("fonteId", "==", fonteId).get();
+  const agora = Date.now();
+  const fim = Math.max(0, ...s.docs
+    .filter((d) => d.data().aprovado !== true)
+    .map((d) => (d.data().proximaTentativa?.toMillis?.() as number | undefined) || 0));
+  return fim > agora ? Math.ceil((fim - agora) / 86_400_000) : 0;
+}
+
+function validarQuestoes(bruto: unknown): QuestaoExameServidor[] {
+  if (!Array.isArray(bruto) || bruto.length < EXAME_NUM_QUESTOES) {
+    throw new HttpsError("internal", "A IA não gerou questões suficientes. Tente novamente.");
+  }
+  return bruto.slice(0, EXAME_NUM_QUESTOES).map((q: any, i: number) => {
+    const alternativas = Array.isArray(q?.alternativas)
+      ? q.alternativas.map((a: any) => ({ letra: String(a?.letra || "").trim().toUpperCase(), texto: String(a?.texto || "") }))
+      : [];
+    const correta = String(q?.correta || "").trim().toUpperCase();
+    if (!q?.enunciado || alternativas.length !== 4 || !alternativas.some((a: { letra: string }) => a.letra === correta)) {
+      throw new HttpsError("internal", "A IA gerou uma questão em formato inválido. Tente novamente.");
+    }
+    return {
+      id: i + 1,
+      enunciado: String(q.enunciado),
+      alternativas,
+      correta,
+      bloom: ["compreensao", "aplicacao", "analise"].includes(q.bloom) ? q.bloom : "aplicacao",
+      justificativa: String(q.justificativa || ""),
+    };
+  });
+}
+
+export const gerarExame = onCall({ secrets: [GEMINI_API_KEY], timeoutSeconds: 120 }, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Login necessário.");
+  }
+  const caller = await getCallerProfile(request.auth.uid);
+  await enforceRateLimit(caller.uid, "gerarExame", 10, 60_000);
+
+  const fonteId = String(request.data?.fonteId || "").trim();
+  const tipo = String(request.data?.tipo || "") as TipoFonteExame;
+  if (!fonteId || !COLECAO_FONTE[tipo]) {
+    throw new HttpsError("invalid-argument", "Conteúdo do exame inválido.");
+  }
+
+  const fonteSnap = await db.collection(COLECAO_FONTE[tipo]).doc(fonteId).get();
+  if (!fonteSnap.exists) {
+    throw new HttpsError("not-found", "Conteúdo não encontrado.");
+  }
+  const fonteData = fonteSnap.data()!;
+  const tenantIds = (fonteData.tenantIds as string[] | undefined) || [];
+  const visivel = PLATFORM_STAFF_ROLES.includes(caller.role)
+    || tenantIds.includes("GLOBAL") || (!!caller.tenantId && tenantIds.includes(caller.tenantId));
+  if (!visivel || (tipo === "video" && fonteData.ativo === false)) {
+    throw new HttpsError("permission-denied", "Esse conteúdo não está disponível para você.");
+  }
+
+  const { titulo, conteudo } = montarFonteExame(tipo, fonteData);
+  if (conteudo.length < 10) {
+    throw new HttpsError("failed-precondition", "Este conteúdo não possui texto suficiente para gerar um exame.");
+  }
+  const bloqueio = await diasDeBloqueio(caller.uid, fonteId);
+  if (bloqueio > 0) {
+    throw new HttpsError("failed-precondition", `Você está bloqueado por mais ${bloqueio} dia(s). Aguarde antes de tentar novamente.`);
+  }
+  if (!(await concluiuFonte(caller.uid, tipo, fonteId))) {
+    throw new HttpsError("failed-precondition", tipo === "treinamento" || tipo === "knowledgeBase"
+      ? "Você ainda não leu esse conteúdo por completo. Leia o conteúdo antes de fazer a prova."
+      : "Você ainda não assistiu esse treinamento por completo. Assista o conteúdo antes de fazer a prova.");
+  }
+
+  const prompt = `Especialista em avaliação educacional corporativa.
+
+TEMA: "${titulo}"
+CONTEÚDO:
+${conteudo.substring(0, 4000)}
+
+Gere EXATAMENTE ${EXAME_NUM_QUESTOES} questões de múltipla escolha (Taxonomia de Bloom nível médio):
+- 2 COMPREENSÃO (bloom: "compreensao")
+- 3 APLICAÇÃO (bloom: "aplicacao")
+- 2 ANÁLISE (bloom: "analise")
+
+Regras: 4 alternativas (A-D), 1 correta, distractores plausíveis, justificativa breve.
+
+Retorne APENAS array JSON sem markdown:
+[{"id":1,"enunciado":"...","alternativas":[{"letra":"A","texto":"..."},{"letra":"B","texto":"..."},{"letra":"C","texto":"..."},{"letra":"D","texto":"..."}],"correta":"A","bloom":"compreensao","justificativa":"..."}]`;
+
+  const texto = await chamarGemini(prompt, 1500 * EXAME_NUM_QUESTOES + 3000, true);
+  let bruto: unknown;
+  try {
+    bruto = JSON.parse(texto);
+  } catch {
+    throw new HttpsError("internal", "Formato inválido na resposta da IA. Tente novamente.");
+  }
+  const questoes = validarQuestoes(bruto);
+
+  const sessaoRef = db.collection("examesSessoes").doc();
+  await sessaoRef.set({
+    userId: caller.uid,
+    tenantId: caller.tenantId,
+    fonteId,
+    fonteTipo: tipo,
+    fonteTitulo: titulo,
+    questoes,
+    status: "aberta",
+    criadaEm: admin.firestore.FieldValue.serverTimestamp(),
+    expiraEm: admin.firestore.Timestamp.fromMillis(Date.now() + EXAME_SESSAO_VALIDADE_MS),
+  });
+
+  return {
+    sessaoId: sessaoRef.id,
+    fonteTitulo: titulo,
+    questoes: questoes.map(({ id, enunciado, alternativas, bloom }) => ({ id, enunciado, alternativas, bloom })),
+  };
+});
+
+export const submeterExame = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Login necessário.");
+  }
+  const caller = await getCallerProfile(request.auth.uid);
+  await enforceRateLimit(caller.uid, "submeterExame", 10, 60_000);
+
+  const sessaoId = String(request.data?.sessaoId || "").trim();
+  const respostas = (request.data?.respostas || {}) as Record<string, unknown>;
+  if (!sessaoId) {
+    throw new HttpsError("invalid-argument", "Sessão do exame é obrigatória.");
+  }
+
+  const userSnap = await db.collection("users").doc(caller.uid).get();
+  const sessaoRef = db.collection("examesSessoes").doc(sessaoId);
+  const resultadoRef = db.collection("examesResultados").doc();
+
+  // Transação: a sessão só pode ser corrigida uma vez (sem reenvio pra "tentar de novo").
+  const resultado = await db.runTransaction(async (tx) => {
+    const snap = await tx.get(sessaoRef);
+    if (!snap.exists || snap.data()!.userId !== caller.uid) {
+      throw new HttpsError("not-found", "Exame não encontrado.");
+    }
+    const s = snap.data()!;
+    if (s.status !== "aberta") {
+      throw new HttpsError("failed-precondition", "Este exame já foi enviado.");
+    }
+    if ((s.expiraEm?.toMillis?.() || 0) < Date.now()) {
+      throw new HttpsError("deadline-exceeded", "O prazo deste exame expirou. Gere um novo exame.");
+    }
+
+    const questoes = s.questoes as QuestaoExameServidor[];
+    let acertos = 0;
+    const detalhes = questoes.map((q) => {
+      const escolhida = String(respostas[String(q.id)] || "").trim().toUpperCase();
+      if (escolhida === q.correta) acertos++;
+      return { questaoId: q.id, escolhida, correta: q.correta };
+    });
+    if (detalhes.some((d) => !d.escolhida)) {
+      throw new HttpsError("invalid-argument", "Responda todas as questões antes de enviar.");
+    }
+    const score = Math.round((acertos / questoes.length) * 100);
+    const aprovado = score >= EXAME_NOTA_APROVACAO;
+    const proximaTentativa = aprovado
+      ? null
+      : admin.firestore.Timestamp.fromMillis(Date.now() + EXAME_DIAS_BLOQUEIO * 86_400_000);
+
+    tx.set(resultadoRef, {
+      userId: caller.uid,
+      userName: (userSnap.data()?.name as string) || "",
+      tenantId: s.tenantId,
+      fonteId: s.fonteId,
+      fonteTitulo: s.fonteTitulo,
+      score,
+      aprovado,
+      respostas: detalhes,
+      numQuestoes: questoes.length,
+      sessaoId,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      proximaTentativa,
+    });
+    tx.update(sessaoRef, { status: "finalizada", finalizadaEm: admin.firestore.FieldValue.serverTimestamp(), resultadoId: resultadoRef.id });
+    return { score, aprovado, gabarito: questoes };
+  });
+
+  return resultado;
 });
 
 // ── Controle de tentativas de login (anti brute-force) ──────────────────────
