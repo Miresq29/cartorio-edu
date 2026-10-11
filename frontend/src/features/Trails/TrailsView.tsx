@@ -11,6 +11,7 @@ import { useRecursoTenant } from '../../hooks/useRecursoTenant';
 import VisibilidadeCartorioPicker from '../../components/VisibilidadeCartorioPicker';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../../services/firebase';
+import PlayerDriveProtegido from '../../components/PlayerDriveProtegido';
 import { FormatoTreinamento, FORMATOS, FORMATO_LABEL } from '../../utils/formatoTreinamento';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -558,37 +559,16 @@ const ModuloPlayer: React.FC<{
                   />
                 </div>
               )}
-              {!conteudoItem.youtubeId && conteudoItem.driveId && conteudoItem.tipo === 'audio' && (
+              {/* Drive: ID do arquivo vem da function abrirMidia e o player roda protegido. */}
+              {!conteudoItem.youtubeId && modulo.conteudoRef.tipo === 'repositorio' && (conteudoItem.tipo === 'audio' || conteudoItem.tipo === 'mp4') && (
                 <div style={{ display: 'grid', gap: 8 }}>
-                  <div style={{ borderRadius: 16, overflow: 'hidden', height: 120, background: '#f8fafc' }} onContextMenu={e => e.preventDefault()}>
-                    <iframe
-                      src={`https://drive.google.com/file/d/${conteudoItem.driveId}/preview`}
-                      style={{ width: '100%', height: '100%', border: 'none' }}
-                      allow="autoplay"
-                      title={conteudoItem.titulo}
-                    />
-                  </div>
+                  <PlayerDriveProtegido midiaId={conteudoItem.id} titulo={conteudoItem.titulo} altura={conteudoItem.tipo === 'audio' ? 120 : 400} />
                   <p style={{ fontSize: 10, color: '#94a3b8', textAlign: 'center' }}>
                     Conteúdo exclusivo da plataforma MJ Consultoria — reprodução apenas por aqui, sem download.
                   </p>
                 </div>
               )}
-              {!conteudoItem.youtubeId && conteudoItem.driveId && conteudoItem.tipo === 'mp4' && (
-                <div style={{ display: 'grid', gap: 8 }}>
-                  <div style={{ borderRadius: 16, overflow: 'hidden', height: 400, background: '#f8fafc' }} onContextMenu={e => e.preventDefault()}>
-                    <iframe
-                      src={`https://drive.google.com/file/d/${conteudoItem.driveId}/preview`}
-                      style={{ width: '100%', height: '100%', border: 'none' }}
-                      allow="autoplay"
-                      title={conteudoItem.titulo}
-                    />
-                  </div>
-                  <p style={{ fontSize: 10, color: '#94a3b8', textAlign: 'center' }}>
-                    Conteúdo exclusivo da plataforma MJ Consultoria — reprodução apenas por aqui, sem download.
-                  </p>
-                </div>
-              )}
-              {!conteudoItem.youtubeId && !conteudoItem.driveId && (
+              {!conteudoItem.youtubeId && !(modulo.conteudoRef.tipo === 'repositorio' && (conteudoItem.tipo === 'audio' || conteudoItem.tipo === 'mp4')) && (
                 <div style={{ background: '#fef2f2', border: '1px solid #dc262640', borderRadius: 16, padding: 16, textAlign: 'center' }}>
                   <p style={{ fontSize: 12, color: '#dc2626' }}>
                     <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: 6 }}></i>

@@ -4,9 +4,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  collection, addDoc, updateDoc, deleteDoc, doc,
-  onSnapshot, query, orderBy, where, serverTimestamp, setDoc, getDoc
+  collection, addDoc, updateDoc, doc,
+  onSnapshot, query, orderBy, where, serverTimestamp, setDoc, getDoc, deleteField
 } from 'firebase/firestore';
+import PlayerDriveProtegido from '../../components/PlayerDriveProtegido';
 import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
 import { termos } from '../../utils/terminologia';
@@ -85,16 +86,6 @@ function extractDriveId(url: string): string | null {
     if (m) return m[1];
   }
   return null;
-}
-
-// Converte link Drive em URL de embed para PDF
-function driveEmbedUrl(driveId: string): string {
-  return `https://drive.google.com/file/d/${driveId}/preview`;
-}
-
-// Converte link Drive em URL de player de áudio (iframe)
-function driveAudioUrl(driveId: string): string {
-  return `https://drive.google.com/file/d/${driveId}/preview`;
 }
 
 // Valida e normaliza o link colado pelo admin
@@ -193,16 +184,13 @@ const PlayerModal: React.FC<{
       );
     }
 
-    if (midia.tipo === 'mp4' && midia.driveId) {
+    // Drive: o ID do arquivo vem da function abrirMidia (não fica no doc do Repositório) e o
+    // player roda protegido — ver PlayerDriveProtegido.
+    if (midia.tipo === 'mp4') {
       return (
         <div className="space-y-3">
-          <div className="rounded-2xl overflow-hidden shadow-2xl bg-slate-50" style={{ height: '70vh' }} onContextMenu={e => e.preventDefault()}>
-            <iframe
-              src={driveEmbedUrl(midia.driveId)}
-              className="w-full h-full"
-              allow="autoplay"
-              title={midia.titulo}
-            />
+          <div className="shadow-2xl rounded-2xl">
+            <PlayerDriveProtegido midiaId={midia.id} titulo={midia.titulo} altura="70vh" />
           </div>
           <p className="text-[10px] text-slate-400 text-center">
             Conteúdo exclusivo da plataforma MJ Consultoria — reprodução apenas por aqui, sem download.
@@ -211,18 +199,10 @@ const PlayerModal: React.FC<{
       );
     }
 
-    if (midia.tipo === 'audio' && midia.driveId) {
+    if (midia.tipo === 'audio') {
       return (
         <div className="space-y-4">
-          {/* Player iframe do Drive */}
-          <div className="rounded-2xl overflow-hidden bg-slate-50" style={{ height: '120px' }} onContextMenu={e => e.preventDefault()}>
-            <iframe
-              src={driveAudioUrl(midia.driveId)}
-              className="w-full h-full"
-              allow="autoplay"
-              title={midia.titulo}
-            />
-          </div>
+          <PlayerDriveProtegido midiaId={midia.id} titulo={midia.titulo} altura={120} />
           <p className="text-[10px] text-slate-400 text-center">
             Conteúdo exclusivo da plataforma MJ Consultoria — reprodução apenas por aqui, sem download.
           </p>
@@ -434,6 +414,12 @@ const FormMidia: React.FC<{
           ? `https://youtube.com/watch?v=${editando.youtubeId}`
           : (editando.driveUrl || ''),
       });
+      // Link do Drive mora em repositorioPrivado (só a gestão lê) — busca para preencher o form.
+      if (editando.tipo !== 'youtube') {
+        getDoc(doc(db, 'repositorioPrivado', editando.id))
+          .then(s => { if (s.exists() && s.data().driveUrl) setForm(f => ({ ...f, link: s.data().driveUrl })); })
+          .catch(() => {});
+      }
       setTenantIdsForm(editando.tenantIds || [ownTenantId]);
     } else {
       setTipo(podeUsarYoutube ? 'youtube' : 'audio');
@@ -749,24 +735,31 @@ const RepositorioView: React.FC = () => {
   };
 
   const handleSave = async (data: Omit<Midia, 'id' | 'tenantIds' | 'createdAt' | 'ativo'>, tenantIdsForm: string[], trilhaEscolha: TrilhaEscolha) => {
-    // Firestore rejeita campos undefined — remove antes de salvar
+    // Firestore rejeita campos undefined — remove antes de salvar. O link/ID do Drive NÃO vai
+    // para o doc do Repositório (que o colaborador lê): fica em repositorioPrivado/{id}, lido
+    // só pela gestão e pela function abrirMidia.
+    const { driveId, driveUrl, ...publico } = data;
     const cleanData = Object.fromEntries(
-      Object.entries(data).filter(([, v]) => v !== undefined)
+      Object.entries(publico).filter(([, v]) => v !== undefined)
     );
     const tenantIdsFinal = podeDistribuir ? tenantIdsForm : (editando ? editando.tenantIds : [tenantId]);
     let itemId: string;
     if (editando) {
-      await updateDoc(doc(db, 'repositorio', editando.id), { ...cleanData, tenantIds: tenantIdsFinal });
+      await updateDoc(doc(db, 'repositorio', editando.id), {
+        ...cleanData, tenantIds: tenantIdsFinal, driveId: deleteField(), driveUrl: deleteField(),
+      });
       itemId = editando.id;
-      showToast('Conteúdo atualizado!', 'success');
     } else {
       const ref = await addDoc(collection(db, 'repositorio'), {
         ...cleanData, ativo: true, tenantIds: tenantIdsFinal, criadoPor: user.id,
         createdAt: serverTimestamp(),
       });
       itemId = ref.id;
-      showToast('Conteúdo adicionado ao repositório!', 'success');
     }
+    if (driveId) {
+      await setDoc(doc(db, 'repositorioPrivado', itemId), { driveId, driveUrl: driveUrl || '', tenantIds: tenantIdsFinal });
+    }
+    showToast(editando ? 'Conteúdo atualizado!' : 'Conteúdo adicionado ao repositório!', 'success');
     if (podeDistribuir) {
       await sincronizarTrilha(trilhaEscolha, itemId, cleanData.titulo as string, tenantIdsFinal);
     }

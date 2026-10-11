@@ -955,6 +955,29 @@ export const submeterDesempate = onCall(async (request) => {
   });
 });
 
+// ── Mídia do Repositório hospedada no Google Drive ───────────────────────────
+// O ID do arquivo no Drive saiu do doc repositorio/{id} (legível por todo o tenant) e foi
+// para repositorioPrivado/{id} (só gestão). O colaborador recebe o endereço do player só
+// aqui, depois de conferir login, visibilidade do conteúdo para o cliente dele e se o item
+// está ativo. (O fallback para repositorio.driveId cobre itens ainda não migrados.)
+export const abrirMidia = onCall(async (request) => {
+  if (!request.auth) throw new HttpsError("unauthenticated", "Login necessário.");
+  const caller = await getCallerProfile(request.auth.uid);
+  await enforceRateLimit(caller.uid, "abrirMidia", 60, 60_000);
+
+  const midiaId = String(request.data?.midiaId || "");
+  const snap = await db.collection("repositorio").doc(midiaId).get();
+  if (!snap.exists || snap.data()!.ativo === false || !podeVerConteudo(caller, snap.data()!.tenantIds)) {
+    throw new HttpsError("not-found", "Conteúdo não encontrado.");
+  }
+  const privado = (await db.collection("repositorioPrivado").doc(midiaId).get()).data();
+  const driveId = String(privado?.driveId || snap.data()!.driveId || "");
+  if (!/^[a-zA-Z0-9_-]{10,}$/.test(driveId)) {
+    throw new HttpsError("failed-precondition", "Este conteúdo está sem arquivo vinculado.");
+  }
+  return { embedUrl: `https://drive.google.com/file/d/${driveId}/preview` };
+});
+
 // ── Histórico de senhas (não repetir as últimas 3) ───────────────────────────
 // Antes ficava em users/{uid}.passwordHistory como SHA-256 com um "sal" fixo que está no
 // bundle do site — e users/ é legível pelos colegas do mesmo cliente, o que permitia quebrar

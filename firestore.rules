@@ -189,6 +189,13 @@ service cloud.firestore {
       allow create: if canWriteContentArray();
       allow update, delete: if canEditContentArray();
     }
+    // Link/ID do arquivo no Google Drive de cada item do Repositorio — fora do doc publico pra
+    // nao ficar exposto aos colaboradores (eles recebem o player pela function abrirMidia).
+    // So quem pode editar o item correspondente le/grava.
+    match /repositorioPrivado/{docId} {
+      allow read, write: if isSuperAdmin() || isCurador() || isEquipeMJ()
+        || (isGestor() && myTenant() in get(/databases/$(database)/documents/repositorio/$(docId)).data.get('tenantIds', []));
+    }
 
     // ── Dados privados (estritamente por cartório) ──
 
