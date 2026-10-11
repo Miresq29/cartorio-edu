@@ -410,16 +410,23 @@ function embaralharAlternativas(q: QuestaoExameServidor): QuestaoExameServidor {
   };
 }
 
-function validarQuestoes(bruto: unknown): QuestaoExameServidor[] {
+function validarQuestoes(bruto: unknown, blooms = ["compreensao", "aplicacao", "analise"], bloomPadrao = "aplicacao"): QuestaoExameServidor[] {
   if (!Array.isArray(bruto) || bruto.length < EXAME_NUM_QUESTOES) {
     throw new HttpsError("internal", "A IA não gerou questões suficientes. Tente novamente.");
   }
+  // A IA às vezes escreve "A)", "Alternativa B" ou só o texto — normaliza pra uma letra A-D.
+  const letraDe = (v: unknown) => (String(v ?? "").toUpperCase().match(/\b([A-D])\b/) || [])[1] || "";
   return bruto.slice(0, EXAME_NUM_QUESTOES).map((q: any, i: number) => {
     const alternativas = Array.isArray(q?.alternativas)
-      ? q.alternativas.map((a: any) => ({ letra: String(a?.letra || "").trim().toUpperCase(), texto: String(a?.texto || "") }))
+      ? q.alternativas.slice(0, 4).map((a: any, j: number) => ({
+        letra: letraDe(a?.letra) || "ABCD"[j],
+        texto: String(typeof a === "string" ? a : (a?.texto ?? "")),
+      }))
       : [];
-    const correta = String(q?.correta || "").trim().toUpperCase();
+    const correta = letraDe(q?.correta)
+      || (alternativas.find((a: { texto: string }) => a.texto && a.texto === String(q?.correta ?? ""))?.letra ?? "");
     if (!q?.enunciado || alternativas.length !== 4 || !alternativas.some((a: { letra: string }) => a.letra === correta)) {
+      console.warn("questão da IA em formato inválido:", JSON.stringify(q).slice(0, 800));
       throw new HttpsError("internal", "A IA gerou uma questão em formato inválido. Tente novamente.");
     }
     return embaralharAlternativas({
@@ -427,11 +434,37 @@ function validarQuestoes(bruto: unknown): QuestaoExameServidor[] {
       enunciado: String(q.enunciado),
       alternativas,
       correta,
-      bloom: ["compreensao", "aplicacao", "analise"].includes(q.bloom) ? q.bloom : "aplicacao",
+      bloom: blooms.includes(q.bloom) ? q.bloom : bloomPadrao,
       justificativa: String(q.justificativa || ""),
     });
   });
 }
+
+// Gera e valida; se a IA devolver formato inválido, tenta mais uma vez antes de desistir.
+async function gerarQuestoesIA(prompt: string, blooms?: string[], bloomPadrao?: string): Promise<QuestaoExameServidor[]> {
+  try {
+    return validarQuestoes(await gerarJsonIA(prompt), blooms, bloomPadrao);
+  } catch (e) {
+    if (!(e instanceof HttpsError) || e.code !== "internal") throw e;
+    return validarQuestoes(await gerarJsonIA(prompt), blooms, bloomPadrao);
+  }
+}
+
+async function gerarJsonIA(prompt: string): Promise<unknown> {
+  const texto = await chamarGemini(prompt, 1500 * EXAME_NUM_QUESTOES + 3000, true);
+  try {
+    const parsed = JSON.parse(texto);
+    return Array.isArray(parsed) ? parsed : parsed?.questoes;
+  } catch {
+    throw new HttpsError("internal", "Formato inválido na resposta da IA. Tente novamente.");
+  }
+}
+
+const FORMATO_QUESTOES_JSON = `Regras: 4 alternativas (A-D), 1 correta, distractores plausíveis, justificativa breve.
+Na justificativa, NÃO cite letras de alternativas (a ordem será embaralhada) — explique pelo conteúdo.
+
+Retorne APENAS array JSON sem markdown:
+[{"id":1,"enunciado":"...","alternativas":[{"letra":"A","texto":"..."},{"letra":"B","texto":"..."},{"letra":"C","texto":"..."},{"letra":"D","texto":"..."}],"correta":"A","bloom":"...","justificativa":"..."}]`;
 
 export const gerarExame = onCall({ secrets: [GEMINI_API_KEY], timeoutSeconds: 120 }, async (request) => {
   if (!request.auth) {
@@ -489,14 +522,7 @@ Na justificativa, NÃO cite letras de alternativas (a ordem será embaralhada) �
 Retorne APENAS array JSON sem markdown:
 [{"id":1,"enunciado":"...","alternativas":[{"letra":"A","texto":"..."},{"letra":"B","texto":"..."},{"letra":"C","texto":"..."},{"letra":"D","texto":"..."}],"correta":"A","bloom":"compreensao","justificativa":"..."}]`;
 
-  const texto = await chamarGemini(prompt, 1500 * EXAME_NUM_QUESTOES + 3000, true);
-  let bruto: unknown;
-  try {
-    bruto = JSON.parse(texto);
-  } catch {
-    throw new HttpsError("internal", "Formato inválido na resposta da IA. Tente novamente.");
-  }
-  const questoes = validarQuestoes(bruto);
+  const questoes = await gerarQuestoesIA(prompt);
 
   const sessaoRef = db.collection("examesSessoes").doc();
   await sessaoRef.set({
@@ -635,6 +661,298 @@ export const rankingMetas = onCall(async (request) => {
     exames_aprovados: calcular("exames_aprovados"),
     total_pontos: calcular("total_pontos"),
   };
+});
+
+// ── Quizzes corrigidos no servidor (Trilhas, Treinamentos, Desempate) ────────
+// Mesmo problema que os Exames tinham: questões com gabarito no navegador e nota/aprovação
+// gravadas pelo próprio cliente (trilhasProgresso, treinamentosQuizResults, metasDesempate).
+// Agora o gabarito fica em quizSessoes/ ou metasDesempateGabarito/ (sem acesso pelo cliente)
+// e só estas functions gravam nota, aprovação, progresso e resultado.
+const QUIZ_SESSAO_VALIDADE_MS = 6 * 60 * 60 * 1000;
+const QUIZ_TREINAMENTO_DIAS_BLOQUEIO = 3;
+const QUIZ_TREINAMENTO_NOTA_APROVACAO = 70;
+
+function podeVerConteudo(caller: CallerProfile, tenantIds: string[] | undefined): boolean {
+  const ids = tenantIds || [];
+  return PLATFORM_STAFF_ROLES.includes(caller.role) || ids.includes("GLOBAL") || (!!caller.tenantId && ids.includes(caller.tenantId));
+}
+
+interface ModuloTrilha { id: string; titulo?: string; descricao?: string; conteudo?: string; tipo?: string; temQuiz?: boolean; notaMinima?: number }
+interface ModuloProgressoServidor { assistido: boolean; aprovado: boolean; nota: number | null; tentativas: number }
+
+// Mesma regra de calcPercObrigatorios() do TrailsView.tsx.
+function calcularPercentual(modulos: ModuloTrilha[], prog: Record<string, ModuloProgressoServidor>): number {
+  const obrigatorios = modulos.filter((m) => m.tipo === "obrigatorio");
+  if (obrigatorios.length === 0) return 100;
+  const concluidos = obrigatorios.filter((m) => {
+    const p = prog[m.id];
+    return !!p && p.assistido && (!m.temQuiz || p.aprovado);
+  });
+  return Math.round((concluidos.length / obrigatorios.length) * 100);
+}
+
+// Carrega progresso do próprio usuário + trilha + módulo, validando dono e visibilidade.
+async function carregarProgressoModulo(caller: CallerProfile, progressoId: string, moduloId: string) {
+  const progRef = db.collection("trilhasProgresso").doc(progressoId);
+  const progSnap = await progRef.get();
+  if (!progSnap.exists || progSnap.data()!.userId !== caller.uid) {
+    throw new HttpsError("not-found", "Progresso da trilha não encontrado.");
+  }
+  const prog = progSnap.data()!;
+  const trilhaSnap = await db.collection("trilhas").doc(String(prog.trilhaId || "")).get();
+  if (!trilhaSnap.exists || !podeVerConteudo(caller, trilhaSnap.data()!.tenantIds)) {
+    throw new HttpsError("not-found", "Trilha não encontrada.");
+  }
+  const trilha = trilhaSnap.data()!;
+  const modulos = (trilha.modulos || []) as ModuloTrilha[];
+  const modulo = modulos.find((m) => m.id === moduloId);
+  if (!modulo) {
+    throw new HttpsError("not-found", "Módulo não encontrado.");
+  }
+  return { progRef, prog, trilha, trilhaId: trilhaSnap.id, modulos, modulo };
+}
+
+// Grava o progresso recalculado e registra a conclusão no auditLogs (uma vez, na transição).
+async function salvarProgresso(
+  caller: CallerProfile, progRef: FirebaseFirestore.DocumentReference, prog: FirebaseFirestore.DocumentData,
+  modulos: ModuloTrilha[], novosModulos: Record<string, ModuloProgressoServidor>,
+) {
+  const percentualObrigatorios = calcularPercentual(modulos, novosModulos);
+  const concluida = percentualObrigatorios === 100;
+  await progRef.update({ modulos: novosModulos, percentualObrigatorios, concluida, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+  if (concluida && !prog.concluida) {
+    await db.collection("auditLogs").add({
+      tipo: "trilha_concluida", descricao: "Trilha concluida: " + (prog.trilhaTitulo || ""),
+      usuario: prog.userName || "", usuarioId: caller.uid, tenantId: prog.tenantId || "",
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  }
+  return { id: progRef.id, ...prog, modulos: novosModulos, percentualObrigatorios, concluida };
+}
+
+export const marcarModuloAssistido = onCall(async (request) => {
+  if (!request.auth) throw new HttpsError("unauthenticated", "Login necessário.");
+  const caller = await getCallerProfile(request.auth.uid);
+  await enforceRateLimit(caller.uid, "marcarModuloAssistido", 60, 60_000);
+  const { progRef, prog, modulos, modulo } = await carregarProgressoModulo(
+    caller, String(request.data?.progressoId || ""), String(request.data?.moduloId || ""));
+  const atuais = (prog.modulos || {}) as Record<string, ModuloProgressoServidor>;
+  const atual = atuais[modulo.id] || { assistido: false, aprovado: false, nota: null, tentativas: 0 };
+  return { progresso: await salvarProgresso(caller, progRef, prog, modulos, { ...atuais, [modulo.id]: { ...atual, assistido: true } }) };
+});
+
+export const gerarQuizModulo = onCall({ secrets: [GEMINI_API_KEY], timeoutSeconds: 120 }, async (request) => {
+  if (!request.auth) throw new HttpsError("unauthenticated", "Login necessário.");
+  const caller = await getCallerProfile(request.auth.uid);
+  await enforceRateLimit(caller.uid, "gerarQuizModulo", 10, 60_000);
+  const progressoId = String(request.data?.progressoId || "");
+  const { trilha, trilhaId, modulo } = await carregarProgressoModulo(caller, progressoId, String(request.data?.moduloId || ""));
+  if (!modulo.temQuiz) throw new HttpsError("failed-precondition", "Este módulo não tem quiz.");
+
+  const prompt = `Você é um gerador de quiz para treinamento corporativo.
+
+Módulo: ${modulo.titulo || ""}
+Conteúdo:
+${String(modulo.conteudo || modulo.descricao || "").substring(0, 4000)}
+
+Gere EXATAMENTE ${EXAME_NUM_QUESTOES} questões de múltipla escolha sobre este conteúdo (bloom: "compreensao", "aplicacao" ou "analise").
+${FORMATO_QUESTOES_JSON}`;
+  const questoes = await gerarQuestoesIA(prompt);
+
+  const sessaoRef = db.collection("quizSessoes").doc();
+  await sessaoRef.set({
+    tipo: "modulo", userId: caller.uid, tenantId: caller.tenantId, progressoId, trilhaId,
+    trilhaTitulo: trilha.titulo || "", moduloId: modulo.id, moduloTitulo: modulo.titulo || "",
+    notaMinima: Number(modulo.notaMinima) || 0, questoes, status: "aberta",
+    criadaEm: admin.firestore.FieldValue.serverTimestamp(),
+    expiraEm: admin.firestore.Timestamp.fromMillis(Date.now() + QUIZ_SESSAO_VALIDADE_MS),
+  });
+  return { sessaoId: sessaoRef.id, questoes: questoes.map((q) => ({ pergunta: q.enunciado, opcoes: q.alternativas.map((a) => a.texto) })) };
+});
+
+const LETRAS_QUIZ = ["A", "B", "C", "D"];
+
+// Marca a sessão como finalizada numa transação (impede reenvio) e devolve seus dados.
+async function fecharSessao(caller: CallerProfile, sessaoId: string, tipo: string): Promise<FirebaseFirestore.DocumentData> {
+  const ref = db.collection("quizSessoes").doc(sessaoId);
+  return db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists || snap.data()!.userId !== caller.uid || snap.data()!.tipo !== tipo) {
+      throw new HttpsError("not-found", "Quiz não encontrado.");
+    }
+    const s = snap.data()!;
+    if (s.status !== "aberta") throw new HttpsError("failed-precondition", "Este quiz já foi enviado.");
+    if ((s.expiraEm?.toMillis?.() || 0) < Date.now()) throw new HttpsError("deadline-exceeded", "O prazo deste quiz expirou. Gere um novo.");
+    tx.update(ref, { status: "finalizada", finalizadaEm: admin.firestore.FieldValue.serverTimestamp() });
+    return s;
+  });
+}
+
+export const submeterQuizModulo = onCall(async (request) => {
+  if (!request.auth) throw new HttpsError("unauthenticated", "Login necessário.");
+  const caller = await getCallerProfile(request.auth.uid);
+  await enforceRateLimit(caller.uid, "submeterQuizModulo", 10, 60_000);
+  const respostas = (request.data?.respostas || []) as unknown[];
+  const sessaoId = String(request.data?.sessaoId || "");
+
+  // Valida as respostas antes de consumir a sessão.
+  const pre = await db.collection("quizSessoes").doc(sessaoId).get();
+  const totalPre = (pre.data()?.questoes as unknown[] | undefined)?.length || 0;
+  if (!pre.exists || respostas.length < totalPre || respostas.slice(0, totalPre).some((r) => r === null || r === undefined || r === "")) {
+    throw new HttpsError("invalid-argument", "Responda todas as questões antes de enviar.");
+  }
+  const s = await fecharSessao(caller, sessaoId, "modulo");
+  const questoes = s.questoes as QuestaoExameServidor[];
+  const acertos = questoes.filter((q, i) => LETRAS_QUIZ[Number(respostas[i])] === q.correta).length;
+  const nota = Math.round((acertos / questoes.length) * 10 * 10) / 10;
+  const aprovado = nota >= (Number(s.notaMinima) || 0);
+
+  const { progRef, prog, modulos, modulo } = await carregarProgressoModulo(caller, s.progressoId, s.moduloId);
+  const atuais = (prog.modulos || {}) as Record<string, ModuloProgressoServidor>;
+  const tentativas = (atuais[modulo.id]?.tentativas || 0) + 1;
+  const progresso = await salvarProgresso(caller, progRef, prog, modulos,
+    { ...atuais, [modulo.id]: { assistido: true, aprovado, nota, tentativas } });
+
+  // Registro para Relatórios/Certificados/risco (antes gravado pelo cliente).
+  await db.collection("treinamentosQuizResults").add({
+    colaborador: prog.userName || "", userId: caller.uid, nota: nota * 10, aprovado,
+    trailTitle: s.trilhaTitulo, moduleTitle: s.moduloTitulo, ia: true, tenantId: prog.tenantId || "",
+    sessaoId, createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+  return {
+    progresso, nota, aprovado,
+    gabarito: questoes.map((q) => ({ correta: LETRAS_QUIZ.indexOf(q.correta), explicacao: q.justificativa })),
+  };
+});
+
+// Quiz de Treinamentos: o quiz (questões + gabarito) é criado pela gestão em treinamentosQuizzes;
+// a correção e o registro do resultado passam a ser feitos aqui.
+export const submeterQuizTreinamento = onCall(async (request) => {
+  if (!request.auth) throw new HttpsError("unauthenticated", "Login necessário.");
+  const caller = await getCallerProfile(request.auth.uid);
+  await enforceRateLimit(caller.uid, "submeterQuizTreinamento", 10, 60_000);
+
+  const quizId = String(request.data?.quizId || "");
+  const respostas = (request.data?.respostas || []) as unknown[];
+  const quizSnap = await db.collection("treinamentosQuizzes").doc(quizId).get();
+  if (!quizSnap.exists || !podeVerConteudo(caller, quizSnap.data()!.tenantIds)) {
+    throw new HttpsError("not-found", "Questionário não encontrado.");
+  }
+  const quiz = quizSnap.data()!;
+  const questoes = (quiz.questoes || []) as { correta: number }[];
+  if (!questoes.length || respostas.length < questoes.length) {
+    throw new HttpsError("invalid-argument", "Responda todas as questões antes de enviar.");
+  }
+
+  const anteriores = (await db.collection("treinamentosQuizResults")
+    .where("userId", "==", caller.uid).where("quizId", "==", quizId).get()).docs
+    .map((d) => d.data())
+    .sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+  const ultimaFalha = anteriores.find((r) => !r.aprovado);
+  const liberadoEm = (ultimaFalha?.createdAt?.toMillis?.() || 0) + QUIZ_TREINAMENTO_DIAS_BLOQUEIO * 86_400_000;
+  if (ultimaFalha && liberadoEm > Date.now()) {
+    throw new HttpsError("failed-precondition", `Novo teste liberado em ${new Date(liberadoEm).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}.`);
+  }
+
+  const resps = questoes.map((_, i) => Number(respostas[i]));
+  const corretas = resps.filter((r, i) => r === Number(questoes[i].correta)).length;
+  const nota = Math.round((corretas / questoes.length) * 100);
+  const aprovado = nota >= QUIZ_TREINAMENTO_NOTA_APROVACAO;
+
+  const user = (await db.collection("users").doc(caller.uid).get()).data() || {};
+  const resultado = {
+    quizId, quizTitulo: quiz.titulo || "", treinamento: quiz.treinamento || "",
+    colaborador: (user.name as string) || "", userId: caller.uid,
+    trailTitle: quiz.treinamento || "", cargo: caller.role, nota, total: questoes.length,
+    aprovado, respostas: resps, tenantId: caller.tenantId,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  };
+  const ref = await db.collection("treinamentosQuizResults").add(resultado);
+
+  // 2 reprovações seguidas no mesmo teste → reforço por e-mail (trigger notificarReforco).
+  if (!aprovado && anteriores[0] && !anteriores[0].aprovado && user.email) {
+    await db.collection("reforcosPendentes").add({
+      userId: caller.uid, colaboradorNome: user.name || "", colaboradorEmail: user.email,
+      quizId, quizTitulo: quiz.titulo || "", treinamento: quiz.treinamento || "",
+      nota, tenantId: caller.tenantId, createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  }
+  return { id: ref.id, nota, aprovado, total: questoes.length, corretas };
+});
+
+// Desempate de Metas: a gestão cria (questões geradas aqui), os participantes respondem e a
+// correção é feita aqui. O documento público (metasDesempate) não leva gabarito — ele fica em
+// metasDesempateGabarito/{mesmo id}, sem acesso pelo cliente.
+export const criarDesempate = onCall({ secrets: [GEMINI_API_KEY], timeoutSeconds: 120 }, async (request) => {
+  if (!request.auth) throw new HttpsError("unauthenticated", "Login necessário.");
+  const caller = await getCallerProfile(request.auth.uid);
+  if (!GESTOR_ROLES.includes(caller.role)) throw new HttpsError("permission-denied", "Só a gestão pode iniciar desempate.");
+  await enforceRateLimit(caller.uid, "criarDesempate", 5, 60_000);
+
+  const metaSnap = await db.collection("metas").doc(String(request.data?.metaId || "")).get();
+  if (!metaSnap.exists) throw new HttpsError("not-found", "Meta não encontrada.");
+  const meta = metaSnap.data()!;
+  if (!PLATFORM_STAFF_ROLES.includes(caller.role) && meta.tenantId !== caller.tenantId) {
+    throw new HttpsError("permission-denied", "Meta de outro cliente.");
+  }
+  const participantes = ((request.data?.participantes || []) as unknown[]).map(String).filter(Boolean);
+  if (participantes.length < 2) throw new HttpsError("invalid-argument", "O desempate precisa de pelo menos 2 participantes.");
+
+  const prompt = `Você é um especialista em avaliação educacional corporativa.
+
+Gere EXATAMENTE ${EXAME_NUM_QUESTOES} questões de múltipla escolha de ALTO NÍVEL usando a Taxonomia de Bloom:
+- 4 questões de AVALIAÇÃO (bloom: "avaliacao", Nível 5) — julgar, justificar, defender, criticar posições
+- 3 questões de CRIAÇÃO (bloom: "criacao", Nível 6) — propor, elaborar, construir, formular soluções
+
+Contexto: Meta de premiação "${meta.titulo || ""}".
+As questões devem ser sobre boas práticas de conformidade, LGPD, gestão de qualidade e segurança da informação.
+As questões devem exigir raciocínio complexo, análise crítica e síntese — não memorização simples.
+${FORMATO_QUESTOES_JSON}`;
+  const questoes = await gerarQuestoesIA(prompt, ["avaliacao", "criacao"], "avaliacao");
+
+  const ref = db.collection("metasDesempate").doc();
+  await db.batch()
+    .set(ref, {
+      metaId: metaSnap.id, metaTitulo: meta.titulo || "", participantes,
+      questoes: questoes.map(({ id, enunciado, alternativas, bloom }) => ({ id, enunciado, alternativas, bloom })),
+      resultados: {}, status: "aberto", tenantId: meta.tenantId,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    })
+    .set(db.collection("metasDesempateGabarito").doc(ref.id), { questoes, tenantId: meta.tenantId })
+    .commit();
+  return { id: ref.id, total: questoes.length };
+});
+
+export const submeterDesempate = onCall(async (request) => {
+  if (!request.auth) throw new HttpsError("unauthenticated", "Login necessário.");
+  const caller = await getCallerProfile(request.auth.uid);
+  await enforceRateLimit(caller.uid, "submeterDesempate", 10, 60_000);
+
+  const sessaoId = String(request.data?.sessaoId || "");
+  const respostas = (request.data?.respostas || {}) as Record<string, unknown>;
+  const nome = ((await db.collection("users").doc(caller.uid).get()).data()?.name as string) || "";
+  const ref = db.collection("metasDesempate").doc(sessaoId);
+  const gabarito = ((await db.collection("metasDesempateGabarito").doc(sessaoId).get()).data()?.questoes || []) as QuestaoExameServidor[];
+  if (!gabarito.length) throw new HttpsError("not-found", "Desempate não encontrado.");
+
+  return db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists) throw new HttpsError("not-found", "Desempate não encontrado.");
+    const s = snap.data()!;
+    if (s.tenantId !== caller.tenantId || !(s.participantes as string[]).includes(nome)) {
+      throw new HttpsError("permission-denied", "Você não participa deste desempate.");
+    }
+    if (s.status !== "aberto" || s.resultados?.[nome]) throw new HttpsError("failed-precondition", "Você já respondeu este desempate.");
+    const escolhas = gabarito.map((_, i) => String(respostas[String(i)] || "").toUpperCase());
+    if (escolhas.some((e) => !e)) throw new HttpsError("invalid-argument", "Responda todas as questões antes de enviar.");
+
+    const score = gabarito.filter((q, i) => escolhas[i] === q.correta).length;
+    const nota = Math.round((score / gabarito.length) * 100);
+    const resultados = { ...(s.resultados || {}), [nome]: { score, nota } };
+    const todosResponderam = (s.participantes as string[]).every((p) => resultados[p]);
+    tx.update(ref, { resultados, ...(todosResponderam ? { status: "encerrado" } : {}) });
+    return { score, nota, todosResponderam, gabarito: gabarito.map((q) => ({ correta: q.correta, justificativa: q.justificativa })) };
+  });
 });
 
 // ── Controle de tentativas de login (anti brute-force) ──────────────────────

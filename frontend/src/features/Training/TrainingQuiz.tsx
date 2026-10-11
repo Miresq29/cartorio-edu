@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '../../services/firebase';
+import { db, functions } from '../../services/firebase';
+import { httpsCallable } from 'firebase/functions';
 import {
   collection, onSnapshot, query, orderBy, where,
   addDoc, deleteDoc, doc, serverTimestamp
@@ -48,7 +49,12 @@ interface Props {
   knowledgeDocs?: any[];
 }
 
-const DIAS_BLOQUEIO = 3;
+const DIAS_BLOQUEIO = 3;  // espelha QUIZ_TREINAMENTO_DIAS_BLOQUEIO (functions), que é quem aplica
+
+const submeterQuizTreinamentoFn = httpsCallable<
+  { quizId: string; respostas: number[] },
+  { id: string; nota: number; aprovado: boolean; total: number; corretas: number }
+>(functions, 'submeterQuizTreinamento');
 
 const calcLiberadoEm = (results: QuizResult[], quizId: string, colaborador: string): Date | null => {
   const falhas = results
@@ -234,36 +240,22 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
     }
   };
 
+  // A correção, o bloqueio de 3 dias, o registro em treinamentosQuizResults e o reforço por
+  // e-mail (2 reprovações seguidas) são feitos pela function submeterQuizTreinamento.
   const finishQuiz = async (resps: number[]) => {
     if (!selectedQuiz) return;
-    const corretas = resps.filter((r, i) => r === selectedQuiz.questoes[i].correta).length;
-    const nota = Math.round((corretas / selectedQuiz.questoes.length) * 100);
-    const result: Omit<QuizResult, 'id'> = {
-      quizId: selectedQuiz.id, quizTitulo: selectedQuiz.titulo,
-      treinamento: selectedQuiz.treinamento, colaborador: respondente.nome,
-      // trailTitle é o campo que Relatórios usa para agrupar por trilha/treinamento
-      // (Por Trilha, Resumo de Treinamentos, Ficha de Capacitação) — sem isto, todo
-      // resultado de quiz avulso caía em "Sem trilha" e nunca era contabilizado.
-      trailTitle: selectedQuiz.treinamento,
-      cargo: respondente.cargo, nota, total: selectedQuiz.questoes.length,
-      aprovado: nota >= 70, respostas: resps, tenantId, createdAt: serverTimestamp(),
-    };
-    const docRef = await addDoc(collection(db, 'treinamentosQuizResults'), result);
-    setQuizResult({ ...result, id: docRef.id });
-    setMode('result');
-
-    // Após 2 reprovações consecutivas no mesmo teste, dispara reforço automático por e-mail.
-    // "results" já vem ordenado por createdAt desc, então o primeiro item é a tentativa anterior mais recente.
-    if (!result.aprovado) {
-      const tentativaAnterior = results.find(r => r.quizId === selectedQuiz.id && r.colaborador === respondente.nome);
-      const reprovacaoConsecutiva = !!tentativaAnterior && !tentativaAnterior.aprovado;
-      if (reprovacaoConsecutiva && state.user?.email) {
-        await addDoc(collection(db, 'reforcosPendentes'), {
-          userId: state.user.id, colaboradorNome: respondente.nome, colaboradorEmail: state.user.email,
-          quizId: selectedQuiz.id, quizTitulo: selectedQuiz.titulo, treinamento: selectedQuiz.treinamento,
-          nota, tenantId, createdAt: serverTimestamp(),
-        });
-      }
+    try {
+      const { data } = await submeterQuizTreinamentoFn({ quizId: selectedQuiz.id, respostas: resps });
+      setQuizResult({
+        id: data.id, quizId: selectedQuiz.id, quizTitulo: selectedQuiz.titulo,
+        treinamento: selectedQuiz.treinamento, trailTitle: selectedQuiz.treinamento,
+        colaborador: respondente.nome, cargo: respondente.cargo,
+        nota: data.nota, total: data.total, aprovado: data.aprovado, respostas: resps, tenantId,
+      });
+      setMode('result');
+    } catch (e: any) {
+      alert(e?.message || 'Não foi possível enviar o questionário. Tente novamente.');
+      setMode('list');
     }
   };
 

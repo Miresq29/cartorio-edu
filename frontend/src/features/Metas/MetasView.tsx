@@ -9,8 +9,6 @@ import {
 import { db, functions } from '../../services/firebase';
 import { httpsCallable } from 'firebase/functions';
 import { useApp } from '../../context/AppContext';
-import { GeminiService } from '../../services/geminiService';
-import { embaralharPorLetra, QUESTOES_POR_AVALIACAO, INSTRUCAO_JUSTIFICATIVA_SEM_LETRA } from '../../utils/embaralharQuestoes';
 import { useToast } from '../../context/ToastContext';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -41,13 +39,18 @@ interface RankingItem {
   empatado?: boolean;
 }
 
+// Desempate: criado e corrigido no servidor; o doc metasDesempate não traz o gabarito.
+const criarDesempateFn = httpsCallable<{ metaId: string; participantes: string[] }, { id: string; total: number }>(functions, 'criarDesempate', { timeout: 130_000 });
+const submeterDesempateFn = httpsCallable<
+  { sessaoId: string; respostas: Record<number, string> },
+  { score: number; nota: number; todosResponderam: boolean; gabarito: { correta: string; justificativa: string }[] }
+>(functions, 'submeterDesempate');
+
 interface DesempateQuestao {
   id: number;
   enunciado: string;
   alternativas: { letra: string; texto: string }[];
-  correta: string;
   bloom: 'avaliacao' | 'criacao';
-  justificativa: string;
 }
 
 interface DesempateSession {
@@ -450,29 +453,31 @@ const MetaCard: React.FC<{
 const DesempatePlayer: React.FC<{
   sessao: DesempateSession;
   userName: string;
-  onFinish: (sessaoId: string, score: number, nota: number) => void;
-}> = ({ sessao, userName, onFinish }) => {
+  onFinish: (todosResponderam: boolean) => void;
+}> = ({ sessao, onFinish }) => {
   const [fase, setFase] = useState<FaseDesempate>('respondendo');
-  const [idx, setIdx] = useState(0);
   const [respostas, setRespostas] = useState<Record<number, string>>({});
   const [resultado, setResultado] = useState<{ score: number; nota: number } | null>(null);
+  const [gabarito, setGabarito] = useState<{ correta: string; justificativa: string }[]>([]);
+  const [enviando, setEnviando] = useState(false);
 
-  const questao = sessao.questoes[idx];
   const total = sessao.questoes.length;
 
-  const handleAnswer = (letra: string) => {
-    setRespostas(prev => ({ ...prev, [idx]: letra }));
-  };
-
-  const handleEnviar = () => {
-    let acertos = 0;
-    sessao.questoes.forEach((q, i) => {
-      if (respostas[i] === q.correta) acertos++;
-    });
-    const nota = Math.round((acertos / total) * 100);
-    setResultado({ score: acertos, nota });
-    setFase('resultado');
-    onFinish(sessao.id, acertos, nota);
+  // Correção no servidor (function submeterDesempate) — o gabarito só chega depois do envio.
+  const handleEnviar = async () => {
+    if (enviando) return;
+    setEnviando(true);
+    try {
+      const { data } = await submeterDesempateFn({ sessaoId: sessao.id, respostas });
+      setGabarito(data.gabarito);
+      setResultado({ score: data.score, nota: data.nota });
+      setFase('resultado');
+      onFinish(data.todosResponderam);
+    } catch (e: any) {
+      alert(e?.message || 'Erro ao registrar resultado. Tente novamente.');
+    } finally {
+      setEnviando(false);
+    }
   };
 
   if (fase === 'resultado' && resultado) {
@@ -488,7 +493,7 @@ const DesempatePlayer: React.FC<{
           <div className="bg-slate-50 rounded-xl p-4 text-left space-y-1">
             <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Gabarito rápido</p>
             {sessao.questoes.map((q, i) => {
-              const acertou = respostas[i] === q.correta;
+              const acertou = respostas[i] === gabarito[i]?.correta;
               return (
                 <div key={i} className="flex items-center gap-2">
                   <i className={`fa-solid ${acertou ? 'fa-check text-emerald-400' : 'fa-xmark text-red-400'} text-xs`}></i>
@@ -543,7 +548,7 @@ const DesempatePlayer: React.FC<{
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pl-2">
                   {q.alternativas.map(alt => (
                     <button key={alt.letra} type="button"
-                      onClick={() => handleAnswer(alt.letra)}
+                      onClick={() => setRespostas(prev => ({ ...prev, [qi]: alt.letra }))}
                       className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${
                         resp === alt.letra
                           ? 'border-amber-500 bg-amber-500/20 text-navy'
@@ -563,7 +568,7 @@ const DesempatePlayer: React.FC<{
 
         <button
           onClick={handleEnviar}
-          disabled={Object.keys(respostas).length < total}
+          disabled={Object.keys(respostas).length < total || enviando}
           className="w-full py-4 bg-amber-600 hover:bg-amber-500 disabled:bg-slate-700 disabled:text-slate-500 text-navy font-black uppercase tracking-widest rounded-2xl transition-all text-sm">
           <i className="fa-solid fa-gavel mr-2"></i>
           Enviar Respostas de Desempate
@@ -656,51 +661,10 @@ const MetasView: React.FC = () => {
   const handleIniciarDesempate = async (metaId: string, metaTitulo: string, participantes: string[]) => {
     setGerandoDesempate(metaId);
     try {
-      const prompt = `Você é um especialista em avaliação educacional corporativa para serventias notariais.
-
-Gere EXATAMENTE ${QUESTOES_POR_AVALIACAO} questões de múltipla escolha de ALTO NÍVEL usando a Taxonomia de Bloom:
-- 4 questões de AVALIAÇÃO (bloom: "avaliacao", Nível 5) — julgar, justificar, defender, criticar posições
-- 3 questões de CRIAÇÃO (bloom: "criacao", Nível 6) — propor, elaborar, construir, formular soluções
-
-Contexto: Meta de premiação "${metaTitulo}" em serventias notariais. 
-As questões devem ser sobre boas práticas notariais, LGPD em cartórios, gestão de qualidade e conformidade com provimentos do CNJ.
-
-REGRAS:
-1. Cada questão tem exatamente 4 alternativas (A, B, C, D)
-2. Apenas 1 alternativa correta
-3. As questões devem exigir raciocínio complexo, análise crítica e síntese — não memorização simples
-4. Justifique brevemente a resposta correta
-5. ${INSTRUCAO_JUSTIFICATIVA_SEM_LETRA}
-
-Retorne APENAS um array JSON válido, sem markdown:
-[{
-  "id": 1,
-  "enunciado": "texto da questão",
-  "alternativas": [
-    {"letra": "A", "texto": "..."},
-    {"letra": "B", "texto": "..."},
-    {"letra": "C", "texto": "..."},
-    {"letra": "D", "texto": "..."}
-  ],
-  "correta": "A",
-  "bloom": "avaliacao|criacao",
-  "justificativa": "Explicação breve da resposta correta"
-}]`;
-
-      const raw = await GeminiService.generateJSON(prompt, 1500 * QUESTOES_POR_AVALIACAO + 1000);
-      const match = raw.match(/\[[\s\S]*\]/);
-      if (!match) throw new Error('Resposta inválida da IA');
-      const questoes: DesempateQuestao[] = (JSON.parse(match[0]) as DesempateQuestao[])
-        .slice(0, QUESTOES_POR_AVALIACAO)
-        .map((q, i) => embaralharPorLetra({ ...q, id: i + 1 }));
-
-      await addDoc(collection(db, 'metasDesempate'), {
-        metaId, metaTitulo, participantes,
-        questoes, resultados: {}, status: 'aberto',
-        tenantId, createdAt: serverTimestamp()
-      });
-
-      showToast(`Desempate criado com ${questoes.length} questões Bloom Alto!`, 'success');
+      // Questões geradas, embaralhadas e guardadas no servidor (function criarDesempate) — o
+      // documento metasDesempate que os participantes leem não leva o gabarito.
+      const { data } = await criarDesempateFn({ metaId, participantes });
+      showToast(`Desempate "${metaTitulo}" criado com ${data.total} questões Bloom Alto!`, 'success');
     } catch (e: any) {
       showToast(e?.message || 'Erro ao gerar desempate.', 'error');
     } finally {
@@ -708,26 +672,11 @@ Retorne APENAS um array JSON válido, sem markdown:
     }
   };
 
-  // Registrar resultado do desempate
-  const handleDesempateFinish = async (sessaoId: string, score: number, nota: number) => {
-    try {
-      const sessao = desempateSessions.find(s => s.id === sessaoId);
-      if (!sessao) return;
-
-      const novosResultados = { ...sessao.resultados, [user.name]: { score, nota } };
-      const todosResponderam = sessao.participantes.every(p => novosResultados[p]);
-
-      await updateDoc(doc(db, 'metasDesempate', sessaoId), {
-        [`resultados.${user.name}`]: { score, nota },
-        ...(todosResponderam ? { status: 'encerrado' } : {})
-      });
-
-      if (todosResponderam) {
-        showToast('Todos responderam! Desempate encerrado.', 'success');
-      } else {
-        showToast('Resposta registrada. Aguardando os demais participantes.', 'success');
-      }
-    } catch { showToast('Erro ao registrar resultado.', 'error'); }
+  // Resultado do desempate já gravado pela function submeterDesempate — aqui só o aviso.
+  const handleDesempateFinish = (todosResponderam: boolean) => {
+    showToast(todosResponderam
+      ? 'Todos responderam! Desempate encerrado.'
+      : 'Resposta registrada. Aguardando os demais participantes.', 'success');
   };
 
   // Rankings por meta

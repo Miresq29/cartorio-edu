@@ -201,13 +201,20 @@ service cloud.firestore {
 
     match /treinamentosQuizResults/{docId} {
       allow read: if canReadOwnOrManage();
-      allow create: if canWritePrivate();
+      // So as functions submeterQuizModulo / submeterQuizTreinamento gravam resultado de quiz.
+      allow create: if false;
       allow update: if canEditPrivate();
       allow delete: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
     }
     match /trilhasProgresso/{docId} {
       allow read: if canReadOwnOrManage();
-      allow create, update: if canWriteOwnPrivate();
+      // O cliente so cria o documento "zerado" ao abrir a trilha; modulo lido, nota, aprovacao,
+      // percentual e conclusao sao gravados pelas functions marcarModuloAssistido/submeterQuizModulo.
+      allow create: if isActive() && isSelfData() && newSameTenant()
+        && request.resource.data.get('concluida', false) == false
+        && request.resource.data.get('percentualObrigatorios', 0) == 0
+        && request.resource.data.get('modulos', {}).size() == 0;
+      allow update: if false;
       allow delete: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
     }
     match /treinamentosParticipantes/{docId} {
@@ -227,7 +234,8 @@ service cloud.firestore {
     }
     match /reforcosPendentes/{docId} {
       allow read: if canReadPrivate();
-      allow create: if canWriteOwnPrivate();
+      // Criado pela function submeterQuizTreinamento (2 reprovacoes seguidas).
+      allow create: if false;
       allow update, delete: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
     }
     match /examesResultados/{docId} {
@@ -244,8 +252,11 @@ service cloud.firestore {
     }
     match /metasDesempate/{docId} {
       allow read: if canReadPrivate();
-      allow create: if canWriteContent();
-      allow update, delete: if canEditContent();
+      // Criado por criarDesempate e respondido por submeterDesempate (gabarito fica em
+      // metasDesempateGabarito, sem acesso). A gestao so pode mudar o status ou excluir.
+      allow create: if false;
+      allow update: if canEditContent() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']);
+      allow delete: if canEditContent();
     }
     match /repositorioProgresso/{docId} {
       allow read: if canReadOwnOrManage();
@@ -294,8 +305,14 @@ service cloud.firestore {
       allow read, write: if isSuperAdmin();
     }
 
-    // Gabarito dos exames em andamento — so as functions gerarExame/submeterExame acessam.
+    // Gabaritos — so as functions acessam (exames, quizzes de modulo, desempate).
     match /examesSessoes/{docId} {
+      allow read, write: if false;
+    }
+    match /quizSessoes/{docId} {
+      allow read, write: if false;
+    }
+    match /metasDesempateGabarito/{docId} {
       allow read, write: if false;
     }
 

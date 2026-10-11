@@ -9,8 +9,8 @@ import { termos } from '../../utils/terminologia';
 import { useToast } from '../../context/ToastContext';
 import { useRecursoTenant } from '../../hooks/useRecursoTenant';
 import VisibilidadeCartorioPicker from '../../components/VisibilidadeCartorioPicker';
-import { GeminiService } from '../../services/geminiService';
-import { embaralharPorIndice, QUESTOES_POR_AVALIACAO, INSTRUCAO_JUSTIFICATIVA_SEM_LETRA } from '../../utils/embaralharQuestoes';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '../../services/firebase';
 import { FormatoTreinamento, FORMATOS, FORMATO_LABEL } from '../../utils/formatoTreinamento';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -84,16 +84,15 @@ function uid() {
   return Math.random().toString(36).slice(2, 10);
 }
 
-function calcPercObrigatorios(trilha: Trilha, prog: TrilhaProgresso): number {
-  const obrigatorios = trilha.modulos.filter(m => m.tipo === 'obrigatorio');
-  if (obrigatorios.length === 0) return 100;
-  const concluidos = obrigatorios.filter(m => {
-    const p = prog.modulos[m.id];
-    if (!p) return false;
-    return p.assistido && (!m.temQuiz || p.aprovado);
-  });
-  return Math.round((concluidos.length / obrigatorios.length) * 100);
-}
+// Quiz e progresso dos módulos: gerados/corrigidos/gravados no servidor (functions).
+type QuestaoQuizModulo = { pergunta: string; opcoes: string[] };
+const marcarModuloAssistidoFn = httpsCallable<{ progressoId: string; moduloId: string }, { progresso: TrilhaProgresso }>(functions, 'marcarModuloAssistido');
+const gerarQuizModuloFn = httpsCallable<{ progressoId: string; moduloId: string }, { sessaoId: string; questoes: QuestaoQuizModulo[] }>(functions, 'gerarQuizModulo', { timeout: 130_000 });
+const submeterQuizModuloFn = httpsCallable<
+  { sessaoId: string; respostas: number[] },
+  { progresso: TrilhaProgresso; nota: number; aprovado: boolean; gabarito: { correta: number; explicacao: string }[] }
+>(functions, 'submeterQuizModulo');
+
 
 // ─── Modulo Form ─────────────────────────────────────────────────────────────
 
@@ -411,7 +410,9 @@ const ModuloPlayer: React.FC<{
   const [respostas, setRespostas] = useState<Record<number, string>>({});
   const [quizEnviado, setQuizEnviado] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [quizQuestoes, setQuizQuestoes] = useState<{ pergunta: string; opcoes: string[]; correta: number; explicacao: string }[]>([]);
+  const [quizQuestoes, setQuizQuestoes] = useState<{ pergunta: string; opcoes: string[]; correta?: number; explicacao?: string }[]>([]);
+  const [sessaoQuizId, setSessaoQuizId] = useState('');
+  const [enviandoQuiz, setEnviandoQuiz] = useState(false);
   const [gerandoQuiz, setGerandoQuiz] = useState(false);
   const [conteudoItem, setConteudoItem] = useState<any | null>(null);
   const [conteudoVisto, setConteudoVisto] = useState(false);
@@ -449,78 +450,48 @@ const ModuloPlayer: React.FC<{
     return () => { cancelado = true; };
   }, [modulo?.id, modulo?.conteudoRef?.tipo, modulo?.conteudoRef?.itemId, userId, tenantId]);
 
+  // Progresso, nota e aprovação são gravados pelas functions (o cliente não escreve mais em
+  // trilhasProgresso depois de criar o documento) — aqui só atualizamos a tela com o retorno.
   const marcarAssistido = async () => {
     if (!modulo) return;
-    const novosProg = {
-      ...progresso.modulos,
-      [modulo.id]: { ...progModulo, assistido: true }
-    };
-    const novoProgresso = { ...progresso, modulos: novosProg };
-    novoProgresso.percentualObrigatorios = calcPercObrigatorios(trilha, novoProgresso);
-    novoProgresso.concluida = novoProgresso.percentualObrigatorios === 100;
-    onUpdateProgresso(novoProgresso);
+    try {
+      const { data } = await marcarModuloAssistidoFn({ progressoId: progresso.id, moduloId: modulo.id });
+      onUpdateProgresso(data.progresso);
+    } catch (e: any) {
+      alert(e?.message || 'Não foi possível registrar a leitura. Tente novamente.');
+    }
   };
 
   const gerarQuiz = async () => {
     if (!modulo) return;
     setGerandoQuiz(true);
     try {
-      const prompt = `Você é um gerador de quiz para treinamento notarial.
-Retorne APENAS um JSON válido, sem texto adicional, sem markdown, sem explicações.
-Formato exato:
-{"questoes":[{"pergunta":"...","opcoes":["A","B","C","D"],"correta":0,"explicacao":"..."}]}
-correta é o índice (0-3) da opção correta.
-${INSTRUCAO_JUSTIFICATIVA_SEM_LETRA}
-
-Gere EXATAMENTE ${QUESTOES_POR_AVALIACAO} questões de múltipla escolha sobre este conteúdo:
-Módulo: ${modulo.titulo}
-Conteúdo: ${modulo.conteudo || modulo.descricao}
-Nota mínima para aprovação: ${modulo.notaMinima}/10`;
-      const text = await GeminiService.generateJSON(prompt, 1200 * QUESTOES_POR_AVALIACAO + 1000);
-      const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
-      const questoes = Array.isArray(parsed.questoes) ? parsed.questoes.slice(0, QUESTOES_POR_AVALIACAO) : [];
-      if (questoes.length === 0) throw new Error('quiz vazio');
-      setQuizQuestoes(questoes.map((q: any) => embaralharPorIndice({ ...q, opcoes: q.opcoes || [], correta: Number(q.correta) })));
-    } catch {
-      setQuizQuestoes([
-        { pergunta: 'Erro ao gerar quiz. Tente novamente.', opcoes: ['Ok'], correta: 0, explicacao: '' }
-      ]);
+      const { data } = await gerarQuizModuloFn({ progressoId: progresso.id, moduloId: modulo.id });
+      setSessaoQuizId(data.sessaoId);
+      setQuizQuestoes(data.questoes);
+    } catch (e: any) {
+      setShowQuiz(false);
+      alert(e?.message || 'Erro ao gerar quiz. Tente novamente.');
     }
     setGerandoQuiz(false);
   };
 
   const enviarQuiz = async () => {
-    if (!modulo) return;
-    const total = quizQuestoes.length;
-    const acertos = quizQuestoes.filter((q, i) => String(respostas[i]) === String(q.correta)).length;
-    const nota = total > 0 ? Math.round((acertos / total) * 10 * 10) / 10 : 0;
-    const aprovado = nota >= modulo.notaMinima;
-
-    const novosProg = {
-      ...progresso.modulos,
-      [modulo.id]: {
-        assistido: true,
-        aprovado: aprovado,
-        nota: nota,
-        tentativas: (progModulo.tentativas || 0) + 1,
-      }
-    };
-    const novoProgresso = { ...progresso, modulos: novosProg };
-    novoProgresso.percentualObrigatorios = calcPercObrigatorios(trilha, novoProgresso);
-    novoProgresso.concluida = novoProgresso.percentualObrigatorios === 100;
-    onUpdateProgresso(novoProgresso);
-    setQuizEnviado(true);
-
-    // Registra o resultado tambem em treinamentosQuizResults — sem isso, o quiz do
-    // modulo ficava so dentro de trilhasProgresso e nunca aparecia em Relatorios,
-    // Certificados ou no calculo de risco (colaborador parecia "sem atividade").
+    if (!modulo || enviandoQuiz) return;
+    setEnviandoQuiz(true);
     try {
-      await addDoc(collection(db, 'treinamentosQuizResults'), {
-        colaborador: progresso.userName, userId: progresso.userId,
-        nota: nota * 10, aprovado, trailTitle: trilha.titulo, moduleTitle: modulo.titulo,
-        ia: true, tenantId, createdAt: serverTimestamp(),
+      const { data } = await submeterQuizModuloFn({
+        sessaoId: sessaoQuizId,
+        respostas: quizQuestoes.map((_, i) => Number(respostas[i])),
       });
-    } catch { /* nao bloqueia o fluxo do colaborador se o registro de relatorio falhar */ }
+      setQuizQuestoes(qs => qs.map((q, i) => ({ ...q, ...data.gabarito[i] })));
+      onUpdateProgresso(data.progresso);
+      setQuizEnviado(true);
+    } catch (e: any) {
+      alert(e?.message || 'Não foi possível enviar o quiz. Tente novamente.');
+    } finally {
+      setEnviandoQuiz(false);
+    }
   };
 
   if (!modulo) return null;
@@ -898,10 +869,8 @@ const TrailsView: React.FC = () => {
   };
 
   const updateProgresso = async (novoProgresso: TrilhaProgresso) => {
-    const { id, ...data } = novoProgresso;
-    await updateDoc(doc(db, 'trilhasProgresso', id), { ...data, updatedAt: serverTimestamp() });
-    if (novoProgresso.concluida) { try { await addDoc(collection(db, 'auditLogs'), { tipo: 'trilha_concluida', descricao: 'Trilha concluida: ' + (novoProgresso.trilhaTitulo || ''), usuario: novoProgresso.userName, usuarioId: novoProgresso.userId, tenantId, createdAt: serverTimestamp() }); } catch {} }
-    if (novoProgresso.concluida) { try { await addDoc(collection(db, 'auditLogs'), { tipo: 'trilha_concluida', descricao: 'Trilha concluida: ' + (novoProgresso.trilhaTitulo || ''), usuario: novoProgresso.userName, usuarioId: novoProgresso.userId, tenantId, createdAt: serverTimestamp() }); } catch {} }
+    // Já gravado pela function (marcarModuloAssistido/submeterQuizModulo), inclusive o
+    // auditLogs de conclusão — aqui só reflete o retorno na tela.
     setTrilhaAtiva(prev => prev ? { ...prev, progresso: novoProgresso } : null);
   };
 
