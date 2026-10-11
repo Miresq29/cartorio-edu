@@ -1,7 +1,7 @@
 // frontend/src/features/Metas/MetasView.tsx
 // Módulo de Metas e Premiação com desempate via Quiz Bloom Alto (Nível 5-6)
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   collection, onSnapshot, query, orderBy, addDoc, updateDoc,
   deleteDoc, doc, serverTimestamp, where

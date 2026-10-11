@@ -409,7 +409,6 @@ const ModuloPlayer: React.FC<{
   const [showQuiz, setShowQuiz] = useState(false);
   const [respostas, setRespostas] = useState<Record<number, string>>({});
   const [quizEnviado, setQuizEnviado] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [quizQuestoes, setQuizQuestoes] = useState<{ pergunta: string; opcoes: string[]; correta?: number; explicacao?: string }[]>([]);
   const [sessaoQuizId, setSessaoQuizId] = useState('');
   const [enviandoQuiz, setEnviandoQuiz] = useState(false);

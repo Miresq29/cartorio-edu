@@ -57,22 +57,6 @@ export const cleanJsonOutput = (text: string): string => {
   return cleaned;
 };
 
-// ─── Extrai JSON (array ou objeto) de resposta livre ─────────────────────────
-const extractJsonObject = (text: string): any => {
-  const cleaned = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-  const firstBracket = cleaned.indexOf('[');
-  const lastBracket = cleaned.lastIndexOf(']');
-  if (firstBracket !== -1 && lastBracket > firstBracket) {
-    try { return JSON.parse(cleaned.substring(firstBracket, lastBracket + 1)); } catch {}
-  }
-  const firstBrace = cleaned.indexOf('{');
-  const lastBrace = cleaned.lastIndexOf('}');
-  if (firstBrace !== -1 && lastBrace > firstBrace) {
-    try { return JSON.parse(cleaned.substring(firstBrace, lastBrace + 1)); } catch {}
-  }
-  throw new Error('JSON inválido na resposta da IA');
-};
-
 // ─── Função base com maxOutputTokens configurável ────────────────────────────
 const callGemini = async (
   prompt: string,

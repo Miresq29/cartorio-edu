@@ -162,7 +162,6 @@ const CustomTooltip: React.FC<any> = ({ active, payload, label }) => {
 const RelatoriosView: React.FC = () => {
   const { state, tenantId } = useApp();
   const user = state.user!;
-  const isSuperAdmin = user.role === 'SUPERADMIN';
 
   const [tab, setTab] = useState<Tab>('visao_geral');
   const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
@@ -814,7 +813,7 @@ tr { page-break-inside:avoid; }
           <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
             <i className="fa-solid fa-circle-info mt-0.5"></i>
             <p>
-              <strong>{coberturaISO.semAvaliacao + coberturaISO.semAtividade} colaborador{(coberturaISO.semAvaliacao + coberturaISO.semAtividade) !== 1 ? 'es' : ''} ainda não fizeram nenhuma prova</strong> —
+              <strong>{coberturaISO.semAvaliacao + coberturaISO.semAtividade} colaborador{(coberturaISO.semAvaliacao + coberturaISO.semAtividade) !== 1 ? 'es' : ''} ainda não {(coberturaISO.semAvaliacao + coberturaISO.semAtividade) !== 1 ? 'fizeram' : 'fez'} nenhuma prova</strong> —
               não entram na Taxa de Aprovação nem na Média Geral acima (essas duas só contam quem já foi avaliado).
               Veja a lista completa em <strong>Indicadores ISO</strong>.
             </p>
