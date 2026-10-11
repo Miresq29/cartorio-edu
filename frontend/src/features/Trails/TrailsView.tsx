@@ -10,6 +10,7 @@ import { useToast } from '../../context/ToastContext';
 import { useRecursoTenant } from '../../hooks/useRecursoTenant';
 import VisibilidadeCartorioPicker from '../../components/VisibilidadeCartorioPicker';
 import { GeminiService } from '../../services/geminiService';
+import { embaralharPorIndice, QUESTOES_POR_AVALIACAO, INSTRUCAO_JUSTIFICATIVA_SEM_LETRA } from '../../utils/embaralharQuestoes';
 import { FormatoTreinamento, FORMATOS, FORMATO_LABEL } from '../../utils/formatoTreinamento';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -469,14 +470,17 @@ Retorne APENAS um JSON válido, sem texto adicional, sem markdown, sem explicaç
 Formato exato:
 {"questoes":[{"pergunta":"...","opcoes":["A","B","C","D"],"correta":0,"explicacao":"..."}]}
 correta é o índice (0-3) da opção correta.
+${INSTRUCAO_JUSTIFICATIVA_SEM_LETRA}
 
-Gere 4 questões de múltipla escolha sobre este conteúdo:
+Gere EXATAMENTE ${QUESTOES_POR_AVALIACAO} questões de múltipla escolha sobre este conteúdo:
 Módulo: ${modulo.titulo}
 Conteúdo: ${modulo.conteudo || modulo.descricao}
 Nota mínima para aprovação: ${modulo.notaMinima}/10`;
-      const text = await GeminiService.generateJSON(prompt, 1500);
+      const text = await GeminiService.generateJSON(prompt, 1200 * QUESTOES_POR_AVALIACAO + 1000);
       const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
-      setQuizQuestoes(parsed.questoes || []);
+      const questoes = Array.isArray(parsed.questoes) ? parsed.questoes.slice(0, QUESTOES_POR_AVALIACAO) : [];
+      if (questoes.length === 0) throw new Error('quiz vazio');
+      setQuizQuestoes(questoes.map((q: any) => embaralharPorIndice({ ...q, opcoes: q.opcoes || [], correta: Number(q.correta) })));
     } catch {
       setQuizQuestoes([
         { pergunta: 'Erro ao gerar quiz. Tente novamente.', opcoes: ['Ok'], correta: 0, explicacao: '' }

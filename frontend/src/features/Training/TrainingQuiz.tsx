@@ -6,6 +6,7 @@ import {
 } from 'firebase/firestore';
 import { useApp } from '../../context/AppContext';
 import { GeminiService } from '../../services/geminiService';
+import { QUESTOES_POR_AVALIACAO } from '../../utils/embaralharQuestoes';
 import VisibilidadeCartorioPicker from '../../components/VisibilidadeCartorioPicker';
 
 interface Question {
@@ -97,7 +98,7 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
   ]);
 
   // Form IA
-  const [aiForm, setAiForm] = useState({ treinamento: '', quantidade: '5' });
+  const [aiForm, setAiForm] = useState({ treinamento: '' });
   const [createMode, setCreateMode] = useState<'ia' | 'manual'>('ia');
 
   // Vídeos (módulo Vídeos) e itens de vídeo do Repositório também são "treinamentos"
@@ -154,7 +155,7 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
           : titulo;
 
     try {
-      const questoesExame = await GeminiService.generateExam(titulo, conteudo, parseInt(aiForm.quantidade));
+      const questoesExame = await GeminiService.generateExam(titulo, conteudo, QUESTOES_POR_AVALIACAO);
       const questoesComId = questoesExame.map((q: any, i: number) => ({
         id: `q${i + 1}`,
         texto: q.enunciado,
@@ -172,7 +173,7 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
         createdAt: serverTimestamp(),
       });
 
-      setAiForm({ treinamento: '', quantidade: '5' });
+      setAiForm({ treinamento: '' });
       setMode('list');
     } catch (e: any) {
       setGenerateError(e?.message || 'Erro ao gerar questionario. Tente novamente.');
@@ -542,13 +543,9 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
                 )}
               </select>
             </div>
-            <div className="space-y-1">
-              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Quantidade de Questões</label>
-              <select value={aiForm.quantidade} onChange={e => setAiForm(f => ({ ...f, quantidade: e.target.value }))}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-navy outline-none focus:border-blue-500">
-                {['3', '5', '7', '10'].map(n => <option key={n} value={n}>{n} questões</option>)}
-              </select>
-            </div>
+            <p className="text-[10px] text-slate-500">
+              <i className="fa-solid fa-list-ol mr-1"></i>{QUESTOES_POR_AVALIACAO} questões, com a ordem das alternativas embaralhada.
+            </p>
             {generateError && <p className="text-red-400 text-xs">{generateError}</p>}
             <button onClick={generateQuizWithAI} disabled={isGenerating || !aiForm.treinamento}
               className="w-full bg-blue-600 hover:bg-blue-500 text-navy px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50 flex items-center justify-center gap-2">

@@ -180,7 +180,7 @@ const SECTIONS: Section[] = [
       { title: 'Salvando o roteiro', desc: 'Depois de expandir o roteiro escolhido, clique em "Salvar como treinamento" — ele passa a ficar disponível como fonte de conteúdo para gerar Exames. Ao salvar, informe o instrutor responsável e a forma de treinamento (EAD, presencial ou híbrida); a carga horária é calculada automaticamente a partir da duração do roteiro.' },
       { title: 'Resumos Inteligentes', desc: 'Selecione um documento e o tipo de resumo (Executivo, Técnico, Didático ou Operacional) para que a IA gere um resumo otimizado para cada audiência.' },
       { title: 'Participantes', desc: 'Registre quais colaboradores participaram de cada treinamento, controle a presença e acompanhe o status de conclusão.' },
-      { title: 'Questionários com IA', desc: 'Gere automaticamente questões de múltipla escolha baseadas no conteúdo dos treinamentos. Escolha entre 3, 5, 7 ou 10 questões por avaliação.' },
+      { title: 'Questionários com IA', desc: 'Gere automaticamente 7 questões de múltipla escolha baseadas no conteúdo dos treinamentos, com a ordem das alternativas embaralhada.' },
       { title: 'Reforço automático', desc: 'Ao reprovar duas vezes seguidas no mesmo questionário, o colaborador recebe automaticamente um e-mail recomendando revisar o material antes de tentar novamente.' },
       { title: 'Dashboard de Gestão', desc: 'A aba "Dashboard Gestão" consolida o desempenho de todos os participantes com gráficos de aprovação, média de notas e evolução ao longo do tempo.' },
     ]
@@ -190,8 +190,8 @@ const SECTIONS: Section[] = [
     steps: [
       { title: 'O que são os Exames?', desc: 'Exames são avaliações formais geradas pela IA com base na Taxonomia de Bloom — garantindo questões que vão do conhecimento básico à análise e avaliação crítica.' },
       { title: 'Escolhendo o conteúdo', desc: 'A lista de conteúdos disponíveis reúne trilhas de capacitação, treinamentos salvos em "Treinamento AI" e documentos da Base de Conhecimento. Se a lista aparecer vazia, é sinal de que nenhum desses três ainda tem conteúdo suficiente (mínimo 50 caracteres) — crie uma trilha, salve um roteiro de treinamento ou envie um documento para liberar a geração de exames.' },
-      { title: 'Quantidade de questões', desc: 'Escolha 5, 7 ou 10 questões antes de gerar o exame — quanto mais questões, mais completa a avaliação, mas também mais tempo de geração pela IA.' },
-      { title: 'Realizando um exame', desc: 'Selecione o conteúdo, escolha a quantidade de questões e clique em "Gerar Exame com IA". Responda todas as questões e envie — a correção é automática, com gabarito comentado nas questões erradas.' },
+      { title: 'Quantidade de questões', desc: 'Todo exame tem 7 questões (2 de compreensão, 3 de aplicação e 2 de análise), com as alternativas em ordem embaralhada. A correção é feita no servidor — o gabarito só aparece depois do envio.' },
+      { title: 'Realizando um exame', desc: 'Selecione o conteúdo e clique em "Gerar Exame com IA". Responda todas as questões e envie — a correção é automática, com gabarito comentado nas questões erradas.' },
       { title: 'Resultado e aprovação', desc: 'A nota mínima de aprovação é 70%. Quem reprova fica bloqueado por 5 dias antes de poder refazer o mesmo exame.' },
       { title: 'Certificado', desc: 'Ao ser aprovado, o botão "Emitir Certificado" gera um PDF de conclusão para aquele exame específico.' },
       { title: 'Histórico de provas', desc: 'A seção "Meu Histórico de Exames" mostra todos os exames realizados, com data, nota e resultado.' },

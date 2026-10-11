@@ -64,6 +64,12 @@ service cloud.firestore {
     function canReadPrivate() { return isSuperAdmin() || isEquipeMJ() || (isActive() && sameTenant()); }
     function canWritePrivate() { return isActive() && (isSuperAdmin() || isEquipeMJ() || newSameTenant()); }
     function canEditPrivate() { return isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant()); }
+    // Notas, progresso e resultados individuais: a gestao le o tenant todo; colaborador so os
+    // proprios (userId == uid). Ranking de Metas, que precisa do agregado, vem da function rankingMetas.
+    function canReadOwnOrManage() {
+      return isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant())
+        || (isActive() && resource.data.get('userId', '') == request.auth.uid);
+    }
     // Private + dono do registro: usar nas coleções onde o campo userId reflete o uid autenticado
     function canWriteOwnPrivate() { return canWritePrivate() && (isSelfData() || isGestor()); }
     // Impede que o próprio usuário grave um nome/e-mail de exibição diferente do seu cadastro
@@ -194,13 +200,13 @@ service cloud.firestore {
     // ── Dados privados (estritamente por cartório) ──
 
     match /treinamentosQuizResults/{docId} {
-      allow read: if canReadPrivate();
+      allow read: if canReadOwnOrManage();
       allow create: if canWritePrivate();
       allow update: if canEditPrivate();
       allow delete: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
     }
     match /trilhasProgresso/{docId} {
-      allow read: if canReadPrivate();
+      allow read: if canReadOwnOrManage();
       allow create, update: if canWriteOwnPrivate();
       allow delete: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
     }
@@ -225,7 +231,7 @@ service cloud.firestore {
       allow update, delete: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
     }
     match /examesResultados/{docId} {
-      allow read: if canReadPrivate();
+      allow read: if canReadOwnOrManage();
       // So a Cloud Function submeterExame grava resultado (corrige contra o gabarito guardado
       // em examesSessoes) — antes o cliente gravava a propria nota/aprovacao.
       allow create: if false;
@@ -242,12 +248,12 @@ service cloud.firestore {
       allow update, delete: if canEditContent();
     }
     match /repositorioProgresso/{docId} {
-      allow read: if canReadPrivate();
+      allow read: if canReadOwnOrManage();
       allow create, update: if canWriteOwnPrivate();
       allow delete: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
     }
     match /leituraProgresso/{docId} {
-      allow read: if canReadPrivate();
+      allow read: if canReadOwnOrManage();
       allow create, update: if canWriteOwnPrivate();
       allow delete: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
     }

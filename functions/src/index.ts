@@ -394,6 +394,22 @@ async function diasDeBloqueio(uid: string, fonteId: string): Promise<number> {
   return fim > agora ? Math.ceil((fim - agora) / 86_400_000) : 0;
 }
 
+// A IA tende a pôr a resposta certa nas primeiras letras (num teste de 2026-10-11, todas as 7
+// ficaram em A ou B) — embaralha a ordem das alternativas e re-letra A-D, levando a correta junto.
+function embaralharAlternativas(q: QuestaoExameServidor): QuestaoExameServidor {
+  const itens = q.alternativas.map((a) => ({ texto: a.texto, correta: a.letra === q.correta }));
+  for (let i = itens.length - 1; i > 0; i--) {
+    const j = randomBytes(1)[0] % (i + 1);
+    [itens[i], itens[j]] = [itens[j], itens[i]];
+  }
+  const letras = ["A", "B", "C", "D"];
+  return {
+    ...q,
+    alternativas: itens.map((a, i) => ({ letra: letras[i], texto: a.texto })),
+    correta: letras[itens.findIndex((a) => a.correta)],
+  };
+}
+
 function validarQuestoes(bruto: unknown): QuestaoExameServidor[] {
   if (!Array.isArray(bruto) || bruto.length < EXAME_NUM_QUESTOES) {
     throw new HttpsError("internal", "A IA não gerou questões suficientes. Tente novamente.");
@@ -406,14 +422,14 @@ function validarQuestoes(bruto: unknown): QuestaoExameServidor[] {
     if (!q?.enunciado || alternativas.length !== 4 || !alternativas.some((a: { letra: string }) => a.letra === correta)) {
       throw new HttpsError("internal", "A IA gerou uma questão em formato inválido. Tente novamente.");
     }
-    return {
+    return embaralharAlternativas({
       id: i + 1,
       enunciado: String(q.enunciado),
       alternativas,
       correta,
       bloom: ["compreensao", "aplicacao", "analise"].includes(q.bloom) ? q.bloom : "aplicacao",
       justificativa: String(q.justificativa || ""),
-    };
+    });
   });
 }
 
@@ -468,6 +484,7 @@ Gere EXATAMENTE ${EXAME_NUM_QUESTOES} questões de múltipla escolha (Taxonomia 
 - 2 ANÁLISE (bloom: "analise")
 
 Regras: 4 alternativas (A-D), 1 correta, distractores plausíveis, justificativa breve.
+Na justificativa, NÃO cite letras de alternativas (a ordem será embaralhada) — explique pelo conteúdo.
 
 Retorne APENAS array JSON sem markdown:
 [{"id":1,"enunciado":"...","alternativas":[{"letra":"A","texto":"..."},{"letra":"B","texto":"..."},{"letra":"C","texto":"..."},{"letra":"D","texto":"..."}],"correta":"A","bloom":"compreensao","justificativa":"..."}]`;
@@ -567,6 +584,57 @@ export const submeterExame = onCall(async (request) => {
   });
 
   return resultado;
+});
+
+// ── Ranking de Metas & Premiação ─────────────────────────────────────────────
+// Colaborador não lê mais notas/progresso dos colegas (firestore.rules) — o ranking, que é
+// a única tela que precisa disso, passa a ser calculado aqui e devolve SÓ nome + valor
+// agregado por métrica (o mesmo que o card de ranking sempre exibiu). Mesma regra de cálculo
+// que calcularRanking() tinha no MetasView.tsx: agrupado pelo nome gravado em cada registro.
+type MetricaMeta = "media_quizzes" | "trilhas_concluidas" | "exames_aprovados" | "total_pontos";
+
+export const rankingMetas = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Login necessário.");
+  }
+  const caller = await getCallerProfile(request.auth.uid);
+  await enforceRateLimit(caller.uid, "rankingMetas", 30, 60_000);
+
+  // Equipe da plataforma (SUPERADMIN/equipe_mj) "acessa" clientes sem pertencer a eles —
+  // só ela pode escolher o tenant; os demais sempre veem o próprio.
+  const pedido = String(request.data?.tenantId || "").trim();
+  const tenantId = PLATFORM_STAFF_ROLES.includes(caller.role) && pedido ? pedido : caller.tenantId;
+  if (!tenantId) {
+    throw new HttpsError("invalid-argument", "Cliente não informado.");
+  }
+
+  const [quizSnap, trilhasSnap, examesSnap] = await Promise.all([
+    db.collection("treinamentosQuizResults").where("tenantId", "==", tenantId).get(),
+    db.collection("trilhasProgresso").where("tenantId", "==", tenantId).where("concluida", "==", true).get(),
+    db.collection("examesResultados").where("tenantId", "==", tenantId).where("aprovado", "==", true).get(),
+  ]);
+
+  const usuarios: Record<string, { quizNotas: number[]; trilhas: number; exames: number }> = {};
+  const de = (nome: string) => (usuarios[nome] ||= { quizNotas: [], trilhas: 0, exames: 0 });
+  quizSnap.docs.forEach((d) => de(String(d.data().colaborador ?? "")).quizNotas.push(Number(d.data().nota) || 0));
+  trilhasSnap.docs.forEach((d) => de(String(d.data().userName ?? "")).trilhas++);
+  examesSnap.docs.forEach((d) => de(String(d.data().userName ?? "")).exames++);
+
+  const calcular = (metrica: MetricaMeta) => Object.entries(usuarios).map(([nome, u]) => {
+    const mediaQuiz = u.quizNotas.length ? Math.round(u.quizNotas.reduce((a, b) => a + b, 0) / u.quizNotas.length) : 0;
+    const valor = metrica === "media_quizzes" ? mediaQuiz
+      : metrica === "trilhas_concluidas" ? u.trilhas
+      : metrica === "exames_aprovados" ? u.exames
+      : mediaQuiz + u.trilhas * 10 + u.exames * 15;
+    return { nome, valor };
+  }).sort((a, b) => b.valor - a.valor);
+
+  return {
+    media_quizzes: calcular("media_quizzes"),
+    trilhas_concluidas: calcular("trilhas_concluidas"),
+    exames_aprovados: calcular("exames_aprovados"),
+    total_pontos: calcular("total_pontos"),
+  };
 });
 
 // ── Controle de tentativas de login (anti brute-force) ──────────────────────

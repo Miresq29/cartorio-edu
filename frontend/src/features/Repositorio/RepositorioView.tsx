@@ -685,7 +685,8 @@ const RepositorioView: React.FC = () => {
     if (!user?.id) return;
     const q = query(
       collection(db, 'repositorioProgresso'),
-      where('tenantId', '==', tenantId)
+      where('tenantId', '==', tenantId),
+      where('userId', '==', user.id)
     );
     return onSnapshot(q, s => {
       const ids = new Set<string>();

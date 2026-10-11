@@ -331,16 +331,27 @@ const CertificadoView: React.FC = () => {
       setCertificados(docs);
     });
 
-    const q2 = query(collection(db, 'treinamentosQuizResults'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'));
-    const u2 = onSnapshot(q2, s => setQuizResults(s.docs.map(d => ({ id: d.id, ...d.data() } as QuizResult))));
+    // Resultados/progresso: mesma restrição — colaborador só os próprios (filtro por userId).
+    const doTenant = (col: string) => verTodos
+      ? query(collection(db, col), where('tenantId', '==', tenantId))
+      : query(collection(db, col), where('tenantId', '==', tenantId), where('userId', '==', user.id));
+
+    const q2 = verTodos
+      ? query(collection(db, 'treinamentosQuizResults'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'))
+      : doTenant('treinamentosQuizResults');
+    const u2 = onSnapshot(q2, s => {
+      const docs = s.docs.map(d => ({ id: d.id, ...d.data() } as QuizResult));
+      if (!verTodos) docs.sort((a, b) => ((b.createdAt as any)?.toMillis?.() ?? 0) - ((a.createdAt as any)?.toMillis?.() ?? 0));
+      setQuizResults(docs);
+    });
 
     const q5 = query(collection(db, 'trilhas'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']));
     const u5 = onSnapshot(q5, s => setTrilhas(s.docs.map(d => ({ id: d.id, ...d.data() } as TrilhaRef))));
 
-    const q3 = query(collection(db, 'trilhasProgresso'), where('tenantId', '==', tenantId));
+    const q3 = doTenant('trilhasProgresso');
     const u3 = onSnapshot(q3, s => setTrilhasProgresso(s.docs.map(d => ({ id: d.id, ...d.data() } as TrilhaProgresso))));
 
-    const q6 = query(collection(db, 'examesResultados'), where('tenantId', '==', tenantId));
+    const q6 = doTenant('examesResultados');
     const u6 = onSnapshot(q6, s => setExames(s.docs.map(d => ({ id: d.id, ...d.data() } as ExameResultado))));
 
     const q4 = query(collection(db, 'users'), where('tenantId', '==', tenantId));

@@ -6,9 +6,11 @@ import {
   collection, onSnapshot, query, orderBy, addDoc, updateDoc,
   deleteDoc, doc, serverTimestamp, where
 } from 'firebase/firestore';
-import { db } from '../../services/firebase';
+import { db, functions } from '../../services/firebase';
+import { httpsCallable } from 'firebase/functions';
 import { useApp } from '../../context/AppContext';
 import { GeminiService } from '../../services/geminiService';
+import { embaralharPorLetra, QUESTOES_POR_AVALIACAO, INSTRUCAO_JUSTIFICATIVA_SEM_LETRA } from '../../utils/embaralharQuestoes';
 import { useToast } from '../../context/ToastContext';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -30,31 +32,6 @@ interface Meta {
   tenantId: string;
   createdBy: string;
   createdAt: any;
-}
-
-interface QuizResult {
-  id: string;
-  colaborador: string;
-  nota: number;
-  aprovado: boolean;
-  createdAt: any;
-}
-
-interface TrilhaProgresso {
-  id: string;
-  userId: string;
-  userName: string;
-  concluida: boolean;
-  tenantId: string;
-}
-
-interface ExameResultado {
-  id: string;
-  userId: string;
-  userName: string;
-  aprovado: boolean;
-  score: number;
-  tenantId: string;
 }
 
 interface RankingItem {
@@ -100,46 +77,10 @@ const STATUS_CONFIG: Record<StatusMeta, { label: string; color: string; icon: st
   encerrada:{ label: 'Encerrada',color: 'red',      icon: 'fa-lock'         },
 };
 
-function calcularRanking(
-  metrica: Metrica,
-  quizResults: QuizResult[],
-  trilhasProgresso: TrilhaProgresso[],
-  examesResultados: ExameResultado[]
-): RankingItem[] {
-  const usuarios: Record<string, { quizNotas: number[]; trilhas: number; exames: number }> = {};
-
-  quizResults.forEach(r => {
-    if (!usuarios[r.colaborador]) usuarios[r.colaborador] = { quizNotas: [], trilhas: 0, exames: 0 };
-    usuarios[r.colaborador].quizNotas.push(r.nota);
-  });
-
-  trilhasProgresso.filter(t => t.concluida).forEach(t => {
-    const nome = t.userName;
-    if (!usuarios[nome]) usuarios[nome] = { quizNotas: [], trilhas: 0, exames: 0 };
-    usuarios[nome].trilhas++;
-  });
-
-  examesResultados.filter(e => e.aprovado).forEach(e => {
-    const nome = e.userName;
-    if (!usuarios[nome]) usuarios[nome] = { quizNotas: [], trilhas: 0, exames: 0 };
-    usuarios[nome].exames++;
-  });
-
-  return Object.entries(usuarios).map(([nome, dados]) => {
-    const mediaQuiz = dados.quizNotas.length > 0
-      ? Math.round(dados.quizNotas.reduce((a, b) => a + b, 0) / dados.quizNotas.length)
-      : 0;
-
-    let valor = 0;
-    switch (metrica) {
-      case 'media_quizzes':     valor = mediaQuiz; break;
-      case 'trilhas_concluidas':valor = dados.trilhas; break;
-      case 'exames_aprovados':  valor = dados.exames; break;
-      case 'total_pontos':      valor = mediaQuiz + dados.trilhas * 10 + dados.exames * 15; break;
-    }
-    return { nome, valor, isPremiated: false, empatado: false };
-  }).sort((a, b) => b.valor - a.valor);
-}
+// O ranking é calculado no servidor (function rankingMetas): colaborador não lê mais as notas
+// e o progresso dos colegas (firestore.rules) — recebe só nome + valor agregado por métrica.
+type RankingsPorMetrica = Record<Metrica, { nome: string; valor: number }[]>;
+const rankingMetasFn = httpsCallable<{ tenantId: string }, RankingsPorMetrica>(functions, 'rankingMetas');
 
 function marcarPremiacaoEEmpate(ranking: RankingItem[], topN: number): RankingItem[] {
   if (ranking.length === 0) return ranking;
@@ -644,9 +585,7 @@ const MetasView: React.FC = () => {
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(user.role);
 
   const [metas, setMetas] = useState<Meta[]>([]);
-  const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
-  const [trilhasProgresso, setTrilhasProgresso] = useState<TrilhaProgresso[]>([]);
-  const [examesResultados, setExamesResultados] = useState<ExameResultado[]>([]);
+  const [rankings, setRankings] = useState<RankingsPorMetrica | null>(null);
   const [desempateSessions, setDesempateSessions] = useState<DesempateSession[]>([]);
 
   const [showForm, setShowForm] = useState(false);
@@ -659,19 +598,21 @@ const MetasView: React.FC = () => {
     const q1 = query(collection(db, 'metas'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'));
     const u1 = onSnapshot(q1, s => setMetas(s.docs.map(d => ({ id: d.id, ...d.data() } as Meta))));
 
-    const q2 = query(collection(db, 'treinamentosQuizResults'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'));
-    const u2 = onSnapshot(q2, s => setQuizResults(s.docs.map(d => ({ id: d.id, ...d.data() } as QuizResult))));
-
-    const q3 = query(collection(db, 'trilhasProgresso'), where('tenantId', '==', tenantId));
-    const u3 = onSnapshot(q3, s => setTrilhasProgresso(s.docs.map(d => ({ id: d.id, ...d.data() } as TrilhaProgresso))));
-
-    const q4 = query(collection(db, 'examesResultados'), where('tenantId', '==', tenantId));
-    const u4 = onSnapshot(q4, s => setExamesResultados(s.docs.map(d => ({ id: d.id, ...d.data() } as ExameResultado))));
-
     const q5 = query(collection(db, 'metasDesempate'), where('tenantId', '==', tenantId), orderBy('createdAt', 'desc'));
     const u5 = onSnapshot(q5, s => setDesempateSessions(s.docs.map(d => ({ id: d.id, ...d.data() } as DesempateSession))));
 
-    return () => { u1(); u2(); u3(); u4(); u5(); };
+    return () => { u1(); u5(); };
+  }, [tenantId]);
+
+  // Ranking: busca ao abrir a tela e a cada 60s enquanto ela estiver aberta.
+  useEffect(() => {
+    let ativo = true;
+    const carregar = () => rankingMetasFn({ tenantId })
+      .then(r => { if (ativo) setRankings(r.data); })
+      .catch(() => { if (ativo) setRankings(null); });
+    carregar();
+    const t = setInterval(carregar, 60_000);
+    return () => { ativo = false; clearInterval(t); };
   }, [tenantId]);
 
   // Verificar se há desempate ativo para o usuário atual
@@ -717,9 +658,9 @@ const MetasView: React.FC = () => {
     try {
       const prompt = `Você é um especialista em avaliação educacional corporativa para serventias notariais.
 
-Gere EXATAMENTE 5 questões de múltipla escolha de ALTO NÍVEL usando a Taxonomia de Bloom:
-- 3 questões de AVALIAÇÃO (bloom: "avaliacao", Nível 5) — julgar, justificar, defender, criticar posições
-- 2 questões de CRIAÇÃO (bloom: "criacao", Nível 6) — propor, elaborar, construir, formular soluções
+Gere EXATAMENTE ${QUESTOES_POR_AVALIACAO} questões de múltipla escolha de ALTO NÍVEL usando a Taxonomia de Bloom:
+- 4 questões de AVALIAÇÃO (bloom: "avaliacao", Nível 5) — julgar, justificar, defender, criticar posições
+- 3 questões de CRIAÇÃO (bloom: "criacao", Nível 6) — propor, elaborar, construir, formular soluções
 
 Contexto: Meta de premiação "${metaTitulo}" em serventias notariais. 
 As questões devem ser sobre boas práticas notariais, LGPD em cartórios, gestão de qualidade e conformidade com provimentos do CNJ.
@@ -729,6 +670,7 @@ REGRAS:
 2. Apenas 1 alternativa correta
 3. As questões devem exigir raciocínio complexo, análise crítica e síntese — não memorização simples
 4. Justifique brevemente a resposta correta
+5. ${INSTRUCAO_JUSTIFICATIVA_SEM_LETRA}
 
 Retorne APENAS um array JSON válido, sem markdown:
 [{
@@ -745,10 +687,12 @@ Retorne APENAS um array JSON válido, sem markdown:
   "justificativa": "Explicação breve da resposta correta"
 }]`;
 
-      const raw = await GeminiService.generateJSON(prompt, 3000);
+      const raw = await GeminiService.generateJSON(prompt, 1500 * QUESTOES_POR_AVALIACAO + 1000);
       const match = raw.match(/\[[\s\S]*\]/);
       if (!match) throw new Error('Resposta inválida da IA');
-      const questoes: DesempateQuestao[] = JSON.parse(match[0]);
+      const questoes: DesempateQuestao[] = (JSON.parse(match[0]) as DesempateQuestao[])
+        .slice(0, QUESTOES_POR_AVALIACAO)
+        .map((q, i) => embaralharPorLetra({ ...q, id: i + 1 }));
 
       await addDoc(collection(db, 'metasDesempate'), {
         metaId, metaTitulo, participantes,
@@ -787,7 +731,8 @@ Retorne APENAS um array JSON válido, sem markdown:
   };
 
   // Rankings por meta
-  const getRanking = (meta: Meta) => calcularRanking(meta.metrica, quizResults, trilhasProgresso, examesResultados);
+  const getRanking = (meta: Meta): RankingItem[] =>
+    (rankings?.[meta.metrica] || []).map(r => ({ ...r, isPremiated: false, empatado: false }));
 
   // Stats
   const ativas = metas.filter(m => m.status === 'ativa').length;

@@ -13,6 +13,7 @@
 
 import { httpsCallable } from 'firebase/functions';
 import { functions } from './firebase';
+import { embaralharPorLetra, QUESTOES_POR_AVALIACAO, INSTRUCAO_JUSTIFICATIVA_SEM_LETRA } from '../utils/embaralharQuestoes';
 
 const geminiGenerateFn = httpsCallable<{ prompt: string; maxOutputTokens: number; jsonMode: boolean }, { text: string }>(functions, 'geminiGenerate');
 
@@ -388,8 +389,8 @@ Retorne APENAS JSON válido sem markdown:
 };
 
 // ─── Geração de exame (Taxonomia de Bloom) ────────────────────────────────────
-// 2500 tokens: 10 questões × ~250 tokens cada
-// Input truncado em 4000 chars
+// Usado pelo quiz de Treinamentos (gestor). Os Exames do colaborador são gerados no servidor
+// (function gerarExame). Sempre 7 questões, alternativas embaralhadas. Input truncado em 4000 chars.
 export interface QuestaoExame {
   id: number;
   enunciado: string;
@@ -402,7 +403,7 @@ export interface QuestaoExame {
 export const generateExam = async (
   titulo: string,
   conteudo: string,
-  numQuestoes: number = 10
+  numQuestoes: number = QUESTOES_POR_AVALIACAO
 ): Promise<QuestaoExame[]> => {
   const prompt = `Especialista em avaliação educacional corporativa.
 
@@ -416,6 +417,7 @@ Gere EXATAMENTE ${numQuestoes} questões de múltipla escolha (Taxonomia de Bloo
 - ${Math.round(numQuestoes * 0.3)} ANÁLISE (bloom: "analise")
 
 Regras: 4 alternativas (A-D), 1 correta, distractores plausíveis, justificativa breve.
+${INSTRUCAO_JUSTIFICATIVA_SEM_LETRA}
 
 Retorne APENAS array JSON sem markdown:
 [{"id":1,"enunciado":"...","alternativas":[{"letra":"A","texto":"..."},{"letra":"B","texto":"..."},{"letra":"C","texto":"..."},{"letra":"D","texto":"..."}],"correta":"A","bloom":"compreensao","justificativa":"..."}]`;
@@ -429,7 +431,7 @@ Retorne APENAS array JSON sem markdown:
     const questoes = JSON.parse(text);
     if (!Array.isArray(questoes) || questoes.length === 0)
       throw new Error('Formato inválido na resposta da IA.');
-    return questoes;
+    return questoes.slice(0, numQuestoes).map((q: QuestaoExame) => embaralharPorLetra(q));
   } catch (e: any) {
     console.error('Erro ao gerar exame:', e);
     throw new Error(e?.message || 'Não foi possível gerar o exame. Tente novamente.');
