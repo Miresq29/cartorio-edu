@@ -44,8 +44,16 @@ const PlayerDriveProtegido: React.FC<Props> = ({ midiaId, titulo, altura }) => {
           style={{ width: '100%', height: '100%', border: 'none' }}
         />
       )}
-      {/* capa sobre o botão "abrir em nova janela" do player do Drive (canto superior direito) */}
-      {url && <div aria-hidden="true" style={{ position: 'absolute', top: 0, right: 0, width: 72, height: 72, background: 'transparent' }} />}
+      {/* capa sobre o botão "abrir em nova janela" do player do Drive (canto superior direito):
+          a área toda bloqueia o clique e um selo de cadeado esconde o ícone do Drive. */}
+      {url && (
+        <div aria-hidden="true" title="Conteúdo protegido"
+          style={{ position: 'absolute', top: 0, right: 0, width: 72, height: 72, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: 44, height: 44, borderRadius: 10, background: 'rgba(10,22,40,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <i className="fa-solid fa-lock" style={{ color: '#C9A84C', fontSize: 15 }}></i>
+          </div>
+        </div>
+      )}
       {!url && !erro && (
         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: 12 }}>
           <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: 8 }}></i>Carregando conteúdo...

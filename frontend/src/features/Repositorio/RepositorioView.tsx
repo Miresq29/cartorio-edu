@@ -888,7 +888,7 @@ const RepositorioView: React.FC = () => {
         </select>
 
         <span className="ml-auto text-[10px] text-slate-500 font-black uppercase tracking-widest">
-          {filtradas.length} item{filtradas.length !== 1 ? 'ns' : ''}
+          {filtradas.length} {filtradas.length !== 1 ? 'itens' : 'item'}
         </span>
       </div>
 
