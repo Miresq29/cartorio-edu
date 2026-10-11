@@ -454,7 +454,8 @@ const DesempatePlayer: React.FC<{
   sessao: DesempateSession;
   userName: string;
   onFinish: (todosResponderam: boolean) => void;
-}> = ({ sessao, onFinish }) => {
+  onClose: () => void;
+}> = ({ sessao, onFinish, onClose }) => {
   const [fase, setFase] = useState<FaseDesempate>('respondendo');
   const [respostas, setRespostas] = useState<Record<number, string>>({});
   const [resultado, setResultado] = useState<{ score: number; nota: number } | null>(null);
@@ -502,6 +503,10 @@ const DesempatePlayer: React.FC<{
               );
             })}
           </div>
+          <button type="button" onClick={onClose}
+            className="w-full py-3 bg-slate-200 hover:bg-slate-300 text-navy font-black uppercase tracking-widest rounded-xl transition-all text-xs">
+            Fechar
+          </button>
         </div>
       </div>
     );
@@ -633,6 +638,13 @@ const MetasView: React.FC = () => {
     setDesempateAtivo(sessaoAtiva || null);
   }, [desempateSessions, user.name]);
 
+  // O modal fica preso à sessão que abriu: depois do envio a sessão deixa de ser "pendente"
+  // (desempateAtivo vira null), mas o participante ainda precisa ver o resultado e fechar.
+  const [desempateNaTela, setDesempateNaTela] = useState<DesempateSession | null>(null);
+  useEffect(() => {
+    if (desempateAtivo) setDesempateNaTela(atual => atual ?? desempateAtivo);
+  }, [desempateAtivo]);
+
   const handleSaveMeta = async (data: Omit<Meta, 'id' | 'createdAt' | 'createdBy' | 'tenantId'>) => {
     try {
       if (editingMeta) {
@@ -699,11 +711,12 @@ const MetasView: React.FC = () => {
     <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
 
       {/* Desempate ativo — modal */}
-      {desempateAtivo && (
+      {desempateNaTela && (
         <DesempatePlayer
-          sessao={desempateAtivo}
+          sessao={desempateNaTela}
           userName={user.name}
           onFinish={handleDesempateFinish}
+          onClose={() => setDesempateNaTela(null)}
         />
       )}
 
