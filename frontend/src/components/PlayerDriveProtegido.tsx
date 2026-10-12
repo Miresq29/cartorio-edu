@@ -49,10 +49,16 @@ const PlayerDriveProtegido: React.FC<Props> = ({ midiaId, titulo, altura, tipo }
             style={{ width: '100%', height: '100%', border: 'none' }}
           />
         ) : (
+          // credentialless: carrega o Drive SEM os cookies da conta Google do navegador. Logado
+          // no Google, o player de áudio tenta embutir um frame de compartilhamento da conta que
+          // o próprio Google bloqueia (CSP frame-ancestors) e mostra "Não foi possível visualizar
+          // o arquivo"; como visitante anônimo ele toca normalmente. Suportado no Chrome/Edge;
+          // outros navegadores ignoram o atributo.
           <iframe
             src={url}
             title={titulo}
             allow="autoplay"
+            {...({ credentialless: 'true' } as Record<string, string>)}
             style={{ width: '100%', height: '100%', border: 'none' }}
           />
         )
