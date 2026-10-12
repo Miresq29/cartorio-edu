@@ -2,9 +2,11 @@
 // o arquivo do Drive:
 // - o ID do arquivo não fica mais no documento do Repositório que o colaborador lê — vem da
 //   function abrirMidia, que confere login e se o conteúdo é visível para o cliente dele;
-// - o iframe roda em sandbox SEM allow-popups: o botão "abrir em nova janela" do Drive (o
-//   caminho para baixar o arquivo) não abre nada;
-// - uma capa transparente cobre esse botão e o clique direito fica bloqueado sobre o player.
+// - vídeo: o iframe roda em sandbox SEM allow-popups — o botão "abrir em nova janela" do
+//   Drive (o caminho para baixar o arquivo) não abre nada, inclusive em tela cheia;
+// - áudio: SEM sandbox — o player de áudio do Drive não carrega em sandbox ("Não foi possível
+//   visualizar o arquivo", visto em produção em 2026-10-12); a proteção fica só na capa;
+// - uma capa com selo de cadeado cobre esse botão e o clique direito fica bloqueado.
 // Limite conhecido: enquanto o arquivo estiver compartilhado publicamente no Drive, quem
 // inspecionar a página ainda consegue ver o ID no iframe carregado.
 import React, { useEffect, useState } from 'react';
@@ -17,9 +19,10 @@ interface Props {
   midiaId: string;
   titulo: string;
   altura: number | string;
+  tipo: 'audio' | 'video';
 }
 
-const PlayerDriveProtegido: React.FC<Props> = ({ midiaId, titulo, altura }) => {
+const PlayerDriveProtegido: React.FC<Props> = ({ midiaId, titulo, altura, tipo }) => {
   const [url, setUrl] = useState('');
   const [erro, setErro] = useState('');
 
@@ -36,13 +39,23 @@ const PlayerDriveProtegido: React.FC<Props> = ({ midiaId, titulo, altura }) => {
     <div style={{ position: 'relative', height: altura, borderRadius: 16, overflow: 'hidden', background: '#f8fafc' }}
       onContextMenu={e => e.preventDefault()}>
       {url && (
-        <iframe
-          src={url}
-          title={titulo}
-          allow="autoplay"
-          sandbox="allow-scripts allow-same-origin allow-presentation"
-          style={{ width: '100%', height: '100%', border: 'none' }}
-        />
+        tipo === 'video' ? (
+          <iframe
+            src={url}
+            title={titulo}
+            allow="autoplay; fullscreen"
+            allowFullScreen
+            sandbox="allow-scripts allow-same-origin allow-presentation"
+            style={{ width: '100%', height: '100%', border: 'none' }}
+          />
+        ) : (
+          <iframe
+            src={url}
+            title={titulo}
+            allow="autoplay"
+            style={{ width: '100%', height: '100%', border: 'none' }}
+          />
+        )
       )}
       {/* capa sobre o botão "abrir em nova janela" do player do Drive (canto superior direito):
           a área toda bloqueia o clique e um selo de cadeado esconde o ícone do Drive. */}

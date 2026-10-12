@@ -190,7 +190,7 @@ const PlayerModal: React.FC<{
       return (
         <div className="space-y-3">
           <div className="shadow-2xl rounded-2xl">
-            <PlayerDriveProtegido midiaId={midia.id} titulo={midia.titulo} altura="70vh" />
+            <PlayerDriveProtegido midiaId={midia.id} titulo={midia.titulo} altura="70vh" tipo="video" />
           </div>
           <p className="text-[10px] text-slate-400 text-center">
             Conteúdo exclusivo da plataforma MJ Consultoria — reprodução apenas por aqui, sem download.
@@ -202,7 +202,7 @@ const PlayerModal: React.FC<{
     if (midia.tipo === 'audio') {
       return (
         <div className="space-y-4">
-          <PlayerDriveProtegido midiaId={midia.id} titulo={midia.titulo} altura={120} />
+          <PlayerDriveProtegido midiaId={midia.id} titulo={midia.titulo} altura={120} tipo="audio" />
           <p className="text-[10px] text-slate-400 text-center">
             Conteúdo exclusivo da plataforma MJ Consultoria — reprodução apenas por aqui, sem download.
           </p>

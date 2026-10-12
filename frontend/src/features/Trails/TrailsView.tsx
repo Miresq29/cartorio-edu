@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   collection, addDoc, updateDoc, deleteDoc, doc,
   onSnapshot, query, where, serverTimestamp, getDoc, setDoc
@@ -562,7 +562,7 @@ const ModuloPlayer: React.FC<{
               {/* Drive: ID do arquivo vem da function abrirMidia e o player roda protegido. */}
               {!conteudoItem.youtubeId && modulo.conteudoRef.tipo === 'repositorio' && (conteudoItem.tipo === 'audio' || conteudoItem.tipo === 'mp4') && (
                 <div style={{ display: 'grid', gap: 8 }}>
-                  <PlayerDriveProtegido midiaId={conteudoItem.id} titulo={conteudoItem.titulo} altura={conteudoItem.tipo === 'audio' ? 120 : 400} />
+                  <PlayerDriveProtegido midiaId={conteudoItem.id} titulo={conteudoItem.titulo} altura={conteudoItem.tipo === 'audio' ? 120 : 400} tipo={conteudoItem.tipo === 'audio' ? 'audio' : 'video'} />
                   <p style={{ fontSize: 10, color: '#94a3b8', textAlign: 'center' }}>
                     Conteúdo exclusivo da plataforma MJ Consultoria — reprodução apenas por aqui, sem download.
                   </p>
