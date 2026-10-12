@@ -4,16 +4,17 @@
 //   function abrirMidia, que confere login e se o conteúdo é visível para o cliente dele;
 // - vídeo: o iframe roda em sandbox SEM allow-popups — o botão "abrir em nova janela" do
 //   Drive (o caminho para baixar o arquivo) não abre nada, inclusive em tela cheia;
-// - áudio: SEM sandbox — o player de áudio do Drive não carrega em sandbox ("Não foi possível
-//   visualizar o arquivo", visto em produção em 2026-10-12); a proteção fica só na capa;
-// - uma capa com selo de cadeado cobre esse botão e o clique direito fica bloqueado.
+// - áudio: NÃO usa o preview do Drive (que só toca áudio com o download liberado e mesmo assim
+//   carregava uma tela inteira) — usa o <audio> do site com o endereço direto do arquivo,
+//   sem botão de download; exige o download liberado para leitores no Drive;
+// - vídeo: uma capa com selo de cadeado cobre esse botão; clique direito bloqueado.
 // Limite conhecido: enquanto o arquivo estiver compartilhado publicamente no Drive, quem
 // inspecionar a página ainda consegue ver o ID no iframe carregado.
 import React, { useEffect, useState } from 'react';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../services/firebase';
 
-const abrirMidiaFn = httpsCallable<{ midiaId: string }, { embedUrl: string }>(functions, 'abrirMidia');
+const abrirMidiaFn = httpsCallable<{ midiaId: string }, { embedUrl: string; audioUrl?: string }>(functions, 'abrirMidia');
 
 interface Props {
   midiaId: string;
@@ -24,44 +25,57 @@ interface Props {
 
 const PlayerDriveProtegido: React.FC<Props> = ({ midiaId, titulo, altura, tipo }) => {
   const [url, setUrl] = useState('');
+  const [audioUrl, setAudioUrl] = useState('');
   const [erro, setErro] = useState('');
 
   useEffect(() => {
     let ativo = true;
-    setUrl(''); setErro('');
+    setUrl(''); setAudioUrl(''); setErro('');
     abrirMidiaFn({ midiaId })
-      .then(r => { if (ativo) setUrl(r.data.embedUrl); })
+      .then(r => { if (ativo) { setUrl(r.data.embedUrl); setAudioUrl(r.data.audioUrl || ''); } })
       .catch(e => { if (ativo) setErro(e?.message || 'Não foi possível carregar o conteúdo.'); });
     return () => { ativo = false; };
   }, [midiaId]);
+
+  // Áudio: player simples do próprio site (play com um clique), sem botão de download nem
+  // menu do navegador. O preview do Drive para áudio carregava uma tela inteira e falhava.
+  if (tipo === 'audio') {
+    return (
+      <div style={{ position: 'relative', height: altura, borderRadius: 16, background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+        onContextMenu={e => e.preventDefault()}>
+        {audioUrl && !erro && (
+          <audio
+            src={audioUrl}
+            controls
+            preload="metadata"
+            controlsList="nodownload noplaybackrate"
+            title={titulo}
+            style={{ width: '100%' }}
+            onError={() => setErro('Este áudio ainda está com o download bloqueado no Google Drive — a gestão precisa liberá-lo para que ele possa ser ouvido aqui.')}
+          />
+        )}
+        {!audioUrl && !erro && (
+          <span style={{ color: '#94a3b8', fontSize: 12 }}>
+            <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: 8 }}></i>Carregando áudio...
+          </span>
+        )}
+        {erro && <span style={{ color: '#dc2626', fontSize: 12, textAlign: 'center' }}>{erro}</span>}
+      </div>
+    );
+  }
 
   return (
     <div style={{ position: 'relative', height: altura, borderRadius: 16, overflow: 'hidden', background: '#f8fafc' }}
       onContextMenu={e => e.preventDefault()}>
       {url && (
-        tipo === 'video' ? (
-          <iframe
-            src={url}
-            title={titulo}
-            allow="autoplay; fullscreen"
-            allowFullScreen
-            sandbox="allow-scripts allow-same-origin allow-presentation"
-            style={{ width: '100%', height: '100%', border: 'none' }}
-          />
-        ) : (
-          // credentialless: carrega o Drive SEM os cookies da conta Google do navegador. Logado
-          // no Google, o player de áudio tenta embutir um frame de compartilhamento da conta que
-          // o próprio Google bloqueia (CSP frame-ancestors) e mostra "Não foi possível visualizar
-          // o arquivo"; como visitante anônimo ele toca normalmente. Suportado no Chrome/Edge;
-          // outros navegadores ignoram o atributo.
-          <iframe
-            src={url}
-            title={titulo}
-            allow="autoplay"
-            {...({ credentialless: 'true' } as Record<string, string>)}
-            style={{ width: '100%', height: '100%', border: 'none' }}
-          />
-        )
+        <iframe
+          src={url}
+          title={titulo}
+          allow="autoplay; fullscreen"
+          allowFullScreen
+          sandbox="allow-scripts allow-same-origin allow-presentation"
+          style={{ width: '100%', height: '100%', border: 'none' }}
+        />
       )}
       {/* capa sobre o botão "abrir em nova janela" do player do Drive (canto superior direito):
           a área toda bloqueia o clique e um selo de cadeado esconde o ícone do Drive. */}
