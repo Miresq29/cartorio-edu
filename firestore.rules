@@ -23,7 +23,10 @@ service cloud.firestore {
 
     // Tenant isolation helpers
     function myTenant() { return getUserData().get('tenantId', ''); }
-    function sameTenant() { return resource.data.get('tenantId', myTenant()) == myTenant(); }
+    // Sem tenantId no doc NAO conta como "mesmo tenant": com o default myTenant() o Firestore
+    // aceitava consulta SEM filtro de tenant e um gestor listava resultados de todos os clientes
+    // (visto em 2026-10-13). Docs sem tenantId ficam so com SUPERADMIN/Equipe MJ.
+    function sameTenant() { return resource.data.get('tenantId', '') == myTenant(); }
     function newSameTenant() { return request.resource.data.get('tenantId', myTenant()) == myTenant(); }
     function tenantUnchanged() { return request.resource.data.get('tenantId', '') == resource.data.get('tenantId', ''); }
     function isSelfData() { return request.resource.data.get('userId', '') == request.auth.uid; }
@@ -294,7 +297,7 @@ service cloud.firestore {
       // todos os cartorios de proposito (SUPERADMIN/Equipe MJ, telas TenantsView e Dashboard
       // Master) — sem isso, list() sem filtro deixava qualquer gestor/colaborador consultar a
       // colecao inteira e enumerar nome/ID de todos os clientes da MJ Consultoria.
-      allow get: if isActive();
+      allow get: if isSuperAdmin() || isEquipeMJ() || isCurador() || (isActive() && docId == myTenant());
       allow list: if isSuperAdmin() || isEquipeMJ();
       allow write: if isSuperAdmin();
     }
