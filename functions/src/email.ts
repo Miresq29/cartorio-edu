@@ -4,6 +4,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { defineSecret } from "firebase-functions/params";
 import * as admin from "firebase-admin";
 import * as nodemailer from "nodemailer";
+import { createHash } from "node:crypto";
 
 // Conta Gmail usada para enviar os avisos. Não é segredo — é o próprio
 // remetente visível em todo e-mail enviado. A senha de app, sim, fica em
@@ -328,6 +329,81 @@ export const verificarReexamesPendentes = onSchedule(
     }
   }
 );
+
+// ─── Callable pública: "Esqueci a senha" ──
+// O e-mail padrão do Firebase saía em inglês, de noreply@cartorio-edu.firebaseapp.com, e caía
+// em spam/promoções (a equipe do teixeira não recebia — 2026-10-13). Agora o link é gerado pelo
+// Admin SDK e enviado pela mesma conta Gmail dos demais avisos, em português.
+// Sempre responde { ok: true }, exista ou não o e-mail — não deixa enumerar cadastros.
+const RESET_MAX_POR_EMAIL = 3;       // por hora
+const RESET_MAX_POR_IP = 10;         // por hora
+const RESET_JANELA_MS = 60 * 60_000;
+
+async function dentroDoLimite(chave: string, max: number): Promise<boolean> {
+  const ref = db().collection("rateLimits").doc(chave);
+  return db().runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const agora = Date.now();
+    if (!snap.exists || agora - (snap.data()!.windowStart as number) > RESET_JANELA_MS) {
+      tx.set(ref, { count: 1, windowStart: agora });
+      return true;
+    }
+    if ((snap.data()!.count as number) >= max) return false;
+    tx.update(ref, { count: admin.firestore.FieldValue.increment(1) });
+    return true;
+  });
+}
+
+export const solicitarRedefinicaoSenha = onCall({ secrets: [GMAIL_APP_PASSWORD] }, async (request) => {
+  const email = String(request.data?.email || "").trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new HttpsError("invalid-argument", "Formato de e-mail inválido.");
+  }
+  const hashEmail = createHash("sha256").update(email).digest("hex").slice(0, 32);
+  const ip = String(request.rawRequest?.ip || "sem-ip").replace(/[^a-zA-Z0-9]/g, "_");
+  if (!(await dentroDoLimite(`reset_ip_${ip}`, RESET_MAX_POR_IP))) {
+    throw new HttpsError("resource-exhausted", "Muitas solicitações. Aguarde alguns minutos.");
+  }
+  if (!(await dentroDoLimite(`reset_email_${hashEmail}`, RESET_MAX_POR_EMAIL))) {
+    throw new HttpsError("resource-exhausted", "Já enviamos o link algumas vezes. Confira a caixa de entrada e o spam, ou aguarde uma hora.");
+  }
+
+  let conta: admin.auth.UserRecord;
+  try {
+    conta = await admin.auth().getUserByEmail(email);
+  } catch {
+    return { ok: true };
+  }
+  if (conta.disabled) return { ok: true };
+  const perfil = (await db().collection("users").doc(conta.uid).get()).data() || {};
+  if (perfil.active === false) return { ok: true };
+
+  const link = (await admin.auth().generatePasswordResetLink(email, { url: "https://cartorio-edu.vercel.app/" })) + "&lang=pt-BR";
+  const nome = String(perfil.name || "").split(/\s+/)[0] || "";
+  const assunto = "Redefinição de senha — Integra-Academy";
+  const html = `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;color:#0f172a">
+    <h2 style="color:#0A1628;margin-bottom:4px">Redefinição de senha</h2>
+    <p style="font-size:14px;line-height:1.6">Olá${nome ? " " + escapeHtml(nome) : ""},</p>
+    <p style="font-size:14px;line-height:1.6">Recebemos um pedido para redefinir a senha da sua conta na Integra-Academy (${escapeHtml(email)}). Clique no botão abaixo para criar uma nova senha. O link vale por 1 hora.</p>
+    <p style="text-align:center;margin:28px 0">
+      <a href="${link}" style="background:#0A1628;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:bold;display:inline-block">Criar nova senha</a>
+    </p>
+    <p style="font-size:12px;line-height:1.6;color:#475569">Se o botão não funcionar, copie e cole este endereço no navegador:<br><span style="word-break:break-all">${link}</span></p>
+    <p style="font-size:12px;line-height:1.6;color:#475569">Se você não pediu a redefinição, ignore este e-mail — sua senha atual continua valendo.</p>
+    <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0" />
+    <p style="font-size:11px;color:#94a3b8">Aviso automático da plataforma Integra-Academy — MJ Consultoria.</p>
+  </div>`;
+
+  const result = await sendEmail(GMAIL_USER, GMAIL_APP_PASSWORD.value(), email, assunto, html);
+  await logEmailEvidencia({
+    tenantId: (perfil.tenantId as string) || "", destinatarioEmail: email, destinatarioNome: (perfil.name as string) || email,
+    tipoNotificacao: "redefinicao_senha", assunto, ok: result.ok, erro: result.error, messageId: result.id,
+  });
+  if (!result.ok) {
+    throw new HttpsError("unavailable", "Não foi possível enviar o e-mail agora. Tente novamente em alguns minutos.");
+  }
+  return { ok: true };
+});
 
 // ─── Callable de teste: SUPERADMIN dispara um e-mail de teste pra si mesmo ──
 export const testarEnvioEmail = onCall({ secrets: [GMAIL_APP_PASSWORD] }, async (request) => {

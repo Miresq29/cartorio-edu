@@ -4,7 +4,12 @@ import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { AuthService } from '../../services/authService';
 import { sendPasswordResetEmail } from 'firebase/auth';
-import { auth } from '../../services/firebase';
+import { httpsCallable } from 'firebase/functions';
+import { auth, functions } from '../../services/firebase';
+
+// Link de redefinição enviado pelo Gmail da plataforma, em português (o e-mail padrão do
+// Firebase saía em inglês e caía no spam). O e-mail do Firebase fica só como reserva.
+const solicitarRedefinicaoSenhaFn = httpsCallable<{ email: string }, { ok: boolean }>(functions, 'solicitarRedefinicaoSenha');
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 
 const LoginView: React.FC = () => {
@@ -44,8 +49,24 @@ const LoginView: React.FC = () => {
     }
     setResetLoading(true);
     try {
+      await solicitarRedefinicaoSenhaFn({ email: email.trim() });
+      showToast("Se este e-mail estiver cadastrado, você receberá o link em alguns minutos. Confira também a caixa de spam.", "success");
+      return;
+    } catch (error: any) {
+      // limite de tentativas / e-mail inválido: a mensagem do servidor já explica
+      if (['functions/resource-exhausted', 'functions/invalid-argument'].includes(error?.code)) {
+        showToast(error.message, "error");
+        return;
+      }
+      console.warn("solicitarRedefinicaoSenha falhou, usando o e-mail do Firebase:", error?.code);
+    } finally {
+      setResetLoading(false);
+    }
+    setResetLoading(true);
+    try {
+      auth.languageCode = 'pt-BR';
       await sendPasswordResetEmail(auth, email.trim());
-      showToast(`Se este e-mail estiver cadastrado, voce receberá o link de redefinição em breve.`, "success");
+      showToast("Se este e-mail estiver cadastrado, você receberá o link em alguns minutos. Confira também a caixa de spam.", "success");
     } catch (error: any) {
       console.warn("Reset password error:", error.code, error.message);
       const msgs: Record<string, string> = {

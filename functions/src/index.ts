@@ -5,7 +5,7 @@ import { createHash, randomBytes, scrypt, timingSafeEqual } from "node:crypto";
 
 admin.initializeApp();
 
-export { notificarComunicado, notificarTrilha, verificarExpiracoes, testarEnvioEmail, notificarReforco, verificarReexamesPendentes } from "./email";
+export { notificarComunicado, notificarTrilha, verificarExpiracoes, testarEnvioEmail, notificarReforco, verificarReexamesPendentes, solicitarRedefinicaoSenha } from "./email";
 export { notificarSimulacaoPhishing, phishClick } from "./phishing";
 export { verificarDemoExpirada } from "./demo";
 
