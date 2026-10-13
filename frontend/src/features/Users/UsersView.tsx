@@ -9,7 +9,7 @@ import { db, functions } from '../../services/firebase';
 import { httpsCallable } from 'firebase/functions';
 import {
   collection, onSnapshot, query, orderBy, where,
-  doc, updateDoc, deleteDoc, addDoc, serverTimestamp
+  doc, updateDoc, deleteDoc, addDoc, serverTimestamp, writeBatch
 } from 'firebase/firestore';
 
 const createCollaboratorFn = httpsCallable(functions, 'createCollaborator');
@@ -140,6 +140,14 @@ const UsersView: React.FC = () => {
   });
   const [saving, setSaving] = useState(false);
 
+  // Edição em lote: perfil (só SUPERADMIN — a regra do Firestore não deixa gestor trocar role)
+  // e cargo (qualquer gestor). Contas de plataforma (SUPERADMIN/Equipe MJ) e o próprio usuário
+  // ficam fora da seleção.
+  const [selecionados, setSelecionados] = useState<Set<string>>(new Set());
+  const [loteRole, setLoteRole] = useState('');
+  const [loteCargo, setLoteCargo] = useState('');
+  const [aplicandoLote, setAplicandoLote] = useState(false);
+
   useEffect(() => {
     if (equipeMjSemCartorioSelecionado) { setUsers([]); setLoading(false); return; }
     const q = verTodasEmpresas
@@ -244,6 +252,45 @@ const UsersView: React.FC = () => {
     const b = busca.toLowerCase();
     return u.name?.toLowerCase().includes(b) || u.email?.toLowerCase().includes(b) || u.cargo?.toLowerCase().includes(b);
   });
+
+  const selecionavel = (u: UserData) => isGestor && u.id !== user.id && u.role !== 'SUPERADMIN' && u.role !== 'equipe_mj';
+  const filtradosSelecionaveis = filtrados.filter(selecionavel);
+  const todosMarcados = filtradosSelecionaveis.length > 0 && filtradosSelecionaveis.every(u => selecionados.has(u.id));
+  const alternarSelecao = (id: string) => setSelecionados(s => {
+    const n = new Set(s);
+    if (n.has(id)) n.delete(id); else n.add(id);
+    return n;
+  });
+  const alternarTodos = () => setSelecionados(todosMarcados ? new Set() : new Set(filtradosSelecionaveis.map(u => u.id)));
+
+  const aplicarLote = async () => {
+    const alvos = users.filter(u => selecionados.has(u.id) && selecionavel(u));
+    const mudanca: Record<string, string> = {};
+    if (loteRole && isSuperAdmin) mudanca.role = loteRole;
+    if (loteCargo) mudanca.cargo = loteCargo;
+    if (!alvos.length || !Object.keys(mudanca).length) return;
+    setAplicandoLote(true);
+    try {
+      for (let i = 0; i < alvos.length; i += 400) {
+        const batch = writeBatch(db);
+        alvos.slice(i, i + 400).forEach(u => batch.update(doc(db, 'users', u.id), mudanca));
+        await batch.commit();
+      }
+      await addDoc(collection(db, 'auditLogs'), {
+        tipo: 'USERS_BULK_UPDATE',
+        descricao: `Alteração em lote de ${alvos.length} colaborador(es): ${Object.entries(mudanca).map(([k, v]) => `${k} → ${v}`).join(', ')}`,
+        usuario: user.name || user.email, usuarioId: user.id, tenantId: tenantEmFoco || tenantId || '',
+        metadata: { ids: alvos.map(u => u.id), ...mudanca }, severity: 'INFO', createdAt: serverTimestamp(),
+      }).catch(() => {});
+      showToast(`${alvos.length} colaborador(es) atualizado(s).`, 'success');
+      setSelecionados(new Set()); setLoteRole(''); setLoteCargo('');
+    } catch (err: any) {
+      showToast(err.code === 'permission-denied'
+        ? 'Sem permissão para alterar um ou mais desses colaboradores — nada foi alterado.'
+        : (err.message || 'Erro ao aplicar a alteração em lote.'), 'error');
+    }
+    setAplicandoLote(false);
+  };
 
   const roleLabel = (r: Role) => ROLES.find(x => x.id === r)?.label || r;
   const roleColor = (r: Role) => ROLES.find(x => x.id === r)?.color || '#64748b';
@@ -497,6 +544,33 @@ const UsersView: React.FC = () => {
                 )}
               </div>
 
+              {/* Barra de alteração em lote */}
+              {selecionados.size > 0 && (
+                <div className="flex flex-wrap items-center gap-3 bg-indigo-50 border border-indigo-200 rounded-[14px] px-4 py-3">
+                  <span className="text-xs font-black text-indigo-700">{selecionados.size} selecionado(s)</span>
+                  {isSuperAdmin && (
+                    <select value={loteRole} onChange={e => setLoteRole(e.target.value)} title="Novo perfil"
+                      className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 outline-none focus:border-gold">
+                      <option value="">Perfil: manter</option>
+                      {ROLES.filter(r => r.id !== 'SUPERADMIN' && r.id !== 'equipe_mj').map(r => (
+                        <option key={r.id} value={r.id}>Perfil → {r.label}</option>
+                      ))}
+                    </select>
+                  )}
+                  <select value={loteCargo} onChange={e => setLoteCargo(e.target.value)} title="Novo cargo"
+                    className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 outline-none focus:border-gold">
+                    <option value="">Cargo: manter</option>
+                    {CARGOS.map(c => <option key={c} value={c}>Cargo → {c}</option>)}
+                  </select>
+                  <button onClick={aplicarLote} disabled={aplicandoLote || (!loteCargo && !(isSuperAdmin && loteRole))}
+                    className="bg-gold hover:bg-[#A8863C] disabled:opacity-50 text-navy px-4 py-2 rounded-xl text-xs font-bold transition-all">
+                    {aplicandoLote ? <><i className="fa-solid fa-spinner animate-spin mr-2"></i>Aplicando...</> : `Aplicar a ${selecionados.size}`}
+                  </button>
+                  <button onClick={() => setSelecionados(new Set())}
+                    className="text-xs font-bold text-slate-500 hover:text-slate-700">Limpar seleção</button>
+                </div>
+              )}
+
               {/* Tabela */}
               {equipeMjSemCartorioSelecionado ? (
                 <div className="flex flex-col items-center justify-center gap-3 py-14 text-center bg-white border border-slate-200 rounded-[14px]">
@@ -516,6 +590,13 @@ const UsersView: React.FC = () => {
                   <table className="w-full text-xs">
                     <thead>
                       <tr className="bg-white border-b border-slate-200">
+                        {isGestor && (
+                          <th className="p-3 w-8">
+                            <input type="checkbox" checked={todosMarcados} onChange={alternarTodos}
+                              disabled={filtradosSelecionaveis.length === 0}
+                              title="Selecionar todos os colaboradores listados" className="accent-indigo-600 cursor-pointer" />
+                          </th>
+                        )}
                         {['Colaborador', 'E-mail', 'Cargo', ...(isPlatformStaff ? ['Cliente'] : []), 'Perfil', 'Status', 'Desde', 'Ações'].map(h => (
                           <th key={h} className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
                         ))}
@@ -523,10 +604,18 @@ const UsersView: React.FC = () => {
                     </thead>
                     <tbody>
                       {filtrados.length === 0 && (
-                        <tr><td colSpan={isPlatformStaff ? 8 : 7} className="text-center p-8 text-slate-500">Nenhum colaborador encontrado.</td></tr>
+                        <tr><td colSpan={(isPlatformStaff ? 8 : 7) + (isGestor ? 1 : 0)} className="text-center p-8 text-slate-500">Nenhum colaborador encontrado.</td></tr>
                       )}
                       {filtrados.map(u => (
                         <tr key={u.id} className={`border-b border-slate-100 hover:bg-white transition-all ${u.ativo === false ? 'opacity-50' : ''}`}>
+                          {isGestor && (
+                            <td className="p-3">
+                              {selecionavel(u) && (
+                                <input type="checkbox" checked={selecionados.has(u.id)} onChange={() => alternarSelecao(u.id)}
+                                  title={`Selecionar ${u.name}`} className="accent-indigo-600 cursor-pointer" />
+                              )}
+                            </td>
+                          )}
                           <td className="p-3 font-bold text-navy">{u.name}</td>
                           <td className="p-3 text-slate-500">{u.email || '–'}</td>
                           <td className="p-3 text-slate-500">{u.cargo || '–'}</td>
