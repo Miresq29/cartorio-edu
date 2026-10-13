@@ -27,7 +27,14 @@ interface Modulo {
   temQuiz: boolean;
   notaMinima: number;      // 0-10
   conteudoRef?: { tipo: 'video' | 'repositorio'; itemId: string };
+  // Material de apoio exibido abaixo do conteúdo principal (ex.: infográfico do mesmo tema do podcast).
+  apoioRef?: { tipo: 'repositorio'; itemId: string };
 }
+
+// Tipos do Repositório que abrem no player protegido do Drive (abrirMidia).
+const TIPOS_DRIVE = ['audio', 'mp4', 'imagem'];
+const tipoPlayer = (t: string): 'audio' | 'video' | 'imagem' => (t === 'audio' ? 'audio' : t === 'imagem' ? 'imagem' : 'video');
+const alturaPlayer = (t: string) => (t === 'audio' ? 120 : t === 'imagem' ? 620 : 400);
 
 interface Trilha {
   id: string;
@@ -416,8 +423,19 @@ const ModuloPlayer: React.FC<{
   const [gerandoQuiz, setGerandoQuiz] = useState(false);
   const [conteudoItem, setConteudoItem] = useState<any | null>(null);
   const [conteudoVisto, setConteudoVisto] = useState(false);
+  const [apoioItem, setApoioItem] = useState<any | null>(null);
 
   const modulo = trilha.modulos[moduloIdx];
+
+  useEffect(() => {
+    setApoioItem(null);
+    if (!modulo?.apoioRef?.itemId) return;
+    let cancelado = false;
+    getDoc(doc(db, 'repositorio', modulo.apoioRef.itemId)).then(snap => {
+      if (!cancelado && snap.exists()) setApoioItem({ id: snap.id, ...snap.data() });
+    }).catch(() => {});
+    return () => { cancelado = true; };
+  }, [modulo?.id, modulo?.apoioRef?.itemId]);
   const progModulo = progresso.modulos[modulo?.id] || { assistido: false, aprovado: false, nota: null, tentativas: 0 };
 
   // Carrega o conteúdo vinculado (vídeo/repositório) e marca o progresso, replicando o padrão de VideosView/RepositorioView
@@ -560,15 +578,15 @@ const ModuloPlayer: React.FC<{
                 </div>
               )}
               {/* Drive: ID do arquivo vem da function abrirMidia e o player roda protegido. */}
-              {!conteudoItem.youtubeId && modulo.conteudoRef.tipo === 'repositorio' && (conteudoItem.tipo === 'audio' || conteudoItem.tipo === 'mp4') && (
+              {!conteudoItem.youtubeId && modulo.conteudoRef.tipo === 'repositorio' && TIPOS_DRIVE.includes(conteudoItem.tipo) && (
                 <div style={{ display: 'grid', gap: 8 }}>
-                  <PlayerDriveProtegido midiaId={conteudoItem.id} titulo={conteudoItem.titulo} altura={conteudoItem.tipo === 'audio' ? 120 : 400} tipo={conteudoItem.tipo === 'audio' ? 'audio' : 'video'} />
+                  <PlayerDriveProtegido midiaId={conteudoItem.id} titulo={conteudoItem.titulo} altura={alturaPlayer(conteudoItem.tipo)} tipo={tipoPlayer(conteudoItem.tipo)} />
                   <p style={{ fontSize: 10, color: '#94a3b8', textAlign: 'center' }}>
                     Conteúdo exclusivo da plataforma MJ Consultoria — reprodução apenas por aqui, sem download.
                   </p>
                 </div>
               )}
-              {!conteudoItem.youtubeId && !(modulo.conteudoRef.tipo === 'repositorio' && (conteudoItem.tipo === 'audio' || conteudoItem.tipo === 'mp4')) && (
+              {!conteudoItem.youtubeId && !(modulo.conteudoRef.tipo === 'repositorio' && TIPOS_DRIVE.includes(conteudoItem.tipo)) && (
                 <div style={{ background: '#fef2f2', border: '1px solid #dc262640', borderRadius: 16, padding: 16, textAlign: 'center' }}>
                   <p style={{ fontSize: 12, color: '#dc2626' }}>
                     <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: 6 }}></i>
@@ -576,6 +594,16 @@ const ModuloPlayer: React.FC<{
                   </p>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Material de apoio (ex.: infográfico do tema) */}
+          {apoioItem && TIPOS_DRIVE.includes(apoioItem.tipo) && (
+            <div style={{ marginBottom: 16, display: 'grid', gap: 8 }}>
+              <p style={{ fontSize: 10, fontWeight: 900, color: '#8A9BB0', textTransform: 'uppercase', letterSpacing: 2 }}>
+                <i className="fa-solid fa-image" style={{ marginRight: 6, color: '#C9A84C' }}></i>Material de apoio — {apoioItem.titulo}
+              </p>
+              <PlayerDriveProtegido midiaId={apoioItem.id} titulo={apoioItem.titulo} altura={alturaPlayer(apoioItem.tipo)} tipo={tipoPlayer(apoioItem.tipo)} />
             </div>
           )}
 

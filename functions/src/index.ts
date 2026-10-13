@@ -344,6 +344,10 @@ interface QuestaoExameServidor {
 
 // Mesma montagem de título/conteúdo que ExamesView.tsx fazia no cliente — o fonteTitulo
 // gravado precisa continuar idêntico, porque emitirCertificadoExame e os relatórios casam por ele.
+// Quanto texto de origem vai para a IA montar o exame (o Gemini Flash aceita muito mais;
+// o limite só segura custo/latência).
+const EXAME_MAX_CARACTERES = 12000;
+
 function montarFonteExame(tipo: TipoFonteExame, d: FirebaseFirestore.DocumentData): { titulo: string; conteudo: string } {
   if (tipo === "video") {
     return {
@@ -352,10 +356,14 @@ function montarFonteExame(tipo: TipoFonteExame, d: FirebaseFirestore.DocumentDat
     };
   }
   if (tipo === "trilha") {
+    // Cada módulo recebe uma fatia igual do texto enviado à IA — antes o texto era concatenado e
+    // cortado em 4000 caracteres, e o exame final só cobria o(s) primeiro(s) módulo(s).
+    const modulos = (d.modulos || []) as { titulo?: string; conteudo?: string }[];
+    const porModulo = Math.floor(EXAME_MAX_CARACTERES / Math.max(1, modulos.length)) - 40;
     return {
       titulo: d.titulo || "Sem título",
-      conteudo: ((d.modulos || []) as { titulo?: string; conteudo?: string }[])
-        .map((m) => `${m.titulo ? m.titulo + ":\n" : ""}${m.conteudo || ""}`)
+      conteudo: modulos
+        .map((m) => `${m.titulo ? m.titulo + ":\n" : ""}${String(m.conteudo || "").substring(0, Math.max(200, porModulo))}`)
         .join("\n\n"),
     };
   }
@@ -509,7 +517,9 @@ export const gerarExame = onCall({ secrets: [GEMINI_API_KEY], timeoutSeconds: 12
 
 TEMA: "${titulo}"
 CONTEÚDO:
-${conteudo.substring(0, 4000)}
+${conteudo.substring(0, EXAME_MAX_CARACTERES)}
+
+As questões devem cobrir o conteúdo de forma distribuída (se houver vários módulos/seções, não concentre tudo no primeiro).
 
 Gere EXATAMENTE ${EXAME_NUM_QUESTOES} questões de múltipla escolha (Taxonomia de Bloom nível médio):
 - 2 COMPREENSÃO (bloom: "compreensao")

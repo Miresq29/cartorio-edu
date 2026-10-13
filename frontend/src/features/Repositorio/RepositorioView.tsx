@@ -18,7 +18,7 @@ import { loadYouTubeApi } from '../../utils/youtubeApi';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type MidiaTipo = 'youtube' | 'audio' | 'mp4';
+type MidiaTipo = 'youtube' | 'audio' | 'mp4' | 'imagem';
 
 interface Midia {
   id: string;
@@ -58,6 +58,7 @@ const TIPO_CONFIG: Record<MidiaTipo, { label: string; icon: string; color: strin
   youtube: { label: 'Vídeo YouTube', icon: 'fa-brands fa-youtube',   color: 'red',    desc: 'Cole o link do YouTube'                          },
   audio:   { label: 'Áudio Drive',   icon: 'fa-solid fa-headphones', color: 'violet', desc: 'Cole o link de compartilhamento do Google Drive' },
   mp4:     { label: 'Video Drive',   icon: 'fa-solid fa-circle-play', color: 'teal',   desc: 'Cole o link de compartilhamento do Google Drive' },
+  imagem:  { label: 'Infográfico',   icon: 'fa-solid fa-image',       color: 'amber',  desc: 'Cole o link de compartilhamento da imagem (PNG/JPG) no Google Drive' },
 };
 
 // Extrai o ID de vídeo do YouTube
@@ -146,7 +147,7 @@ const PlayerModal: React.FC<{
   // player fique aberto pela duração cadastrada do conteúdo, pausando a contagem se
   // a aba for pra segundo plano (evita "deixar tocando" escondido).
   useEffect(() => {
-    if (jaConcluida || (midia.tipo !== 'audio' && midia.tipo !== 'mp4')) return;
+    if (jaConcluida || (midia.tipo !== 'audio' && midia.tipo !== 'mp4' && midia.tipo !== 'imagem')) return;
     const duracaoSeg = Math.max(60, (midia.duracaoMin || 1) * 60);
     let acumulado = 0;
     const intervalo = setInterval(() => {
@@ -194,6 +195,19 @@ const PlayerModal: React.FC<{
           </div>
           <p className="text-[10px] text-slate-400 text-center">
             Conteúdo exclusivo da plataforma MJ Consultoria — reprodução apenas por aqui, sem download.
+          </p>
+        </div>
+      );
+    }
+
+    if (midia.tipo === 'imagem') {
+      return (
+        <div className="space-y-3">
+          <div className="shadow-2xl rounded-2xl">
+            <PlayerDriveProtegido midiaId={midia.id} titulo={midia.titulo} altura="75vh" tipo="imagem" />
+          </div>
+          <p className="text-[10px] text-slate-400 text-center">
+            Conteúdo exclusivo da plataforma MJ Consultoria — visualização apenas por aqui, sem download.
           </p>
         </div>
       );
@@ -283,7 +297,9 @@ const MidiaCard: React.FC<{
           <div className={`w-full h-40 flex items-center justify-center bg-gradient-to-br ${
             midia.tipo === 'audio'
               ? 'from-violet-900/40 to-slate-900'
-              : 'from-rose-900/40 to-slate-900'
+              : midia.tipo === 'imagem'
+                ? 'from-amber-900/40 to-slate-900'
+                : 'from-rose-900/40 to-slate-900'
           }`}>
             <div className="text-center space-y-2">
               <i className={`${tipo.icon} text-5xl text-${tipo.color}-400 opacity-70`}></i>
@@ -293,7 +309,7 @@ const MidiaCard: React.FC<{
             </div>
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all bg-black/30">
               <div className={`w-14 h-14 bg-${tipo.color}-600 rounded-full flex items-center justify-center shadow-xl`}>
-                <i className={`fa-solid ${midia.tipo === 'mp4' ? 'fa-eye' : 'fa-play'} text-navy text-xl ${midia.tipo !== 'mp4' ? 'ml-1' : ''}`}></i>
+                <i className={`fa-solid ${midia.tipo === 'mp4' || midia.tipo === 'imagem' ? 'fa-eye' : 'fa-play'} text-navy text-xl ${midia.tipo !== 'mp4' && midia.tipo !== 'imagem' ? 'ml-1' : ''}`}></i>
               </div>
             </div>
           </div>
@@ -334,8 +350,8 @@ const MidiaCard: React.FC<{
         <div className="flex gap-2 pt-1">
           <button onClick={onPlay}
             className={`flex-1 bg-${tipo.color}-600 hover:bg-${tipo.color}-500 text-navy py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all`}>
-            <i className={`fa-solid ${midia.tipo === 'mp4' ? 'fa-eye' : 'fa-play'} mr-1`}></i>
-            {midia.tipo === 'mp4' ? 'Visualizar' : 'Abrir'}
+            <i className={`fa-solid ${midia.tipo === 'mp4' || midia.tipo === 'imagem' ? 'fa-eye' : 'fa-play'} mr-1`}></i>
+            {midia.tipo === 'mp4' || midia.tipo === 'imagem' ? 'Visualizar' : 'Abrir'}
           </button>
           {podeEditar && (
             <button onClick={onEdit}
@@ -788,6 +804,7 @@ const RepositorioView: React.FC = () => {
   const totalVideos = midias.filter(m => m.tipo === 'youtube').length;
   const totalAudios = midias.filter(m => m.tipo === 'audio').length;
   const totalPDFs   = midias.filter(m => m.tipo === 'mp4').length;
+  const totalInfograficos = midias.filter(m => m.tipo === 'imagem').length;
   const totalVistos = assistidas.size;
 
   return (
@@ -810,7 +827,7 @@ const RepositorioView: React.FC = () => {
             Repositório de <span className="text-blue-500">Conteúdo</span>
           </h2>
           <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">
-            Vídeos · Áudios · PDFs — Google Drive & YouTube
+            Vídeos · Áudios · Infográficos — Google Drive & YouTube
           </p>
         </div>
         {podeGerenciarLink && !showForm && (
@@ -829,11 +846,12 @@ const RepositorioView: React.FC = () => {
       </header>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {[
           { label: 'Vídeos',         value: totalVideos, icon: 'fa-brands fa-youtube',   color: 'red'    },
           { label: 'Áudios',         value: totalAudios, icon: 'fa-solid fa-headphones', color: 'violet' },
           { label: 'Videos',           value: totalPDFs,   icon: 'fa-solid fa-file-pdf',   color: 'rose'   },
+          { label: 'Infográficos',   value: totalInfograficos, icon: 'fa-solid fa-image', color: 'amber' },
           { label: 'Vistos por mim', value: totalVistos, icon: 'fa-solid fa-circle-check',color: 'emerald'},
         ].map((s, i) => (
           <div key={i} className="bg-white border border-slate-200 rounded-[20px] p-5 space-y-2">

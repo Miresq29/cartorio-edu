@@ -16,7 +16,7 @@ interface Props {
   midiaId: string;
   titulo: string;
   altura: number | string;
-  tipo: 'audio' | 'video';
+  tipo: 'audio' | 'video' | 'imagem'; // imagem = infográfico (PNG/JPG no Drive, mesmo preview)
 }
 
 const PlayerDriveProtegido: React.FC<Props> = ({ midiaId, titulo, altura, tipo }) => {
