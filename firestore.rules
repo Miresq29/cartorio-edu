@@ -54,8 +54,14 @@ service cloud.firestore {
 
     // Private: strictly per tenant, SUPERADMIN sees all
     function canReadPrivate() { return isSuperAdmin() || isEquipeMJ() || (isActive() && sameTenant()); }
-    function canWritePrivate() { return isActive() && (isSuperAdmin() || isEquipeMJ() || newSameTenant()); }
-    function canEditPrivate() { return isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant()); }
+    // create: o doc novo tem que ser do proprio tenant. update: o doc EXISTENTE tambem tem que ser
+    // do proprio tenant e o tenantId nao pode mudar — antes so o valor novo era conferido, e quem
+    // soubesse o ID de um doc de outro cliente podia sobrescreve-lo com o proprio tenant e le-lo.
+    function canWritePrivate() {
+      return isActive() && (isSuperAdmin() || isEquipeMJ()
+        || (newSameTenant() && (resource == null || (sameTenant() && tenantUnchanged()))));
+    }
+    function canEditPrivate() { return isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant() && tenantUnchanged()); }
     // Notas, progresso e resultados individuais: a gestao le o tenant todo; colaborador so os
     // proprios (userId == uid). Ranking de Metas, que precisa do agregado, vem da function rankingMetas.
     function canReadOwnOrManage() {
@@ -63,7 +69,11 @@ service cloud.firestore {
         || (isActive() && resource.data.get('userId', '') == request.auth.uid);
     }
     // Private + dono do registro: usar nas coleções onde o campo userId reflete o uid autenticado
-    function canWriteOwnPrivate() { return canWritePrivate() && (isSelfData() || isGestor()); }
+    // No update o registro existente tambem tem que ser do proprio usuario (ou gestao do tenant).
+    function canWriteOwnPrivate() {
+      return canWritePrivate() && (isGestor()
+        || (isSelfData() && (resource == null || resource.data.get('userId', '') == request.auth.uid)));
+    }
     // Impede que o próprio usuário grave um nome/e-mail de exibição diferente do seu cadastro
     // real em registros que servem como evidência de identidade (ex.: aceite formal de
     // comunicado). Só se aplica à própria gravação (isSelfData()) — gestor gravando em nome de
@@ -81,8 +91,13 @@ service cloud.firestore {
         || isEquipeMJ()
         || request.auth.uid == userId
         || (isGestor() && resource.data.get('tenantId', '') == myTenant());
+      // Gestor nunca cria perfil de plataforma (SUPERADMIN/equipe_mj/curador): seria acesso a
+      // todos os clientes. Cadastro normal passa pela function createCollaborator.
       allow create: if request.resource.data.name.matches('^\\S{2,}(\\s+\\S{2,})+$')
-        && (isSuperAdmin() || isEquipeMJ() || (isGestor() && newSameTenant()));
+        && (isSuperAdmin()
+            || (isEquipeMJ() && request.resource.data.get('role', '') != 'SUPERADMIN')
+            || (isGestor() && newSameTenant() && request.resource.data.get('tenantId', '') != ''
+                && request.resource.data.get('role', '') in ['gestor', 'admin', 'colaborador']));
       // Equipe MJ pode editar colaboradores de qualquer cartorio, mas nao pode trocar role
       // (evita promover a si mesmo ou a terceiros a SUPERADMIN/equipe_mj).
       // A troca de senha (isFirstLogin/mustChangePassword/historico) agora e gravada pela function
@@ -108,7 +123,10 @@ service cloud.firestore {
       allow read: if isSuperAdmin() || isEquipeMJ() || (isGestor() && sameTenant());
       // Autenticado: so pode registrar acao em nome de si mesmo (evita forjar log de outro usuario).
       // Nao autenticado: so o evento de login falho, sem severidade CRITICAL (evita poluir/forjar auditoria).
-      allow create: if (isAuthenticated() && request.resource.data.get('usuarioId', '') == request.auth.uid)
+      // ...e nunca no log de OUTRO cliente (so o proprio tenant ou sem tenant; staff livre).
+      allow create: if (isAuthenticated() && request.resource.data.get('usuarioId', '') == request.auth.uid
+                        && (isSuperAdmin() || isEquipeMJ() || isCurador()
+                            || request.resource.data.get('tenantId', '') in ['', myTenant()]))
                     || (!isAuthenticated()
                         && request.resource.data.get('tipo', '') == 'LOGIN_FAILED'
                         && request.resource.data.get('severity', 'INFO') != 'CRITICAL');
