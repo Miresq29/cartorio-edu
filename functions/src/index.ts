@@ -975,12 +975,6 @@ export const abrirMidia = onCall(async (request) => {
   if (!/^[a-zA-Z0-9_-]{10,}$/.test(driveId)) {
     throw new HttpsError("failed-precondition", "Este conteúdo está sem arquivo vinculado.");
   }
-  // Áudio: endereço direto do arquivo, tocado pelo <audio> do próprio site (o player de
-  // preview do Drive para áudio carrega uma tela inteira e falha com frequência). Só funciona
-  // com o download liberado para leitores no Drive — ver scripts/checar-audios-drive.mjs.
-  if (snap.data()!.tipo === "audio") {
-    return { embedUrl: "", audioUrl: `https://drive.usercontent.google.com/download?id=${driveId}&export=download` };
-  }
   return { embedUrl: `https://drive.google.com/file/d/${driveId}/preview` };
 });
 
