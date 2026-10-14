@@ -437,6 +437,8 @@ const ModuloPlayer: React.FC<{
   const [gerandoQuiz, setGerandoQuiz] = useState(false);
   const [conteudoItem, setConteudoItem] = useState<any | null>(null);
   const [conteudoVisto, setConteudoVisto] = useState(false);
+  // Item vinculado que este cliente não pode ver (conteúdo da MJ ainda não liberado para ele).
+  const [conteudoIndisponivel, setConteudoIndisponivel] = useState(false);
   const [apoioItem, setApoioItem] = useState<any | null>(null);
 
   const modulo = trilha.modulos[moduloIdx];
@@ -456,6 +458,7 @@ const ModuloPlayer: React.FC<{
   useEffect(() => {
     setConteudoItem(null);
     setConteudoVisto(false);
+    setConteudoIndisponivel(false);
     if (!modulo?.conteudoRef) return;
     const { tipo, itemId } = modulo.conteudoRef;
     const colecao = tipo === 'video' ? 'videos' : 'repositorio';
@@ -478,7 +481,7 @@ const ModuloPlayer: React.FC<{
         }, { merge: true });
       }
       if (!cancelado) setConteudoVisto(true);
-    });
+    }).catch(() => { if (!cancelado) setConteudoIndisponivel(true); });
     return () => { cancelado = true; };
   }, [modulo?.id, modulo?.conteudoRef?.tipo, modulo?.conteudoRef?.itemId, userId, tenantId]);
 
@@ -576,6 +579,15 @@ const ModuloPlayer: React.FC<{
             </p>
             <p style={{ fontSize: 13, color: '#0A1628', lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{modulo.conteudo || modulo.descricao}</p>
           </div>
+
+          {modulo.conteudoRef && !conteudoItem && conteudoIndisponivel && (
+            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 16, padding: 16, marginBottom: 16, textAlign: 'center' }}>
+              <p style={{ fontSize: 12, color: '#8A9BB0' }}>
+                <i className="fa-solid fa-lock" style={{ marginRight: 6, color: '#C9A84C' }}></i>
+                O vídeo deste módulo ainda não foi liberado pela MJ Consultoria. O texto acima já pode ser estudado normalmente.
+              </p>
+            </div>
+          )}
 
           {/* Conteúdo vinculado (vídeo / repositório) */}
           {modulo.conteudoRef && conteudoItem && (
