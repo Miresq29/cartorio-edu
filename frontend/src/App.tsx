@@ -52,6 +52,7 @@ const MainLayout: React.FC = () => {
     return (
       <Suspense fallback={<div className="bg-white h-screen" />}>
         <LoginView />
+        <Acessibilidade naEntrada />
       </Suspense>
     );
   }
@@ -60,6 +61,7 @@ const MainLayout: React.FC = () => {
     return (
       <Suspense fallback={<div className="bg-white h-screen" />}>
         <ChangePasswordView />
+        <Acessibilidade />
       </Suspense>
     );
   }

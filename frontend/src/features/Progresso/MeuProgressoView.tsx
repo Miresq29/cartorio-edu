@@ -37,7 +37,7 @@ interface BadgeData {
 const BADGES: BadgeDef[] = [
   // Primeiros passos
   { id: 'primeiro_teste',   nome: 'Primeiro Passo',      desc: 'Realizou o primeiro teste',              icon: 'fa-shoe-prints',       color: '#92400e', bg: '#fef3c7', border: '#fbbf24', nivel: 'bronze',  check: (d) => d.quizResults.length >= 1 },
-  { id: 'aprovado',         nome: 'Aprovado',             desc: 'Passou em um teste com nota ≥ 75%',      icon: 'fa-circle-check',      color: '#065f46', bg: '#d1fae5', border: '#34d399', nivel: 'bronze',  check: (d) => d.quizResults.some(r => r.aprovado) },
+  { id: 'aprovado',         nome: 'Aprovado',             desc: 'Passou em um teste com nota ≥ 70%',      icon: 'fa-circle-check',      color: '#065f46', bg: '#d1fae5', border: '#34d399', nivel: 'bronze',  check: (d) => d.quizResults.some(r => r.aprovado) },
   { id: 'modulo_concluido', nome: 'Módulo Concluído',     desc: 'Concluiu o primeiro módulo',             icon: 'fa-book-open-reader',  color: '#1e40af', bg: '#dbeafe', border: '#60a5fa', nivel: 'bronze',  check: (d) => d.progresso.some(p => modulosConcluidos(p, d.trilhas.find(t => t.id === p.trilhaId)) >= 1) },
   // Desempenho
   { id: 'nota_90',          nome: 'Excelência',           desc: 'Obteve nota ≥ 90% em algum teste',       icon: 'fa-star',              color: '#b45309', bg: '#fef9c3', border: '#fbbf24', nivel: 'prata',   check: (d) => d.quizResults.some(r => r.nota >= 90) },
@@ -207,7 +207,7 @@ const MeuProgressoView: React.FC = () => {
             <div className="h-2.5 rounded-full bg-gold transition-all duration-700" style={{ width: `${globalPct}%` }}></div>
           </div>
           <div className="flex items-center gap-4 mt-3">
-            <span className="text-[11px] text-slate-500">Aprovação mínima: <strong className="text-slate-600">75%</strong></span>
+            <span className="text-[11px] text-slate-500">Aprovação mínima: <strong className="text-slate-600">70%</strong></span>
             <span className="text-[11px] text-slate-500">Badges: <strong className="text-slate-600">{earnedBadges.length}/{totalBadges}</strong></span>
             <span className="text-[11px] text-slate-500">Certificados: <strong className="text-slate-600">{myCerts.length}</strong></span>
           </div>
@@ -273,7 +273,7 @@ const MeuProgressoView: React.FC = () => {
                           <div className="h-1.5 rounded-full transition-all" style={{ width: `${p}%`, background: p === 100 ? '#059669' : cor }}></div>
                         </div>
                         {media !== null && (
-                          <p className="text-[10px] text-slate-500 mt-1">Média nos testes: <strong className={media >= 75 ? 'text-success' : 'text-danger'}>{media}%</strong></p>
+                          <p className="text-[10px] text-slate-500 mt-1">Média nos testes: <strong className={media >= 70 ? 'text-success' : 'text-danger'}>{media}%</strong></p>
                         )}
                       </div>
                     );

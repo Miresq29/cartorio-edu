@@ -186,7 +186,7 @@ const ColabDashboard:React.FC<{trilhas:Trilha[];progresso:TrilhaProg[];quizResul
         <div style={{width:'100%',background:'#F5EDD8',borderRadius:99,height:8}}>
           <div style={{width:`${gPct}%`,background:GOLD,height:8,borderRadius:99,transition:'width 0.7s'}}></div>
         </div>
-        <p style={{fontSize:10,color:'#8A9BB0',marginTop:6}}>Aprovacao minima: <strong style={{color:NAVY}}>75%</strong> · Taxonomia de Bloom Medio</p>
+        <p style={{fontSize:10,color:'#8A9BB0',marginTop:6}}>Aprovacao minima: <strong style={{color:NAVY}}>70%</strong> · Taxonomia de Bloom Medio</p>
       </div>
 
       <div style={{display:'grid',gridTemplateColumns:'2fr 1fr',gap:16}}>
@@ -434,7 +434,7 @@ const AdminDashboard:React.FC<{trilhas:Trilha[];progresso:TrilhaProg[];quizResul
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={topColab} layout="vertical" margin={{top:0,right:20,left:10,bottom:0}}>
               <CartesianGrid strokeDasharray="3 3" stroke="#F5EDD8" horizontal={false}/><XAxis type="number" domain={[0,100]} tick={{fontSize:10,fill:'#8A9BB0'}}/><YAxis type="category" dataKey="name" tick={{fontSize:11,fill:'#5A6E8A'}} width={70}/><Tooltip content={<Tip/>}/>
-              <Bar dataKey="media" name="Media (%)" radius={[0,4,4,0]}>{topColab.map((e,i)=><Cell key={i} fill={e.media>=75?GREEN:e.media>=50?AMBER:RED}/>)}</Bar>
+              <Bar dataKey="media" name="Media (%)" radius={[0,4,4,0]}>{topColab.map((e,i)=><Cell key={i} fill={e.media>=70?GREEN:e.media>=50?AMBER:RED}/>)}</Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -526,7 +526,7 @@ const DashboardView:React.FC = () => {
           </div>
           <div style={{display:'flex',alignItems:'center',gap:8,background:'#fff',border:`1px solid ${GOLD}`,borderRadius:12,padding:'8px 14px'}}>
             <i className="fa-solid fa-brain" style={{color:GOLD,fontSize:12}}></i>
-            <span style={{fontSize:10,fontWeight:900,color:NAVY,textTransform:'uppercase',letterSpacing:'0.12em'}}>Bloom Medio · 75% aprovacao</span>
+            <span style={{fontSize:10,fontWeight:900,color:NAVY,textTransform:'uppercase',letterSpacing:'0.12em'}}>Bloom Medio · 70% aprovacao</span>
           </div>
         </div>
         {isGestor

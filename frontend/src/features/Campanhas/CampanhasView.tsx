@@ -3,7 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { GeminiService } from '../../services/geminiService';
 import { db } from '../../services/firebase';
-import { collection, addDoc, onSnapshot, query, where, orderBy, serverTimestamp, limit } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, query, where, orderBy, serverTimestamp, limit, updateDoc, doc, deleteField } from 'firebase/firestore';
 
 type Platform = 'linkedin' | 'instagram' | 'whatsapp' | 'email';
 type Tone = 'formal' | 'informativo' | 'motivacional' | 'educativo' | 'comemorativo';
@@ -37,7 +37,7 @@ const TONES: ToneConfig[] = [
   { id: 'comemorativo', label: 'Comemorativo',  desc: 'Celebra conquistas e datas especiais'       },
 ];
 
-const TOPIC_SUGGESTIONS = [
+const SUGESTOES_CARTORIO = [
   'Novo provimento CNJ em vigor',
   'Prazo para registro de imóveis',
   'Autenticação de documentos digitais',
@@ -48,6 +48,35 @@ const TOPIC_SUGGESTIONS = [
   'Inventário extrajudicial: quando usar',
 ];
 
+const SUGESTOES_EMPRESA = [
+  'Semana de segurança da informação',
+  'Como reconhecer um e-mail de phishing',
+  'Proteção de dados pessoais no dia a dia',
+  'Boas-vindas aos novos colaboradores',
+  'Canal de ética e denúncias',
+  'Conclusão do programa de treinamentos',
+  'Senhas fortes e autenticação em dois fatores',
+  'Novo horário de atendimento',
+];
+
+// Publicação: WhatsApp e e-mail abrem com o texto pronto; LinkedIn abre a tela de nova
+// publicação com o texto (o texto também vai para a área de transferência, caso o LinkedIn não
+// preencha); Instagram não permite publicar pela web — só copiar.
+function linkPublicacao(p: Platform, texto: string): string | null {
+  const t = encodeURIComponent(texto);
+  if (p === 'whatsapp') return `https://wa.me/?text=${t}`;
+  if (p === 'linkedin') return `https://www.linkedin.com/feed/?shareActive=true&text=${t}`;
+  if (p === 'email') {
+    const m = texto.match(/^\s*assunto\s*:\s*(.+)$/im);
+    const assunto = m ? m[1].trim() : '';
+    const corpo = m ? texto.replace(m[0], '').trim() : texto;
+    return `mailto:?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
+  }
+  return null;
+}
+
+interface Publicacao { em: any; porNome: string }
+
 interface Campanha {
   id: string;
   topic: string;
@@ -56,11 +85,14 @@ interface Campanha {
   posts: Record<string, string>;
   criadoPorNome: string;
   criadoEm: any;
+  publicacoes?: Partial<Record<Platform, Publicacao>>;
 }
 
 const CampanhasView: React.FC = () => {
-  const { state, tenantId } = useApp();
+  const { state, tenantId, tipoOrganizacao } = useApp();
   const { showToast } = useToast();
+  const TOPIC_SUGGESTIONS = tipoOrganizacao === 'empresa' ? SUGESTOES_EMPRESA : SUGESTOES_CARTORIO;
+  const [campanhaId, setCampanhaId] = useState<string | null>(null);
 
   const [topic, setTopic] = useState('');
   const [selectedPlatforms, setSelectedPlatforms] = useState<Platform[]>(['linkedin', 'whatsapp']);
@@ -93,14 +125,16 @@ const CampanhasView: React.FC = () => {
     setIsLoading(true);
     setPosts({});
     setActivePlatformTab(null);
+    setCampanhaId(null);
 
-    const context = `Cartório: ${state.user?.tenantId || 'MJ Consultoria'} | Operador: ${state.user?.name || 'Usuário'}`;
+    const context = `${tipoOrganizacao === 'empresa' ? 'Empresa' : 'Cartório'}: ${state.user?.tenantId || 'MJ Consultoria'} | Operador: ${state.user?.name || 'Usuário'}`;
     try {
       const result = await GeminiService.generateCampaignPosts(
         topic,
         selectedPlatforms,
         selectedTone,
-        additionalContext ? `${context} | ${additionalContext}` : context
+        additionalContext ? `${context} | ${additionalContext}` : context,
+        tipoOrganizacao,
       );
       if (Object.keys(result).length > 0) {
         setPosts(result);
@@ -108,11 +142,12 @@ const CampanhasView: React.FC = () => {
         showToast('Posts gerados com sucesso!', 'success');
         setSalvando(true);
         try {
-          await addDoc(collection(db, 'campanhas'), {
+          const ref = await addDoc(collection(db, 'campanhas'), {
             topic, plataformas: selectedPlatforms, tom: selectedTone, posts: result,
             tenantId, criadoPor: state.user?.id || '', criadoPorNome: state.user?.name || '',
             criadoEm: serverTimestamp(),
           });
+          setCampanhaId(ref.id);
         } catch { showToast('Posts gerados, mas houve erro ao salvar no histórico.', 'error'); }
         setSalvando(false);
       } else {
@@ -130,13 +165,38 @@ const CampanhasView: React.FC = () => {
     setSelectedPlatforms(c.plataformas);
     setActivePlatformTab(c.plataformas[0] || null);
     setTopic(c.topic);
+    setCampanhaId(c.id);
   };
 
-  const copyPost = (platform: string, text: string) => {
-    navigator.clipboard.writeText(text);
+  const copyPost = (platform: string, text: string, aviso = true) => {
+    navigator.clipboard.writeText(text).catch(() => {});
     setCopiedPlatform(platform);
-    showToast('Post copiado!', 'success');
+    if (aviso) showToast('Post copiado!', 'success');
     setTimeout(() => setCopiedPlatform(null), 2000);
+  };
+
+  const campanhaAtual = historico.find(h => h.id === campanhaId);
+  const publicacao = (p: Platform) => campanhaAtual?.publicacoes?.[p];
+
+  const publicar = (p: Platform) => {
+    const texto = posts[p];
+    const link = linkPublicacao(p, texto);
+    copyPost(p, texto, false);
+    if (link) window.open(link, '_blank', 'noopener');
+    showToast(link ? 'Texto copiado. Revise e publique na janela aberta; depois marque como publicado.' : 'Texto copiado. Cole no Instagram e depois marque como publicado.', 'success');
+  };
+
+  const marcarPublicado = async (p: Platform) => {
+    if (!campanhaId) return;
+    const desfazer = !!publicacao(p);
+    try {
+      await updateDoc(doc(db, 'campanhas', campanhaId), {
+        [`publicacoes.${p}`]: desfazer ? deleteField() : { em: serverTimestamp(), porNome: state.user?.name || '' },
+      });
+      showToast(desfazer ? 'Marcação removida.' : 'Marcado como publicado.', 'success');
+    } catch {
+      showToast('Só a gestão do cliente pode marcar a publicação.', 'error');
+    }
   };
 
   const regenerate = () => {
@@ -332,8 +392,27 @@ const CampanhasView: React.FC = () => {
                       <i className={`fa-solid ${copiedPlatform === activePlatformTab ? 'fa-check' : 'fa-copy'} mr-1`}></i>
                       {copiedPlatform === activePlatformTab ? 'Copiado!' : 'Copiar'}
                     </button>
+                    <button type="button" onClick={() => publicar(activePlatformTab)}
+                      className="text-[9px] bg-navy hover:bg-navy/90 text-white px-3 py-1.5 rounded-lg font-black uppercase tracking-widest transition-all">
+                      <i className="fa-solid fa-paper-plane mr-1"></i>{activePlatformTab === 'instagram' ? 'Copiar p/ Instagram' : 'Publicar'}
+                    </button>
                   </div>
                 </div>
+
+                {/* Status de publicação */}
+                {campanhaId && (
+                  <div className="flex items-center justify-between gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5">
+                    <p className="text-[11px] text-slate-600">
+                      {publicacao(activePlatformTab)
+                        ? <><i className="fa-solid fa-circle-check text-emerald-500 mr-1.5"></i>Publicado em {publicacao(activePlatformTab)!.em?.toDate?.()?.toLocaleDateString('pt-BR') || 'agora'}{publicacao(activePlatformTab)!.porNome ? ` · ${publicacao(activePlatformTab)!.porNome}` : ''}</>
+                        : <><i className="fa-regular fa-circle text-slate-400 mr-1.5"></i>Ainda não publicado em {activePlatformConfig?.label}</>}
+                    </p>
+                    <button type="button" onClick={() => marcarPublicado(activePlatformTab)}
+                      className={`text-[9px] px-3 py-1.5 rounded-lg font-black uppercase tracking-widest transition-all border ${publicacao(activePlatformTab) ? 'border-slate-300 text-slate-500 hover:bg-white' : 'border-emerald-500 text-emerald-700 hover:bg-emerald-50'}`}>
+                      {publicacao(activePlatformTab) ? 'Desfazer' : 'Marcar como publicado'}
+                    </button>
+                  </div>
+                )}
 
                 {/* Conteúdo do post */}
                 <div className="flex-1 bg-slate-50/50 border border-slate-200 rounded-2xl p-5 overflow-y-auto custom-scrollbar">
@@ -381,7 +460,7 @@ const CampanhasView: React.FC = () => {
           Histórico de campanhas {salvando && <span className="text-slate-400">(salvando...)</span>}
         </h4>
         {historico.length === 0 ? (
-          <p className="text-[11px] text-slate-400">Nenhuma campanha gerada ainda neste cartório.</p>
+          <p className="text-[11px] text-slate-400">Nenhuma campanha gerada ainda.</p>
         ) : (
           <div className="flex flex-wrap gap-2">
             {historico.map(c => (
@@ -392,6 +471,12 @@ const CampanhasView: React.FC = () => {
                 <span className="text-slate-400">
                   {c.criadoEm?.toDate?.()?.toLocaleDateString('pt-BR') || ''} · {c.criadoPorNome}
                 </span>
+                {(() => {
+                  const n = Object.keys(c.publicacoes || {}).length;
+                  return n > 0
+                    ? <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-lg">Publicada {n}/{c.plataformas.length}</span>
+                    : <span className="text-[10px] font-black text-slate-500 bg-white border border-slate-200 px-2 py-0.5 rounded-lg">Rascunho</span>;
+                })()}
               </button>
             ))}
           </div>

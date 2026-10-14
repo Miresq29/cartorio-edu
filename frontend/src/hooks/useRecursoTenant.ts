@@ -23,6 +23,7 @@ export function useRecursoTenant(campo: string) {
   const { state, tenantId } = useApp();
   const padraoLigado = !PADRAO_DESLIGADO.has(campo);
   const [habilitado, setHabilitado] = useState(padraoLigado);
+  const [carregado, setCarregado] = useState(false); // já leu o documento do cliente
 
   const isSuperAdmin = state.user?.role === 'SUPERADMIN';
   // No modo global (fora de qualquer cartório) o SUPERADMIN sempre enxerga o recurso
@@ -32,12 +33,14 @@ export function useRecursoTenant(campo: string) {
   const superAdminGlobal = isSuperAdmin && (!state.activeTenantId || SEMPRE_LIBERADO_PARA_SUPERADMIN.has(campo));
 
   useEffect(() => {
+    setCarregado(false);
     if (!tenantId) { setHabilitado(padraoLigado); return; }
     return onSnapshot(doc(db, 'tenants', tenantId), snap => {
       const valor = snap.data()?.[campo];
       setHabilitado(padraoLigado ? valor !== false : !!valor);
+      setCarregado(true);
     });
   }, [tenantId, campo, padraoLigado]);
 
-  return { habilitado, podeUsar: superAdminGlobal || habilitado, superAdminGlobal };
+  return { habilitado, podeUsar: superAdminGlobal || habilitado, superAdminGlobal, carregado };
 }

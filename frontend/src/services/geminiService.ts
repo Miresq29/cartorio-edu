@@ -314,9 +314,10 @@ export const generateCampaignPosts = async (
   topic: string,
   platforms: string[],
   tone: string,
-  additionalContext?: string
+  additionalContext?: string,
+  tipoOrganizacao: 'cartorio' | 'empresa' = 'cartorio',
 ): Promise<Record<string, string>> => {
-  const cacheKey = makePostsCacheKey(topic, platforms, tone);
+  const cacheKey = makePostsCacheKey(`${tipoOrganizacao}|${topic}`, platforms, tone);
   try {
     const raw = localStorage.getItem(cacheKey);
     if (raw) {
@@ -344,8 +345,8 @@ export const generateCampaignPosts = async (
     .map((p) => `### ${p.toUpperCase()}\n${platformInstructions[p] || ''}`)
     .join('\n\n');
 
-  const prompt = `Especialista em comunicação institucional para cartórios.
-Unidade: MJ Consultoria | Tom: ${tone}
+  const prompt = `Especialista em comunicação institucional para ${tipoOrganizacao === 'empresa' ? 'empresas' : 'cartórios'}.
+Tom: ${tone}
 ${additionalContext ? `Contexto: ${additionalContext.substring(0, 500)}\n` : ''}
 TEMA: ${topic}
 

@@ -42,8 +42,24 @@ function removerVLibras() {
   delete (window as any).VLibras;
 }
 
-const Acessibilidade: React.FC = () => {
-  const { habilitado } = useRecursoTenant('acessibilidadeHabilitada');
+// Na tela de entrada ainda não se sabe o cliente: o recurso aparece se este navegador já foi usado
+// por alguém de um cliente com acessibilidade ligada (marca gravada após o login) ou se o link de
+// acesso traz ?acessibilidade (o cliente pode divulgar esse link à equipe dele).
+const MARCA_CLIENTE = 'integra-acessibilidade-cliente';
+function acessibilidadeNaEntrada(): boolean {
+  try {
+    if (new URLSearchParams(window.location.search).has('acessibilidade')) {
+      localStorage.setItem(MARCA_CLIENTE, '1');
+      return true;
+    }
+    return localStorage.getItem(MARCA_CLIENTE) === '1';
+  } catch { return new URLSearchParams(window.location.search).has('acessibilidade'); }
+}
+
+const Acessibilidade: React.FC<{ naEntrada?: boolean }> = ({ naEntrada = false }) => {
+  const recurso = useRecursoTenant('acessibilidadeHabilitada');
+  const [entrada] = useState(() => naEntrada && acessibilidadeNaEntrada());
+  const habilitado = naEntrada ? entrada : recurso.habilitado;
   const [aberta, setAberta] = useState(false);
   const [prefs, setPrefs] = useState<Prefs>(lerPrefs);
 
@@ -52,6 +68,18 @@ const Acessibilidade: React.FC = () => {
     carregarVLibras();
     aplicarPrefs(prefs);
   }, [habilitado]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Depois do login, lembra neste navegador se o cliente tem o recurso (para a próxima entrada).
+  useEffect(() => {
+    if (naEntrada || !recurso.carregado) return;
+    try {
+      if (recurso.habilitado) localStorage.setItem(MARCA_CLIENTE, '1');
+      else localStorage.removeItem(MARCA_CLIENTE);
+    } catch { /* sem armazenamento */ }
+  }, [naEntrada, recurso.carregado, recurso.habilitado]);
+
+  // Ao sair da tela (login → área logada, logout) a próxima instância decide de novo.
+  useEffect(() => () => { removerVLibras(); aplicarPrefs(null); }, []);
 
   const mudar = (p: Partial<Prefs>) => {
     const novo = { ...prefs, ...p };
