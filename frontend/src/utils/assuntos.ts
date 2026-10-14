@@ -11,6 +11,7 @@ export const ASSUNTOS_PADRAO = [
   'Compliance e Antissuborno',
   'PLD/FT',
   'Gestão Documental',
+  'Gestão e Qualidade',
 ];
 
 export const SEM_ASSUNTO = 'Sem assunto definido';
