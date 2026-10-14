@@ -2,6 +2,7 @@
 // UM documento por pessoa + trilha, com o estado de cada módulo em `modulos` e a conclusão da
 // trilha em `concluida` / `percentualObrigatorios`. Usado pelo Meu Progresso e pelo painel do
 // colaborador (badges, módulos concluídos, trilhas concluídas).
+import { moduloLiberado } from '../hooks/useItensLiberados';
 
 export interface ProgressoTrilhaDoc {
   trilhaId: string;
@@ -26,6 +27,29 @@ export function modulosConcluidos(p: ProgressoTrilhaDoc | undefined, trilha: Tri
     const e = p.modulos![m.id];
     return !!e?.assistido && (!m.temQuiz || !!e.aprovado);
   }).length;
+}
+
+// Trilhas que contam para o aluno — mesma regra da tela Trilhas (TrailsView → minhasTrilhas):
+// ativa, para o perfil e o setor da pessoa, e com conteúdo liberado pela equipe MJ ao cliente.
+// Módulos não liberados saem; trilha sem nenhum módulo liberado só fica para quem já tem
+// progresso nela (histórico). `liberados` null = ainda carregando (não mostra nada).
+// Sem `pessoa` (painel da gestão): não filtra por perfil/setor, só pela liberação.
+interface TrilhaVisivel { id: string; ativa?: boolean; perfis?: string[]; setores?: string[]; modulos?: any[] }
+export function trilhasDoAluno<T extends TrilhaVisivel>(
+  trilhas: T[], liberados: Set<string> | null, progresso: ProgressoTrilhaDoc[], pessoa?: { role: string; setor: string },
+): T[] {
+  if (!liberados) return [];
+  const comHistorico = new Set(progresso.map(p => p.trilhaId));
+  return trilhas.flatMap(t => {
+    if (pessoa) {
+      if (t.ativa === false || (t.perfis && !t.perfis.includes(pessoa.role))) return [];
+      if ((t.setores || []).length && !(t.setores || []).includes(pessoa.setor)) return [];
+    }
+    const todos = t.modulos || [];
+    const modulos = todos.filter(m => moduloLiberado(m, liberados));
+    if (modulos.length) return [modulos.length === todos.length ? t : { ...t, modulos }];
+    return comHistorico.has(t.id) ? [t] : [];
+  });
 }
 
 export function progressoDaTrilha<T extends ProgressoTrilhaDoc>(progresso: T[], trilhaId: string): T | undefined {

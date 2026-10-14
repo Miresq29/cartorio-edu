@@ -64,7 +64,9 @@ const Acessibilidade: React.FC = () => {
 
   const botao = 'w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all border';
   return (
-    <div className="fixed bottom-4 left-4 z-[60]" role="region" aria-label="Recursos de acessibilidade">
+    // Canto inferior direito: à esquerda cobria o rodapé do menu (nome do usuário); o botão do
+    // VLibras fica no meio da borda direita, sem conflito.
+    <div className="fixed bottom-4 right-4 z-[60] flex flex-col items-end" role="region" aria-label="Recursos de acessibilidade">
       {aberta && (
         <div id="painel-acessibilidade" className="mb-3 w-72 bg-white border border-slate-200 rounded-2xl shadow-2xl p-4 space-y-3">
           <div className="flex items-center justify-between">
@@ -95,7 +97,7 @@ const Acessibilidade: React.FC = () => {
           </button>
           <button onClick={() => mudar(PADRAO)} className="w-full text-xs font-bold text-slate-500 hover:text-navy py-1">Restaurar padrão</button>
           <p className="text-[11px] text-slate-500 leading-relaxed">
-            Para tradução em Libras, use o botão azul do VLibras no canto direito da tela.
+            Para tradução em Libras, use o botão azul do VLibras na lateral direita da tela.
           </p>
         </div>
       )}

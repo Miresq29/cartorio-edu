@@ -8,7 +8,8 @@ import {
 import { collection, query, where, onSnapshot, orderBy, doc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
-import { ProgressoTrilhaDoc, trilhaConcluida, modulosConcluidos, progressoDaTrilha } from '../../utils/progressoTrilha';
+import { ProgressoTrilhaDoc, trilhaConcluida, modulosConcluidos, progressoDaTrilha, trilhasDoAluno } from '../../utils/progressoTrilha';
+import { useItensLiberados } from '../../hooks/useItensLiberados';
 
 const GOLD   = '#C9A84C';
 const NAVY   = '#0D1B3E';
@@ -21,7 +22,7 @@ const COLORS = [GOLD, GREEN, RED, AMBER, PURPLE, '#0891B2', '#EC4899'];
 
 interface QuizResult  { id:string; colaborador:string; userId?:string; nota:number; aprovado:boolean; trailTitle?:string; moduleTitle?:string; ia?:boolean; tenantId?:string; createdAt:any; }
 interface TrilhaProg extends ProgressoTrilhaDoc { id:string; userId:string; userName:string; tenantId:string; }
-interface Trilha      { id:string; titulo:string; descricao:string; icone:string; cor:string; modulos:any[]; tenantId:string; }
+interface Trilha      { id:string; titulo:string; descricao:string; icone:string; cor:string; modulos:any[]; tenantId:string; ativa?:boolean; perfis?:string[]; setores?:string[]; }
 interface UserData    { id:string; name:string; cargo?:string; role:string; tenantId:string; }
 interface Certificado { id:string; colaboradorId?:string; colaboradorNome:string; trilhaTitulo:string; notaFinal:number; emitidoEm:any; tenantId:string; }
 interface ExameResultado { id:string; userId:string; fonteId?:string; fonteTitulo:string; score:number; aprovado:boolean; createdAt:any; proximaTentativa?:any; tenantId?:string; }
@@ -449,7 +450,7 @@ const DashboardView:React.FC = () => {
   const isGestor = ['SUPERADMIN','gestor','admin'].includes(user.role);
   const verTodoTenant = isGestor || user.role === 'equipe_mj';
 
-  const [trilhas,      setTrilhas]      = useState<Trilha[]>([]);
+  const [trilhasRaw,   setTrilhas]      = useState<Trilha[]>([]);
   const [progresso,    setProgresso]    = useState<TrilhaProg[]>([]);
   const [quizResultsRaw, setQuizResultsRaw] = useState<QuizResult[]>([]);
   const [exames,       setExames]       = useState<ExameResultado[]>([]);
@@ -485,6 +486,14 @@ const DashboardView:React.FC = () => {
     u.push(onSnapshot(qCerts,s=>setCertificados(s.docs.map(d=>({id:d.id,...d.data()} as Certificado)))));
     return ()=>u.forEach(f=>f());
   },[tenantId, verTodoTenant, user.id]);
+
+  // Conteudo nao liberado pela equipe MJ ao cliente nao entra no painel (mesma regra da tela
+  // Trilhas): colaborador ve so as trilhas dele; gestao ve as liberadas + as que tem historico.
+  const veTudo = ['SUPERADMIN','equipe_mj','curador'].includes(user.role);
+  const liberados = useItensLiberados(tenantId || undefined, veTudo);
+  const trilhas = useMemo(() => veTudo ? trilhasRaw
+    : trilhasDoAluno(trilhasRaw, liberados, progresso, isGestor ? undefined : { role:user.role, setor:user.setor||'' }),
+  [veTudo, trilhasRaw, liberados, progresso, isGestor, user.role, user.setor]);
 
   // Une quizzes de trilha e Exames formais numa unica lista — sem isso os KPIs do
   // painel ficavam zerados para cartorios que so usam Exames (ex.: 2rimontesclaros).

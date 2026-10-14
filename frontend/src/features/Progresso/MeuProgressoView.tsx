@@ -5,9 +5,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
-import { ProgressoTrilhaDoc, trilhaConcluida, modulosConcluidos, progressoDaTrilha } from '../../utils/progressoTrilha';
+import { ProgressoTrilhaDoc, trilhaConcluida, modulosConcluidos, progressoDaTrilha, trilhasDoAluno } from '../../utils/progressoTrilha';
+import { useItensLiberados } from '../../hooks/useItensLiberados';
 
-interface Trilha { id: string; titulo: string; descricao: string; icone: string; cor: string; modulos: any[]; tenantId: string; }
+interface Trilha { id: string; titulo: string; descricao: string; icone: string; cor: string; modulos: any[]; tenantId: string; ativa?: boolean; perfis?: string[]; setores?: string[]; }
 interface TrilhaProgresso extends ProgressoTrilhaDoc { id: string; userId: string; userName: string; tenantId: string; }
 interface QuizResult { id: string; colaborador: string; userId?: string; nota: number; aprovado: boolean; trailTitle?: string; moduleTitle?: string; ia?: boolean; createdAt: any; }
 interface Certificado { id: string; colaboradorId?: string; colaboradorNome: string; trilhaTitulo: string; notaFinal: number; emitidoEm: any; tenantId: string; codigoVerificacao?: string; }
@@ -100,7 +101,7 @@ const MeuProgressoView: React.FC = () => {
   const userName = user.name;
 
   const [tab, setTab] = useState<Tab>('resumo');
-  const [trilhas, setTrilhas] = useState<Trilha[]>([]);
+  const [trilhasRaw, setTrilhas] = useState<Trilha[]>([]);
   const [progresso, setProgresso] = useState<TrilhaProgresso[]>([]);
   const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
   const [certificados, setCertificados] = useState<Certificado[]>([]);
@@ -121,6 +122,13 @@ const MeuProgressoView: React.FC = () => {
     unsubs.push(onSnapshot(query(collection(db,'certificados'), where('tenantId','==',tenantId), where('colaboradorId','==',userId)), s => setCertificados(s.docs.map(d => ({id:d.id,...d.data()} as Certificado)))));
     return () => unsubs.forEach(u => u());
   }, [tenantId, userId]);
+
+  // Só as trilhas da pessoa e liberadas ao cliente (mesma regra da tela Trilhas).
+  const veTudo = ['SUPERADMIN', 'equipe_mj', 'curador'].includes(user.role);
+  const liberados = useItensLiberados(tenantId || undefined, veTudo);
+  const trilhas = useMemo(
+    () => (veTudo ? trilhasRaw : trilhasDoAluno(trilhasRaw, liberados, progresso, { role: user.role, setor: user.setor || '' })),
+    [veTudo, trilhasRaw, liberados, progresso, user.role, user.setor]);
 
   const myProg  = progresso;
   const myRes   = quizResults;
