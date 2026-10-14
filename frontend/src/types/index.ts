@@ -9,6 +9,7 @@ export interface User {
   email: string;
   role: UserRole;
   sector?: string;
+  setor?: string; // setor do colaborador dentro do cliente (tenants/{id}.setores)
   cargo?: string;
   active: boolean;
   isFirstLogin?: boolean;

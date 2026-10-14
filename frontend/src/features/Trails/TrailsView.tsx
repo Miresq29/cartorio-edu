@@ -13,6 +13,8 @@ import { httpsCallable } from 'firebase/functions';
 import { functions } from '../../services/firebase';
 import PlayerDriveProtegido from '../../components/PlayerDriveProtegido';
 import { FormatoTreinamento, FORMATOS, FORMATO_LABEL } from '../../utils/formatoTreinamento';
+import { ASSUNTOS_PADRAO, SEM_ASSUNTO } from '../../utils/assuntos';
+import { useSetoresTenant } from '../../hooks/useSetoresTenant';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -52,6 +54,8 @@ interface Trilha {
   // Modalidade de realização do curso (ex: "EAD assíncrona", "Presencial") — exibida no
   // certificado. Distinto de `formato`, que é outro conceito (tipo de conteúdo/entrega).
   modalidade?: string;
+  assunto?: string;           // ver utils/assuntos — organiza a lista e o relatório de erros
+  setores?: string[];         // público por setor do cliente; vazio = todos os setores
   createdAt: any;
 }
 
@@ -325,8 +329,18 @@ const TrilhaCard: React.FC<{
         )}
       </div>
 
-      {/* Perfis */}
+      {/* Assunto · Setores · Perfis */}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
+        {trilha.assunto && (
+          <span style={{ background: '#0A162810', color: '#0A1628', fontSize: 9, fontWeight: 900, padding: '3px 10px', borderRadius: 6, textTransform: 'uppercase', letterSpacing: 1 }}>
+            <i className="fa-solid fa-tag" style={{ marginRight: 4, color: '#C9A84C' }}></i>{trilha.assunto}
+          </span>
+        )}
+        {(trilha.setores || []).map(s => (
+          <span key={s} style={{ background: '#ecfdf5', color: '#047857', border: '1px solid #04785730', fontSize: 9, fontWeight: 900, padding: '3px 10px', borderRadius: 6, textTransform: 'uppercase', letterSpacing: 1 }}>
+            <i className="fa-solid fa-sitemap" style={{ marginRight: 4 }}></i>{s}
+          </span>
+        ))}
         {trilha.perfis.map(p => {
           const info = PERFIS.find(x => x.value === p);
           return (
@@ -761,7 +775,17 @@ const TrailsView: React.FC = () => {
   const [form, setForm] = useState({
     titulo: '', descricao: '', perfis: [] as Perfil[], modulos: [] as Modulo[], ativa: true, oficial: false, notificarEmail: false,
     instrutor: '', formato: '' as FormatoTreinamento | '', cargaHoraria: '' as number | '', modalidade: '',
+    assunto: '', setores: [] as string[],
   });
+  const { setores: setoresTenant } = useSetoresTenant(tenantId || undefined);
+  const [assuntoOutro, setAssuntoOutro] = useState(false);
+  const [filtroAssunto, setFiltroAssunto] = useState('');
+  const [filtroSetor, setFiltroSetor] = useState('');
+
+  // Setor do próprio usuário, lido ao vivo do cadastro (a sessão guarda o cadastro do momento do
+  // login; assim uma troca de setor feita pela gestão já vale sem novo login).
+  const [meuSetor, setMeuSetor] = useState<string>(user.setor || '');
+  useEffect(() => onSnapshot(doc(db, 'users', user.id), snap => setMeuSetor((snap.data()?.setor as string) || ''), () => {}), [user.id]);
 
   // Load trilhas
   const superAdminGlobal = isSuperAdmin && !state.activeTenantId;
@@ -789,9 +813,12 @@ const TrailsView: React.FC = () => {
     t.tenantIds.includes('GLOBAL') ? ['Todos os clientes'] : t.tenantIds.map(id => tenantNomes[id] || id);
 
   const [filtroCartorio, setFiltroCartorio] = useState('todos');
-  const trilhasFiltradas = (!superAdminGlobal || filtroCartorio === 'todos')
+  const trilhasFiltradas = ((!superAdminGlobal || filtroCartorio === 'todos')
     ? trilhas
-    : trilhas.filter(t => t.tenantIds.includes(filtroCartorio));
+    : trilhas.filter(t => t.tenantIds.includes(filtroCartorio)))
+    .filter(t => !filtroAssunto || (t.assunto || SEM_ASSUNTO) === filtroAssunto)
+    .filter(t => !filtroSetor || (filtroSetor === '__todos__' ? !(t.setores || []).length : (t.setores || []).includes(filtroSetor)));
+  const assuntosEmUso = Array.from(new Set(trilhas.map(t => t.assunto || SEM_ASSUNTO))).sort((a, b) => a.localeCompare(b, 'pt-BR'));
 
   // Load my progressos
   useEffect(() => {
@@ -811,7 +838,12 @@ const TrailsView: React.FC = () => {
     });
   }, [tenantId, isGestor]);
 
-  const minhasTrilhas = trilhas.filter(t => t.ativa && t.perfis.includes(user.role as Perfil));
+  // Trilha com setores marcados só aparece para colaboradores desses setores (sem setores = todos).
+  const minhasTrilhas = trilhas.filter(t => t.ativa && t.perfis.includes(user.role as Perfil)
+    && (!(t.setores || []).length || (t.setores || []).includes(meuSetor)));
+  const minhasPorAssunto = Object.entries(
+    minhasTrilhas.reduce((acc, t) => { const a = t.assunto || SEM_ASSUNTO; (acc[a] = acc[a] || []).push(t); return acc; }, {} as Record<string, Trilha[]>)
+  ).sort(([a], [b]) => (a === SEM_ASSUNTO ? 1 : b === SEM_ASSUNTO ? -1 : a.localeCompare(b, 'pt-BR')));
   const meuProgresso = (trilhaId: string) => progressos.find(p => p.trilhaId === trilhaId);
 
   const iniciarEditar = (trilha?: Trilha) => {
@@ -820,11 +852,14 @@ const TrailsView: React.FC = () => {
       setForm({
         titulo: trilha.titulo, descricao: trilha.descricao, perfis: trilha.perfis, modulos: trilha.modulos, ativa: trilha.ativa, oficial: !!trilha.oficial, notificarEmail: !!trilha.notificarEmail,
         instrutor: trilha.instrutor || '', formato: trilha.formato || '', cargaHoraria: trilha.cargaHoraria ?? '', modalidade: trilha.modalidade || '',
+        assunto: trilha.assunto || '', setores: trilha.setores || [],
       });
+      setAssuntoOutro(!!trilha.assunto && !ASSUNTOS_PADRAO.includes(trilha.assunto));
       setTenantIdsForm(trilha.tenantIds || [tenantId]);
     } else {
       setEditando(null);
-      setForm({ titulo: '', descricao: '', perfis: [], modulos: [], ativa: true, oficial: false, notificarEmail: false, instrutor: '', formato: '', cargaHoraria: '', modalidade: '' });
+      setForm({ titulo: '', descricao: '', perfis: [], modulos: [], ativa: true, oficial: false, notificarEmail: false, instrutor: '', formato: '', cargaHoraria: '', modalidade: '', assunto: '', setores: [] });
+      setAssuntoOutro(false);
       setTenantIdsForm(podeDistribuir ? [] : [tenantId]);
     }
     setTab('criar');
@@ -842,6 +877,7 @@ const TrailsView: React.FC = () => {
         ...form,
         formato: form.formato || null,
         cargaHoraria: form.cargaHoraria === '' ? null : Number(form.cargaHoraria),
+        assunto: form.assunto.trim(),
         tenantIds: podeDistribuir ? tenantIdsForm : [tenantId],
         updatedAt: serverTimestamp(),
       };
@@ -951,13 +987,23 @@ const TrailsView: React.FC = () => {
               <p style={{ fontSize: 13 }}>Seu gestor ainda não criou trilhas para o perfil {PERFIL_LABEL[user.role]}.</p>
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
-              {minhasTrilhas.map(t => (
-                <TrilhaCard
-                  key={t.id} trilha={t} isGestor={false}
-                  progresso={meuProgresso(t.id)}
-                  onView={() => abrirTrilha(t)}
-                />
+            <div style={{ display: 'grid', gap: 28 }}>
+              {minhasPorAssunto.map(([assunto, lista]) => (
+                <div key={assunto}>
+                  <p style={{ fontSize: 12, fontWeight: 900, color: '#0A1628', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 12 }}>
+                    <i className="fa-solid fa-tag" style={{ color: '#C9A84C', marginRight: 8 }}></i>{assunto}
+                    <span style={{ color: '#8A9BB0', fontWeight: 700, marginLeft: 8 }}>({lista.length})</span>
+                  </p>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
+                    {lista.map(t => (
+                      <TrilhaCard
+                        key={t.id} trilha={t} isGestor={false}
+                        progresso={meuProgresso(t.id)}
+                        onView={() => abrirTrilha(t)}
+                      />
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           )}
@@ -977,6 +1023,27 @@ const TrailsView: React.FC = () => {
                   <option key={id} value={id}>{nome}</option>
                 ))}
               </select>
+            </div>
+          )}
+          {trilhas.length > 0 && (
+            <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <label style={{ fontSize: 10, fontWeight: 900, color: '#8A9BB0', textTransform: 'uppercase', letterSpacing: 1 }}>Assunto</label>
+              <select value={filtroAssunto} onChange={e => setFiltroAssunto(e.target.value)} title="Filtrar por assunto"
+                style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '8px 12px', color: '#0A1628', fontSize: 12, fontWeight: 700 }}>
+                <option value="">Todos os assuntos</option>
+                {assuntosEmUso.map(a => <option key={a} value={a}>{a}</option>)}
+              </select>
+              {setoresTenant.length > 0 && (
+                <>
+                  <label style={{ fontSize: 10, fontWeight: 900, color: '#8A9BB0', textTransform: 'uppercase', letterSpacing: 1, marginLeft: 8 }}>Setor</label>
+                  <select value={filtroSetor} onChange={e => setFiltroSetor(e.target.value)} title="Filtrar por setor"
+                    style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '8px 12px', color: '#0A1628', fontSize: 12, fontWeight: 700 }}>
+                    <option value="">Qualquer setor</option>
+                    <option value="__todos__">Só trilhas para todos os setores</option>
+                    {setoresTenant.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </>
+              )}
             </div>
           )}
           {trilhasFiltradas.length === 0 ? (
@@ -1072,6 +1139,52 @@ const TrailsView: React.FC = () => {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: 10, fontWeight: 900, color: '#8A9BB0', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6 }}>Assunto</label>
+                <select
+                  value={assuntoOutro ? '__outro__' : form.assunto}
+                  onChange={e => {
+                    if (e.target.value === '__outro__') { setAssuntoOutro(true); setForm(f => ({ ...f, assunto: '' })); }
+                    else { setAssuntoOutro(false); setForm(f => ({ ...f, assunto: e.target.value })); }
+                  }}
+                  title="Assunto da trilha"
+                  style={{ width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 16px', color: '#0A1628', fontSize: 14 }}>
+                  <option value="">Selecione o assunto...</option>
+                  {ASSUNTOS_PADRAO.map(a => <option key={a} value={a}>{a}</option>)}
+                  <option value="__outro__">Outro (digitar)...</option>
+                </select>
+                {assuntoOutro && (
+                  <input value={form.assunto} onChange={e => setForm(f => ({ ...f, assunto: e.target.value }))} maxLength={60}
+                    placeholder="Digite o assunto"
+                    style={{ width: '100%', marginTop: 8, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 16px', color: '#0A1628', fontSize: 14 }} />
+                )}
+              </div>
+
+              <div>
+                <label style={{ fontSize: 10, fontWeight: 900, color: '#8A9BB0', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 4 }}>Setores (público da trilha)</label>
+                <p style={{ fontSize: 11, color: '#8A9BB0', marginBottom: 10 }}>
+                  Nenhum marcado = todos os setores. Marcando setores, só os colaboradores desses setores veem a trilha.
+                </p>
+                {setoresTenant.length === 0 && form.setores.length === 0 ? (
+                  <p style={{ fontSize: 12, color: '#8A9BB0', fontStyle: 'italic' }}>
+                    Este cliente ainda não tem setores cadastrados (Colaboradores → Setores).
+                  </p>
+                ) : (
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {Array.from(new Set([...setoresTenant, ...form.setores])).map(s => {
+                      const marcado = form.setores.includes(s);
+                      return (
+                        <button key={s} type="button"
+                          onClick={() => setForm(f => ({ ...f, setores: marcado ? f.setores.filter(x => x !== s) : [...f.setores, s] }))}
+                          style={{ padding: '8px 16px', borderRadius: 10, border: `1px solid ${marcado ? '#047857' : '#e2e8f0'}`, background: marcado ? '#ecfdf5' : '#f8fafc', color: marcado ? '#047857' : '#8A9BB0', cursor: 'pointer', fontSize: 11, fontWeight: 900, textTransform: 'uppercase' }}>
+                          {marcado && <i className="fa-solid fa-check" style={{ marginRight: 6 }}></i>}{s}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               <div>

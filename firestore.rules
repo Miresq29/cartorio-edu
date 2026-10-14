@@ -318,6 +318,10 @@ service cloud.firestore {
       allow get: if isSuperAdmin() || isEquipeMJ() || isCurador() || (isActive() && docId == myTenant());
       allow list: if isSuperAdmin() || isEquipeMJ();
       allow write: if isSuperAdmin();
+      // Gestão do próprio cliente (e Equipe MJ) mantém só a lista de setores do cliente.
+      allow update: if (isEquipeMJ() || (isGestor() && docId == myTenant()))
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['setores'])
+        && request.resource.data.setores is list && request.resource.data.setores.size() <= 100;
     }
 
     // Config global da plataforma (ex: assinatura/instrutor do certificado) — primeira vez que

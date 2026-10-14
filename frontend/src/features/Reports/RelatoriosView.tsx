@@ -12,6 +12,7 @@ import {
 import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
 import { FormatoTreinamento, FORMATO_LABEL } from '../../utils/formatoTreinamento';
+import RelatorioErrosPanel from './RelatorioErrosPanel';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -80,7 +81,7 @@ interface CatalogoTreinamento {
   createdAt?: any;
 }
 
-type Tab = 'visao_geral' | 'iso' | 'colaboradores' | 'trilhas' | 'trilhas_evidencias' | 'treinamentos' | 'risco' | 'evidencias';
+type Tab = 'visao_geral' | 'iso' | 'colaboradores' | 'trilhas' | 'trilhas_evidencias' | 'treinamentos' | 'risco' | 'evidencias' | 'erros';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -771,6 +772,7 @@ tr { page-break-inside:avoid; }
     { id: 'trilhas_evidencias', label: 'Progresso das Trilhas', icon: 'fa-clipboard-list' },
     { id: 'treinamentos',  label: 'Resumo de Treinamentos', icon: 'fa-chalkboard-user' },
     { id: 'risco',         label: 'Risco',          icon: 'fa-shield-halved' },
+    { id: 'erros',         label: 'Erros por Assunto/Setor', icon: 'fa-bullseye' },
     { id: 'evidencias',    label: 'Testes e Exames', icon: 'fa-file-lines'   },
   ];
 
@@ -1298,6 +1300,11 @@ tr { page-break-inside:avoid; }
                   </table>
                 </div>
               </div>
+            )}
+
+            {/* ── ERROS POR ASSUNTO / SETOR ─────────────────────────────────────── */}
+            {tab === 'erros' && (
+              <RelatorioErrosPanel tenantId={tenantId} dias={Number(periodo) || 180} />
             )}
 
             {/* ── TESTES E EXAMES ───────────────────────────────────────────────── */}

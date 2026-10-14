@@ -827,11 +827,162 @@ export const submeterQuizModulo = onCall(async (request) => {
   await db.collection("treinamentosQuizResults").add({
     colaborador: prog.userName || "", userId: caller.uid, nota: nota * 10, aprovado,
     trailTitle: s.trilhaTitulo, moduleTitle: s.moduloTitulo, ia: true, tenantId: prog.tenantId || "",
+    trilhaId: s.trilhaId || "", moduloId: s.moduloId || "",
+    // Resposta por questão (relatorioErros) — o enunciado fica em quizSessoes/{sessaoId}.
+    respostas: questoes.map((q, i) => ({ escolhida: LETRAS_QUIZ[Number(respostas[i])] || "", correta: q.correta })),
     sessaoId, createdAt: admin.firestore.FieldValue.serverTimestamp(),
   });
   return {
     progresso, nota, aprovado,
     gabarito: questoes.map((q) => ({ correta: LETRAS_QUIZ.indexOf(q.correta), explicacao: q.justificativa })),
+  };
+});
+
+// ── Relatório "Onde a equipe mais erra" ──────────────────────────────────────
+// Cruza cada questão respondida (exames + quizzes de módulo) com o assunto da trilha e o setor
+// do colaborador. Roda no servidor porque enunciado/gabarito ficam em examesSessoes/quizSessoes,
+// sem acesso pelo cliente. As questões são geradas por IA a cada tentativa, então o agrupamento
+// principal é por assunto/setor/conteúdo; "perguntas mais erradas" junta enunciados idênticos.
+const SEM_ASSUNTO = "Sem assunto definido";
+const SEM_SETOR = "Sem setor";
+
+interface LinhaErro { assunto: string; setor: string; fonte: string; enunciado: string; bloom: string; acertou: boolean; userId: string; correta: string; justificativa: string }
+
+function agregarErros<K extends string>(linhas: LinhaErro[], chave: (l: LinhaErro) => string, nome: K) {
+  const mapa = new Map<string, { questoes: number; erros: number; pessoas: Set<string> }>();
+  for (const l of linhas) {
+    const k = chave(l);
+    const a = mapa.get(k) || { questoes: 0, erros: 0, pessoas: new Set<string>() };
+    a.questoes++; if (!l.acertou) a.erros++; a.pessoas.add(l.userId);
+    mapa.set(k, a);
+  }
+  return [...mapa.entries()]
+    .map(([k, a]) => ({ [nome]: k, questoes: a.questoes, erros: a.erros, pessoas: a.pessoas.size, taxaErro: Math.round((a.erros / a.questoes) * 100) }) as Record<K, string> & { questoes: number; erros: number; pessoas: number; taxaErro: number })
+    .sort((x, y) => y.taxaErro - x.taxaErro || y.erros - x.erros);
+}
+
+async function lerDocs(colecao: string, ids: string[]): Promise<Map<string, FirebaseFirestore.DocumentData>> {
+  const unicos = [...new Set(ids.filter(Boolean))];
+  const out = new Map<string, FirebaseFirestore.DocumentData>();
+  for (let i = 0; i < unicos.length; i += 300) {
+    const snaps = await db.getAll(...unicos.slice(i, i + 300).map((id) => db.collection(colecao).doc(id)));
+    snaps.forEach((s) => { if (s.exists) out.set(s.id, s.data()!); });
+  }
+  return out;
+}
+
+export const relatorioErros = onCall({ timeoutSeconds: 120, memory: "512MiB" }, async (request) => {
+  if (!request.auth) throw new HttpsError("unauthenticated", "Login necessário.");
+  const caller = await getCallerProfile(request.auth.uid);
+  if (!GESTOR_ROLES.includes(caller.role)) throw new HttpsError("permission-denied", "Relatório disponível só para a gestão.");
+  await enforceRateLimit(caller.uid, "relatorioErros", 10, 60_000);
+  const pedido = String(request.data?.tenantId || "").trim();
+  const tenantId = PLATFORM_STAFF_ROLES.includes(caller.role) && pedido ? pedido : caller.tenantId;
+  if (!tenantId) throw new HttpsError("invalid-argument", "Selecione um cliente.");
+  const dias = Math.min(730, Math.max(7, Number(request.data?.dias) || 180));
+  const desde = admin.firestore.Timestamp.fromMillis(Date.now() - dias * 86_400_000);
+
+  const [usersSnap, trilhasSnap, exSnap, quizSnap] = await Promise.all([
+    db.collection("users").where("tenantId", "==", tenantId).get(),
+    db.collection("trilhas").where("tenantIds", "array-contains-any", [tenantId, "GLOBAL"]).get(),
+    db.collection("examesResultados").where("tenantId", "==", tenantId).where("createdAt", ">=", desde).get(),
+    db.collection("treinamentosQuizResults").where("tenantId", "==", tenantId).where("createdAt", ">=", desde).get(),
+  ]);
+  const setorDe = new Map(usersSnap.docs.map((d) => [d.id, String(d.data().setor || "") || SEM_SETOR]));
+  const assuntoTrilhaId = new Map(trilhasSnap.docs.map((d) => [d.id, String(d.data().assunto || "") || SEM_ASSUNTO]));
+  const assuntoTrilhaTitulo = new Map(trilhasSnap.docs.map((d) => [String(d.data().titulo || ""), String(d.data().assunto || "") || SEM_ASSUNTO]));
+
+  const todosExames = exSnap.docs.map((d) => d.data()).filter((r) => Array.isArray(r.respostas) && r.respostas.length);
+  const exames = todosExames.filter((r) => r.sessaoId);
+  // Exames antigos (gravados pelo cliente, antes da correção no servidor): têm acerto/erro por
+  // questão, mas não o enunciado — entram nas taxas por assunto/setor/conteúdo, não na lista de perguntas.
+  const examesLegados = todosExames.filter((r) => !r.sessaoId);
+  const quizzes = quizSnap.docs.map((d) => d.data()).filter((r) => r.sessaoId && Array.isArray(r.respostas));
+  const [sessoesEx, sessoesQuiz] = await Promise.all([
+    lerDocs("examesSessoes", exames.map((r) => r.sessaoId)),
+    lerDocs("quizSessoes", quizzes.map((r) => r.sessaoId)),
+  ]);
+  // Exame sobre item do Repositório: o assunto vem da trilha à qual o item pertence.
+  const itensRepo = await lerDocs("repositorio", exames.map((r) => sessoesEx.get(r.sessaoId)).filter((s) => s?.fonteTipo === "video").map((s) => String(s!.fonteId)));
+
+  const linhas: LinhaErro[] = [];
+  const textoCorreta = (q: QuestaoExameServidor) => q.alternativas?.find((a) => a.letra === q.correta)?.texto || "";
+  for (const r of exames) {
+    const s = sessoesEx.get(r.sessaoId);
+    if (!s) continue;
+    const assunto = s.fonteTipo === "trilha"
+      ? (assuntoTrilhaId.get(s.fonteId) || SEM_ASSUNTO)
+      : s.fonteTipo === "video"
+        ? (assuntoTrilhaTitulo.get(String(itensRepo.get(s.fonteId)?.trilhaTitulo || "")) || SEM_ASSUNTO)
+        : SEM_ASSUNTO;
+    const porId = new Map((s.questoes as QuestaoExameServidor[]).map((q) => [q.id, q]));
+    for (const resp of r.respostas as { questaoId: number; escolhida: string; correta: string }[]) {
+      const q = porId.get(resp.questaoId);
+      if (!q) continue;
+      linhas.push({ assunto, setor: setorDe.get(r.userId) || SEM_SETOR, fonte: `Exame: ${s.fonteTitulo || r.fonteTitulo || ""}`,
+        enunciado: q.enunciado, bloom: q.bloom || "", acertou: resp.escolhida === q.correta, userId: r.userId,
+        correta: textoCorreta(q), justificativa: q.justificativa || "" });
+    }
+  }
+  if (examesLegados.length) {
+    const itensLegados = await lerDocs("repositorio", examesLegados.map((r) => String(r.fonteId || "")));
+    for (const r of examesLegados) {
+      const fonteId = String(r.fonteId || "");
+      const assunto = assuntoTrilhaId.get(fonteId)
+        || assuntoTrilhaTitulo.get(String(r.fonteTitulo || ""))
+        || assuntoTrilhaTitulo.get(String(itensLegados.get(fonteId)?.trilhaTitulo || ""))
+        || SEM_ASSUNTO;
+      for (const resp of r.respostas as { escolhida?: string; correta?: string }[]) {
+        if (!resp?.correta) continue;
+        linhas.push({ assunto, setor: setorDe.get(r.userId) || SEM_SETOR, fonte: `Exame: ${r.fonteTitulo || ""}`,
+          enunciado: "", bloom: "", acertou: resp.escolhida === resp.correta, userId: r.userId, correta: "", justificativa: "" });
+      }
+    }
+  }
+  for (const r of quizzes) {
+    const s = sessoesQuiz.get(r.sessaoId);
+    if (!s || s.tipo !== "modulo") continue;
+    const assunto = assuntoTrilhaId.get(String(s.trilhaId || "")) || SEM_ASSUNTO;
+    (s.questoes as QuestaoExameServidor[]).forEach((q, i) => {
+      const resp = (r.respostas as { escolhida: string }[])[i];
+      if (!resp) return;
+      linhas.push({ assunto, setor: setorDe.get(r.userId) || SEM_SETOR, fonte: `${s.trilhaTitulo || ""} › ${s.moduloTitulo || ""}`,
+        enunciado: q.enunciado, bloom: q.bloom || "", acertou: resp.escolhida === q.correta, userId: r.userId,
+        correta: textoCorreta(q), justificativa: q.justificativa || "" });
+    });
+  }
+
+  const matriz = agregarErros(linhas, (l) => `${l.assunto}\u0000${l.setor}`, "chave")
+    .map(({ chave, ...resto }) => { const [assunto, setor] = String(chave).split("\u0000"); return { assunto, setor, ...resto }; });
+
+  // Enunciados idênticos (mesma questão reaparecendo) somam; os demais aparecem individualmente.
+  const porPergunta = new Map<string, { enunciado: string; assunto: string; fonte: string; bloom: string; correta: string; justificativa: string; vezes: number; erros: number; setores: Set<string> }>();
+  for (const l of linhas) {
+    if (!l.enunciado) continue;
+    const k = l.enunciado.trim().toLowerCase().replace(/\s+/g, " ");
+    const p = porPergunta.get(k) || { enunciado: l.enunciado, assunto: l.assunto, fonte: l.fonte, bloom: l.bloom, correta: l.correta, justificativa: l.justificativa, vezes: 0, erros: 0, setores: new Set<string>() };
+    p.vezes++; if (!l.acertou) { p.erros++; p.setores.add(l.setor); }
+    porPergunta.set(k, p);
+  }
+  const perguntasMaisErradas = [...porPergunta.values()].filter((p) => p.erros > 0)
+    .sort((a, b) => b.erros - a.erros || (b.erros / b.vezes) - (a.erros / a.vezes))
+    .slice(0, 40)
+    .map((p) => ({ ...p, setores: [...p.setores], taxaErro: Math.round((p.erros / p.vezes) * 100) }));
+
+  // Reforço recomendado: combinação assunto × setor com amostra mínima e erro alto.
+  const recomendacoes = matriz.filter((m) => m.questoes >= 7 && m.taxaErro >= 30).slice(0, 15);
+
+  return {
+    tenantId, dias,
+    totais: { questoes: linhas.length, erros: linhas.filter((l) => !l.acertou).length, avaliacoes: todosExames.length + quizzes.length, pessoas: new Set(linhas.map((l) => l.userId)).size, comEnunciado: linhas.filter((l) => l.enunciado).length },
+    porAssunto: agregarErros(linhas, (l) => l.assunto, "assunto"),
+    porSetor: agregarErros(linhas, (l) => l.setor, "setor"),
+    porFonte: agregarErros(linhas, (l) => `${l.assunto}\u0000${l.fonte}`, "chave").slice(0, 30)
+      .map(({ chave, ...resto }) => { const [assunto, fonte] = String(chave).split("\u0000"); return { assunto, fonte, ...resto }; }),
+    porBloom: agregarErros(linhas.filter((l) => l.bloom), (l) => l.bloom, "bloom"),
+    matriz,
+    perguntasMaisErradas,
+    recomendacoes,
   };
 });
 

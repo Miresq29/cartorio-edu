@@ -7,6 +7,7 @@ import { termos } from '../../utils/terminologia';
 import { useToast } from '../../context/ToastContext';
 import { db, functions } from '../../services/firebase';
 import { httpsCallable } from 'firebase/functions';
+import { useSetoresTenant } from '../../hooks/useSetoresTenant';
 import {
   collection, onSnapshot, query, orderBy, where,
   doc, updateDoc, deleteDoc, addDoc, serverTimestamp, writeBatch
@@ -25,6 +26,7 @@ interface UserData {
   email: string;
   role: Role;
   cargo?: string;
+  setor?: string;
   cpf?: string;
   tenantId: string;
   ativo?: boolean;
@@ -136,7 +138,7 @@ const UsersView: React.FC = () => {
   const tenantEmFoco = filtroCartorio || (!superAdminGlobal ? tenantId : '');
 
   const [form, setForm] = useState({
-    name: '', email: '', role: 'colaborador' as Role, cargo: '', cpf: '', tenantId: superAdminGlobal ? '' : tenantId,
+    name: '', email: '', role: 'colaborador' as Role, cargo: '', setor: '', cpf: '', tenantId: superAdminGlobal ? '' : tenantId,
   });
   const [saving, setSaving] = useState(false);
 
@@ -146,7 +148,27 @@ const UsersView: React.FC = () => {
   const [selecionados, setSelecionados] = useState<Set<string>>(new Set());
   const [loteRole, setLoteRole] = useState('');
   const [loteCargo, setLoteCargo] = useState('');
+  const [loteSetor, setLoteSetor] = useState('');
   const [aplicandoLote, setAplicandoLote] = useState(false);
+
+  // Setores do cliente em foco (lista/lote/painel) e do cliente escolhido no formulário.
+  const { setores: setoresFoco, salvarSetores } = useSetoresTenant(tenantEmFoco || undefined);
+  const { setores: setoresForm } = useSetoresTenant(form.tenantId || undefined);
+  const [showSetores, setShowSetores] = useState(false);
+  const [novoSetor, setNovoSetor] = useState('');
+  const adicionarSetor = async () => {
+    const nome = novoSetor.trim();
+    if (!nome) return;
+    if (setoresFoco.some(s => s.toLowerCase() === nome.toLowerCase())) { showToast('Esse setor já existe.', 'info'); return; }
+    try { await salvarSetores([...setoresFoco, nome]); setNovoSetor(''); }
+    catch { showToast('Não foi possível salvar o setor.', 'error'); }
+  };
+  const removerSetor = async (nome: string) => {
+    const emUso = users.filter(u => u.tenantId === tenantEmFoco && u.setor === nome).length;
+    if (!confirm(emUso ? `${emUso} colaborador(es) estão no setor "${nome}". Remover da lista mesmo assim? (o cadastro deles não muda)` : `Remover o setor "${nome}"?`)) return;
+    try { await salvarSetores(setoresFoco.filter(s => s !== nome)); }
+    catch { showToast('Não foi possível remover o setor.', 'error'); }
+  };
 
   useEffect(() => {
     if (equipeMjSemCartorioSelecionado) { setUsers([]); setLoading(false); return; }
@@ -177,10 +199,10 @@ const UsersView: React.FC = () => {
   const abrirForm = (u?: UserData) => {
     if (u) {
       setEditUser(u);
-      setForm({ name: u.name, email: u.email, role: u.role, cargo: u.cargo || '', cpf: u.cpf || '', tenantId: u.tenantId });
+      setForm({ name: u.name, email: u.email, role: u.role, cargo: u.cargo || '', setor: u.setor || '', cpf: u.cpf || '', tenantId: u.tenantId });
     } else {
       setEditUser(null);
-      setForm({ name: '', email: '', role: 'colaborador', cargo: '', cpf: '', tenantId: superAdminGlobal ? '' : tenantId });
+      setForm({ name: '', email: '', role: 'colaborador', cargo: '', setor: '', cpf: '', tenantId: superAdminGlobal ? '' : tenantId });
     }
     setShowForm(true);
   };
@@ -197,6 +219,9 @@ const UsersView: React.FC = () => {
       } else {
         const tempPassword = 'Acesso@' + crypto.randomUUID().replace(/-/g, '').slice(0, 12);
         const result: any = await createCollaboratorFn({ ...form, password: tempPassword });
+        if (form.setor && result.data?.uid) {
+          await updateDoc(doc(db, 'users', result.data.uid), { setor: form.setor }).catch(() => {});
+        }
         await addDoc(collection(db, 'auditLogs'), {
           tipo: 'USER_CREATED', descricao: 'Usuario criado pelo gestor', usuario: form.email,
           usuarioId: user.id, tenantId: form.tenantId, severity: 'INFO', createdAt: serverTimestamp(),
@@ -268,6 +293,7 @@ const UsersView: React.FC = () => {
     const mudanca: Record<string, string> = {};
     if (loteRole && isSuperAdmin) mudanca.role = loteRole;
     if (loteCargo) mudanca.cargo = loteCargo;
+    if (loteSetor) mudanca.setor = loteSetor === '__nenhum__' ? '' : loteSetor;
     if (!alvos.length || !Object.keys(mudanca).length) return;
     setAplicandoLote(true);
     try {
@@ -283,7 +309,7 @@ const UsersView: React.FC = () => {
         metadata: { ids: alvos.map(u => u.id), ...mudanca }, severity: 'INFO', createdAt: serverTimestamp(),
       }).catch(() => {});
       showToast(`${alvos.length} colaborador(es) atualizado(s).`, 'success');
-      setSelecionados(new Set()); setLoteRole(''); setLoteCargo('');
+      setSelecionados(new Set()); setLoteRole(''); setLoteCargo(''); setLoteSetor('');
     } catch (err: any) {
       showToast(err.code === 'permission-denied'
         ? 'Sem permissão para alterar um ou mais desses colaboradores — nada foi alterado.'
@@ -463,6 +489,16 @@ const UsersView: React.FC = () => {
                       </select>
                     </div>
                     <div className="space-y-1">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Setor</label>
+                      <select value={form.setor} onChange={e => setF('setor', e.target.value)}
+                        title="Setor do colaborador" disabled={setoresForm.length === 0}
+                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-gold disabled:bg-slate-50 disabled:text-slate-400">
+                        <option value="">{setoresForm.length === 0 ? 'Cadastre os setores do cliente em "Setores"' : 'Sem setor'}</option>
+                        {setoresForm.map(s => <option key={s} value={s}>{s}</option>)}
+                        {form.setor && !setoresForm.includes(form.setor) && <option value={form.setor}>{form.setor} (removido da lista)</option>}
+                      </select>
+                    </div>
+                    <div className="space-y-1">
                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">CPF (opcional)</label>
                       <input value={form.cpf} onChange={e => setF('cpf', e.target.value)}
                         placeholder="000.000.000-00"
@@ -532,6 +568,12 @@ const UsersView: React.FC = () => {
                 <input value={busca} onChange={e => setBusca(e.target.value)}
                   placeholder="Buscar por nome, e-mail ou cargo..."
                   className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-gold w-72" />
+                {isGestor && tenantEmFoco && (
+                  <button onClick={() => setShowSetores(v => !v)}
+                    className="flex items-center gap-2 bg-white border border-slate-200 hover:border-gold text-slate-600 px-4 py-2.5 rounded-xl text-sm font-bold transition-all">
+                    <i className="fa-solid fa-sitemap text-xs text-gold"></i>Setores ({setoresFoco.length})
+                  </button>
+                )}
                 {verTodasEmpresas && (
                   <select value={filtroCartorio} onChange={e => setFiltroCartorio(e.target.value)}
                     title="Filtrar por cliente"
@@ -543,6 +585,37 @@ const UsersView: React.FC = () => {
                   </select>
                 )}
               </div>
+
+              {/* Setores do cliente */}
+              {showSetores && isGestor && tenantEmFoco && (
+                <div className="bg-white border border-slate-200 rounded-[14px] p-4 space-y-3">
+                  <div>
+                    <p className="text-xs font-black text-navy uppercase tracking-widest">Setores do cliente</p>
+                    <p className="text-[11px] text-slate-500">Usados no cadastro do colaborador, no público das trilhas e no relatório de erros por setor.</p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {setoresFoco.length === 0 && <span className="text-xs text-slate-400 italic">Nenhum setor cadastrado ainda.</span>}
+                    {setoresFoco.map(s => (
+                      <span key={s} className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-700">
+                        {s}
+                        <span className="text-[10px] text-slate-400 font-normal">{users.filter(u => u.tenantId === tenantEmFoco && u.setor === s).length}</span>
+                        <button onClick={() => removerSetor(s)} title={`Remover ${s}`} className="text-slate-400 hover:text-red-500">
+                          <i className="fa-solid fa-xmark text-[10px]"></i>
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <input value={novoSetor} onChange={e => setNovoSetor(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') adicionarSetor(); }}
+                      placeholder="Novo setor (ex.: Atendimento, Financeiro, TI)" maxLength={60}
+                      className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2 text-sm text-slate-700 outline-none focus:border-gold" />
+                    <button onClick={adicionarSetor} disabled={!novoSetor.trim()}
+                      className="bg-gold hover:bg-[#A8863C] disabled:opacity-50 text-navy px-4 py-2 rounded-xl text-xs font-bold transition-all">
+                      Adicionar
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Barra de alteração em lote */}
               {selecionados.size > 0 && (
@@ -562,7 +635,15 @@ const UsersView: React.FC = () => {
                     <option value="">Cargo: manter</option>
                     {CARGOS.map(c => <option key={c} value={c}>Cargo → {c}</option>)}
                   </select>
-                  <button onClick={aplicarLote} disabled={aplicandoLote || (!loteCargo && !(isSuperAdmin && loteRole))}
+                  {setoresFoco.length > 0 && (
+                    <select value={loteSetor} onChange={e => setLoteSetor(e.target.value)} title="Novo setor"
+                      className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 outline-none focus:border-gold">
+                      <option value="">Setor: manter</option>
+                      {setoresFoco.map(s => <option key={s} value={s}>Setor → {s}</option>)}
+                      <option value="__nenhum__">Setor → (sem setor)</option>
+                    </select>
+                  )}
+                  <button onClick={aplicarLote} disabled={aplicandoLote || (!loteCargo && !loteSetor && !(isSuperAdmin && loteRole))}
                     className="bg-gold hover:bg-[#A8863C] disabled:opacity-50 text-navy px-4 py-2 rounded-xl text-xs font-bold transition-all">
                     {aplicandoLote ? <><i className="fa-solid fa-spinner animate-spin mr-2"></i>Aplicando...</> : `Aplicar a ${selecionados.size}`}
                   </button>
@@ -597,14 +678,14 @@ const UsersView: React.FC = () => {
                               title="Selecionar todos os colaboradores listados" className="accent-indigo-600 cursor-pointer" />
                           </th>
                         )}
-                        {['Colaborador', 'E-mail', 'Cargo', ...(isPlatformStaff ? ['Cliente'] : []), 'Perfil', 'Status', 'Desde', 'Ações'].map(h => (
+                        {['Colaborador', 'E-mail', 'Cargo', 'Setor', ...(isPlatformStaff ? ['Cliente'] : []), 'Perfil', 'Status', 'Desde', 'Ações'].map(h => (
                           <th key={h} className="text-left p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {filtrados.length === 0 && (
-                        <tr><td colSpan={(isPlatformStaff ? 8 : 7) + (isGestor ? 1 : 0)} className="text-center p-8 text-slate-500">Nenhum colaborador encontrado.</td></tr>
+                        <tr><td colSpan={(isPlatformStaff ? 9 : 8) + (isGestor ? 1 : 0)} className="text-center p-8 text-slate-500">Nenhum colaborador encontrado.</td></tr>
                       )}
                       {filtrados.map(u => (
                         <tr key={u.id} className={`border-b border-slate-100 hover:bg-white transition-all ${u.ativo === false ? 'opacity-50' : ''}`}>
@@ -619,6 +700,7 @@ const UsersView: React.FC = () => {
                           <td className="p-3 font-bold text-navy">{u.name}</td>
                           <td className="p-3 text-slate-500">{u.email || '–'}</td>
                           <td className="p-3 text-slate-500">{u.cargo || '–'}</td>
+                          <td className="p-3 text-slate-500">{u.setor || '–'}</td>
                           {isPlatformStaff && (
                             <td className="p-3">
                               <span className="text-[10px] font-mono bg-blue-50 text-blue-600 border border-blue-100 px-2 py-0.5 rounded-lg">
