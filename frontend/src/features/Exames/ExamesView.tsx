@@ -11,6 +11,7 @@ import QRCode from 'qrcode';
 import type { QuestaoExame } from '../../services/geminiService';
 import { VERIFICACAO_BASE_URL } from '../../utils/certificadoVerificacao';
 import { certificadoTemplate } from '../../utils/certificadoTemplate';
+import { moduloLiberado } from '../../hooks/useItensLiberados';
 
 const emitirCertificadoExameFn = httpsCallable<
   { trilhaTitulo: string },
@@ -145,7 +146,16 @@ const ExamesView: React.FC = () => {
     // treinamentos exclusivos de um cartório nunca apareciam na lista para gerar exame.
     // A descrição sozinha costuma ser curta/vazia (é só um link de vídeo/áudio), então
     // junta categoria e trilha associada para dar mais contexto à IA gerar as questões.
+    // Para esconder trilhas cujo vídeo a equipe MJ ainda não liberou a este cliente (ver TrailsView).
+    const veTudo = ['SUPERADMIN', 'equipe_mj', 'curador'].includes(user.role);
+    let idsLiberados: Set<string> | null = null;
+    let comHistorico = new Set<string>();
+    let ultimoSnapTrilhas: any = null;
+    let montarTrilhas = () => {};
+
     const uRepositorio = onSnapshot(query(collection(db, 'repositorio'), where('tenantIds', 'array-contains-any', tenantFilter)), snap => {
+      idsLiberados = new Set(snap.docs.filter(d => d.data().ativo !== false).map(d => d.id));
+      montarTrilhas();
       const novos = snap.docs
         .filter(d => d.data().ativo !== false) // itens "removidos" (soft delete) nao viram opcao de exame
         .map(d => {
@@ -167,11 +177,15 @@ const ExamesView: React.FC = () => {
     // texto de todos os módulos, que é onde o conteúdo real das trilhas mora.
     // Trilha restrita a outros setores não vira opção de exame (a function gerarExame também barra).
     const veTodosSetores = ['SUPERADMIN', 'gestor', 'admin', 'equipe_mj', 'curador'].includes(user.role);
-    const uTrilhas = onSnapshot(query(collection(db, 'trilhas'), where('tenantIds', 'array-contains-any', tenantFilter)), snap => {
-      const novos = snap.docs.filter(d => {
+    montarTrilhas = () => {
+      if (!ultimoSnapTrilhas || (!veTudo && !idsLiberados)) return;
+      const novos = ultimoSnapTrilhas.docs.filter((d: any) => {
         const setores: string[] = d.data().setores || [];
-        return veTodosSetores || setores.length === 0 || setores.includes(user.setor || '');
-      }).map(d => {
+        if (!(veTodosSetores || setores.length === 0 || setores.includes(user.setor || ''))) return false;
+        if (veTudo || comHistorico.has(d.id)) return true;
+        // some a trilha cujos módulos apontam todos para vídeos não liberados a este cliente
+        return (d.data().modulos || []).some((m: any) => moduloLiberado(m, idsLiberados));
+      }).map((d: any) => {
         const data = d.data();
         const conteudo = (data.modulos || [])
           .map((m: any) => `${m.titulo ? m.titulo + ':\n' : ''}${m.conteudo || ''}`)
@@ -185,8 +199,18 @@ const ExamesView: React.FC = () => {
       allFontes.splice(0, allFontes.length, ...filtered, ...novos);
       setFontes([...allFontes]);
       setLoadingFontes(false);
+    };
+    const uTrilhas = onSnapshot(query(collection(db, 'trilhas'), where('tenantIds', 'array-contains-any', tenantFilter)), snap => {
+      ultimoSnapTrilhas = snap;
+      montarTrilhas();
     });
     unsubs.push(uTrilhas);
+    if (user?.id) {
+      unsubs.push(onSnapshot(query(collection(db, 'trilhasProgresso'), where('tenantId', '==', tenantId), where('userId', '==', user.id)), snap => {
+        comHistorico = new Set(snap.docs.map(d => d.data().trilhaId as string));
+        montarTrilhas();
+      }, () => {}));
+    }
 
     return () => unsubs.forEach(u => u());
   }, [tenantId]);

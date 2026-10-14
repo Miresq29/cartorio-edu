@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   collection, addDoc, updateDoc, deleteDoc, doc,
   onSnapshot, query, where, serverTimestamp, getDoc, setDoc
@@ -15,6 +15,7 @@ import PlayerDriveProtegido from '../../components/PlayerDriveProtegido';
 import { FormatoTreinamento, FORMATOS, FORMATO_LABEL } from '../../utils/formatoTreinamento';
 import { ASSUNTOS_PADRAO, SEM_ASSUNTO } from '../../utils/assuntos';
 import { useSetoresTenant } from '../../hooks/useSetoresTenant';
+import { useItensLiberados, moduloLiberado } from '../../hooks/useItensLiberados';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -437,8 +438,6 @@ const ModuloPlayer: React.FC<{
   const [gerandoQuiz, setGerandoQuiz] = useState(false);
   const [conteudoItem, setConteudoItem] = useState<any | null>(null);
   const [conteudoVisto, setConteudoVisto] = useState(false);
-  // Item vinculado que este cliente não pode ver (conteúdo da MJ ainda não liberado para ele).
-  const [conteudoIndisponivel, setConteudoIndisponivel] = useState(false);
   const [apoioItem, setApoioItem] = useState<any | null>(null);
 
   const modulo = trilha.modulos[moduloIdx];
@@ -458,7 +457,6 @@ const ModuloPlayer: React.FC<{
   useEffect(() => {
     setConteudoItem(null);
     setConteudoVisto(false);
-    setConteudoIndisponivel(false);
     if (!modulo?.conteudoRef) return;
     const { tipo, itemId } = modulo.conteudoRef;
     const colecao = tipo === 'video' ? 'videos' : 'repositorio';
@@ -481,7 +479,7 @@ const ModuloPlayer: React.FC<{
         }, { merge: true });
       }
       if (!cancelado) setConteudoVisto(true);
-    }).catch(() => { if (!cancelado) setConteudoIndisponivel(true); });
+    }).catch(() => { /* item não liberado a este cliente: fica oculto */ });
     return () => { cancelado = true; };
   }, [modulo?.id, modulo?.conteudoRef?.tipo, modulo?.conteudoRef?.itemId, userId, tenantId]);
 
@@ -580,16 +578,8 @@ const ModuloPlayer: React.FC<{
             <p style={{ fontSize: 13, color: '#0A1628', lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{modulo.conteudo || modulo.descricao}</p>
           </div>
 
-          {modulo.conteudoRef && !conteudoItem && conteudoIndisponivel && (
-            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 16, padding: 16, marginBottom: 16, textAlign: 'center' }}>
-              <p style={{ fontSize: 12, color: '#8A9BB0' }}>
-                <i className="fa-solid fa-lock" style={{ marginRight: 6, color: '#C9A84C' }}></i>
-                O vídeo deste módulo ainda não foi liberado pela MJ Consultoria. O texto acima já pode ser estudado normalmente.
-              </p>
-            </div>
-          )}
-
-          {/* Conteúdo vinculado (vídeo / repositório) */}
+          {/* Conteúdo vinculado (vídeo / repositório). Item não liberado ao cliente (só aparece para
+              quem já tinha a trilha como histórico) fica oculto, sem aviso. */}
           {modulo.conteudoRef && conteudoItem && (
             <div style={{ marginBottom: 16 }}>
               {(conteudoItem.youtubeId) && (
@@ -776,7 +766,7 @@ const TrailsView: React.FC = () => {
   const [tenantIdsForm, setTenantIdsForm] = useState<string[]>(podeDistribuir ? [] : [tenantId]);
 
   const [tab, setTab] = useState<'minhas' | 'todas' | 'criar' | 'progresso'>(isGestor ? 'todas' : 'minhas');
-  const [trilhas, setTrilhas] = useState<Trilha[]>([]);
+  const [trilhasRaw, setTrilhas] = useState<Trilha[]>([]);
   const [progressos, setProgressos] = useState<TrilhaProgresso[]>([]);
   const [todosProgressos, setTodosProgressos] = useState<TrilhaProgresso[]>([]);
   const [editando, setEditando] = useState<Trilha | null>(null);
@@ -809,6 +799,24 @@ const TrailsView: React.FC = () => {
       setTrilhas(snap.docs.map(d => ({ id: d.id, ...d.data() } as Trilha)));
     });
   }, [tenantId, superAdminGlobal]);
+
+  // Conteúdo ainda não liberado pela equipe MJ para este cliente não aparece: some o módulo cujo
+  // vídeo não foi liberado e some a trilha que ficar sem módulos — exceto para quem já iniciou ou
+  // concluiu a trilha (histórico), e para a gestão quando alguém do cliente já tem progresso nela.
+  // A equipe da plataforma (SUPERADMIN, Equipe MJ, curador) vê tudo.
+  const veTudo = ['SUPERADMIN', 'equipe_mj', 'curador'].includes(user.role);
+  const liberados = useItensLiberados(tenantId || undefined, veTudo);
+  const trilhas = useMemo(() => {
+    if (veTudo) return trilhasRaw;
+    if (!liberados) return [];
+    const comHistorico = new Set([...progressos, ...todosProgressos].map(p => p.trilhaId));
+    return trilhasRaw.flatMap(t => {
+      const modulos = (t.modulos || []).filter(m => moduloLiberado(m, liberados));
+      if (modulos.length) return [modulos.length === (t.modulos || []).length ? t : { ...t, modulos }];
+      // trilha inteira ainda não liberada: só fica para quem já a iniciou/concluiu (histórico)
+      return comHistorico.has(t.id) ? [t] : [];
+    });
+  }, [veTudo, liberados, trilhasRaw, progressos, todosProgressos]);
 
   // Nomes dos cartórios, para exibir/filtrar trilhas por cliente no modo global SUPERADMIN
   const [tenantNomes, setTenantNomes] = useState<Record<string, string>>({});
@@ -885,8 +893,18 @@ const TrailsView: React.FC = () => {
     if (!form.titulo || form.modulos.length === 0 || form.perfis.length === 0) return;
     setSaving(true);
     try {
+      // Módulos escondidos para este cliente (vídeo ainda não liberado) não aparecem no formulário,
+      // mas pertencem à trilha de outros clientes — preserva-os ao salvar, na posição original.
+      const original = editando ? trilhasRaw.find(t => t.id === editando.id) : null;
+      const idsForm = new Set(form.modulos.map(m => m.id));
+      const escondidos = (original?.modulos || []).filter(m => !idsForm.has(m.id) && !moduloLiberado(m, veTudo ? null : liberados));
+      const modulos = escondidos.length
+        ? [...(original?.modulos || []).filter(m => idsForm.has(m.id) || escondidos.includes(m)).map(m => form.modulos.find(f => f.id === m.id) || m),
+           ...form.modulos.filter(f => !(original?.modulos || []).some(m => m.id === f.id))]
+        : form.modulos;
       const data = {
         ...form,
+        modulos,
         formato: form.formato || null,
         cargaHoraria: form.cargaHoraria === '' ? null : Number(form.cargaHoraria),
         assunto: form.assunto.trim(),

@@ -13,6 +13,7 @@ import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
 import { FormatoTreinamento, FORMATO_LABEL } from '../../utils/formatoTreinamento';
 import RelatorioErrosPanel from './RelatorioErrosPanel';
+import { useItensLiberados, moduloLiberado } from '../../hooks/useItensLiberados';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -177,6 +178,8 @@ const RelatoriosView: React.FC = () => {
   const [buscaColab, setBuscaColab] = useState('');
   const [buscaTrilha, setBuscaTrilha] = useState('');
   const [tenantName, setTenantName] = useState('');
+  const veTudo = ['SUPERADMIN', 'equipe_mj', 'curador'].includes(user.role);
+  const liberados = useItensLiberados(tenantId || undefined, veTudo);
 
   useEffect(() => {
     if (!tenantId) return;
@@ -208,7 +211,7 @@ const RelatoriosView: React.FC = () => {
     const q6 = query(collection(db, 'trilhas'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']));
     const u6 = onSnapshot(q6, s => setCatalogoTrilhas(s.docs.map(d => {
       const data = d.data();
-      return { id: d.id, titulo: data.titulo || 'Sem título', tipo: 'trilha', instrutor: data.instrutor, oficial: data.oficial, formato: data.formato, cargaHoraria: data.cargaHoraria, createdAt: data.createdAt } as CatalogoTreinamento;
+      return { id: d.id, titulo: data.titulo || 'Sem título', tipo: 'trilha', instrutor: data.instrutor, oficial: data.oficial, formato: data.formato, cargaHoraria: data.cargaHoraria, createdAt: data.createdAt, modulos: data.modulos || [] } as CatalogoTreinamento & { modulos?: any[] };
     })));
 
     const q7 = query(collection(db, 'treinamentos'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']));
@@ -423,7 +426,11 @@ const RelatoriosView: React.FC = () => {
   // Resumo de treinamentos — catálogo de trilhas + treinamentos avulsos com instrutor,
   // forma (EAD/presencial/híbrida), carga horária e participação/aproveitamento.
   const resumoTreinamentos = useMemo(() => {
-    const trilhasResumo = catalogoTrilhas.map(t => {
+    // Trilha cujo vídeo ainda não foi liberado a este cliente não entra no catálogo, a não ser
+    // que alguém do cliente já tenha progresso nela (histórico).
+    const trilhasResumo = catalogoTrilhas.filter(t => veTudo
+      || progresso.some(p => p.trilhaId === t.id)
+      || ((t as any).modulos || []).some((m: any) => moduloLiberado(m, liberados))).map(t => {
       const progs = progresso.filter(p => p.trilhaId === t.id);
       const concluidos = progs.filter(p => p.concluida).length;
       return { ...t, participantes: progs.length, concluidos, taxa: pct(concluidos, progs.length) };
@@ -434,7 +441,7 @@ const RelatoriosView: React.FC = () => {
       return { ...t, participantes: res.length, concluidos: aprovados, taxa: pct(aprovados, res.length) };
     });
     return [...trilhasResumo, ...treinamentosResumo].sort((a, b) => (tsToMillis(b.createdAt)) - (tsToMillis(a.createdAt)));
-  }, [catalogoTrilhas, catalogoTreinamentos, progresso, quizResults]);
+  }, [catalogoTrilhas, catalogoTreinamentos, progresso, quizResults, veTudo, liberados]);
 
   const cargaHorariaCatalogoTotal = resumoTreinamentos.reduce((a, t) => a + (t.cargaHoraria || 0), 0);
 

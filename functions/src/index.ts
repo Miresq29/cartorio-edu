@@ -696,7 +696,7 @@ function podeVerConteudo(caller: CallerProfile, tenantIds: string[] | undefined)
   return PLATFORM_STAFF_ROLES.includes(caller.role) || ids.includes("GLOBAL") || (!!caller.tenantId && ids.includes(caller.tenantId));
 }
 
-interface ModuloTrilha { id: string; titulo?: string; descricao?: string; conteudo?: string; tipo?: string; temQuiz?: boolean; notaMinima?: number }
+interface ModuloTrilha { id: string; titulo?: string; descricao?: string; conteudo?: string; tipo?: string; temQuiz?: boolean; notaMinima?: number; conteudoRef?: { tipo?: string; itemId?: string } }
 interface ModuloProgressoServidor { assistido: boolean; aprovado: boolean; nota: number | null; tentativas: number }
 
 // Mesma regra de calcPercObrigatorios() do TrailsView.tsx.
@@ -708,6 +708,19 @@ function calcularPercentual(modulos: ModuloTrilha[], prog: Record<string, Modulo
     return !!p && p.assistido && (!m.temQuiz || p.aprovado);
   });
   return Math.round((concluidos.length / obrigatorios.length) * 100);
+}
+
+// Módulos cujo vídeo (item do Repositório) a equipe MJ ainda não liberou ao cliente do usuário
+// ficam de fora — não aparecem na tela nem contam como obrigatórios. Se a trilha inteira estiver
+// sem liberação, vale a lista completa: só chega aqui quem já tinha progresso (histórico).
+async function modulosLiberados(caller: CallerProfile, modulos: ModuloTrilha[]): Promise<ModuloTrilha[]> {
+  if (PLATFORM_STAFF_ROLES.includes(caller.role) || caller.role === "curador") return modulos;
+  const ids = modulos.map((m) => (m.conteudoRef?.tipo === "repositorio" ? String(m.conteudoRef.itemId || "") : "")).filter(Boolean);
+  if (!ids.length) return modulos;
+  const itens = await Promise.all([...new Set(ids)].map((id) => db.collection("repositorio").doc(id).get()));
+  const ok = new Set(itens.filter((s) => s.exists && s.data()!.ativo !== false && podeVerConteudo(caller, s.data()!.tenantIds)).map((s) => s.id));
+  const filtrados = modulos.filter((m) => m.conteudoRef?.tipo !== "repositorio" || ok.has(String(m.conteudoRef.itemId || "")));
+  return filtrados.length ? filtrados : modulos;
 }
 
 // Carrega progresso do próprio usuário + trilha + módulo, validando dono e visibilidade.
@@ -726,7 +739,7 @@ async function carregarProgressoModulo(caller: CallerProfile, progressoId: strin
     throw new HttpsError("permission-denied", "Esta trilha é destinada a outro setor.");
   }
   const trilha = trilhaSnap.data()!;
-  const modulos = (trilha.modulos || []) as ModuloTrilha[];
+  const modulos = await modulosLiberados(caller, (trilha.modulos || []) as ModuloTrilha[]);
   const modulo = modulos.find((m) => m.id === moduloId);
   if (!modulo) {
     throw new HttpsError("not-found", "Módulo não encontrado.");
