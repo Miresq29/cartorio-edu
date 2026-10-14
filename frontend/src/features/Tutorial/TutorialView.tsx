@@ -20,10 +20,9 @@ const SECTIONS: Section[] = [
   {
     id: 'dashboard', icon: 'fa-border-all', title: 'Dashboard', subtitle: 'Painel operacional do seu cliente', image: '/tutorial/dashboard.png',
     steps: [
-      { title: 'Acessando o Dashboard', desc: 'Clique em "Dashboard" no menu lateral, na seção GESTÃO. Esta tela exibe dados em tempo real exclusivos da sua empresa ou cartório.' },
-      { title: 'KPIs em tempo real', desc: 'Os cards no topo mostram métricas como Documentos na Base, Protocolos Ativos, Treinamentos Concluídos e Ações Registradas. Todos atualizam automaticamente.' },
-      { title: 'Atividade Recente', desc: 'O painel de atividade mostra as últimas ações realizadas na plataforma — tipo de evento, usuário responsável e horário.' },
-      { title: 'Filtros de período', desc: 'Use os botões de período (7, 30, 90 dias) para filtrar o histórico de dados exibido nos gráficos e cards.' },
+      { title: 'Acessando o Dashboard', desc: 'Clique em "Dashboard" no menu lateral, na seção GESTÃO. Esta tela exibe dados em tempo real exclusivos da sua organização — empresa ou cartório —, nunca de outros clientes.' },
+      { title: 'Indicadores em tempo real', desc: 'Os cards no topo mostram colaboradores cadastrados, taxa de aprovação, média geral nas avaliações e certificados emitidos. Todos atualizam automaticamente.' },
+      { title: 'Gráficos da equipe', desc: 'Acompanhe a atividade mensal da equipe, a distribuição de notas, a taxa de aprovação por trilha e a divisão por perfil de acesso. Cada gráfico permite alternar o tipo de visualização.' },
     ]
   },
   {
@@ -41,7 +40,10 @@ const SECTIONS: Section[] = [
   {
     id: 'collaborators', icon: 'fa-users-gear', title: 'Colaboradores', subtitle: 'Gerenciar usuários e permissões', image: '/tutorial/collaborators.png',
     steps: [
-      { title: 'Criando um colaborador', desc: 'Clique em "+ Novo Colaborador", preencha nome, e-mail e selecione o perfil de acesso. O colaborador deverá trocar a senha no primeiro login.' },
+      { title: 'Criando um colaborador', desc: 'Clique em "+ Novo Colaborador", preencha nome completo, e-mail, perfil de acesso, cargo e, se quiser, o setor. O colaborador recebe uma senha provisória e deverá trocá-la no primeiro login.' },
+      { title: 'Setores da organização', desc: 'Opcional: no botão "Setores" cadastre os setores da sua organização (ex.: Atendimento, Financeiro, TI, Comercial). O setor do colaborador permite direcionar trilhas a setores específicos e ver, em Relatórios, onde cada setor mais erra.' },
+      { title: 'Alterações em lote', desc: 'Marque as caixas de seleção na lista (ou a do cabeçalho, para todos os listados) e use a barra que aparece para trocar o cargo ou o setor de vários colaboradores de uma vez. A troca de perfil de acesso em lote é exclusiva da equipe MJ.' },
+      { title: 'Esqueci minha senha', desc: 'Na tela de login, o colaborador digita o e-mail e clica em "Esqueci a senha": recebe em português, pelo e-mail da plataforma, um link válido por 1 hora para criar uma nova senha. Se não encontrar, oriente a verificar a caixa de spam.' },
       { title: 'Perfis disponíveis', desc: 'Super Admin: acesso total. Equipe MJ: staff interno da MJ Consultoria, ajuda em todos os clientes (colaboradores, relatórios, auditoria) sem pertencer a nenhum — só o SUPERADMIN pode criar esse perfil. Gestor: acesso completo ao cliente. Admin: gerenciar colaboradores. Colaborador: acesso aos próprios dados e treinamentos.' },
       { title: 'Editando e desativando', desc: 'Clique no ícone de edição para alterar dados ou perfil. Ao desligar um colaborador, desative imediatamente para revogar o acesso à plataforma.' },
       { title: 'Matriz de Acesso', desc: 'Na aba "Matriz de Acesso", visualize um mapa completo de quais recursos cada perfil pode acessar.' },
@@ -58,6 +60,7 @@ const SECTIONS: Section[] = [
       { title: 'Carga horária por colaborador', desc: 'Na aba "Colaboradores", a coluna "Carga Horária" soma as horas de todas as trilhas concluídas por aquele colaborador (definidas no cadastro de cada trilha), e o cálculo de aproveitamento (testes/aprovações/média) já considera tanto os quizzes de trilha quanto os Exames IA.' },
       { title: 'Ficha de Capacitação individual', desc: 'Na aba "Colaboradores", clique em "Gerar" na coluna Ficha para baixar um PDF individual com trilhas, testes, exames, certificados e a carga horária total daquele colaborador — pronto para apresentar em inspeção.' },
       { title: 'Risco', desc: 'Aba com um índice de risco/maturidade por colaborador, combinando média de notas, atividade recente e validade de certificados — destaca quem precisa de atenção prioritária.' },
+      { title: 'Erros por Assunto/Setor', desc: 'Mostra onde a equipe mais erra: taxa de erro por assunto, por setor e no cruzamento dos dois, os conteúdos com mais erro e as perguntas mais erradas (com a resposta correta). O quadro "Precisam de mais treinamento" aponta as combinações de assunto e setor com 30% de erro ou mais — um roteiro direto para o próximo reforço.' },
       { title: 'Exportação', desc: 'Use "Imprimir" para gerar relatório em PDF ou "Exportar Excel" para análise em planilha. Filtre por período usando o seletor no topo.' },
     ]
   },
@@ -124,11 +127,13 @@ const SECTIONS: Section[] = [
   {
     id: 'trails', icon: 'fa-road', title: 'Trilhas', subtitle: 'Trilhas de aprendizagem por perfil', image: '/tutorial/trails.png',
     steps: [
-      { title: 'O que são Trilhas?', desc: 'Trilhas são sequências de conteúdos organizados por perfil profissional (ex: atendente, analista, supervisor, escrevente) — servem tanto para empresas privadas quanto para cartórios. Cada trilha guia o colaborador do básico ao avançado.' },
+      { title: 'O que são Trilhas?', desc: 'Trilhas são sequências de conteúdos organizados por assunto e por perfil (ex.: atendimento, administrativo, financeiro, liderança) — servem para empresas de qualquer segmento e também para cartórios. Cada trilha guia o colaborador do básico ao avançado.' },
       { title: 'Navegando em uma trilha', desc: 'Selecione uma trilha para ver os módulos disponíveis. Complete os módulos em sequência para liberar o próximo nível.' },
       { title: 'Progresso', desc: 'O progresso de cada trilha é salvo automaticamente. Acompanhe o avanço em "Meu Progresso" no menu CAPACITAÇÃO.' },
       { title: 'Trilhas modelo MJ Consultoria', desc: 'SUPERADMIN pode marcar uma trilha como "modelo oficial MJ Consultoria" (badge dourado) e distribuí-la para todos os clientes ou para uma lista específica.' },
-      { title: 'Trilhas de segurança inclusas', desc: 'Toda a base de clientes — empresas e cartórios — já recebe 4 trilhas oficiais de cyber-higiene: Senhas e Autenticação, Engenharia Social e Phishing, Dispositivos Móveis e Trabalho Remoto, e LGPD no Dia a Dia — disponíveis para todos os perfis.' },
+      { title: 'Conteúdo liberado pela MJ Consultoria', desc: 'A equipe MJ Consultoria define, cliente a cliente, quais trilhas e materiais ficam disponíveis. Só aparece para a sua organização o que já foi liberado para ela — conteúdos exclusivos de outros clientes nunca são exibidos.' },
+      { title: 'Assunto e setores', desc: 'Cada trilha tem um assunto (ex.: Segurança da Informação, LGPD e Privacidade, Ética e Conduta, Integração de Novos Colaboradores) — em "Minhas Trilhas" elas aparecem agrupadas por assunto. Opcionalmente, marque setores: a trilha passa a aparecer só para colaboradores desses setores.' },
+      { title: 'Vídeo, podcast e material de apoio', desc: 'Um módulo pode trazer vídeo ou podcast e, logo abaixo, um material de apoio (como um infográfico do mesmo tema). Ao final de cada módulo há uma avaliação de 7 questões geradas a partir do conteúdo.' },
       { title: 'Instrutor, forma e carga horária', desc: 'Ao criar ou editar uma trilha, preencha o instrutor responsável, a forma de treinamento (EAD, presencial ou híbrida) e a carga horária em horas — esses dados alimentam o Resumo de Treinamentos e a carga horária por colaborador em Relatórios.' },
       { title: 'Fonte de conteúdo para Exames', desc: 'O texto dos módulos de cada trilha também é usado como fonte de conteúdo na tela de Exames — não é preciso duplicar o material lá.' },
       { title: 'Visibilidade', desc: 'Toda trilha pode ser publicada para "este cliente", "todos os clientes" ou uma lista de "clientes específicos" escolhida pelo SUPERADMIN.' },
@@ -143,11 +148,12 @@ const SECTIONS: Section[] = [
     ]
   },
   {
-    id: 'repositorio', icon: 'fa-photo-film', title: 'Repositório', subtitle: 'Áudios e PDFs de capacitação', image: '/tutorial/repositorio.png',
+    id: 'repositorio', icon: 'fa-photo-film', title: 'Repositório', subtitle: 'Vídeos, podcasts e infográficos de capacitação', image: '/tutorial/repositorio.png',
     steps: [
-      { title: 'Tipos de conteúdo', desc: 'O repositório centraliza materiais de capacitação: arquivos de áudio, PDFs, apresentações e documentos complementares.' },
-      { title: 'Buscando conteúdo', desc: 'Use a busca para localizar materiais por palavra-chave, tipo de arquivo ou categoria.' },
-      { title: 'Materiais obrigatórios', desc: 'Conteúdos marcados como obrigatórios aparecem destacados. O gestor pode definir quais materiais são de leitura/visualização obrigatória.' },
+      { title: 'Tipos de conteúdo', desc: 'O repositório centraliza os materiais de capacitação da sua organização: vídeos, podcasts (áudios) e infográficos, organizados por categoria (Onboarding, Normativo, Técnico, Operacional, Comportamental).' },
+      { title: 'Reprodução protegida', desc: 'Os materiais abrem no player da própria plataforma, sem expor o link do arquivo e sem botão de download.' },
+      { title: 'Buscando conteúdo', desc: 'Use a busca e os filtros por tipo (vídeo, áudio, infográfico) e por categoria para localizar materiais.' },
+      { title: 'Conclusão conta para a prova', desc: 'Um conteúdo só conta como visto quando fica aberto pelo tempo de duração cadastrado — é isso que libera a avaliação correspondente.' },
     ]
   },
   {
@@ -162,7 +168,7 @@ const SECTIONS: Section[] = [
     steps: [
       { title: 'Publicando um comunicado', desc: 'Defina título, mensagem e prioridade (informativo, normal, urgente). Fixe no topo do mural quando necessário.' },
       { title: 'Aceite formal (opcional)', desc: 'Marque "Exigir confirmação formal de leitura" para comunicados críticos — o colaborador precisa clicar em "Li e concordo" antes de o comunicado ser considerado lido, gerando evidência com nome, e-mail e data/hora.' },
-      { title: 'Acompanhando confirmações', desc: 'No modo Gestão, veja quantos colaboradores já confirmaram a leitura de cada comunicado com aceite obrigatório — útil para dossiês de auditoria CNJ.' },
+      { title: 'Acompanhando confirmações', desc: 'No modo Gestão, veja quantos colaboradores já confirmaram a leitura de cada comunicado com aceite obrigatório — útil como evidência em auditorias, LGPD e, para cartórios, inspeções do CNJ.' },
       { title: 'Notificação por e-mail é opcional', desc: 'Por padrão, o comunicado fica só no mural — marque "Notificar colaboradores por e-mail" apenas para avisos que realmente precisam interromper a caixa de entrada de todo mundo. Um selo azul "E-mail" identifica quais comunicados dispararam notificação.' },
     ]
   },
@@ -320,7 +326,7 @@ body { font-family: Arial, sans-serif; color:#1e293b; background:white; padding:
 <div class="cover">
   <div class="cover-logo">MJ <span>Consultoria</span></div>
   <div class="cover-title">Manual do Usuário</div>
-  <div class="cover-sub">Plataforma de Treinamento Corporativo</div>
+  <div class="cover-sub">Integra-Academy · Capacitação para empresas e cartórios</div>
   <div class="cover-date">MJ Consultoria &nbsp;·&nbsp; ${new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</div>
 </div>
 <div class="toc">
@@ -366,7 +372,8 @@ ${allContent}
       <div className="bg-gold/8 border border-gold/25 rounded-2xl p-5 flex items-start gap-3">
         <i className="fa-solid fa-circle-info text-gold text-lg mt-0.5 flex-shrink-0"></i>
         <p className="text-sm text-[#7a5c1e] leading-relaxed">
-          Bem-vindo à Plataforma MJ Consultoria. Selecione um módulo para ver as instruções detalhadas,
+          Bem-vindo à Integra-Academy, a plataforma de capacitação da MJ Consultoria para empresas de qualquer segmento
+          e para cartórios. Selecione um módulo para ver as instruções detalhadas,
           ou clique em <strong className="text-gold">Baixar PDF</strong> para salvar o manual completo.
         </p>
       </div>
