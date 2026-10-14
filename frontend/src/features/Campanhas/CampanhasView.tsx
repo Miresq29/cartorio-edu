@@ -3,7 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { GeminiService } from '../../services/geminiService';
 import { db } from '../../services/firebase';
-import { collection, addDoc, onSnapshot, query, where, orderBy, serverTimestamp, limit, updateDoc, doc, deleteField } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, query, where, serverTimestamp, updateDoc, doc, deleteField } from 'firebase/firestore';
 
 type Platform = 'linkedin' | 'instagram' | 'whatsapp' | 'email';
 type Tone = 'formal' | 'informativo' | 'motivacional' | 'educativo' | 'comemorativo';
@@ -106,8 +106,14 @@ const CampanhasView: React.FC = () => {
   const [salvando, setSalvando] = useState(false);
 
   useEffect(() => {
-    const q = query(collection(db, 'campanhas'), where('tenantId', '==', tenantId), orderBy('criadoEm', 'desc'), limit(20));
-    return onSnapshot(q, s => setHistorico(s.docs.map(d => ({ id: d.id, ...d.data() } as Campanha))));
+    // Ordena no navegador: tenantId + criadoEm exigiria índice composto que nunca existiu (o
+    // histórico ficava sempre vazio). O volume por cliente é pequeno.
+    const q = query(collection(db, 'campanhas'), where('tenantId', '==', tenantId));
+    return onSnapshot(q, s => {
+      const docs = s.docs.map(d => ({ id: d.id, ...d.data() } as Campanha));
+      docs.sort((a, b) => (b.criadoEm?.toMillis?.() ?? Date.now()) - (a.criadoEm?.toMillis?.() ?? Date.now()));
+      setHistorico(docs.slice(0, 20));
+    }, () => setHistorico([]));
   }, [tenantId]);
 
   const togglePlatform = (platform: Platform) => {
