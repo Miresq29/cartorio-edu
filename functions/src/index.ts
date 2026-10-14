@@ -891,6 +891,15 @@ export const relatorioErros = onCall({ timeoutSeconds: 120, memory: "512MiB" }, 
   const setorDe = new Map(usersSnap.docs.map((d) => [d.id, String(d.data().setor || "") || SEM_SETOR]));
   const assuntoTrilhaId = new Map(trilhasSnap.docs.map((d) => [d.id, String(d.data().assunto || "") || SEM_ASSUNTO]));
   const assuntoTrilhaTitulo = new Map(trilhasSnap.docs.map((d) => [String(d.data().titulo || ""), String(d.data().assunto || "") || SEM_ASSUNTO]));
+  // Item do Repositório → assunto da trilha cujo módulo aponta para ele (exames feitos sobre o vídeo/áudio avulso).
+  const assuntoItemRepo = new Map<string, string>();
+  for (const d of trilhasSnap.docs) {
+    const assunto = String(d.data().assunto || "");
+    if (!assunto) continue;
+    for (const m of (d.data().modulos || []) as { conteudoRef?: { itemId?: string }; apoioRef?: { itemId?: string } }[]) {
+      for (const id of [m.conteudoRef?.itemId, m.apoioRef?.itemId]) if (id && !assuntoItemRepo.has(id)) assuntoItemRepo.set(id, assunto);
+    }
+  }
 
   const todosExames = exSnap.docs.map((d) => d.data()).filter((r) => Array.isArray(r.respostas) && r.respostas.length);
   const exames = todosExames.filter((r) => r.sessaoId);
@@ -913,7 +922,7 @@ export const relatorioErros = onCall({ timeoutSeconds: 120, memory: "512MiB" }, 
     const assunto = s.fonteTipo === "trilha"
       ? (assuntoTrilhaId.get(s.fonteId) || SEM_ASSUNTO)
       : s.fonteTipo === "video"
-        ? (assuntoTrilhaTitulo.get(String(itensRepo.get(s.fonteId)?.trilhaTitulo || "")) || SEM_ASSUNTO)
+        ? (assuntoItemRepo.get(String(s.fonteId)) || assuntoTrilhaTitulo.get(String(itensRepo.get(s.fonteId)?.trilhaTitulo || "")) || SEM_ASSUNTO)
         : SEM_ASSUNTO;
     const porId = new Map((s.questoes as QuestaoExameServidor[]).map((q) => [q.id, q]));
     for (const resp of r.respostas as { questaoId: number; escolhida: string; correta: string }[]) {
@@ -929,6 +938,7 @@ export const relatorioErros = onCall({ timeoutSeconds: 120, memory: "512MiB" }, 
     for (const r of examesLegados) {
       const fonteId = String(r.fonteId || "");
       const assunto = assuntoTrilhaId.get(fonteId)
+        || assuntoItemRepo.get(fonteId)
         || assuntoTrilhaTitulo.get(String(r.fonteTitulo || ""))
         || assuntoTrilhaTitulo.get(String(itensLegados.get(fonteId)?.trilhaTitulo || ""))
         || SEM_ASSUNTO;
