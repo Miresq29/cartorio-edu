@@ -24,32 +24,22 @@ function aplicarPrefs(p: Prefs | null) {
   html.classList.toggle('a11y-destaque', !!p?.destaque);
 }
 
-// O widget oficial espera a marcação <div vw> no body e inicializa no window.onload — numa SPA o
-// script entra depois do load, então o onload registrado pelo widget é disparado manualmente.
+// O loader atual do VLibras (vlibras-plugin.js) se monta sozinho ao carregar: cria o botão em
+// #vlibras-access-wrapper e, no clique, baixa o app do avatar (#vlibras-app-root).
 function carregarVLibras() {
-  if (document.getElementById('vlibras-root')) return;
-  const raiz = document.createElement('div');
-  raiz.id = 'vlibras-root';
-  raiz.setAttribute('vw', '');
-  raiz.className = 'enabled';
-  raiz.innerHTML = '<div vw-access-button class="active"></div><div vw-plugin-wrapper><div class="vw-plugin-top-wrapper"></div></div>';
-  document.body.appendChild(raiz);
+  if (document.getElementById('vlibras-script')) return;
+  (window as any).VLibrasWidget = { path: VLIBRAS_APP };
   const s = document.createElement('script');
   s.id = 'vlibras-script';
   s.src = VLIBRAS_SCRIPT;
   s.async = true;
-  s.onload = () => {
-    const w = window as any;
-    if (!w.VLibras) return;
-    new w.VLibras.Widget(VLIBRAS_APP);
-    if (document.readyState === 'complete' && typeof w.onload === 'function') w.onload();
-  };
   document.body.appendChild(s);
 }
 
 function removerVLibras() {
-  document.getElementById('vlibras-root')?.remove();
-  document.getElementById('vlibras-script')?.remove();
+  for (const id of ['vlibras-script', 'vlibras-access-wrapper', 'vlibras-app-root']) document.getElementById(id)?.remove();
+  document.querySelectorAll('script[src*="vlibras.gov.br"]').forEach(s => s.remove());
+  delete (window as any).VLibras;
 }
 
 const Acessibilidade: React.FC = () => {
