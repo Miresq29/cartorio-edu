@@ -162,8 +162,11 @@ const CustomTooltip: React.FC<any> = ({ active, payload, label }) => {
 // ─── Main View ────────────────────────────────────────────────────────────────
 
 const RelatoriosView: React.FC = () => {
-  const { state, tenantId } = useApp();
+  const { state, tenantId, tipoOrganizacao } = useApp();
   const user = state.user!;
+  const rodapeConformidade = tipoOrganizacao === 'cartorio'
+    ? 'Em conformidade com LGPD Lei nº 13.709/2018 · Provimento CNJ nº 149 · Provimento CNJ nº 213/2026'
+    : 'Em conformidade com a LGPD — Lei nº 13.709/2018';
 
   const [tab, setTab] = useState<Tab>('visao_geral');
   const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
@@ -592,7 +595,7 @@ td { background:#fdfbf5; }
 
 <div class="footer">
   MJ Consultoria · Ficha gerada automaticamente pela plataforma de treinamento<br>
-  Em conformidade com LGPD Lei nº 13.709/2018 · Provimento CNJ nº 149 · Provimento CNJ nº 213/2026
+  ${rodapeConformidade}
 </div>
 <div class="verificacao">Código de verificação: ${codigo}</div>
 </body></html>`);
@@ -741,7 +744,7 @@ tr { page-break-inside:avoid; }
 
 <div class="footer">
   MJ Consultoria · Relatório gerado automaticamente pela plataforma de treinamento<br>
-  Em conformidade com LGPD Lei nº 13.709/2018 · Provimento CNJ nº 149 · Provimento CNJ nº 213/2026
+  ${rodapeConformidade}
 </div>
 <div class="verificacao">Código de verificação: ${codigo}</div>
 </body></html>`);
@@ -946,7 +949,7 @@ tr { page-break-inside:avoid; }
                   <p className="text-xs text-slate-500 max-w-2xl">
                     Cobertura de capacitação: quantos colaboradores existem, quantos participaram de algum treinamento,
                     quantos foram efetivamente avaliados (teste/exame) e o resultado — pronto para evidência em auditoria
-                    ISO 27001/9001 e Provimento CNJ 213/2026.
+                    ISO 27001/9001{tipoOrganizacao === 'cartorio' ? ' e Provimento CNJ 213/2026' : ' e LGPD'}.
                   </p>
                   <button onClick={exportCSVCobertura} className="flex items-center gap-2 bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-gold px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-sm">
                     <i className="fa-solid fa-file-excel"></i>CSV
@@ -1320,7 +1323,9 @@ tr { page-break-inside:avoid; }
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-black text-slate-700">
                     {filteredAvaliacoes.length} avaliações no período (nota e aprovação)
-                    <span className="text-slate-500 font-normal ml-2">— válidas como evidência para dossiê CNJ (Provimentos 149, 161 e 213)</span>
+                    <span className="text-slate-500 font-normal ml-2">{tipoOrganizacao === 'cartorio'
+                      ? '— válidas como evidência para dossiê CNJ (Provimentos 149, 161 e 213)'
+                      : '— válidas como evidência de capacitação em auditorias e LGPD'}</span>
                   </p>
                   <button onClick={gerarRelatorioPDF} className="flex items-center gap-2 bg-white border border-slate-200 hover:border-slate-400 text-slate-600 px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm"><i className="fa-solid fa-file-pdf text-xs"></i>Relatório em PDF</button><button onClick={exportCSV}
                     className="flex items-center gap-2 bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-gold px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-sm">

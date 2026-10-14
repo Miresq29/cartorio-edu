@@ -380,14 +380,22 @@ const AuditoriaView: React.FC = () => {
           )}
         </div>
 
-        {/* Nota CNJ */}
+        {/* Nota de conformidade (CNJ só para cartório) */}
         <div className="bg-blue-50 border border-blue-200 rounded-[14px] p-4 flex items-start gap-3">
           <i className="fa-solid fa-circle-info text-blue-500 text-base mt-0.5 flex-shrink-0"></i>
-          <p className="text-xs text-blue-700 leading-relaxed">
-            <strong>Trilha de Auditoria CNJ</strong> — Os registros desta tela compõem a trilha de auditoria exigida pelo
-            Provimento CNJ nº 213/2026 (art. 14, §2º) e Provimento nº 161/2024. Os logs são gravados automaticamente
-            a cada ação relevante na plataforma e não podem ser alterados pelos usuários.
-          </p>
+          {tipoOrganizacao === 'cartorio' ? (
+            <p className="text-xs text-blue-700 leading-relaxed">
+              <strong>Trilha de Auditoria CNJ</strong> — Os registros desta tela compõem a trilha de auditoria exigida pelo
+              Provimento CNJ nº 213/2026 (art. 14, §2º) e Provimento nº 161/2024. Os logs são gravados automaticamente
+              a cada ação relevante na plataforma e não podem ser alterados pelos usuários.
+            </p>
+          ) : (
+            <p className="text-xs text-blue-700 leading-relaxed">
+              <strong>Trilha de Auditoria</strong> — Os registros desta tela servem como evidência de prestação de contas
+              exigida pela LGPD (art. 6º, X, e art. 37) e por boas práticas de segurança (ISO 27001). Os logs são gravados
+              automaticamente a cada ação relevante na plataforma e não podem ser alterados pelos usuários.
+            </p>
+          )}
         </div>
       </div>
     </div>

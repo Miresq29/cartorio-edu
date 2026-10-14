@@ -850,9 +850,9 @@ const RepositorioView: React.FC = () => {
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {[
-          { label: 'Vídeos',         value: totalVideos, icon: 'fa-brands fa-youtube',   color: 'red'    },
+          { label: 'YouTube',        value: totalVideos, icon: 'fa-brands fa-youtube',   color: 'red'    },
           { label: 'Áudios',         value: totalAudios, icon: 'fa-solid fa-headphones', color: 'violet' },
-          { label: 'Videos',           value: totalPDFs,   icon: 'fa-solid fa-file-pdf',   color: 'rose'   },
+          { label: 'Vídeos',         value: totalPDFs,   icon: 'fa-solid fa-circle-play', color: 'teal'  },
           { label: 'Infográficos',   value: totalInfograficos, icon: 'fa-solid fa-image', color: 'amber' },
           { label: 'Vistos por mim', value: totalVistos, icon: 'fa-solid fa-circle-check',color: 'emerald'},
         ].map((s, i) => (

@@ -24,7 +24,7 @@ const SecurityView: React.FC = () => {
 
     const data = {
       timestamp: new Date().toISOString(),
-      app: 'CartórioRAG PRO',
+      app: 'Integra-Academy',
       data: {
         users: users ? JSON.parse(users) : [],
         documents: docs ? JSON.parse(docs) : [],

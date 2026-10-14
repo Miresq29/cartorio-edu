@@ -301,7 +301,7 @@ const ModalEmitir: React.FC<{
 // ─── Main View ────────────────────────────────────────────────────────────────
 
 const CertificadoView: React.FC = () => {
-  const { state, tenantId } = useApp();
+  const { state, tenantId, tipoOrganizacao } = useApp();
   const { showToast } = useToast();
   const user = state.user!;
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(user.role);
@@ -553,11 +553,23 @@ const CertificadoView: React.FC = () => {
         <div className="bg-blue-500/5 border border-blue-500/20 rounded-2xl p-4 flex items-start gap-3">
           <i className="fa-solid fa-circle-info text-blue-400 text-lg mt-0.5 flex-shrink-0"></i>
           <div>
-            <p className="text-blue-400 font-black text-xs uppercase tracking-widest">Certificados para Dossiê CNJ</p>
-            <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
-              Os certificados gerados por esta plataforma são válidos como evidência de treinamento para o dossiê de conformidade CNJ, 
-              conforme Provimentos nº 149/2023, 161/2024 e 213/2026. Cada certificado possui código de verificação único.
-            </p>
+            {tipoOrganizacao === 'cartorio' ? (
+              <>
+                <p className="text-blue-400 font-black text-xs uppercase tracking-widest">Certificados para Dossiê CNJ</p>
+                <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+                  Os certificados gerados por esta plataforma são válidos como evidência de treinamento para o dossiê de conformidade CNJ,
+                  conforme Provimentos nº 149/2023, 161/2024 e 213/2026. Cada certificado possui código de verificação único.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-blue-400 font-black text-xs uppercase tracking-widest">Certificados como evidência de capacitação</p>
+                <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+                  Os certificados gerados por esta plataforma comprovam a capacitação da equipe em auditorias, programas de
+                  conformidade e LGPD. Cada certificado possui código de verificação único.
+                </p>
+              </>
+            )}
           </div>
         </div>
 

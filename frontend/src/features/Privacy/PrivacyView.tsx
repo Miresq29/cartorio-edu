@@ -12,7 +12,7 @@ const PrivacyView: React.FC = () => {
           Política de <span className="text-blue-500">Privacidade</span>
         </h2>
         <p className="text-slate-500 font-bold uppercase tracking-widest text-sm">
-          Tratamento e Proteção de Dados Pessoais — CartórioRAG PRO v3.0
+          Tratamento e Proteção de Dados Pessoais — Integra-Academy
         </p>
         <div className="flex items-center gap-3 flex-wrap">
           <span className="text-[9px] font-black bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1.5 rounded-lg uppercase tracking-widest">LGPD — Lei nº 13.709/2018</span>
@@ -30,7 +30,7 @@ const PrivacyView: React.FC = () => {
             <i className="fa-solid fa-circle-info"></i> 1. Sobre Esta Política
           </h3>
           <p className="text-slate-700 text-sm leading-loose text-justify">
-            Esta Política de Privacidade descreve como o <strong>CartórioRAG PRO</strong>, desenvolvido e mantido pela <strong>MJ Consultoria</strong>, coleta, utiliza, armazena e protege os dados dos colaboradores e das serventias contratantes. O tratamento de dados é realizado em conformidade com a Lei Geral de Proteção de Dados Pessoais (LGPD — Lei nº 13.709/2018), o Provimento CNJ nº 149 e o Provimento CNJ nº 213/2026.
+            Esta Política de Privacidade descreve como o <strong>Integra-Academy</strong>, desenvolvido e mantido pela <strong>MJ Consultoria</strong>, coleta, utiliza, armazena e protege os dados dos colaboradores e das organizações contratantes (empresas e cartórios). O tratamento de dados é realizado em conformidade com a Lei Geral de Proteção de Dados Pessoais (LGPD — Lei nº 13.709/2018), o Provimento CNJ nº 149 e o Provimento CNJ nº 213/2026.
           </p>
         </div>
 

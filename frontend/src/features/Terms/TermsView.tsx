@@ -9,7 +9,7 @@ const TermsView: React.FC = () => {
         </div>
         <h2 className="text-3xl font-black text-navy italic uppercase tracking-tighter">Termos de Uso & Privacidade</h2>
         <p className="text-slate-500 font-bold uppercase tracking-widest text-sm">
-          Políticas de Utilização do CartórioRAG PRO v3.0
+          Políticas de Utilização do Integra-Academy
         </p>
       </header>
 
@@ -20,7 +20,7 @@ const TermsView: React.FC = () => {
             <i className="fa-solid fa-robot text-2xl"></i> 1. Uso de Inteligência Artificial
           </h3>
           <p className="text-slate-600 text-base leading-loose text-justify">
-            O <strong>CartórioRAG PRO</strong> utiliza modelos de linguagem avançados (LLMs) para auxiliar na análise documental e consulta jurídica.
+            O <strong>Integra-Academy</strong> utiliza modelos de linguagem avançados (LLMs) para auxiliar na análise documental e consulta jurídica.
             É importante ressaltar que a IA atua como uma <em>ferramenta de apoio</em> e não substitui, em hipótese alguma, a análise técnica, a fé pública e a decisão final do Tabelião ou Oficial Registrador.
             O sistema pode apresentar imprecisões ("alucinações") e todas as sugestões devem ser validadas pelo operador humano competente.
           </p>
@@ -58,7 +58,7 @@ const TermsView: React.FC = () => {
             <i className="fa-solid fa-triangle-exclamation text-2xl"></i> 4. Limitação de Responsabilidade
           </h3>
           <p className="text-slate-600 text-base leading-loose text-justify">
-            Os desenvolvedores do CartórioRAG PRO não se responsabilizam por quaisquer danos diretos, indiretos, incidentais ou consequenciais resultantes do uso da plataforma.
+            Os desenvolvedores do Integra-Academy não se responsabilizam por quaisquer danos diretos, indiretos, incidentais ou consequenciais resultantes do uso da plataforma.
             O sistema caracteriza-se estritamente como uma <strong>ferramenta tecnológica de suporte e otimização de serviços</strong>, não detendo fé pública.
             A responsabilidade jurídica final sobre a qualificação registral, lavratura de escrituras, atas e demais atos praticados permanece <strong>exclusiva da serventia</strong>, cabendo ao Tabelião ou Oficial titular a validação de todas as minutas e sugestões geradas pela inteligência artificial.
           </p>
@@ -82,7 +82,7 @@ const TermsView: React.FC = () => {
           <p className="text-sm text-slate-500 font-medium leading-relaxed">
             Ao utilizar este sistema, você concorda com todos os termos acima descritos. 
             Em caso de dúvidas, entre em contato com a MJ Consultoria pelo módulo de <strong className="text-blue-400">Suporte Técnico</strong>.
-            <br /><span className="text-slate-600 text-xs mt-2 block">Última atualização: Fevereiro/2026 — CartórioRAG PRO v3.0</span>
+            <br /><span className="text-slate-600 text-xs mt-2 block">Última atualização: Fevereiro/2026 — Integra-Academy</span>
           </p>
         </div>
 

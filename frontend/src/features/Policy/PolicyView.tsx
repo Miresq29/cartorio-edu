@@ -12,7 +12,7 @@ const PolicyView: React.FC = () => {
           Política de <span className="text-red-500">Segurança</span>
         </h2>
         <p className="text-slate-500 font-bold uppercase tracking-widest text-sm">
-          Controles, Proteções e Responsabilidades — CartórioRAG PRO v3.0
+          Controles, Proteções e Responsabilidades — Integra-Academy
         </p>
         <div className="flex items-center gap-3 flex-wrap">
           <span className="text-[9px] font-black bg-red-500/10 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-lg uppercase tracking-widest">ISO 27001</span>
@@ -29,7 +29,7 @@ const PolicyView: React.FC = () => {
             <i className="fa-solid fa-bullseye"></i> 1. Objetivo e Escopo
           </h3>
           <p className="text-slate-700 text-sm leading-loose text-justify">
-            Esta Política de Segurança estabelece os princípios, controles e responsabilidades para proteção dos sistemas, dados e infraestrutura do <strong>CartórioRAG PRO</strong>. Aplica-se a todos os usuários, colaboradores das serventias contratantes e à equipe da <strong>MJ Consultoria</strong>, em conformidade com o Provimento CNJ nº 212/2026 e as melhores práticas de segurança da informação.
+            Esta Política de Segurança estabelece os princípios, controles e responsabilidades para proteção dos sistemas, dados e infraestrutura do <strong>Integra-Academy</strong>. Aplica-se a todos os usuários, colaboradores das organizações contratantes (empresas e cartórios) e à equipe da <strong>MJ Consultoria</strong>, em conformidade com o Provimento CNJ nº 212/2026 e as melhores práticas de segurança da informação.
           </p>
         </div>
 
@@ -172,7 +172,7 @@ const PolicyView: React.FC = () => {
             <p className="text-sm font-black text-navy mb-1">Dúvidas sobre Segurança?</p>
             <p className="text-xs text-slate-500 leading-relaxed">
               Para reportar vulnerabilidades, incidentes ou dúvidas sobre esta política, utilize o módulo de <strong className="text-blue-400">Suporte Técnico</strong> da plataforma.
-              <br /><span className="text-slate-600 text-[9px] mt-2 block">Última atualização: Fevereiro/2026 — CartórioRAG PRO v3.0 — Conforme Provimento CNJ nº 212/2026</span>
+              <br /><span className="text-slate-600 text-[9px] mt-2 block">Última atualização: Fevereiro/2026 — Integra-Academy — Conforme Provimento CNJ nº 212/2026</span>
             </p>
           </div>
         </div>

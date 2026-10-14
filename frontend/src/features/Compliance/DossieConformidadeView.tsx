@@ -147,7 +147,11 @@ Simulações de phishing no período: ${dados.simulacoesRealizadas}, taxa de cli
 E-mails de notificação: ${dados.emailsOk} entregues, ${dados.emailsErro} com falha.${assessmentRecente ? `
 Diagnóstico de Maturidade em Segurança da Informação (últimos 90 dias): ${labelNivel(assessmentRecente.nivel)} — ${assessmentRecente.scoreGlobal}% de score global, referente ao período "${assessmentRecente.periodo}".` : ''}`;
 
-      const prompt = `Você é um analista de compliance de um cartório notarial brasileiro, redigindo a seção de resumo executivo de um dossiê de conformidade para apresentação à corregedoria (Provimentos CNJ 149 e 213/2026) e para fins de LGPD. Com base nos dados abaixo, escreva um parágrafo objetivo (6 a 10 linhas), em português formal, destacando o nível de conformidade do cartório em capacitação e segurança da informação, e citando pontos de atenção quando houver (ex.: baixa taxa de aceite, alta taxa de clique em phishing, certificados vencidos). Não invente números além dos fornecidos.\n\nDados do período (${PERIODOS.find(p => p.id === periodo)?.label}):\n${resumoDados}`;
+      const contexto = tipoOrganizacao === 'cartorio'
+        ? 'de um cartório notarial brasileiro, redigindo a seção de resumo executivo de um dossiê de conformidade para apresentação à corregedoria (Provimentos CNJ 149 e 213/2026) e para fins de LGPD'
+        : 'de uma empresa brasileira, redigindo a seção de resumo executivo de um dossiê de conformidade para auditorias internas/externas e para fins de LGPD (não cite normas do CNJ nem de cartórios)';
+      const alvo = tipoOrganizacao === 'cartorio' ? 'do cartório' : 'da empresa';
+      const prompt = `Você é um analista de compliance ${contexto}. Com base nos dados abaixo, escreva um parágrafo objetivo (6 a 10 linhas), em português formal, destacando o nível de conformidade ${alvo} em capacitação e segurança da informação, e citando pontos de atenção quando houver (ex.: baixa taxa de aceite, alta taxa de clique em phishing, certificados vencidos). Não invente números além dos fornecidos.\n\nDados do período (${PERIODOS.find(p => p.id === periodo)?.label}):\n${resumoDados}`;
 
       const texto = await GeminiService.getGeminiResponse(prompt);
       if (!texto || texto.startsWith('Erro ')) {
@@ -248,7 +252,7 @@ ${resumoAtual ? `<div class="section">
 
 <div class="footer">
   MJ Consultoria · Dossiê gerado automaticamente pela plataforma de treinamento<br>
-  Em conformidade com LGPD Lei nº 13.709/2018 · Provimento CNJ nº 149 · Provimento CNJ nº 213/2026
+  ${tipoOrganizacao === 'cartorio' ? 'Em conformidade com LGPD Lei nº 13.709/2018 · Provimento CNJ nº 149 · Provimento CNJ nº 213/2026' : 'Em conformidade com a LGPD — Lei nº 13.709/2018'}
 </div>
 </body></html>`);
     win.document.close();
@@ -282,7 +286,7 @@ ${resumoAtual ? `<div class="section">
             Dossiê de <span className="text-gold">Conformidade</span>
           </h2>
           <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">
-            Evidências consolidadas para inspeção CNJ e LGPD
+            {tipoOrganizacao === 'cartorio' ? 'Evidências consolidadas para inspeção CNJ e LGPD' : 'Evidências consolidadas para auditorias e LGPD'}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -355,7 +359,7 @@ ${resumoAtual ? `<div class="section">
           </button>
         </div>
         <p className="text-[11px] text-slate-400">
-          Redige um parágrafo formal com base nos indicadores acima, citando os Provimentos CNJ 149 e 213/2026 — incluído automaticamente no PDF exportado.
+          Redige um parágrafo formal com base nos indicadores acima{tipoOrganizacao === 'cartorio' ? ', citando os Provimentos CNJ 149 e 213/2026' : ', com foco em capacitação, segurança da informação e LGPD'} — incluído automaticamente no PDF exportado.
         </p>
         {resumoAtual && (
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
