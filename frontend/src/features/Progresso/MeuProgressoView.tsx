@@ -5,9 +5,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
+import { ProgressoTrilhaDoc, trilhaConcluida, modulosConcluidos, progressoDaTrilha } from '../../utils/progressoTrilha';
 
 interface Trilha { id: string; titulo: string; descricao: string; icone: string; cor: string; modulos: any[]; tenantId: string; }
-interface TrilhaProgresso { id: string; userId: string; userName: string; trilhaId: string; trilhaTitulo?: string; concluido: boolean; tenantId: string; }
+interface TrilhaProgresso extends ProgressoTrilhaDoc { id: string; userId: string; userName: string; tenantId: string; }
 interface QuizResult { id: string; colaborador: string; userId?: string; nota: number; aprovado: boolean; trailTitle?: string; moduleTitle?: string; ia?: boolean; createdAt: any; }
 interface Certificado { id: string; colaboradorId?: string; colaboradorNome: string; trilhaTitulo: string; notaFinal: number; emitidoEm: any; tenantId: string; codigoVerificacao?: string; }
 
@@ -36,7 +37,7 @@ const BADGES: BadgeDef[] = [
   // Primeiros passos
   { id: 'primeiro_teste',   nome: 'Primeiro Passo',      desc: 'Realizou o primeiro teste',              icon: 'fa-shoe-prints',       color: '#92400e', bg: '#fef3c7', border: '#fbbf24', nivel: 'bronze',  check: (d) => d.quizResults.length >= 1 },
   { id: 'aprovado',         nome: 'Aprovado',             desc: 'Passou em um teste com nota ≥ 75%',      icon: 'fa-circle-check',      color: '#065f46', bg: '#d1fae5', border: '#34d399', nivel: 'bronze',  check: (d) => d.quizResults.some(r => r.aprovado) },
-  { id: 'modulo_concluido', nome: 'Módulo Concluído',     desc: 'Concluiu o primeiro módulo',             icon: 'fa-book-open-reader',  color: '#1e40af', bg: '#dbeafe', border: '#60a5fa', nivel: 'bronze',  check: (d) => d.progresso.filter(p => p.concluido).length >= 1 },
+  { id: 'modulo_concluido', nome: 'Módulo Concluído',     desc: 'Concluiu o primeiro módulo',             icon: 'fa-book-open-reader',  color: '#1e40af', bg: '#dbeafe', border: '#60a5fa', nivel: 'bronze',  check: (d) => d.progresso.some(p => modulosConcluidos(p, d.trilhas.find(t => t.id === p.trilhaId)) >= 1) },
   // Desempenho
   { id: 'nota_90',          nome: 'Excelência',           desc: 'Obteve nota ≥ 90% em algum teste',       icon: 'fa-star',              color: '#b45309', bg: '#fef9c3', border: '#fbbf24', nivel: 'prata',   check: (d) => d.quizResults.some(r => r.nota >= 90) },
   { id: 'nota_100',         nome: 'Perfeição',            desc: 'Obteve nota 100% em algum teste',        icon: 'fa-crown',             color: '#7c3aed', bg: '#ede9fe', border: '#a78bfa', nivel: 'ouro',    check: (d) => d.quizResults.some(r => r.nota >= 100) },
@@ -45,10 +46,10 @@ const BADGES: BadgeDef[] = [
   { id: 'teste_ia',         nome: 'IA Explorer',          desc: 'Realizou teste gerado por IA',           icon: 'fa-robot',             color: '#4338ca', bg: '#eef2ff', border: '#818cf8', nivel: 'prata',   check: (d) => d.quizResults.some(r => r.ia) },
   { id: 'mestre_ia',        nome: 'Mestre IA',            desc: '10 testes com IA aprovados',             icon: 'fa-brain',             color: '#7c3aed', bg: '#f5f3ff', border: '#a78bfa', nivel: 'ouro',    check: (d) => d.quizResults.filter(r => r.ia && r.aprovado).length >= 10 },
   // Trilhas
-  { id: 'trilha_lgpd',      nome: 'Guardião LGPD',        desc: 'Concluiu a trilha LGPD',                 icon: 'fa-lock',              color: '#0f766e', bg: '#ccfbf1', border: '#2dd4bf', nivel: 'ouro',    check: (d) => d.progresso.some(p => p.concluido && p.trilhaTitulo?.toLowerCase().includes('lgpd')) },
-  { id: 'trilha_p213',      nome: 'Cyber Shield',         desc: 'Concluiu a trilha Provimento 213',       icon: 'fa-shield-virus',      color: '#1d4ed8', bg: '#dbeafe', border: '#3b82f6', nivel: 'ouro',    check: (d) => d.progresso.some(p => p.concluido && p.trilhaTitulo?.toLowerCase().includes('213')) },
-  { id: 'trilha_p161',      nome: 'Vigilante PLD',        desc: 'Concluiu a trilha Provimento 161',       icon: 'fa-eye',               color: '#b45309', bg: '#fef3c7', border: '#f59e0b', nivel: 'ouro',    check: (d) => d.progresso.some(p => p.concluido && p.trilhaTitulo?.toLowerCase().includes('161')) },
-  { id: 'todas_trilhas',    nome: 'Mestre Notarial',      desc: 'Concluiu todas as trilhas disponíveis',  icon: 'fa-graduation-cap',    color: '#7c3aed', bg: '#f5f3ff', border: '#7c3aed', nivel: 'platina', check: (d) => { const total = d.trilhas.length; const done = new Set(d.progresso.filter(p => p.concluido).map(p => p.trilhaId)).size; return total > 0 && done >= total; } },
+  { id: 'trilha_lgpd',      nome: 'Guardião LGPD',        desc: 'Concluiu a trilha LGPD',                 icon: 'fa-lock',              color: '#0f766e', bg: '#ccfbf1', border: '#2dd4bf', nivel: 'ouro',    check: (d) => d.progresso.some(p => trilhaConcluida(p) && p.trilhaTitulo?.toLowerCase().includes('lgpd')) },
+  { id: 'trilha_p213',      nome: 'Cyber Shield',         desc: 'Concluiu a trilha Provimento 213',       icon: 'fa-shield-virus',      color: '#1d4ed8', bg: '#dbeafe', border: '#3b82f6', nivel: 'ouro',    check: (d) => d.progresso.some(p => trilhaConcluida(p) && p.trilhaTitulo?.toLowerCase().includes('213')) },
+  { id: 'trilha_p161',      nome: 'Vigilante PLD',        desc: 'Concluiu a trilha Provimento 161',       icon: 'fa-eye',               color: '#b45309', bg: '#fef3c7', border: '#f59e0b', nivel: 'ouro',    check: (d) => d.progresso.some(p => trilhaConcluida(p) && p.trilhaTitulo?.toLowerCase().includes('161')) },
+  { id: 'todas_trilhas',    nome: 'Mestre Notarial',      desc: 'Concluiu todas as trilhas disponíveis',  icon: 'fa-graduation-cap',    color: '#7c3aed', bg: '#f5f3ff', border: '#7c3aed', nivel: 'platina', check: (d) => { const total = d.trilhas.length; const done = new Set(d.progresso.filter(trilhaConcluida).map(p => p.trilhaId)).size; return total > 0 && done >= total; } },
   // Certificados
   { id: 'primeiro_cert',    nome: 'Certificado',          desc: 'Emitiu o primeiro certificado',          icon: 'fa-certificate',       color: '#b45309', bg: '#fefce8', border: '#eab308', nivel: 'prata',   check: (d) => d.certificados.length >= 1 },
   { id: 'tres_certs',       nome: 'Colecionador',         desc: 'Emitiu 3 certificados',                  icon: 'fa-medal',             color: '#0369a1', bg: '#e0f2fe', border: '#38bdf8', nivel: 'ouro',    check: (d) => d.certificados.length >= 3 },
@@ -126,7 +127,7 @@ const MeuProgressoView: React.FC = () => {
   const myCerts = certificados;
 
   const totalMods  = trilhas.reduce((a, t) => a + (t.modulos?.length ?? 0), 0);
-  const doneMods   = myProg.filter(p => p.concluido).length;
+  const doneMods   = trilhas.reduce((a, t) => a + modulosConcluidos(progressoDaTrilha(myProg, t.id), t), 0);
   const aprovados  = myRes.filter(r => r.aprovado).length;
   const mediaGeral = myRes.length ? Math.round(myRes.reduce((a, r) => a + r.nota, 0) / myRes.length) : 0;
   const globalPct  = pct(doneMods, totalMods);
@@ -238,8 +239,9 @@ const MeuProgressoView: React.FC = () => {
                     const COLORS = ['#4F46E5','#059669','#D97706','#DC2626','#7C3AED','#0891B2'];
                     const cor  = t.cor || COLORS[idx % COLORS.length];
                     const mods = t.modulos?.length ?? 0;
-                    const done = myProg.filter(p => p.trilhaId === t.id && p.concluido).length;
-                    const p    = pct(done, mods);
+                    const prog = progressoDaTrilha(myProg, t.id);
+                    const done = modulosConcluidos(prog, t);
+                    const p    = prog && trilhaConcluida(prog) ? 100 : pct(done, mods);
                     const res  = myRes.filter(r => r.trailTitle === t.titulo);
                     const media = res.length ? Math.round(res.reduce((a, r) => a + r.nota, 0) / res.length) : null;
                     return (

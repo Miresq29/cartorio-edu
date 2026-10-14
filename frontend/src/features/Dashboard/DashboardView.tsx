@@ -8,6 +8,7 @@ import {
 import { collection, query, where, onSnapshot, orderBy, doc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
+import { ProgressoTrilhaDoc, trilhaConcluida, modulosConcluidos, progressoDaTrilha } from '../../utils/progressoTrilha';
 
 const GOLD   = '#C9A84C';
 const NAVY   = '#0D1B3E';
@@ -19,7 +20,7 @@ const PURPLE = '#7C3AED';
 const COLORS = [GOLD, GREEN, RED, AMBER, PURPLE, '#0891B2', '#EC4899'];
 
 interface QuizResult  { id:string; colaborador:string; userId?:string; nota:number; aprovado:boolean; trailTitle?:string; moduleTitle?:string; ia?:boolean; tenantId?:string; createdAt:any; }
-interface TrilhaProg  { id:string; userId:string; userName:string; trilhaId:string; trilhaTitulo?:string; concluido:boolean; tenantId:string; }
+interface TrilhaProg extends ProgressoTrilhaDoc { id:string; userId:string; userName:string; tenantId:string; }
 interface Trilha      { id:string; titulo:string; descricao:string; icone:string; cor:string; modulos:any[]; tenantId:string; }
 interface UserData    { id:string; name:string; cargo?:string; role:string; tenantId:string; }
 interface Certificado { id:string; colaboradorId?:string; colaboradorNome:string; trilhaTitulo:string; notaFinal:number; emitidoEm:any; tenantId:string; }
@@ -113,7 +114,7 @@ const ColabDashboard:React.FC<{trilhas:Trilha[];progresso:TrilhaProg[];quizResul
   const myCerts = certificados.filter(c=>c.colaboradorId===userId||c.colaboradorNome===userName);
   const minhasPendencias = useMemo(()=>calcPendencias(exames.filter(e=>e.userId===userId)),[exames,userId]);
   const totalMods = trilhas.reduce((a,t)=>a+(t.modulos?.length??0),0);
-  const doneMods  = myProg.filter(p=>p.concluido).length;
+  const doneMods  = trilhas.reduce((a,t)=>a+modulosConcluidos(progressoDaTrilha(myProg,t.id),t),0);
   const aprovados = myRes.filter(r=>r.aprovado).length;
   const media     = myRes.length?Math.round(myRes.reduce((a,r)=>a+r.nota,0)/myRes.length):0;
   const gPct      = pct(doneMods,totalMods);
@@ -129,15 +130,16 @@ const ColabDashboard:React.FC<{trilhas:Trilha[];progresso:TrilhaProg[];quizResul
 
   const porTrilha = useMemo(()=>trilhas.slice(0,6).map(t=>{
     const mods=t.modulos?.length??0;
-    const done=myProg.filter(p=>p.trilhaId===t.id&&p.concluido).length;
+    const prog=progressoDaTrilha(myProg,t.id);
+    const done=modulosConcluidos(prog,t);
     const res=myRes.filter(r=>r.trailTitle===t.titulo);
     const m=res.length?Math.round(res.reduce((a,r)=>a+r.nota,0)/res.length):0;
-    return {name:t.titulo.slice(0,14)+(t.titulo.length>14?'…':''),'Conclusao (%)':pct(done,mods),'Media':m};
+    return {name:t.titulo.slice(0,14)+(t.titulo.length>14?'…':''),'Conclusao (%)':prog&&trilhaConcluida(prog)?100:pct(done,mods),'Media':m};
   }),[trilhas,myProg,myRes]);
 
   const statusTrilhas = useMemo(()=>{
-    const c=trilhas.filter(t=>{const mods=t.modulos?.length??0;const done=myProg.filter(p=>p.trilhaId===t.id&&p.concluido).length;return mods>0&&done>=mods;}).length;
-    const e=trilhas.filter(t=>{const done=myProg.filter(p=>p.trilhaId===t.id&&p.concluido).length;return done>0&&done<(t.modulos?.length??0);}).length;
+    const c=trilhas.filter(t=>{const prog=progressoDaTrilha(myProg,t.id);return !!prog&&trilhaConcluida(prog);}).length;
+    const e=trilhas.filter(t=>{const prog=progressoDaTrilha(myProg,t.id);return !!prog&&!trilhaConcluida(prog);}).length;
     return [{name:'Concluidas',value:c,color:GREEN},{name:'Em andamento',value:e,color:GOLD},{name:'Nao iniciadas',value:trilhas.length-c-e,color:'#e2e8f0'}].filter(x=>x.value>0);
   },[trilhas,myProg]);
 
