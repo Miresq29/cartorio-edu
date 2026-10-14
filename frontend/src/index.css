@@ -181,3 +181,9 @@ a, button {
 
   .text-balance { text-wrap: balance; }
 }
+
+/* ── Acessibilidade (recurso adicional por cliente — ver components/Acessibilidade.tsx) ── */
+html.a11y-contraste #root { filter: contrast(1.45) saturate(1.15); }
+html.a11y-destaque a { text-decoration: underline !important; text-underline-offset: 3px; }
+html.a11y-destaque a:hover, html.a11y-destaque button:hover { outline: 2px dashed #f59e0b; outline-offset: 2px; }
+html.a11y-destaque *:focus-visible { outline: 4px solid #f59e0b !important; outline-offset: 3px !important; box-shadow: 0 0 0 6px rgba(10, 22, 40, .35) !important; }

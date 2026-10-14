@@ -4,6 +4,7 @@ import { ToastProvider } from './context/ToastContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import Sidebar from './components/Sidebar';
 import AccessWindowGate from './components/AccessWindowGate';
+import Acessibilidade from './components/Acessibilidade';
 
 const VerificarCertificadoView = lazy(() => import('./features/Certificado/VerificarCertificadoView'));
 
@@ -132,6 +133,7 @@ const MainLayout: React.FC = () => {
           </ErrorBoundary>
         </Suspense>
       </main>
+      <Acessibilidade />
     </div>
   );
 

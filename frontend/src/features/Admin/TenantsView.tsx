@@ -34,6 +34,7 @@ interface Tenant {
   maturidadeHabilitado?: boolean;
   criarConteudoHabilitado?: boolean;
   youtubeHabilitado?: boolean;
+  acessibilidadeHabilitada?: boolean;
   demoExpiraEm?: Timestamp | null;
   demoAvisoEnviado?: boolean;
   horarioAcessoHabilitado?: boolean;
@@ -63,6 +64,9 @@ const RECURSOS: { campo: keyof Tenant; label: string; icon: string; padraoLigado
   // clientes preferem não expor nenhum link que leve o colaborador para fora da plataforma,
   // então só habilita quando o próprio cliente pede.
   { campo: 'youtubeHabilitado',     label: 'YouTube',      icon: 'fa-video',             padraoLigado: false },
+  // Recurso adicional para clientes que trabalham com inclusão: VLibras + barra de acessibilidade
+  // (components/Acessibilidade.tsx) para os colaboradores do cliente.
+  { campo: 'acessibilidadeHabilitada', label: 'Acessibilidade', icon: 'fa-universal-access', padraoLigado: false },
 ];
 
 function recursoHabilitado(t: Tenant, r: typeof RECURSOS[number]): boolean {
