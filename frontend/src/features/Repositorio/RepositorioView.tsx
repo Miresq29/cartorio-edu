@@ -233,7 +233,7 @@ const PlayerModal: React.FC<{
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <i className={`${tipo.icon} text-${tipo.color}-400 text-lg`}></i>
-            <h3 className="text-navy font-black text-lg">{midia.titulo}</h3>
+            <h3 className="text-white font-black text-lg">{midia.titulo}</h3>
           </div>
           <button onClick={onClose}
             className="text-slate-500 hover:text-navy w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center transition-all">
@@ -244,7 +244,9 @@ const PlayerModal: React.FC<{
         {!concluido ? (
           <p className="text-[10px] text-amber-500 font-black uppercase tracking-widest text-center">
             <i className="fa-solid fa-triangle-exclamation mr-1"></i>
-            Assista/ouça até o fim sem fechar — só assim este conteúdo libera a prova correspondente.
+            {midia.tipo === 'imagem'
+              ? `Mantenha o infográfico aberto por pelo menos ${Math.max(1, midia.duracaoMin || 1)} min — só assim ele conta como visto.`
+              : 'Assista/ouça até o fim sem fechar — só assim este conteúdo libera a prova correspondente.'}
           </p>
         ) : (
           <p className="text-[10px] text-emerald-500 font-black uppercase tracking-widest text-center">

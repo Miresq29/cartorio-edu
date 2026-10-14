@@ -165,8 +165,13 @@ const ExamesView: React.FC = () => {
 
     // Trilhas de capacitação também servem de fonte de conteúdo — concatena o
     // texto de todos os módulos, que é onde o conteúdo real das trilhas mora.
+    // Trilha restrita a outros setores não vira opção de exame (a function gerarExame também barra).
+    const veTodosSetores = ['SUPERADMIN', 'gestor', 'admin', 'equipe_mj', 'curador'].includes(user.role);
     const uTrilhas = onSnapshot(query(collection(db, 'trilhas'), where('tenantIds', 'array-contains-any', tenantFilter)), snap => {
-      const novos = snap.docs.map(d => {
+      const novos = snap.docs.filter(d => {
+        const setores: string[] = d.data().setores || [];
+        return veTodosSetores || setores.length === 0 || setores.includes(user.setor || '');
+      }).map(d => {
         const data = d.data();
         const conteudo = (data.modulos || [])
           .map((m: any) => `${m.titulo ? m.titulo + ':\n' : ''}${m.conteudo || ''}`)

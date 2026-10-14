@@ -19,6 +19,7 @@ interface CallerProfile {
   role: string;
   tenantId: string;
   active: boolean;
+  setor: string;
 }
 
 async function getCallerProfile(uid: string): Promise<CallerProfile> {
@@ -30,7 +31,14 @@ async function getCallerProfile(uid: string): Promise<CallerProfile> {
   if (data.active !== true) {
     throw new HttpsError("permission-denied", "Conta desativada.");
   }
-  return { uid, role: data.role || "", tenantId: data.tenantId || "", active: true };
+  return { uid, role: data.role || "", tenantId: data.tenantId || "", active: true, setor: String(data.setor || "") };
+}
+
+// Trilha com setores marcados: só colaboradores desses setores fazem módulos/quizzes/exame
+// (a gestão e a equipe da plataforma sempre podem). Sem setores marcados = todos.
+function trilhaLiberadaParaSetor(caller: CallerProfile, setores: unknown): boolean {
+  const lista = Array.isArray(setores) ? (setores as string[]) : [];
+  return lista.length === 0 || GESTOR_ROLES.includes(caller.role) || caller.role === "curador" || lista.includes(caller.setor);
 }
 
 // Limita quantas vezes um usuário pode chamar uma função sensível em uma janela de tempo —
@@ -495,7 +503,8 @@ export const gerarExame = onCall({ secrets: [GEMINI_API_KEY], timeoutSeconds: 12
   const tenantIds = (fonteData.tenantIds as string[] | undefined) || [];
   const visivel = PLATFORM_STAFF_ROLES.includes(caller.role)
     || tenantIds.includes("GLOBAL") || (!!caller.tenantId && tenantIds.includes(caller.tenantId));
-  if (!visivel || (tipo === "video" && fonteData.ativo === false)) {
+  if (!visivel || (tipo === "video" && fonteData.ativo === false)
+    || (tipo === "trilha" && !trilhaLiberadaParaSetor(caller, fonteData.setores))) {
     throw new HttpsError("permission-denied", "Esse conteúdo não está disponível para você.");
   }
 
@@ -712,6 +721,9 @@ async function carregarProgressoModulo(caller: CallerProfile, progressoId: strin
   const trilhaSnap = await db.collection("trilhas").doc(String(prog.trilhaId || "")).get();
   if (!trilhaSnap.exists || !podeVerConteudo(caller, trilhaSnap.data()!.tenantIds)) {
     throw new HttpsError("not-found", "Trilha não encontrada.");
+  }
+  if (!trilhaLiberadaParaSetor(caller, trilhaSnap.data()!.setores)) {
+    throw new HttpsError("permission-denied", "Esta trilha é destinada a outro setor.");
   }
   const trilha = trilhaSnap.data()!;
   const modulos = (trilha.modulos || []) as ModuloTrilha[];
