@@ -870,8 +870,9 @@ const TrailsView: React.FC = () => {
   }, [tenantId, isGestor]);
 
   // Trilha com setores marcados só aparece para colaboradores desses setores (sem setores = todos).
-  const minhasTrilhas = trilhas.filter(t => t.ativa && t.perfis.includes(user.role as Perfil)
-    && (!(t.setores || []).length || (t.setores || []).includes(meuSetor)));
+  // A equipe da plataforma (modo de visualização) vê todas as trilhas ativas do cliente.
+  const minhasTrilhas = trilhas.filter(t => t.ativa && (veTudo || (t.perfis.includes(user.role as Perfil)
+    && (!(t.setores || []).length || (t.setores || []).includes(meuSetor)))));
   const minhasPorAssunto = Object.entries(
     minhasTrilhas.reduce((acc, t) => { const a = t.assunto || SEM_ASSUNTO; (acc[a] = acc[a] || []).push(t); return acc; }, {} as Record<string, Trilha[]>)
   ).sort(([a], [b]) => (a === SEM_ASSUNTO ? 1 : b === SEM_ASSUNTO ? -1 : a.localeCompare(b, 'pt-BR')));
