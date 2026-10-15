@@ -6,7 +6,7 @@
 // Em 2026-10-13 voltou a ser o iframe simples (sem sandbox, sem credentialless, sem <audio>
 // próprio): as tentativas de endurecer o player quebravam a reprodução, e a plataforma precisa
 // funcionar para todos. Limite conhecido: quem inspecionar a página vê o ID no iframe.
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../services/firebase';
 
@@ -22,6 +22,21 @@ interface Props {
 const PlayerDriveProtegido: React.FC<Props> = ({ midiaId, titulo, altura, tipo }) => {
   const [url, setUrl] = useState('');
   const [erro, setErro] = useState('');
+  const caixaRef = useRef<HTMLDivElement>(null);
+  const [telaCheia, setTelaCheia] = useState(false);
+
+  // Tela cheia da própria plataforma (o botão do Drive dentro do iframe nem sempre funciona
+  // embutido): coloca o quadro inteiro do player em tela cheia.
+  useEffect(() => {
+    const aoMudar = () => setTelaCheia(document.fullscreenElement === caixaRef.current);
+    document.addEventListener('fullscreenchange', aoMudar);
+    return () => document.removeEventListener('fullscreenchange', aoMudar);
+  }, []);
+  const alternarTelaCheia = () => {
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    else caixaRef.current?.requestFullscreen?.().catch(() => {});
+  };
+  const podeTelaCheia = tipo !== 'audio' && typeof document !== 'undefined' && !!document.fullscreenEnabled;
 
   useEffect(() => {
     let ativo = true;
@@ -33,7 +48,9 @@ const PlayerDriveProtegido: React.FC<Props> = ({ midiaId, titulo, altura, tipo }
   }, [midiaId]);
 
   return (
-    <div style={{ position: 'relative', height: altura, borderRadius: 16, overflow: 'hidden', background: '#f8fafc' }}
+    <div ref={caixaRef}
+      style={{ position: 'relative', borderRadius: telaCheia ? 0 : 16, overflow: 'hidden', background: tipo === 'video' ? '#000' : '#f8fafc',
+        ...(tipo === 'video' && !telaCheia ? { aspectRatio: '16 / 9', width: '100%' } : { height: telaCheia ? '100%' : altura }) }}
       onContextMenu={e => e.preventDefault()}>
       {url && (
         <iframe
@@ -52,6 +69,15 @@ const PlayerDriveProtegido: React.FC<Props> = ({ midiaId, titulo, altura, tipo }
             <i className="fa-solid fa-lock" style={{ color: '#C9A84C', fontSize: 15 }}></i>
           </div>
         </div>
+      )}
+      {url && podeTelaCheia && (
+        <button type="button" onClick={alternarTelaCheia}
+          aria-label={telaCheia ? 'Sair da tela cheia' : 'Assistir em tela cheia'} title={telaCheia ? 'Sair da tela cheia' : 'Tela cheia'}
+          style={{ position: 'absolute', top: 14, left: 14, height: 40, padding: '0 14px', borderRadius: 10, border: 'none', cursor: 'pointer',
+            background: 'rgba(10,22,40,0.92)', color: '#fff', fontSize: 12, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <i className={telaCheia ? 'fa-solid fa-compress' : 'fa-solid fa-expand'} style={{ color: '#C9A84C' }}></i>
+          {telaCheia ? 'Sair da tela cheia' : 'Tela cheia'}
+        </button>
       )}
       {!url && !erro && (
         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: 12 }}>

@@ -652,48 +652,73 @@ const ModuloPlayer: React.FC<{
     : formatoPrincipal && formatos.includes(formatoPrincipal) ? formatoPrincipal : formatos[0];
   const midiaAtual = formatoAtual && formatoAtual !== 'ler' ? porFormato[formatoAtual] : null;
 
-  return (
-    <div style={{ position: 'fixed', inset: 0, background: '#000000cc', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 28, width: '100%', maxWidth: 860, maxHeight: '92vh', overflow: 'auto' }}>
+  const irModulo = (i: number) => {
+    if (i < 0 || i >= trilha.modulos.length) return;
+    setShowQuiz(false); setQuizEnviado(false); setRespostas({}); setQuizQuestoes([]); setModuloIdx(i);
+    document.getElementById('player-trilha-conteudo')?.scrollTo({ top: 0 });
+  };
+  const concluido = (m: Modulo) => { const p = progresso.modulos[m.id]; return !!p?.assistido && (!m.temQuiz || !!p?.aprovado); };
+  const totalConcluidos = trilha.modulos.filter(concluido).length;
+  const pctTrilha = trilha.modulos.length ? Math.round((totalConcluidos / trilha.modulos.length) * 100) : 0;
 
-        {/* Header */}
-        <div style={{ padding: '24px 28px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div>
-            <p style={{ fontSize: 10, fontWeight: 900, color: '#C9A84C', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 6 }}>
-              {trilha.titulo} · Módulo {moduloIdx + 1} de {trilha.modulos.length}
-            </p>
-            <h3 style={{ fontSize: 20, fontWeight: 900, color: '#0A1628' }}>{modulo.titulo}</h3>
-            <p style={{ fontSize: 12, color: '#8A9BB0', marginTop: 4 }}>{modulo.descricao}</p>
+  return (
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/80 md:p-4">
+      <div className="bg-white w-full h-full md:h-[94vh] md:max-w-[1280px] md:rounded-[24px] overflow-hidden flex flex-col shadow-2xl">
+
+        {/* Cabeçalho: trilha, andamento e fechar */}
+        <div className="flex items-center gap-4 px-5 md:px-6 py-3 border-b border-slate-200 bg-[#0A1628] text-white">
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#C9A84C] truncate">{trilha.titulo}</p>
+            <div className="flex items-center gap-3 mt-1.5">
+              <div className="flex-1 max-w-[320px] h-1.5 rounded-full bg-white/15 overflow-hidden">
+                <div className="h-full rounded-full bg-[#C9A84C] transition-all" style={{ width: `${pctTrilha}%` }}></div>
+              </div>
+              <span className="text-[11px] text-white/70 whitespace-nowrap">{totalConcluidos} de {trilha.modulos.length} módulos concluídos</span>
+            </div>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#8A9BB0', cursor: 'pointer', fontSize: 20, flexShrink: 0 }}>
+          <button onClick={onClose} aria-label="Fechar trilha" className="w-10 h-10 rounded-xl hover:bg-white/10 text-white/80 text-lg flex-shrink-0">
             <i className="fa-solid fa-xmark"></i>
           </button>
         </div>
 
-        {/* Navegação de módulos */}
-        <div style={{ padding: '16px 28px', display: 'flex', gap: 8, overflowX: 'auto' }}>
-          {trilha.modulos.map((m, i) => {
-            const p = progresso.modulos[m.id];
-            const done = p?.assistido && (!m.temQuiz || p?.aprovado);
-            return (
-              <button
-                key={m.id}
-                onClick={() => { setShowQuiz(false); setQuizEnviado(false); setRespostas({}); setQuizQuestoes([]); setModuloIdx(i); }}
-                style={{
-                  flexShrink: 0, padding: '6px 14px', borderRadius: 10, border: '1px solid', cursor: 'pointer', fontSize: 11, fontWeight: 900,
-                  background: i === moduloIdx ? '#0A1628' : done ? '#F5EDD8' : '#f1f5f9',
-                  color: i === moduloIdx ? '#ffffff' : done ? '#7a5c1e' : '#8A9BB0',
-                  borderColor: i === moduloIdx ? '#0A1628' : done ? '#C9A84C' : '#e2e8f0',
-                }}
-              >
-                {done ? <><i className="fa-solid fa-check" style={{ marginRight: 4 }}></i></> : ''}{m.tipo === 'obrigatorio' ? '★ ' : '◇ '}{m.titulo}
-              </button>
-            );
-          })}
-        </div>
+        <div className="flex-1 min-h-0 grid md:grid-cols-[300px_1fr]">
+          {/* Lista de módulos (lateral) */}
+          <nav aria-label="Módulos da trilha" className="hidden md:block border-r border-slate-200 bg-slate-50 overflow-y-auto p-3">
+            <p className="px-2 pt-1 pb-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Módulos</p>
+            {trilha.modulos.map((m, i) => {
+              const atual = i === moduloIdx;
+              const feito = concluido(m);
+              return (
+                <button key={m.id} onClick={() => irModulo(i)} aria-current={atual ? 'step' : undefined}
+                  className={`w-full text-left flex items-start gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all ${atual ? 'bg-[#0A1628] text-white shadow' : 'hover:bg-white text-slate-700'}`}>
+                  <span className={`mt-0.5 w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black flex-shrink-0 ${feito ? 'bg-emerald-500 text-white' : atual ? 'bg-[#C9A84C] text-[#0A1628]' : 'bg-slate-200 text-slate-500'}`}>
+                    {feito ? <i className="fa-solid fa-check text-[10px]"></i> : i + 1}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-[13px] font-bold leading-snug">{m.titulo}</span>
+                    <span className={`block text-[10px] mt-0.5 ${atual ? 'text-white/60' : 'text-slate-400'}`}>
+                      {m.tipo === 'obrigatorio' ? 'Obrigatório' : 'Opcional'}{m.temQuiz ? ' · com quiz' : ''}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+          </nav>
 
-        {/* Conteúdo */}
-        <div style={{ padding: '0 28px 28px' }}>
+          {/* Conteúdo do módulo */}
+          <div id="player-trilha-conteudo" className="overflow-y-auto">
+            <div className="max-w-[920px] mx-auto px-5 md:px-10 py-6">
+              {/* Celular: escolha do módulo em lista suspensa */}
+              <select value={moduloIdx} onChange={e => irModulo(Number(e.target.value))} aria-label="Módulo"
+                className="md:hidden w-full mb-4 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-bold text-[#0A1628] bg-white">
+                {trilha.modulos.map((m, i) => <option key={m.id} value={i}>{i + 1}. {m.titulo}{concluido(m) ? ' ✓' : ''}</option>)}
+              </select>
+
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#C9A84C] mb-1">Módulo {moduloIdx + 1} de {trilha.modulos.length}</p>
+              <h3 className="text-xl md:text-2xl font-black text-[#0A1628] leading-tight">{modulo.titulo}</h3>
+              {modulo.descricao && modulo.descricao !== textoModulo && <p className="text-sm text-slate-500 mt-1.5">{modulo.descricao}</p>}
+              <div className="h-5"></div>
+
           {/* Formatos: a pessoa escolhe como estudar o tema — o texto do módulo e as mídias do
               Repositório ligadas a ele. Item não liberado ao cliente não carrega e não vira aba. */}
           <p style={{ fontSize: 10, fontWeight: 900, color: '#8A9BB0', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 10 }}>
@@ -877,6 +902,27 @@ const ModuloPlayer: React.FC<{
               </div>
             );
           })()}
+
+              {/* Anterior / próximo */}
+              <div className="flex items-center justify-between gap-3 mt-8 pt-5 border-t border-slate-100">
+                <button onClick={() => irModulo(moduloIdx - 1)} disabled={moduloIdx === 0}
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-black uppercase tracking-wider text-slate-600 hover:bg-slate-50 disabled:opacity-30">
+                  <i className="fa-solid fa-arrow-left mr-2"></i>Anterior
+                </button>
+                {moduloIdx < trilha.modulos.length - 1 ? (
+                  <button onClick={() => irModulo(moduloIdx + 1)}
+                    className="px-4 py-2.5 rounded-xl bg-[#0A1628] text-white text-xs font-black uppercase tracking-wider hover:opacity-90">
+                    Próximo<i className="fa-solid fa-arrow-right ml-2 text-[#C9A84C]"></i>
+                  </button>
+                ) : (
+                  <button onClick={onClose}
+                    className="px-4 py-2.5 rounded-xl bg-[#0A1628] text-white text-xs font-black uppercase tracking-wider hover:opacity-90">
+                    Fechar trilha<i className="fa-solid fa-flag-checkered ml-2 text-[#C9A84C]"></i>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
