@@ -32,7 +32,60 @@ interface Modulo {
   conteudoRef?: { tipo: 'video' | 'repositorio'; itemId: string };
   // Material de apoio exibido abaixo do conteúdo principal (ex.: infográfico do mesmo tema do podcast).
   apoioRef?: { tipo: 'repositorio'; itemId: string };
+  // Outros formatos do mesmo tema (Repositório): a pessoa escolhe ler, ouvir, assistir ou ver o infográfico.
+  midiasExtras?: { tipo: 'repositorio'; itemId: string }[];
 }
+
+// Formatos que a pessoa pode escolher no módulo da trilha.
+type Formato = 'ler' | 'ouvir' | 'assistir' | 'infografico';
+const FORMATO_INFO: Record<Formato, { label: string; icon: string }> = {
+  ler: { label: 'Ler', icon: 'fa-book-open' },
+  ouvir: { label: 'Ouvir', icon: 'fa-headphones' },
+  assistir: { label: 'Assistir', icon: 'fa-circle-play' },
+  infografico: { label: 'Infográfico', icon: 'fa-image' },
+};
+function formatoDe(item: any, ref?: string): Formato | null {
+  if (!item) return null;
+  if (item.youtubeId || item.tipo === 'mp4') return 'assistir';
+  if (ref === 'video' || item.tipo === 'youtube') return null; // vídeo sem ID válido
+  if (item.tipo === 'audio') return 'ouvir';
+  if (item.tipo === 'imagem') return 'infografico';
+  return null;
+}
+
+// Texto do módulo em blocos legíveis: linha curta sem pontuação final abrindo um bloco vira
+// subtítulo, linhas com "- " ou "• " viram lista, o resto vira parágrafo.
+const TextoFormatado: React.FC<{ texto: string }> = ({ texto }) => {
+  const blocos = texto.split(/\n\s*\n/).map(b => b.split('\n').map(l => l.trim()).filter(Boolean)).filter(b => b.length);
+  const ehTitulo = (l: string, resto: number) => resto > 0 && l.length <= 90 && !/[.;:,!?]$/.test(l) && !/^[-•]/.test(l);
+  const marcador = /^[-•]\s*/;
+  return (
+    <div style={{ display: 'grid', gap: 18, maxWidth: 640, margin: '0 auto' }}>
+      {blocos.map((linhas, bi) => {
+        const titulo = ehTitulo(linhas[0], linhas.length - 1) || (bi === 0 && linhas.length === 1 && linhas[0].length <= 120) ? linhas[0] : null;
+        const corpo = titulo ? linhas.slice(1) : linhas;
+        const grupos: { lista: boolean; linhas: string[] }[] = [];
+        for (const l of corpo) {
+          const lista = marcador.test(l);
+          const texto = lista ? l.replace(marcador, '') : l;
+          const ult = grupos[grupos.length - 1];
+          if (ult && ult.lista === lista) ult.linhas.push(texto);
+          else grupos.push({ lista, linhas: [texto] });
+        }
+        return (
+          <section key={bi}>
+            {titulo && <h4 style={{ fontSize: bi === 0 && !corpo.length ? 17 : 14, fontWeight: 900, color: '#0A1628', marginBottom: corpo.length ? 8 : 0 }}>{titulo}</h4>}
+            {grupos.map((g, gi) => g.lista ? (
+              <ul key={gi} style={{ margin: '6px 0', paddingLeft: 20, display: 'grid', gap: 6, listStyle: 'disc' }}>
+                {g.linhas.map((l, li) => <li key={li} style={{ fontSize: 14, color: '#334155', lineHeight: 1.7 }}>{l}</li>)}
+              </ul>
+            ) : g.linhas.map((l, li) => <p key={gi + '-' + li} style={{ fontSize: 14, color: '#334155', lineHeight: 1.8, marginBottom: 6 }}>{l}</p>))}
+          </section>
+        );
+      })}
+    </div>
+  );
+};
 
 // Tipos do Repositório que abrem no player protegido do Drive (abrirMidia).
 const TIPOS_DRIVE = ['audio', 'mp4', 'imagem'];
@@ -128,12 +181,19 @@ const ModuloForm: React.FC<{
   }, [vincular, tenantId]);
 
   useEffect(() => {
-    if (!vincular) return;
     const q = query(collection(db, 'repositorio'), where('tenantIds', 'array-contains-any', [tenantId, 'GLOBAL']));
     return onSnapshot(q, s => setItensRepo(s.docs.map(d => ({ id: d.id, titulo: d.data().titulo, tipo: d.data().tipo }))));
-  }, [vincular, tenantId]);
+  }, [tenantId]);
 
-  const TIPO_REPO_LABEL: Record<string, string> = { youtube: 'Vídeo YouTube', audio: 'Áudio', mp4: 'Vídeo Drive' };
+  const TIPO_REPO_LABEL: Record<string, string> = { youtube: 'Vídeo YouTube', audio: 'Áudio', mp4: 'Vídeo Drive', imagem: 'Infográfico' };
+
+  // Outros formatos do mesmo tema (o antigo apoioRef entra na mesma lista ao editar).
+  const extras = [...(modulo.apoioRef ? [modulo.apoioRef] : []), ...(modulo.midiasExtras || [])];
+  const [buscaExtra, setBuscaExtra] = useState('');
+  const salvarExtras = (lista: { tipo: 'repositorio'; itemId: string }[]) =>
+    onChange({ ...modulo, apoioRef: undefined, midiasExtras: lista });
+  const opcoesExtra = itensRepo.filter(r => r.id !== modulo.conteudoRef?.itemId && !extras.some(e => e.itemId === r.id)
+    && (!buscaExtra || (r.titulo || '').toLowerCase().includes(buscaExtra.toLowerCase())));
 
   const opcoes = [
     ...itensVideo.map(v => ({ id: v.id, titulo: v.titulo, tipoConteudo: 'video' as const, label: 'Vídeo' })),
@@ -238,6 +298,43 @@ const ModuloForm: React.FC<{
                 </div>
               </>
             )}
+          </div>
+        )}
+      </div>
+
+      <div style={{ borderTop: '1px dashed #e2e8f0', paddingTop: 12, display: 'grid', gap: 8 }}>
+        <p style={{ color: '#8A9BB0', fontSize: 13 }}>
+          Outros formatos do mesmo tema <span style={{ fontSize: 11 }}>(o colaborador escolhe ler, ouvir, assistir ou ver o infográfico)</span>
+        </p>
+        {extras.map(e => {
+          const it = itensRepo.find(r => r.id === e.itemId);
+          return (
+            <div key={e.itemId} style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#F5EDD8', border: '1px solid #C9A84C40', borderRadius: 10, padding: '8px 12px' }}>
+              <i className="fa-solid fa-link" style={{ color: '#C9A84C' }}></i>
+              <span style={{ fontSize: 12, color: '#7a5c1e', fontWeight: 700, flex: 1 }}>{it?.titulo || 'Item não disponível para este cliente'}</span>
+              <span style={{ fontSize: 9, fontWeight: 900, color: '#7a5c1e', textTransform: 'uppercase', letterSpacing: 1 }}>{TIPO_REPO_LABEL[it?.tipo || ''] || ''}</span>
+              <button onClick={() => salvarExtras(extras.filter(x => x.itemId !== e.itemId))} style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer' }}>
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+          );
+        })}
+        <input
+          value={buscaExtra}
+          onChange={e => setBuscaExtra(e.target.value)}
+          placeholder="Buscar podcast, vídeo ou infográfico do Repositório para adicionar..."
+          style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '10px 14px', color: '#0A1628', fontSize: 13 }}
+        />
+        {buscaExtra && (
+          <div style={{ maxHeight: 160, overflow: 'auto', display: 'grid', gap: 6 }}>
+            {opcoesExtra.length === 0 && <p style={{ fontSize: 11, color: '#8A9BB0', padding: 8 }}>Nenhum item encontrado</p>}
+            {opcoesExtra.map(r => (
+              <button key={r.id} onClick={() => { salvarExtras([...extras, { tipo: 'repositorio', itemId: r.id }]); setBuscaExtra(''); }}
+                style={{ textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '8px 12px', cursor: 'pointer' }}>
+                <span style={{ fontSize: 12, color: '#0A1628' }}>{r.titulo}</span>
+                <span style={{ fontSize: 9, fontWeight: 900, color: '#8A9BB0', textTransform: 'uppercase', letterSpacing: 1, flexShrink: 0 }}>{TIPO_REPO_LABEL[r.tipo] || 'Repositório'}</span>
+              </button>
+            ))}
           </div>
         )}
       </div>
@@ -441,19 +538,24 @@ const ModuloPlayer: React.FC<{
   const [gerandoQuiz, setGerandoQuiz] = useState(false);
   const [conteudoItem, setConteudoItem] = useState<any | null>(null);
   const [conteudoVisto, setConteudoVisto] = useState(false);
-  const [apoioItem, setApoioItem] = useState<any | null>(null);
+  const [extrasItens, setExtrasItens] = useState<any[]>([]);
+  // Formato escolhido pela pessoa; vale para os próximos módulos enquanto existir neles.
+  const [formatoEscolhido, setFormatoEscolhido] = useState<Formato | null>(null);
 
   const modulo = trilha.modulos[moduloIdx];
 
+  // Outros formatos do mesmo tema (apoioRef antigo + midiasExtras). Item não liberado ao cliente
+  // não carrega (regra do Firestore) e simplesmente não vira aba.
+  const idsExtras = [...(modulo?.apoioRef ? [modulo.apoioRef.itemId] : []), ...((modulo?.midiasExtras || []).map(e => e.itemId))].join(',');
   useEffect(() => {
-    setApoioItem(null);
-    if (!modulo?.apoioRef?.itemId) return;
+    setExtrasItens([]);
+    if (!idsExtras) return;
     let cancelado = false;
-    getDoc(doc(db, 'repositorio', modulo.apoioRef.itemId)).then(snap => {
-      if (!cancelado && snap.exists()) setApoioItem({ id: snap.id, ...snap.data() });
-    }).catch(() => {});
+    Promise.all(idsExtras.split(',').map(id => getDoc(doc(db, 'repositorio', id)).catch(() => null))).then(snaps => {
+      if (!cancelado) setExtrasItens(snaps.filter(sn => sn && sn.exists() && sn.data()!.ativo !== false).map(sn => ({ id: sn!.id, ...sn!.data() })));
+    });
     return () => { cancelado = true; };
-  }, [modulo?.id, modulo?.apoioRef?.itemId]);
+  }, [modulo?.id, idsExtras]);
   const progModulo = progresso.modulos[modulo?.id] || { assistido: false, aprovado: false, nota: null, tentativas: 0 };
 
   // Carrega o conteúdo vinculado (vídeo/repositório) e marca o progresso, replicando o padrão de VideosView/RepositorioView
@@ -533,9 +635,26 @@ const ModuloPlayer: React.FC<{
 
   if (!modulo) return null;
 
+  // Uma aba por formato disponível: o texto do módulo (Ler) e as mídias ligadas a ele.
+  const porFormato: Partial<Record<Formato, any>> = {};
+  const midiasModulo: [any, string | undefined][] = [
+    ...(conteudoItem ? [[conteudoItem, modulo.conteudoRef?.tipo] as [any, string | undefined]] : []),
+    ...extrasItens.map(i => [i, 'repositorio'] as [any, string | undefined]),
+  ];
+  for (const [it, ref] of midiasModulo) {
+    const f = formatoDe(it, ref);
+    if (f && !porFormato[f]) porFormato[f] = it;
+  }
+  const textoModulo = (modulo.conteudo || modulo.descricao || '').trim();
+  const formatos: Formato[] = [...(textoModulo ? ['ler' as Formato] : []), ...(['assistir', 'ouvir', 'infografico'] as Formato[]).filter(f => porFormato[f])];
+  const formatoPrincipal = conteudoItem ? formatoDe(conteudoItem, modulo.conteudoRef?.tipo) : null;
+  const formatoAtual: Formato | undefined = formatoEscolhido && formatos.includes(formatoEscolhido) ? formatoEscolhido
+    : formatoPrincipal && formatos.includes(formatoPrincipal) ? formatoPrincipal : formatos[0];
+  const midiaAtual = formatoAtual && formatoAtual !== 'ler' ? porFormato[formatoAtual] : null;
+
   return (
     <div style={{ position: 'fixed', inset: 0, background: '#000000cc', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 28, width: '100%', maxWidth: 720, maxHeight: '90vh', overflow: 'auto' }}>
+      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 28, width: '100%', maxWidth: 860, maxHeight: '92vh', overflow: 'auto' }}>
 
         {/* Header */}
         <div style={{ padding: '24px 28px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -575,57 +694,61 @@ const ModuloPlayer: React.FC<{
 
         {/* Conteúdo */}
         <div style={{ padding: '0 28px 28px' }}>
-          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 16, padding: 20, marginBottom: 16 }}>
-            <p style={{ fontSize: 10, fontWeight: 900, color: '#8A9BB0', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 10 }}>
-              {modulo.tipo === 'obrigatorio' ? '★ Módulo obrigatório' : '◇ Módulo Opcional'}
-            </p>
-            <p style={{ fontSize: 13, color: '#0A1628', lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{modulo.conteudo || modulo.descricao}</p>
+          {/* Formatos: a pessoa escolhe como estudar o tema — o texto do módulo e as mídias do
+              Repositório ligadas a ele. Item não liberado ao cliente não carrega e não vira aba. */}
+          <p style={{ fontSize: 10, fontWeight: 900, color: '#8A9BB0', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 10 }}>
+            {modulo.tipo === 'obrigatorio' ? '★ Módulo obrigatório' : '◇ Módulo Opcional'}
+            {formatos.length > 1 && <span style={{ marginLeft: 8, textTransform: 'none', letterSpacing: 0, fontWeight: 700 }}>· escolha como prefere estudar</span>}
+          </p>
+          {formatos.length > 1 && (
+            <div role="tablist" aria-label="Formato do conteúdo" style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+              {formatos.map(f => {
+                const ativo = f === formatoAtual;
+                return (
+                  <button key={f} role="tab" aria-selected={ativo} onClick={() => setFormatoEscolhido(f)}
+                    style={{
+                      flex: '1 1 120px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px 14px', borderRadius: 14,
+                      cursor: 'pointer', fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 1,
+                      border: `1px solid ${ativo ? '#0A1628' : '#e2e8f0'}`, background: ativo ? '#0A1628' : '#ffffff', color: ativo ? '#ffffff' : '#475569',
+                    }}>
+                    <i className={`fa-solid ${FORMATO_INFO[f].icon}`} style={{ color: ativo ? '#C9A84C' : '#94a3b8' }}></i>{FORMATO_INFO[f].label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          <div style={{ marginBottom: 16 }}>
+            {formatoAtual === 'ler' && (
+              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 16, padding: '24px 28px' }}>
+                <TextoFormatado texto={textoModulo} />
+              </div>
+            )}
+            {midiaAtual && (
+              <div style={{ display: 'grid', gap: 8 }}>
+                {midiaAtual.youtubeId ? (
+                  <div style={{ aspectRatio: '16 / 9', borderRadius: 16, overflow: 'hidden' }}>
+                    <iframe src={`https://www.youtube-nocookie.com/embed/${midiaAtual.youtubeId}?rel=0`}
+                      style={{ width: '100%', height: '100%', border: 'none' }} allow="autoplay; fullscreen" allowFullScreen title={midiaAtual.titulo} />
+                  </div>
+                ) : (
+                  // Drive: ID do arquivo vem da function abrirMidia e o player roda protegido.
+                  <PlayerDriveProtegido key={midiaAtual.id} midiaId={midiaAtual.id} titulo={midiaAtual.titulo} altura={alturaPlayer(midiaAtual.tipo)} tipo={tipoPlayer(midiaAtual.tipo)} />
+                )}
+                <p style={{ fontSize: 10, color: '#94a3b8', textAlign: 'center' }}>
+                  {midiaAtual.titulo} · conteúdo exclusivo da plataforma MJ Consultoria — reprodução apenas por aqui, sem download.
+                </p>
+              </div>
+            )}
+            {conteudoItem && !formatoDe(conteudoItem, modulo.conteudoRef?.tipo) && (
+              <div style={{ background: '#fef2f2', border: '1px solid #dc262640', borderRadius: 16, padding: 16, textAlign: 'center', marginTop: 12 }}>
+                <p style={{ fontSize: 12, color: '#dc2626' }}>
+                  <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: 6 }}></i>
+                  Não foi possível carregar a mídia vinculada a este módulo. Verifique se o link de origem ainda é válido.
+                </p>
+              </div>
+            )}
           </div>
-
-          {/* Conteúdo vinculado (vídeo / repositório). Item não liberado ao cliente (só aparece para
-              quem já tinha a trilha como histórico) fica oculto, sem aviso. */}
-          {modulo.conteudoRef && conteudoItem && (
-            <div style={{ marginBottom: 16 }}>
-              {(conteudoItem.youtubeId) && (
-                <div style={{ aspectRatio: '16 / 9', borderRadius: 16, overflow: 'hidden' }}>
-                  <iframe
-                    src={`https://www.youtube-nocookie.com/embed/${conteudoItem.youtubeId}?rel=0`}
-                    style={{ width: '100%', height: '100%', border: 'none' }}
-                    allow="autoplay; fullscreen"
-                    allowFullScreen
-                    title={conteudoItem.titulo}
-                  />
-                </div>
-              )}
-              {/* Drive: ID do arquivo vem da function abrirMidia e o player roda protegido. */}
-              {!conteudoItem.youtubeId && modulo.conteudoRef.tipo === 'repositorio' && TIPOS_DRIVE.includes(conteudoItem.tipo) && (
-                <div style={{ display: 'grid', gap: 8 }}>
-                  <PlayerDriveProtegido midiaId={conteudoItem.id} titulo={conteudoItem.titulo} altura={alturaPlayer(conteudoItem.tipo)} tipo={tipoPlayer(conteudoItem.tipo)} />
-                  <p style={{ fontSize: 10, color: '#94a3b8', textAlign: 'center' }}>
-                    Conteúdo exclusivo da plataforma MJ Consultoria — reprodução apenas por aqui, sem download.
-                  </p>
-                </div>
-              )}
-              {!conteudoItem.youtubeId && !(modulo.conteudoRef.tipo === 'repositorio' && TIPOS_DRIVE.includes(conteudoItem.tipo)) && (
-                <div style={{ background: '#fef2f2', border: '1px solid #dc262640', borderRadius: 16, padding: 16, textAlign: 'center' }}>
-                  <p style={{ fontSize: 12, color: '#dc2626' }}>
-                    <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: 6 }}></i>
-                    Não foi possível carregar o vídeo vinculado a este módulo. Verifique se o link de origem ainda é válido.
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Material de apoio (ex.: infográfico do tema) */}
-          {apoioItem && TIPOS_DRIVE.includes(apoioItem.tipo) && (
-            <div style={{ marginBottom: 16, display: 'grid', gap: 8 }}>
-              <p style={{ fontSize: 10, fontWeight: 900, color: '#8A9BB0', textTransform: 'uppercase', letterSpacing: 2 }}>
-                <i className="fa-solid fa-image" style={{ marginRight: 6, color: '#C9A84C' }}></i>Material de apoio — {apoioItem.titulo}
-              </p>
-              <PlayerDriveProtegido midiaId={apoioItem.id} titulo={apoioItem.titulo} altura={alturaPlayer(apoioItem.tipo)} tipo={tipoPlayer(apoioItem.tipo)} />
-            </div>
-          )}
 
           {/* Status do módulo */}
           {progModulo.nota !== null && (
@@ -916,7 +1039,8 @@ const TrailsView: React.FC = () => {
         : form.modulos;
       const data = {
         ...form,
-        modulos,
+        // Firestore recusa campos undefined dentro do array (ex.: mídia desvinculada) — limpa antes.
+        modulos: JSON.parse(JSON.stringify(modulos)),
         formato: form.formato || null,
         cargaHoraria: form.cargaHoraria === '' ? null : Number(form.cargaHoraria),
         assunto: form.assunto.trim(),
