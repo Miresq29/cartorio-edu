@@ -10,7 +10,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../services/firebase';
 
-const abrirMidiaFn = httpsCallable<{ midiaId: string }, { embedUrl: string }>(functions, 'abrirMidia');
+// streamUrl (só áudio): link temporário da function ouvirAudio — toca sem o download liberado no Drive.
+const abrirMidiaFn = httpsCallable<{ midiaId: string }, { embedUrl: string; streamUrl?: string }>(functions, 'abrirMidia');
 
 interface Props {
   midiaId: string;
@@ -36,13 +37,17 @@ const PlayerDriveProtegido: React.FC<Props> = ({ midiaId, titulo, altura, tipo }
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
     else caixaRef.current?.requestFullscreen?.().catch(() => {});
   };
+  const [streamUrl, setStreamUrl] = useState('');
+  // Se o player próprio falhar (ex.: pasta ainda não compartilhada com a plataforma), volta ao preview do Drive.
+  const [streamFalhou, setStreamFalhou] = useState(false);
+  const usarStream = tipo === 'audio' && !!streamUrl && !streamFalhou;
   const podeTelaCheia = tipo !== 'audio' && typeof document !== 'undefined' && !!document.fullscreenEnabled;
 
   useEffect(() => {
     let ativo = true;
-    setUrl(''); setErro('');
+    setUrl(''); setErro(''); setStreamUrl(''); setStreamFalhou(false);
     abrirMidiaFn({ midiaId })
-      .then(r => { if (ativo) setUrl(r.data.embedUrl); })
+      .then(r => { if (ativo) { setUrl(r.data.embedUrl); setStreamUrl(r.data.streamUrl || ''); } })
       .catch(e => { if (ativo) setErro(e?.message || 'Não foi possível carregar o conteúdo.'); });
     return () => { ativo = false; };
   }, [midiaId]);
@@ -52,7 +57,19 @@ const PlayerDriveProtegido: React.FC<Props> = ({ midiaId, titulo, altura, tipo }
       style={{ position: 'relative', borderRadius: telaCheia ? 0 : 16, overflow: 'hidden', background: tipo === 'video' ? '#000' : '#f8fafc',
         ...(tipo === 'video' && !telaCheia ? { aspectRatio: '16 / 9', width: '100%' } : { height: telaCheia ? '100%' : altura }) }}
       onContextMenu={e => e.preventDefault()}>
-      {url && (
+      {usarStream && (
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', gap: 16, padding: '0 20px', background: '#0A1628' }}>
+          <div style={{ width: 52, height: 52, borderRadius: 14, background: 'rgba(201,168,76,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <i className="fa-solid fa-headphones" style={{ color: '#C9A84C', fontSize: 22 }}></i>
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ color: '#fff', fontSize: 13, fontWeight: 800, marginBottom: 8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{titulo}</p>
+            <audio src={streamUrl} controls controlsList="nodownload noremoteplayback" preload="metadata"
+              onError={() => setStreamFalhou(true)} style={{ width: '100%', height: 40 }} />
+          </div>
+        </div>
+      )}
+      {url && !usarStream && (
         <iframe
           src={url}
           title={titulo}
@@ -62,7 +79,7 @@ const PlayerDriveProtegido: React.FC<Props> = ({ midiaId, titulo, altura, tipo }
         />
       )}
       {/* capa sobre o botão "abrir em nova janela" do player do Drive (canto superior direito) */}
-      {url && (
+      {url && !usarStream && (
         <div aria-hidden="true" title="Conteúdo protegido"
           style={{ position: 'absolute', top: 0, right: 0, width: 72, height: 72, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ width: 44, height: 44, borderRadius: 10, background: 'rgba(10,22,40,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

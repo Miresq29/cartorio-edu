@@ -1,4 +1,6 @@
-import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { onCall, onRequest, HttpsError } from "firebase-functions/v2/https";
+import { GoogleAuth } from "google-auth-library";
+import { Readable } from "node:stream";
 import { defineSecret } from "firebase-functions/params";
 import * as admin from "firebase-admin";
 import { createHash, randomBytes, scrypt, timingSafeEqual } from "node:crypto";
@@ -1171,7 +1173,65 @@ export const abrirMidia = onCall(async (request) => {
   if (!/^[a-zA-Z0-9_-]{10,}$/.test(driveId)) {
     throw new HttpsError("failed-precondition", "Este conteúdo está sem arquivo vinculado.");
   }
-  return { embedUrl: `https://drive.google.com/file/d/${driveId}/preview` };
+  const embedUrl = `https://drive.google.com/file/d/${driveId}/preview`;
+  if (snap.data()!.tipo !== "audio") return { embedUrl };
+  // Áudio: o preview do Drive só toca com o download liberado. Em vez disso, um link temporário
+  // para ouvirAudio, que busca o arquivo no Drive pela conta da plataforma (editora da pasta) e
+  // entrega em partes — o arquivo segue com download bloqueado no Drive e sem link público.
+  const token = randomBytes(24).toString("hex");
+  await db.collection("midiaTokens").doc(token).set({
+    driveId, midiaId, uid: caller.uid,
+    expiraEm: admin.firestore.Timestamp.fromMillis(Date.now() + MIDIA_TOKEN_VALIDADE_MS),
+  });
+  return { embedUrl, streamUrl: `${OUVIR_AUDIO_URL}?t=${token}` };
+});
+
+const MIDIA_TOKEN_VALIDADE_MS = 3 * 60 * 60 * 1000;
+const OUVIR_AUDIO_URL = "https://us-central1-cartorio-edu.cloudfunctions.net/ouvirAudio";
+// Partes de até 8 MB: respostas HTTP/1 com tamanho fixo no Cloud Run são limitadas a 32 MB, e o
+// <audio> do navegador pede os trechos seguintes sozinho (Range).
+const AUDIO_PARTE_BYTES = 8 * 1024 * 1024;
+const driveAuth = new GoogleAuth({ scopes: ["https://www.googleapis.com/auth/drive.readonly"] });
+
+export const ouvirAudio = onRequest({ memory: "256MiB", timeoutSeconds: 120, maxInstances: 10 }, async (req, res) => {
+  const t = String(req.query.t || "");
+  if (!/^[a-f0-9]{48}$/.test(t)) { res.status(400).end(); return; }
+  const snap = await db.collection("midiaTokens").doc(t).get();
+  const dados = snap.data();
+  if (!dados || (dados.expiraEm as admin.firestore.Timestamp).toMillis() < Date.now()) { res.status(403).end(); return; }
+
+  const m = /^bytes=(\d+)-(\d*)$/.exec(String(req.headers.range || "bytes=0-"));
+  const inicio = m ? Number(m[1]) : 0;
+  const fimPedido = m && m[2] ? Number(m[2]) : Infinity;
+  const fim = Math.min(fimPedido, inicio + AUDIO_PARTE_BYTES - 1);
+
+  try {
+    const accessToken = await driveAuth.getAccessToken();
+    const r = await fetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(dados.driveId)}?alt=media&supportsAllDrives=true`, {
+      headers: { Authorization: `Bearer ${accessToken}`, Range: `bytes=${inicio}-${fim}` },
+    });
+    if (r.status !== 206 && r.status !== 200) {
+      // 403/404 = a pasta ainda não foi compartilhada com a conta da plataforma (o player volta
+      // para o preview do Drive); 416 = trecho além do fim do arquivo.
+      const motivo = (await r.text().catch(() => "")).slice(0, 300).replace(/\s+/g, " ");
+      console.warn("ouvirAudio: Drive respondeu", r.status, "midia", dados.midiaId, motivo);
+      res.status(r.status === 416 ? 416 : 502).end();
+      return;
+    }
+    res.status(206);
+    for (const h of ["content-type", "content-length", "content-range"]) {
+      const v = r.headers.get(h);
+      if (v) res.setHeader(h, v);
+    }
+    res.setHeader("Accept-Ranges", "bytes");
+    res.setHeader("Cache-Control", "private, no-store");
+    res.setHeader("Content-Disposition", "inline");
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    Readable.fromWeb(r.body as unknown as import("node:stream/web").ReadableStream).pipe(res);
+  } catch (e) {
+    console.error("ouvirAudio falhou", (e as Error).message);
+    if (!res.headersSent) res.status(502).end();
+  }
 });
 
 // ── Histórico de senhas (não repetir as últimas 3) ───────────────────────────
