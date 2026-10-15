@@ -427,7 +427,10 @@ const ModuloPlayer: React.FC<{
   onClose: () => void;
   tenantId: string;
   userId: string;
-}> = ({ trilha, progresso, onUpdateProgresso, onClose, tenantId, userId }) => {
+  // Equipe da plataforma visualizando um cliente: vê tudo, mas nada é gravado no cliente
+  // (senão apareceria como participante nos relatórios e rankings dele).
+  visualizacao?: boolean;
+}> = ({ trilha, progresso, onUpdateProgresso, onClose, tenantId, userId, visualizacao = false }) => {
   const [moduloIdx, setModuloIdx] = useState(0);
   const [showQuiz, setShowQuiz] = useState(false);
   const [respostas, setRespostas] = useState<Record<number, string>>({});
@@ -465,6 +468,7 @@ const ModuloPlayer: React.FC<{
       if (cancelado || !snap.exists()) return;
       const item = { id: snap.id, ...snap.data() } as any;
       setConteudoItem(item);
+      if (visualizacao) { setConteudoVisto(true); return; }
       const progColecao = tipo === 'video' ? 'videosProgresso' : 'repositorioProgresso';
       const key = `${userId}_${itemId}`;
       if (tipo === 'video') {
@@ -481,7 +485,7 @@ const ModuloPlayer: React.FC<{
       if (!cancelado) setConteudoVisto(true);
     }).catch(() => { /* item não liberado a este cliente: fica oculto */ });
     return () => { cancelado = true; };
-  }, [modulo?.id, modulo?.conteudoRef?.tipo, modulo?.conteudoRef?.itemId, userId, tenantId]);
+  }, [modulo?.id, modulo?.conteudoRef?.tipo, modulo?.conteudoRef?.itemId, userId, tenantId, visualizacao]);
 
   // Progresso, nota e aprovação são gravados pelas functions (o cliente não escreve mais em
   // trilhasProgresso depois de criar o documento) — aqui só atualizamos a tela com o retorno.
@@ -636,8 +640,15 @@ const ModuloPlayer: React.FC<{
             </div>
           )}
 
+          {visualizacao && (
+            <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 12, padding: 14, fontSize: 12, color: '#1e3a8a', display: 'flex', gap: 10, alignItems: 'center' }}>
+              <i className="fa-solid fa-eye" style={{ fontSize: 16 }}></i>
+              <span><strong>Modo de visualização.</strong> Você está vendo a trilha como o cliente vê. Leitura, quiz e progresso não são registrados para não aparecer nos relatórios do cliente.</span>
+            </div>
+          )}
+
           {/* Ações */}
-          {!showQuiz && !quizEnviado && (
+          {!visualizacao && !showQuiz && !quizEnviado && (
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               {!progModulo.assistido && (!modulo.conteudoRef || conteudoVisto) && (
                 <button onClick={marcarAssistido} style={{ flex: 1, minWidth: 160, background: '#0A1628', border: 'none', color: '#ffffff', padding: 14, borderRadius: 12, cursor: 'pointer', fontWeight: 900, fontSize: 12, textTransform: 'uppercase' }}>
@@ -926,7 +937,15 @@ const TrailsView: React.FC = () => {
     await deleteDoc(doc(db, 'trilhas', id));
   };
 
+  // Equipe da plataforma dentro de um cliente ("Visualizando") só visualiza: o banco não deixa
+  // gravar progresso de quem não é do cliente, e nem deve (sujaria relatórios e rankings).
+  const modoVisualizacao = veTudo && (!tenantId || tenantId !== (user.tenantId || ''));
+
   const abrirTrilha = async (trilha: Trilha) => {
+    if (modoVisualizacao) {
+      setTrilhaAtiva({ trilha, progresso: { id: '', userId: user.id, userName: user.name, trilhaId: trilha.id, trilhaTitulo: trilha.titulo, modulos: {}, percentualObrigatorios: 0, concluida: false, tenantId: tenantId || '', updatedAt: null } });
+      return;
+    }
     let prog = progressos.find(p => p.trilhaId === trilha.id);
     if (!prog) {
       const novoDoc = await addDoc(collection(db, 'trilhasProgresso'), {
@@ -1377,6 +1396,7 @@ const TrailsView: React.FC = () => {
           onClose={() => setTrilhaAtiva(null)}
           tenantId={tenantId}
           userId={user.id}
+          visualizacao={modoVisualizacao}
         />
       )}
     </div>
