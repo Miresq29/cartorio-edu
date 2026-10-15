@@ -56,7 +56,7 @@ const TIPO_ICON: Record<string, string> = {
 };
 
 const TrainingView: React.FC = () => {
-  const { state, tenantId } = useApp();
+  const { state, tenantId, tipoOrganizacao } = useApp();
   const { showToast } = useToast();
   const isGestor = ['SUPERADMIN', 'gestor', 'admin'].includes(state.user?.role || '');
   const [activeTab, setActiveTab] = useState<Tab>('ia');
@@ -118,7 +118,7 @@ const TrainingView: React.FC = () => {
 
     const cl = checklistsCtx.map((c: any) => `PROTOCOLO: ${c.title}\nITENS: ${c.items?.map((i: any) => i.text).join('; ')}`).join('\n\n');
     const kl = docsCtx.slice(0, 5).map((d: any) => `DOCUMENTO: ${d.fileName || d.title}\nCONTEUDO: ${(d.rawText || d.content || '').substring(0, 2000)}`).join('\n\n');
-    return `Você é um especialista em treinamento notarial da MJ Consultoria.\nBASE LEGAL:\n${kl || 'Nenhum documento.'}\nPROTOCOLOS:\n${cl || 'Nenhum protocolo.'}\nUnidade: ${state.user?.tenantId || 'MJ Consultoria'} | Operador: ${state.user?.name || 'Usuário'}`;
+    return `Você é um especialista em treinamento ${tipoOrganizacao === 'empresa' ? 'corporativo' : 'notarial'} da MJ Consultoria.\nBASE LEGAL:\n${kl || 'Nenhum documento.'}\nPROTOCOLOS:\n${cl || 'Nenhum protocolo.'}\nUnidade: ${state.user?.tenantId || 'MJ Consultoria'} | Operador: ${state.user?.name || 'Usuário'}`;
   };
 
   const handleSend = async () => {
@@ -585,7 +585,7 @@ ${opt.justificativa}
         <h2 className="text-3xl font-black text-navy italic uppercase tracking-tighter">
           Centro de <span className="text-blue-500">Treinamento</span>
         </h2>
-        <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">MJ Consultoria // Capacitação Notarial IA</p>
+        <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">MJ Consultoria // {tipoOrganizacao === 'empresa' ? 'Capacitação Corporativa IA' : 'Capacitação Notarial IA'}</p>
       </header>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

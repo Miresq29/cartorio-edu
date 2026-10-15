@@ -78,7 +78,7 @@ const DASH_TABS = [
 
 // ─── Certificate Generator ──────────────────────────────────────────────────
 
-const printTrilhaCertificate = (userName: string, cargo: string, trilhaTitulo: string, nota?: number) => {
+const printTrilhaCertificate = (userName: string, cargo: string, trilhaTitulo: string, nota?: number, empresa = false) => {
   const win = window.open('', '_blank', 'noopener');
   if (!win) return;
   win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
@@ -111,7 +111,7 @@ const printTrilhaCertificate = (userName: string, cargo: string, trilhaTitulo: s
     <div class="corner tl"></div><div class="corner tr"></div>
     <div class="corner bl"></div><div class="corner br"></div>
     <div class="org">MJ Consultoria</div>
-    <div class="subtitle">Gestão do Conhecimento Notarial</div>
+    <div class="subtitle">${empresa ? 'Gestão do Conhecimento' : 'Gestão do Conhecimento Notarial'}</div>
     <div class="cert-title">Certificado de Conclusão de Trilha</div>
     <div class="label">Certificamos que</div>
     <div class="name">${escapeHtml(userName)}</div>
@@ -134,7 +134,7 @@ const printTrilhaCertificate = (userName: string, cargo: string, trilhaTitulo: s
 // ─── Main Component ─────────────────────────────────────────────────────────
 
 const TrainingDashboard: React.FC = () => {
-  const { state, tenantId: ctxTenantId } = useApp();
+  const { state, tenantId: ctxTenantId, tipoOrganizacao } = useApp();
 
   const [activeTab, setActiveTab] = useState<DashTab>('visao-geral');
   const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
@@ -486,7 +486,7 @@ const TrainingDashboard: React.FC = () => {
                             <button
                               type="button"
                               title="Emitir certificado"
-                              onClick={() => printTrilhaCertificate(p.userName, userInfo?.role || '', trilha.titulo)}
+                              onClick={() => printTrilhaCertificate(p.userName, userInfo?.role || '', trilha.titulo, undefined, tipoOrganizacao === 'empresa')}
                               className="ml-1 text-[8px] font-black uppercase bg-emerald-600 hover:bg-emerald-500 text-navy px-2 py-1 rounded-lg transition-all"
                             >
                               <i className="fa-solid fa-certificate mr-1"></i>Cert.
@@ -645,7 +645,7 @@ const TrainingDashboard: React.FC = () => {
                     onClick={() => {
                       const trilhaConcluida = progressoDoTenant.find(p => (user.userId ? p.userId === user.userId : p.userName === user.nome) && p.concluida);
                       if (trilhaConcluida) {
-                        printTrilhaCertificate(user.nome, user.cargo, trilhaConcluida.trilhaTitulo, user.media);
+                        printTrilhaCertificate(user.nome, user.cargo, trilhaConcluida.trilhaTitulo, user.media, tipoOrganizacao === 'empresa');
                       }
                     }}
                     className="opacity-0 group-hover:opacity-100 bg-blue-600 hover:bg-blue-500 text-navy px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5"

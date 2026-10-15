@@ -79,7 +79,7 @@ const formatCountdown = (liberadoEm: Date): string => {
 };
 
 const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
-  const { state, tenantId } = useApp();
+  const { state, tenantId, tipoOrganizacao } = useApp();
   const isSuperAdmin = state.user?.role === 'SUPERADMIN';
   // Conteúdo criado pela equipe MJ (SUPERADMIN) começa sem nenhum cartório marcado — fica só
   // com a equipe MJ até alguém decidir direcionar para clientes específicos.
@@ -406,7 +406,7 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
             <div className="space-y-1">
               <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Cargo / Função</label>
               <input value={respondente.cargo} onChange={e => setRespondente(r => ({ ...r, cargo: e.target.value }))}
-                placeholder="Ex: Escrevente Técnico"
+                placeholder={tipoOrganizacao === 'empresa' ? 'Ex: Analista Administrativo' : 'Ex: Escrevente Técnico'}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-navy outline-none focus:border-blue-500" />
             </div>
           </div>

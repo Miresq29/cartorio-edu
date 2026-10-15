@@ -995,7 +995,8 @@ const TrailsView: React.FC = () => {
         </>}
       </div>
 
-      {isSuperAdmin && (
+      {/* Treinamentos oficiais são de cartório (Provimentos CNJ): o atalho não aparece dentro de empresas */}
+      {isSuperAdmin && (superAdminGlobal || tipoOrganizacao === 'cartorio') && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#F5EDD8', border: '1px solid #C9A84C40', borderRadius: 14, padding: '12px 16px', marginBottom: 24 }}>
           <i className="fa-solid fa-wand-magic-sparkles" style={{ color: '#C9A84C' }}></i>
           <span style={{ fontSize: 12, color: '#7a5c1e', flex: 1 }}>
@@ -1125,7 +1126,7 @@ const TrailsView: React.FC = () => {
               <div>
                 <label style={{ fontSize: 10, fontWeight: 900, color: '#8A9BB0', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6 }}>Título da Trilha</label>
                 <input value={form.titulo} onChange={e => setForm(f => ({ ...f, titulo: e.target.value }))}
-                  placeholder="Ex: Trilha do Atendente · Onboarding Notarial"
+                  placeholder={tipoOrganizacao === 'empresa' ? 'Ex: Trilha do Atendente · Integração de Novos Colaboradores' : 'Ex: Trilha do Atendente · Onboarding Notarial'}
                   style={{ width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 16px', color: '#0A1628', fontSize: 14 }} />
               </div>
               <div>

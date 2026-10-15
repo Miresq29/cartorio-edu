@@ -27,7 +27,7 @@ interface QuizResult {
 }
 
 const TrainingReport: React.FC = () => {
-  const { tenantId } = useApp();
+  const { tenantId, tipoOrganizacao } = useApp();
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
   const [filterColaborador, setFilterColaborador] = useState('');
@@ -208,7 +208,7 @@ const TrainingReport: React.FC = () => {
       <body>
         <div class="cert">
           <div class="org">MJ Consultoria</div>
-          <div class="subtitle">Gestão do Conhecimento Notarial</div>
+          <div class="subtitle">${tipoOrganizacao === 'empresa' ? 'Gestão do Conhecimento' : 'Gestão do Conhecimento Notarial'}</div>
           <div class="cert-title">Certificado de Conclusão</div>
           <div class="label">Certificamos que</div>
           <div class="name">${escapeHtml(p.nomeColaborador)}</div>

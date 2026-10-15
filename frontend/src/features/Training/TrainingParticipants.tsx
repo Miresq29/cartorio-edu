@@ -30,7 +30,7 @@ const STATUS_CONFIG = {
 };
 
 const TrainingParticipants: React.FC = () => {
-  const { tenantId } = useApp();
+  const { tenantId, tipoOrganizacao } = useApp();
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [checklists, setChecklists] = useState<Checklist[]>([]);
   const [showForm, setShowForm] = useState(false);
@@ -163,7 +163,7 @@ const TrainingParticipants: React.FC = () => {
               <input
                 value={form.cargo}
                 onChange={e => setForm(f => ({ ...f, cargo: e.target.value }))}
-                placeholder="Ex: Escrevente Técnico"
+                placeholder={tipoOrganizacao === 'empresa' ? 'Ex: Analista Administrativo' : 'Ex: Escrevente Técnico'}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-navy outline-none focus:border-blue-500 transition-colors"
               />
             </div>

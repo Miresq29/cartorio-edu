@@ -445,7 +445,7 @@ const AdminDashboard:React.FC<{trilhas:Trilha[];progresso:TrilhaProg[];quizResul
 
 // ── MAIN ─────────────────────────────────────────────────────────────────────
 const DashboardView:React.FC = () => {
-  const {state, tenantId} = useApp();
+  const {state, tenantId, tipoOrganizacao} = useApp();
   const user = state.user!;
   const isGestor = ['SUPERADMIN','gestor','admin'].includes(user.role);
   const verTodoTenant = isGestor || user.role === 'equipe_mj';
@@ -522,7 +522,7 @@ const DashboardView:React.FC = () => {
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:24}}>
           <div>
             <h2 style={{fontSize:22,fontWeight:900,color:NAVY,margin:0}}>{isGestor?'Painel Geral':`Ola, ${user.name.split(' ')[0]}`}</h2>
-            <p style={{fontSize:13,color:'#8A9BB0',margin:'2px 0 0'}}>{isGestor?'Acompanhe o desempenho da sua equipe':'Plataforma de Conformidade Notarial'}</p>
+            <p style={{fontSize:13,color:'#8A9BB0',margin:'2px 0 0'}}>{isGestor?'Acompanhe o desempenho da sua equipe':(tipoOrganizacao==='empresa'?'Plataforma de Treinamento e Conformidade':'Plataforma de Conformidade Notarial')}</p>
           </div>
           <div style={{display:'flex',alignItems:'center',gap:8,background:'#fff',border:`1px solid ${GOLD}`,borderRadius:12,padding:'8px 14px'}}>
             <i className="fa-solid fa-brain" style={{color:GOLD,fontSize:12}}></i>

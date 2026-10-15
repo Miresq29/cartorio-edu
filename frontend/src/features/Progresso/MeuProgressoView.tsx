@@ -27,6 +27,7 @@ interface BadgeDef {
   color: string; bg: string; border: string;
   check: (data: BadgeData) => boolean;
   nivel: 'bronze' | 'prata' | 'ouro' | 'platina';
+  soCartorio?: boolean; // trilhas de Provimento CNJ — não aparecem para empresas
 }
 
 interface BadgeData {
@@ -48,8 +49,8 @@ const BADGES: BadgeDef[] = [
   { id: 'mestre_ia',        nome: 'Mestre IA',            desc: '10 testes com IA aprovados',             icon: 'fa-brain',             color: '#7c3aed', bg: '#f5f3ff', border: '#a78bfa', nivel: 'ouro',    check: (d) => d.quizResults.filter(r => r.ia && r.aprovado).length >= 10 },
   // Trilhas
   { id: 'trilha_lgpd',      nome: 'Guardião LGPD',        desc: 'Concluiu a trilha LGPD',                 icon: 'fa-lock',              color: '#0f766e', bg: '#ccfbf1', border: '#2dd4bf', nivel: 'ouro',    check: (d) => d.progresso.some(p => trilhaConcluida(p) && p.trilhaTitulo?.toLowerCase().includes('lgpd')) },
-  { id: 'trilha_p213',      nome: 'Cyber Shield',         desc: 'Concluiu a trilha Provimento 213',       icon: 'fa-shield-virus',      color: '#1d4ed8', bg: '#dbeafe', border: '#3b82f6', nivel: 'ouro',    check: (d) => d.progresso.some(p => trilhaConcluida(p) && p.trilhaTitulo?.toLowerCase().includes('213')) },
-  { id: 'trilha_p161',      nome: 'Vigilante PLD',        desc: 'Concluiu a trilha Provimento 161',       icon: 'fa-eye',               color: '#b45309', bg: '#fef3c7', border: '#f59e0b', nivel: 'ouro',    check: (d) => d.progresso.some(p => trilhaConcluida(p) && p.trilhaTitulo?.toLowerCase().includes('161')) },
+  { id: 'trilha_p213',      nome: 'Cyber Shield',         desc: 'Concluiu a trilha Provimento 213',       soCartorio: true,       icon: 'fa-shield-virus',      color: '#1d4ed8', bg: '#dbeafe', border: '#3b82f6', nivel: 'ouro',    check: (d) => d.progresso.some(p => trilhaConcluida(p) && p.trilhaTitulo?.toLowerCase().includes('213')) },
+  { id: 'trilha_p161',      nome: 'Vigilante PLD',        desc: 'Concluiu a trilha Provimento 161',       soCartorio: true,       icon: 'fa-eye',               color: '#b45309', bg: '#fef3c7', border: '#f59e0b', nivel: 'ouro',    check: (d) => d.progresso.some(p => trilhaConcluida(p) && p.trilhaTitulo?.toLowerCase().includes('161')) },
   { id: 'todas_trilhas',    nome: 'Mestre Notarial',      desc: 'Concluiu todas as trilhas disponíveis',  icon: 'fa-graduation-cap',    color: '#7c3aed', bg: '#f5f3ff', border: '#7c3aed', nivel: 'platina', check: (d) => { const total = d.trilhas.length; const done = new Set(d.progresso.filter(trilhaConcluida).map(p => p.trilhaId)).size; return total > 0 && done >= total; } },
   // Certificados
   { id: 'primeiro_cert',    nome: 'Certificado',          desc: 'Emitiu o primeiro certificado',          icon: 'fa-certificate',       color: '#b45309', bg: '#fefce8', border: '#eab308', nivel: 'prata',   check: (d) => d.certificados.length >= 1 },
@@ -95,7 +96,7 @@ const BadgeCard: React.FC<{ badge: BadgeDef; earned: boolean }> = ({ badge, earn
 type Tab = 'resumo' | 'badges' | 'historico' | 'certificados';
 
 const MeuProgressoView: React.FC = () => {
-  const { state, tenantId } = useApp();
+  const { state, tenantId, tipoOrganizacao } = useApp();
   const user = state.user!;
   const userId = user.id;
   const userName = user.name;
@@ -141,14 +142,18 @@ const MeuProgressoView: React.FC = () => {
   const globalPct  = pct(doneMods, totalMods);
 
   const badgeData: BadgeData = { trilhas, progresso: myProg, quizResults: myRes, certificados: myCerts, userId, userName };
-  const earnedBadges = BADGES.filter(b => b.check(badgeData));
-  const totalBadges  = BADGES.length;
+  // Empresas não veem os badges de Provimentos CNJ, e o badge final perde o nome notarial.
+  const badges = useMemo(() => tipoOrganizacao === 'empresa'
+    ? BADGES.filter(b => !b.soCartorio).map(b => b.id === 'todas_trilhas' ? { ...b, nome: 'Mestre do Conhecimento' } : b)
+    : BADGES, [tipoOrganizacao]);
+  const earnedBadges = badges.filter(b => b.check(badgeData));
+  const totalBadges  = badges.length;
 
   const badgesByNivel = useMemo(() => {
     const map: Record<string, BadgeDef[]> = { platina: [], ouro: [], prata: [], bronze: [] };
-    BADGES.forEach(b => map[b.nivel].push(b));
+    badges.forEach(b => map[b.nivel].push(b));
     return map;
-  }, []);
+  }, [badges]);
 
   if (loading) return (
     <div className="flex items-center justify-center h-screen bg-white">
