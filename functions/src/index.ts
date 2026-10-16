@@ -1216,8 +1216,11 @@ export const ouvirAudio = onRequest({ memory: "256MiB", timeoutSeconds: 120, max
       const motivo = (await r.text().catch(() => "")).slice(0, 300).replace(/\s+/g, " ");
       // O que a conta da plataforma pode fazer com o arquivo (ajuda a ver se a pasta foi
       // compartilhada como Editor ou só como Leitor).
-      const cap = await fetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(dados.driveId)}?fields=capabilities(canEdit,canDownload),copyRequiresWriterPermission&supportsAllDrives=true`,
-        { headers: { Authorization: `Bearer ${accessToken}` } }).then((x) => x.text()).catch(() => "");
+      const meta = async (id: string) => fetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(id)}?fields=name,owners(emailAddress),parents,capabilities(canEdit,canDownload,canChangeItemDownloadRestriction),copyRequiresWriterPermission,downloadRestrictions&supportsAllDrives=true`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }).then((x) => x.json() as Promise<{ parents?: string[] }>).catch(() => ({} as { parents?: string[] }));
+      const arq = await meta(dados.driveId);
+      const pasta = arq?.parents?.[0] ? await meta(arq.parents[0]) : null;
+      const cap = JSON.stringify({ arquivo: arq, pasta });
       console.warn("ouvirAudio: Drive respondeu", r.status, "midia", dados.midiaId, motivo, "| capacidades:", cap.replace(/\s+/g, " "));
       res.status(r.status === 416 ? 416 : 502).end();
       return;
