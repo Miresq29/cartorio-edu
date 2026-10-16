@@ -117,9 +117,9 @@ const SecurityView: React.FC = () => {
            
            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
-                { title: 'Bloqueio Brute Force', status: 'Ativo', desc: '5 tentativas max. / 5 min pausa' },
+                { title: 'Bloqueio Brute Force', status: 'Ativo', desc: '5 senhas erradas bloqueiam a conta (15, 30 e 60 min) · 30 erros do mesmo IP bloqueiam o IP por 30 min' },
                 { title: 'Historico de Senhas', status: 'Ativo', desc: 'Reciclagem proibida (ultimas 3)' },
-                { title: 'Complexidade Exigida', status: 'Ativo', desc: 'Alfa-numérico + Símbolos (8+)' }
+                { title: 'Complexidade Exigida', status: 'Ativo', desc: '12+ caracteres com maiúscula, minúscula, número e símbolo · troca obrigatória no primeiro acesso' }
               ].map((p, i) => (
                 <div key={i} className="p-8 rounded-3xl bg-slate-950 border border-slate-800 space-y-4">
                   <div className="flex justify-between items-center">

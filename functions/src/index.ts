@@ -3,7 +3,8 @@ import { GoogleAuth } from "google-auth-library";
 import { Readable } from "node:stream";
 import { defineSecret } from "firebase-functions/params";
 import * as admin from "firebase-admin";
-import { createHash, randomBytes, scrypt, timingSafeEqual } from "node:crypto";
+import { createHash, randomBytes, randomInt, scrypt, timingSafeEqual } from "node:crypto";
+import { sendEmail, logEmailEvidencia, escapeHtml, GMAIL_USER, GMAIL_APP_PASSWORD } from "./email";
 
 admin.initializeApp();
 
@@ -100,7 +101,7 @@ export const createTenant = onCall(async (request) => {
   return { id: slug };
 });
 
-export const createCollaborator = onCall(async (request) => {
+export const createCollaborator = onCall({ secrets: [GMAIL_APP_PASSWORD] }, async (request) => {
   if (!request.auth) {
     throw new HttpsError("unauthenticated", "Login necessário.");
   }
@@ -116,10 +117,15 @@ export const createCollaborator = onCall(async (request) => {
   const cargo = String(request.data?.cargo || "");
   const cpf = String(request.data?.cpf || "").trim();
   const tenantId = String(request.data?.tenantId || "").trim();
-  const password = String(request.data?.password || "");
+  // Sem senha informada, o servidor gera uma temporária forte; informada, precisa ser forte.
+  const password = String(request.data?.password || "") || gerarSenhaTemporaria();
+  const enviarAcesso = request.data?.enviarAcesso === true;
 
-  if (!name || !email || !password) {
-    throw new HttpsError("invalid-argument", "Nome, e-mail e senha são obrigatórios.");
+  if (!name || !email) {
+    throw new HttpsError("invalid-argument", "Nome e e-mail são obrigatórios.");
+  }
+  if (!isStrongPassword(password)) {
+    throw new HttpsError("invalid-argument", "Senha fraca. Mínimo 12 caracteres, com maiúscula, minúscula, número e caractere especial.");
   }
   // Exige nome e sobrenome — pelo menos duas palavras com 2+ letras cada, para evitar
   // cadastros incompletos como "João" ou iniciais soltas tipo "J S".
@@ -195,7 +201,8 @@ export const createCollaborator = onCall(async (request) => {
     throw new HttpsError("internal", "Conta criada, mas falha ao salvar perfil. Tente novamente.");
   }
 
-  return { uid, reused };
+  const emailEnviado = enviarAcesso ? await enviarEmailAcesso({ name, email, tenantId }, password, true) : false;
+  return { uid, reused, senhaTemporaria: password, emailEnviado };
 });
 
 function isStrongPassword(pass: string): boolean {
@@ -255,6 +262,154 @@ export const resetTenantPasswords = onCall(async (request) => {
   }
 
   return { total: usersSnap.size, updated, failed };
+});
+
+// ── Redefinição individual de senha e suspensão de acesso (gestão) ───────────
+// A gestão do cliente (ou a equipe MJ) redefine a senha de UM colaborador: o servidor gera uma
+// senha temporária forte, encerra as sessões abertas, libera um eventual bloqueio por tentativas
+// e obriga a troca no próximo acesso (isFirstLogin/mustChangePassword → ChangePasswordView, que
+// só aceita senha forte e diferente das 3 últimas). O acesso vai por e-mail para o colaborador.
+const PLATAFORMA_URL = "https://cartorio-edu.vercel.app/";
+
+function gerarSenhaTemporaria(): string {
+  // Sem caracteres ambíguos (0/O, 1/l/I) — a pessoa costuma digitar o que leu no e-mail.
+  const grupos = ["ABCDEFGHJKLMNPQRSTUVWXYZ", "abcdefghijkmnopqrstuvwxyz", "23456789", "@#$%&*!?"];
+  const todos = grupos.join("");
+  const sortear = (s: string) => s[randomInt(s.length)];
+  const chars = [...grupos.map(sortear), ...Array.from({ length: 10 }, () => sortear(todos))];
+  for (let i = chars.length - 1; i > 0; i--) {
+    const j = randomInt(i + 1);
+    [chars[i], chars[j]] = [chars[j], chars[i]];
+  }
+  return chars.join("");
+}
+
+// Quem pode mexer no acesso de quem: SUPERADMIN em todos; equipe MJ em todos menos contas da
+// plataforma; gestão do cliente só nos colaboradores/gestores do próprio cliente. Ninguém usa
+// isto na própria conta (para a própria senha existe "Alterar senha").
+async function perfilGerenciavel(caller: CallerProfile, uid: string): Promise<FirebaseFirestore.DocumentData> {
+  if (!GESTOR_ROLES.includes(caller.role)) {
+    throw new HttpsError("permission-denied", "Sem permissão para gerenciar o acesso de colaboradores.");
+  }
+  if (!uid) throw new HttpsError("invalid-argument", "Colaborador não informado.");
+  if (uid === caller.uid) {
+    throw new HttpsError("failed-precondition", "Para a sua própria conta, use \"Alterar senha\" no seu perfil.");
+  }
+  const snap = await db.collection("users").doc(uid).get();
+  if (!snap.exists) throw new HttpsError("not-found", "Colaborador não encontrado.");
+  const alvo = snap.data()!;
+  const contaPlataforma = ["SUPERADMIN", "equipe_mj", "curador"].includes(alvo.role);
+  if (caller.role === "SUPERADMIN") return alvo;
+  if (caller.role === "equipe_mj") {
+    if (contaPlataforma) throw new HttpsError("permission-denied", "Contas da equipe da plataforma só podem ser gerenciadas pelo SUPERADMIN.");
+    return alvo;
+  }
+  if (contaPlataforma || !alvo.tenantId || alvo.tenantId !== caller.tenantId) {
+    throw new HttpsError("permission-denied", "Só é possível gerenciar colaboradores do próprio cliente.");
+  }
+  return alvo;
+}
+
+function emailAcesso(nome: string, email: string, senha: string, novo: boolean): { assunto: string; html: string } {
+  const primeiroNome = escapeHtml(String(nome || "").split(/\s+/)[0] || "");
+  const assunto = novo ? "Seu acesso à Integra-Academy" : "Sua senha da Integra-Academy foi redefinida";
+  const html = `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;color:#0f172a">
+    <h2 style="color:#0A1628;margin-bottom:4px">${novo ? "Bem-vindo(a) à Integra-Academy" : "Nova senha de acesso"}</h2>
+    <p style="font-size:14px;line-height:1.6">Olá${primeiroNome ? " " + primeiroNome : ""},</p>
+    <p style="font-size:14px;line-height:1.6">${novo
+      ? "Sua conta na plataforma de treinamentos foi criada. Use os dados abaixo para entrar:"
+      : "A gestão da sua organização redefiniu a sua senha na plataforma de treinamentos. Use os dados abaixo para entrar:"}</p>
+    <table style="font-size:14px;margin:16px 0;border-collapse:collapse">
+      <tr><td style="padding:6px 12px 6px 0;color:#475569">E-mail</td><td style="padding:6px 0"><b>${escapeHtml(email)}</b></td></tr>
+      <tr><td style="padding:6px 12px 6px 0;color:#475569">Senha temporária</td><td style="padding:6px 0"><b style="font-family:Consolas,monospace;font-size:16px;letter-spacing:1px;background:#f1f5f9;padding:4px 8px;border-radius:6px">${escapeHtml(senha)}</b></td></tr>
+    </table>
+    <p style="text-align:center;margin:24px 0">
+      <a href="${PLATAFORMA_URL}" style="background:#0A1628;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:bold;display:inline-block">Acessar a plataforma</a>
+    </p>
+    <p style="font-size:13px;line-height:1.6"><b>No primeiro acesso você será obrigado(a) a criar uma nova senha.</b> Ela precisa ter no mínimo 12 caracteres, com letra maiúscula, letra minúscula, número e caractere especial (ex.: ! @ # $ %).</p>
+    <p style="font-size:12px;line-height:1.6;color:#475569">Não compartilhe esta senha. Se você não esperava este e-mail, avise a gestão da sua organização.</p>
+    <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0" />
+    <p style="font-size:11px;color:#94a3b8">Aviso automático da plataforma Integra-Academy — MJ Consultoria.</p>
+  </div>`;
+  return { assunto, html };
+}
+
+async function enviarEmailAcesso(alvo: FirebaseFirestore.DocumentData, senha: string, novo: boolean): Promise<boolean> {
+  const email = String(alvo.email || "");
+  if (!email) return false;
+  const { assunto, html } = emailAcesso(String(alvo.name || ""), email, senha, novo);
+  const result = await sendEmail(GMAIL_USER, GMAIL_APP_PASSWORD.value(), email, assunto, html);
+  await logEmailEvidencia({
+    tenantId: String(alvo.tenantId || ""), destinatarioEmail: email, destinatarioNome: String(alvo.name || email),
+    tipoNotificacao: novo ? "acesso_criado" : "senha_redefinida", assunto, ok: result.ok, erro: result.error, messageId: result.id,
+  }).catch(() => {});
+  return result.ok;
+}
+
+export const redefinirSenhaColaborador = onCall({ secrets: [GMAIL_APP_PASSWORD] }, async (request) => {
+  if (!request.auth) throw new HttpsError("unauthenticated", "Login necessário.");
+  const caller = await getCallerProfile(request.auth.uid);
+  await enforceRateLimit(caller.uid, "redefinirSenhaColaborador", 10, 60_000);
+  const uid = String(request.data?.uid || "");
+  const alvo = await perfilGerenciavel(caller, uid);
+  if (alvo.active === false) {
+    throw new HttpsError("failed-precondition", "Este acesso está suspenso. Reative o colaborador antes de redefinir a senha.");
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(alvo.email || ""))) {
+    throw new HttpsError("failed-precondition", "Este colaborador não tem um e-mail válido cadastrado — corrija o cadastro antes de redefinir a senha.");
+  }
+
+  // O colaborador PRECISA receber a senha por e-mail: só aplica a nova senha depois que o envio
+  // deu certo. Se o e-mail falhar, nada muda (a senha antiga continua valendo) e a gestão é avisada.
+  const senha = gerarSenhaTemporaria();
+  const emailEnviado = await enviarEmailAcesso(alvo, senha, false);
+  if (!emailEnviado) {
+    throw new HttpsError("unavailable", "Não foi possível enviar o e-mail com o novo acesso, então a senha NÃO foi alterada. Tente novamente em alguns minutos.");
+  }
+  await admin.auth().updateUser(uid, { password: senha });
+  // Encerra as sessões abertas (outro aparelho, alguém que estava usando a conta).
+  await admin.auth().revokeRefreshTokens(uid);
+  await db.collection("users").doc(uid).update({
+    isFirstLogin: true,
+    mustChangePassword: true,
+    passwordUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    senhaRedefinidaPor: caller.uid,
+  });
+  // Se a conta estava bloqueada por tentativas erradas, a nova senha já entra liberada.
+  await db.collection("loginAttempts").doc(loginAttemptKey(String(alvo.email))).delete().catch(() => {});
+
+  await db.collection("auditLogs").add({
+    tipo: "SENHA_REDEFINIDA",
+    descricao: `Senha redefinida pela gestão para ${alvo.name || alvo.email} (acesso enviado por e-mail)`,
+    usuario: String(alvo.email || ""), usuarioId: uid, autorId: caller.uid,
+    tenantId: String(alvo.tenantId || ""), severity: "WARNING",
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  }).catch(() => {});
+  // A senha não volta para a tela da gestão: só o colaborador a recebe, no e-mail dele.
+  return { emailEnviado: true, email: String(alvo.email || "") };
+});
+
+// Suspender/reativar: grava os dois campos (as regras e o login olham "active"; telas antigas
+// olham "ativo") e desativa a conta no Firebase Auth, encerrando as sessões abertas — antes a
+// suspensão só mudava "ativo" e a pessoa continuava entrando normalmente.
+export const definirAcessoColaborador = onCall(async (request) => {
+  if (!request.auth) throw new HttpsError("unauthenticated", "Login necessário.");
+  const caller = await getCallerProfile(request.auth.uid);
+  await enforceRateLimit(caller.uid, "definirAcessoColaborador", 30, 60_000);
+  const uid = String(request.data?.uid || "");
+  const ativo = request.data?.ativo === true;
+  const alvo = await perfilGerenciavel(caller, uid);
+  await admin.auth().updateUser(uid, { disabled: !ativo });
+  if (!ativo) await admin.auth().revokeRefreshTokens(uid);
+  await db.collection("users").doc(uid).update({ active: ativo, ativo });
+  await db.collection("auditLogs").add({
+    tipo: ativo ? "ACESSO_REATIVADO" : "ACESSO_SUSPENSO",
+    descricao: `${ativo ? "Acesso reativado" : "Acesso suspenso"} para ${alvo.name || alvo.email}`,
+    usuario: String(alvo.email || ""), usuarioId: uid, autorId: caller.uid,
+    tenantId: String(alvo.tenantId || ""), severity: ativo ? "INFO" : "WARNING",
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  }).catch(() => {});
+  return { ok: true, ativo };
 });
 
 // ── Proxy para a API do Gemini ───────────────────────────────────────────────
@@ -1328,23 +1483,42 @@ export const registrarNovaSenha = onCall(async (request) => {
 // e-mail (oraculo de enumeracao) e empurrar lockedUntil pra frente em loop (DoS
 // direcionado). Mover pra ca: o ID agora e um hash, e o Firestore nao aceita mais
 // leitura/escrita direta nessa colecao (ver firestore.rules) — so por aqui.
-const LOGIN_MAX_ATTEMPTS = 20;
-const LOGIN_LOCKOUT_MS = 60_000;
+// Política: 5 senhas erradas seguidas bloqueiam a conta — 15 min no 1º bloqueio, 30 min no 2º e
+// 60 min a partir do 3º (contagem de bloqueios zera após 24 h sem bloqueio ou num login certo).
+// Além disso, um mesmo IP com 30 erros em 15 min (tentando várias contas) fica bloqueado 30 min.
+// A gestão libera a conta na hora ao redefinir a senha (redefinirSenhaColaborador).
+const LOGIN_MAX_ATTEMPTS = 5;
+const LOGIN_LOCKOUT_MIN = [15, 30, 60];
+const LOGIN_BLOQUEIOS_JANELA_MS = 24 * 60 * 60_000;
+const LOGIN_IP_MAX_FALHAS = 30;
+const LOGIN_IP_JANELA_MS = 15 * 60_000;
+const LOGIN_IP_LOCKOUT_MS = 30 * 60_000;
 
 function loginAttemptKey(email: string): string {
   return createHash("sha256").update(email.trim().toLowerCase()).digest("hex");
+}
+function loginIpKey(ip: string): string {
+  return "ip_" + createHash("sha256").update(ip).digest("hex");
+}
+const ipDaRequisicao = (request: { rawRequest?: { ip?: string } }) => String(request.rawRequest?.ip || "");
+
+function minutosRestantes(ts: admin.firestore.Timestamp | null | undefined): number {
+  return ts && ts.toMillis() > Date.now() ? Math.ceil((ts.toMillis() - Date.now()) / 60_000) : 0;
 }
 
 export const checkLoginLock = onCall(async (request) => {
   const email = String(request.data?.email || "").trim().toLowerCase();
   if (!email) throw new HttpsError("invalid-argument", "E-mail é obrigatório.");
-  const snap = await db.collection("loginAttempts").doc(loginAttemptKey(email)).get();
-  if (!snap.exists) return { locked: false };
-  const lockedUntil = snap.data()!.lockedUntil as admin.firestore.Timestamp | null | undefined;
-  if (lockedUntil && lockedUntil.toMillis() > Date.now()) {
-    return { locked: true, minutesLeft: Math.ceil((lockedUntil.toMillis() - Date.now()) / 60_000) };
-  }
-  return { locked: false };
+  const ip = ipDaRequisicao(request);
+  const [contaSnap, ipSnap] = await Promise.all([
+    db.collection("loginAttempts").doc(loginAttemptKey(email)).get(),
+    ip ? db.collection("loginAttempts").doc(loginIpKey(ip)).get() : Promise.resolve(null),
+  ]);
+  const minutos = Math.max(
+    minutosRestantes(contaSnap.data()?.lockedUntil),
+    minutosRestantes(ipSnap?.data()?.lockedUntil),
+  );
+  return minutos > 0 ? { locked: true, minutesLeft: minutos } : { locked: false };
 });
 
 export const reportLoginResult = onCall(async (request) => {
@@ -1354,23 +1528,71 @@ export const reportLoginResult = onCall(async (request) => {
   const ref = db.collection("loginAttempts").doc(loginAttemptKey(email));
 
   if (success) {
+    // Só quem acabou de entrar NESSA conta zera o contador — antes qualquer um podia chamar
+    // isto sem login e apagar o bloqueio de qualquer e-mail.
+    const emailDoToken = String(request.auth?.token?.email || "").toLowerCase();
+    if (!request.auth || emailDoToken !== email) {
+      throw new HttpsError("permission-denied", "Operação não permitida.");
+    }
     await ref.set(
-      { attempts: 0, lockedUntil: null, lastAttempt: admin.firestore.FieldValue.serverTimestamp() },
+      { attempts: 0, bloqueios: 0, lockedUntil: null, lastAttempt: admin.firestore.FieldValue.serverTimestamp() },
       { merge: true }
     );
     return { ok: true };
   }
 
-  await db.runTransaction(async (tx) => {
+  const agora = Date.now();
+  const bloqueou = await db.runTransaction(async (tx) => {
     const snap = await tx.get(ref);
-    const attempts = (snap.exists ? (snap.data()!.attempts as number) || 0 : 0) + 1;
+    const d = snap.data() || {};
+    // Erros durante um bloqueio em andamento não contam (o login nem chega a ser tentado).
+    if (minutosRestantes(d.lockedUntil) > 0) return 0;
+    const attempts = ((d.attempts as number) || 0) + 1;
     const update: Record<string, unknown> = { attempts, lastAttempt: admin.firestore.FieldValue.serverTimestamp() };
+    let minutos = 0;
     if (attempts >= LOGIN_MAX_ATTEMPTS) {
-      update.lockedUntil = admin.firestore.Timestamp.fromMillis(Date.now() + LOGIN_LOCKOUT_MS);
+      const ultimoBloqueio = (d.ultimoBloqueio as admin.firestore.Timestamp | undefined)?.toMillis() || 0;
+      const anteriores = agora - ultimoBloqueio < LOGIN_BLOQUEIOS_JANELA_MS ? ((d.bloqueios as number) || 0) : 0;
+      minutos = LOGIN_LOCKOUT_MIN[Math.min(anteriores, LOGIN_LOCKOUT_MIN.length - 1)];
+      update.lockedUntil = admin.firestore.Timestamp.fromMillis(agora + minutos * 60_000);
       update.attempts = 0;
+      update.bloqueios = anteriores + 1;
+      update.ultimoBloqueio = admin.firestore.Timestamp.fromMillis(agora);
     }
     tx.set(ref, update, { merge: true });
+    return minutos;
   });
+
+  const ip = ipDaRequisicao(request);
+  if (ip) {
+    const ipRef = db.collection("loginAttempts").doc(loginIpKey(ip));
+    await db.runTransaction(async (tx) => {
+      const d = (await tx.get(ipRef)).data() || {};
+      if (minutosRestantes(d.lockedUntil) > 0) return;
+      const novaJanela = !d.windowStart || agora - (d.windowStart as number) > LOGIN_IP_JANELA_MS;
+      const falhas = (novaJanela ? 0 : (d.falhas as number) || 0) + 1;
+      tx.set(ipRef, {
+        falhas: falhas >= LOGIN_IP_MAX_FALHAS ? 0 : falhas,
+        windowStart: novaJanela ? agora : d.windowStart,
+        ...(falhas >= LOGIN_IP_MAX_FALHAS ? { lockedUntil: admin.firestore.Timestamp.fromMillis(agora + LOGIN_IP_LOCKOUT_MS) } : {}),
+      }, { merge: true });
+    }).catch(() => {});
+  }
+
+  // Bloqueio de conta fica registrado na auditoria do cliente (Segurança → logs).
+  if (bloqueou) {
+    let tenantId = "";
+    try {
+      const conta = await admin.auth().getUserByEmail(email);
+      tenantId = String((await db.collection("users").doc(conta.uid).get()).data()?.tenantId || "");
+    } catch { /* e-mail sem conta: registra sem cliente */ }
+    await db.collection("auditLogs").add({
+      tipo: "LOGIN_BLOQUEADO",
+      descricao: `Conta bloqueada por ${bloqueou} min após ${LOGIN_MAX_ATTEMPTS} senhas erradas seguidas`,
+      usuario: email, tenantId, severity: "CRITICAL",
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    }).catch(() => {});
+  }
   return { ok: true };
 });
 

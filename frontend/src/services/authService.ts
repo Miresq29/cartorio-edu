@@ -76,6 +76,7 @@ export const AuthService = {
           "auth/wrong-password": "Senha incorreta. Verifique e tente novamente.",
           "auth/invalid-credential": "E-mail ou senha invalidos.",
           "auth/too-many-requests": "Acesso bloqueado temporariamente pelo Firebase. Aguarde alguns minutos.",
+          "auth/user-disabled": "Acesso suspenso. Contate a gestão da sua organização.",
           "auth/network-request-failed": "Sem conexao com o servidor. Verifique sua internet."
         };
         throw new Error(errorMessages[authError.code] || "E-mail ou senha invalidos.");

@@ -16,6 +16,12 @@ import { alfa } from '../../utils/tema';
 
 const createCollaboratorFn = httpsCallable(functions, 'createCollaborator');
 const resetTenantPasswordsFn = httpsCallable(functions, 'resetTenantPasswords');
+const redefinirSenhaFn = httpsCallable<{ uid: string }, { emailEnviado: boolean; email: string }>(functions, 'redefinirSenhaColaborador');
+const definirAcessoFn = httpsCallable<{ uid: string; ativo: boolean }, { ok: boolean; ativo: boolean }>(functions, 'definirAcessoColaborador');
+
+// Suspensão antiga gravava só "ativo"; o login e as regras olham "active". Vale o mais restritivo.
+const estaAtivo = (u: { active?: boolean; ativo?: boolean }) => u.active !== false && estaAtivo(u);
+const PERFIS_PLATAFORMA = ['SUPERADMIN', 'equipe_mj', 'curador'];
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -30,6 +36,7 @@ interface UserData {
   setor?: string;
   cpf?: string;
   tenantId: string;
+  active?: boolean;
   ativo?: boolean;
   createdAt?: any;
 }
@@ -133,6 +140,12 @@ const UsersView: React.FC = () => {
   const [showReset, setShowReset] = useState(false);
   const [resetPassword, setResetPassword] = useState('');
   const [resetting, setResetting] = useState(false);
+  // Redefinição individual: alvo → confirmação; resultado → senha temporária + status do e-mail.
+  const [senhaAlvo, setSenhaAlvo] = useState<UserData | null>(null);
+  const [redefinindo, setRedefinindo] = useState(false);
+  const [acessoGerado, setAcessoGerado] = useState<{ titulo: string; nome: string; email: string; senha: string; emailEnviado: boolean; pediuEmail: boolean } | null>(null);
+  const [enviarAcessoNovo, setEnviarAcessoNovo] = useState(true);
+  const [alterandoAcesso, setAlterandoAcesso] = useState<string | null>(null);
 
   // Cartório concretamente "em foco" agora: o filtro escolhido na listagem global, ou o
   // próprio cartório quando já não se está na visão global (dentro de um preview/tenant fixo).
@@ -218,8 +231,8 @@ const UsersView: React.FC = () => {
         await updateDoc(doc(db, 'users', editUser.id), { ...form });
         showToast('Colaborador atualizado!', 'success');
       } else {
-        const tempPassword = 'Acesso@' + crypto.randomUUID().replace(/-/g, '').slice(0, 12);
-        const result: any = await createCollaboratorFn({ ...form, password: tempPassword });
+        // A senha temporária é gerada no servidor (forte) e, se marcado, enviada por e-mail.
+        const result: any = await createCollaboratorFn({ ...form, enviarAcesso: enviarAcessoNovo });
         if (form.setor && result.data?.uid) {
           await updateDoc(doc(db, 'users', result.data.uid), { setor: form.setor }).catch(() => {});
         }
@@ -227,10 +240,11 @@ const UsersView: React.FC = () => {
           tipo: 'USER_CREATED', descricao: 'Usuario criado pelo gestor', usuario: form.email,
           usuarioId: user.id, tenantId: form.tenantId, severity: 'INFO', createdAt: serverTimestamp(),
         }).catch(() => {});
-        const msg = result.data?.reused
-          ? `Colaborador ${form.name} vinculado! A conta de acesso já existia e o perfil foi completado.\n\nSenha temporária: ${tempPassword}\n\nComunique ao colaborador — ele deverá alterá-la no primeiro acesso.`
-          : `Colaborador ${form.name} adicionado!\n\nSenha temporária: ${tempPassword}\n\nComunique ao colaborador — ele deverá alterá-la no primeiro acesso.`;
-        alert(msg);
+        setAcessoGerado({
+          titulo: result.data?.reused ? 'Colaborador vinculado (a conta já existia)' : 'Colaborador adicionado',
+          nome: form.name, email: form.email, senha: result.data?.senhaTemporaria || '',
+          emailEnviado: !!result.data?.emailEnviado, pediuEmail: enviarAcessoNovo,
+        });
       }
       setShowForm(false);
     } catch (err: any) {
@@ -248,10 +262,38 @@ const UsersView: React.FC = () => {
     setDeleteId(null);
   };
 
+  // Suspende/reativa no servidor: bloqueia o login (conta desativada no Firebase Auth) e encerra
+  // as sessões abertas — não basta marcar o cadastro.
   const handleToggleAtivo = async (u: UserData) => {
-    await updateDoc(doc(db, 'users', u.id), { ativo: !u.ativo });
-    showToast(u.ativo ? 'Acesso suspenso.' : 'Acesso reativado.', 'success');
+    const ativar = !estaAtivo(u);
+    setAlterandoAcesso(u.id);
+    try {
+      await definirAcessoFn({ uid: u.id, ativo: ativar });
+      showToast(ativar ? 'Acesso reativado.' : 'Acesso suspenso — a pessoa não consegue mais entrar.', 'success');
+    } catch (err: any) {
+      showToast(err.message || 'Erro ao alterar o acesso.', 'error');
+    }
+    setAlterandoAcesso(null);
   };
+
+  const handleRedefinirSenha = async () => {
+    if (!senhaAlvo) return;
+    setRedefinindo(true);
+    try {
+      const { data } = await redefinirSenhaFn({ uid: senhaAlvo.id });
+      setAcessoGerado({
+        titulo: 'Senha redefinida', nome: senhaAlvo.name, email: data.email || senhaAlvo.email,
+        senha: '', emailEnviado: data.emailEnviado, pediuEmail: true,
+      });
+      setSenhaAlvo(null);
+    } catch (err: any) {
+      showToast(err.message || 'Erro ao redefinir a senha.', 'error');
+    }
+    setRedefinindo(false);
+  };
+
+  const podeGerenciarAcesso = (u: UserData) =>
+    u.id !== user.id && (isSuperAdmin || !PERFIS_PLATAFORMA.includes(u.role));
 
   const handleResetTenantPasswords = async () => {
     if (!tenantEmFoco) return;
@@ -342,6 +384,78 @@ const UsersView: React.FC = () => {
                   Remover
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal: redefinir a senha de um colaborador */}
+        {senhaAlvo && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="titulo-redefinir">
+            <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl space-y-4">
+              <div>
+                <h3 id="titulo-redefinir" className="text-lg font-black text-navy mb-1">Redefinir senha</h3>
+                <p className="text-sm text-slate-600">
+                  <b>{senhaAlvo.name}</b> <span className="text-slate-500">({senhaAlvo.email})</span>
+                </p>
+              </div>
+              <ul className="text-sm text-slate-600 space-y-1.5">
+                <li className="flex gap-2"><i className="fa-solid fa-key text-blue-600 mt-1 text-xs"></i>O sistema gera uma senha temporária forte.</li>
+                <li className="flex gap-2"><i className="fa-solid fa-right-from-bracket text-blue-600 mt-1 text-xs"></i>As sessões abertas dessa pessoa são encerradas e a senha atual deixa de valer.</li>
+                <li className="flex gap-2"><i className="fa-solid fa-lock text-blue-600 mt-1 text-xs"></i>No próximo acesso ela é obrigada a criar uma senha forte nova.</li>
+              </ul>
+              <p className="text-sm bg-blue-50 border border-blue-100 text-blue-800 rounded-xl px-4 py-3">
+                <i className="fa-solid fa-envelope mr-2"></i>A nova senha é enviada <b>somente para o e-mail do colaborador</b>. Se o e-mail não puder ser enviado, a senha não é alterada.
+              </p>
+              <div className="flex gap-3">
+                <button onClick={() => setSenhaAlvo(null)} disabled={redefinindo}
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50 transition-all">
+                  Cancelar
+                </button>
+                <button onClick={handleRedefinirSenha} disabled={redefinindo}
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-navy hover:opacity-90 disabled:opacity-50 text-white text-sm font-bold transition-all">
+                  {redefinindo ? <><i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Redefinindo...</> : 'Redefinir senha'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal: acesso gerado (novo colaborador ou senha redefinida) */}
+        {acessoGerado && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="titulo-acesso">
+            <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl space-y-4">
+              <div>
+                <h3 id="titulo-acesso" className="text-lg font-black text-navy mb-1">{acessoGerado.titulo}</h3>
+                <p className="text-sm text-slate-600"><b>{acessoGerado.nome}</b> <span className="text-slate-500">({acessoGerado.email})</span></p>
+              </div>
+              {acessoGerado.pediuEmail && acessoGerado.emailEnviado ? (
+                <p className="text-sm bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl px-4 py-3">
+                  <i className="fa-solid fa-envelope-circle-check mr-2"></i>O acesso foi enviado para o e-mail do colaborador ({acessoGerado.email}). No primeiro acesso ele(a) será obrigado(a) a criar uma senha forte nova.
+                </p>
+              ) : acessoGerado.pediuEmail ? (
+                <p className="text-sm bg-amber-50 border border-amber-200 text-amber-800 rounded-xl px-4 py-3">
+                  <i className="fa-solid fa-triangle-exclamation mr-2"></i>Não foi possível enviar o e-mail agora. Passe a senha abaixo ao colaborador por um canal seguro.
+                </p>
+              ) : (
+                <p className="text-sm text-slate-600">Passe a senha abaixo ao colaborador por um canal seguro.</p>
+              )}
+              {acessoGerado.senha && (
+                <div>
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Senha temporária</span>
+                  <div className="flex items-center gap-2 mt-1">
+                    <code className="flex-1 bg-slate-100 rounded-xl px-4 py-2.5 text-base font-mono tracking-wider text-navy select-all">{acessoGerado.senha}</code>
+                    <button onClick={() => { navigator.clipboard?.writeText(acessoGerado.senha).then(() => showToast('Senha copiada.', 'success')).catch(() => {}); }}
+                      className="px-3 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50" title="Copiar senha">
+                      <i className="fa-solid fa-copy"></i>
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-2">Ela vale só para entrar: no primeiro acesso a pessoa é obrigada a criar uma senha forte nova. Esta senha não fica salva em nenhum lugar da plataforma.</p>
+                </div>
+              )}
+              <button onClick={() => setAcessoGerado(null)}
+                className="w-full px-4 py-2.5 rounded-xl bg-navy hover:opacity-90 text-white text-sm font-bold transition-all">
+                Concluir
+              </button>
             </div>
           </div>
         )}
@@ -476,10 +590,15 @@ const UsersView: React.FC = () => {
                         </p>
                       )}
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Senha Inicial</label>
-                      <input value={(form as any).senhaInicial || ''} onChange={e => setF('senhaInicial', e.target.value)} placeholder="Ex: empresa123" type="text" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-gold" />
-                    </div>
+                    {!editUser && (
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Acesso</span>
+                        <label className="flex items-start gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 cursor-pointer">
+                          <input type="checkbox" checked={enviarAcessoNovo} onChange={e => setEnviarAcessoNovo(e.target.checked)} className="mt-0.5 accent-indigo-600" />
+                          <span>Enviar o acesso por e-mail <span className="block text-[11px] text-slate-500">Senha temporária forte gerada pelo sistema; troca obrigatória no 1º acesso.</span></span>
+                        </label>
+                      </div>
+                    )}
                     <div className="space-y-1">
                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Cargo</label>
                       <select value={form.cargo} onChange={e => setF('cargo', e.target.value)}
@@ -691,7 +810,7 @@ const UsersView: React.FC = () => {
                         <tr><td colSpan={(isPlatformStaff ? 9 : 8) + (isGestor ? 1 : 0)} className="text-center p-8 text-slate-500">Nenhum colaborador encontrado.</td></tr>
                       )}
                       {filtrados.map(u => (
-                        <tr key={u.id} className={`border-b border-slate-100 hover:bg-white transition-all ${u.ativo === false ? 'opacity-50' : ''}`}>
+                        <tr key={u.id} className={`border-b border-slate-100 hover:bg-white transition-all ${!estaAtivo(u) ? 'opacity-50' : ''}`}>
                           {isGestor && (
                             <td className="p-3">
                               {selecionavel(u) && (
@@ -719,11 +838,11 @@ const UsersView: React.FC = () => {
                           </td>
                           <td className="p-3">
                             <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg ${
-                              u.ativo !== false
+                              estaAtivo(u)
                                 ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
                                 : 'bg-white text-slate-500 border border-slate-200'
                             }`}>
-                              {u.ativo !== false ? 'Ativo' : 'Suspenso'}
+                              {estaAtivo(u) ? 'Ativo' : 'Suspenso'}
                             </span>
                           </td>
                           <td className="p-3 text-slate-500">{formatDate(u.createdAt)}</td>
@@ -735,15 +854,25 @@ const UsersView: React.FC = () => {
                                   title="Editar">
                                   <i className="fa-solid fa-pen text-[10px]"></i>
                                 </button>
-                                <button onClick={() => handleToggleAtivo(u)}
-                                  className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${
-                                    u.ativo !== false
+                                {podeGerenciarAcesso(u) && estaAtivo(u) && (
+                                  <button onClick={() => setSenhaAlvo(u)}
+                                    className="w-7 h-7 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 flex items-center justify-center transition-all"
+                                    title="Redefinir senha e enviar acesso" aria-label={`Redefinir senha de ${u.name}`}>
+                                    <i className="fa-solid fa-key text-[10px]"></i>
+                                  </button>
+                                )}
+                                {podeGerenciarAcesso(u) && (
+                                <button onClick={() => handleToggleAtivo(u)} disabled={alterandoAcesso === u.id}
+                                  aria-label={`${estaAtivo(u) ? 'Suspender acesso de' : 'Reativar acesso de'} ${u.name}`}
+                                  className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all disabled:opacity-50 ${
+                                    estaAtivo(u)
                                       ? 'bg-amber-50 hover:bg-amber-100 text-amber-500'
                                       : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-600'
                                   }`}
-                                  title={u.ativo !== false ? 'Suspender acesso' : 'Reativar'}>
-                                  <i className={`fa-solid ${u.ativo !== false ? 'fa-ban' : 'fa-circle-check'} text-[10px]`}></i>
+                                  title={estaAtivo(u) ? 'Suspender acesso' : 'Reativar'}>
+                                  <i className={`fa-solid ${alterandoAcesso === u.id ? 'fa-spinner animate-spin' : estaAtivo(u) ? 'fa-ban' : 'fa-circle-check'} text-[10px]`}></i>
                                 </button>
+                                )}
                                 <button onClick={() => setDeleteId(u.id)}
                                   className="w-7 h-7 rounded-lg bg-red-50 hover:bg-red-100 text-red-400 flex items-center justify-center transition-all"
                                   title="Remover">
