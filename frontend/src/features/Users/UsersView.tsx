@@ -20,7 +20,7 @@ const redefinirSenhaFn = httpsCallable<{ uid: string; copiaParaMJ?: boolean },{ 
 const definirAcessoFn = httpsCallable<{ uid: string; ativo: boolean }, { ok: boolean; ativo: boolean }>(functions, 'definirAcessoColaborador');
 
 // Suspensão antiga gravava só "ativo"; o login e as regras olham "active". Vale o mais restritivo.
-const estaAtivo = (u: { active?: boolean; ativo?: boolean }) => u.active !== false && estaAtivo(u);
+const estaAtivo = (u: { active?: boolean; ativo?: boolean }) => u.active !== false && u.ativo !== false;
 const PERFIS_PLATAFORMA = ['SUPERADMIN', 'equipe_mj', 'curador'];
 
 // ─── Types ────────────────────────────────────────────────────────────────────
