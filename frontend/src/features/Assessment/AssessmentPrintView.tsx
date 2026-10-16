@@ -52,7 +52,10 @@ function recomendacaoPadrao(dimNome: string, ref: string): string {
 }
 
 export function gerarPDFAssessment(assessment: Assessment, opts: Opts) {
-  const win = window.open('', '_blank', 'noopener');
+  const win = window.open('', '_blank');
+    // 'noopener' faria o navegador devolver null (janela em branco, nada era impresso); o vínculo
+    // com esta aba é cortado logo depois de abrir.
+    if (win) win.opener = null;
   if (!win) return;
 
   const dataGeracao = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });

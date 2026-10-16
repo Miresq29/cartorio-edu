@@ -175,7 +175,10 @@ Diagnóstico de Maturidade em Segurança da Informação (últimos 90 dias): ${l
   };
 
   const gerarPDF = () => {
-    const win = window.open('', '_blank', 'noopener');
+    const win = window.open('', '_blank');
+    // 'noopener' faria o navegador devolver null (janela em branco, nada era impresso); o vínculo
+    // com esta aba é cortado logo depois de abrir.
+    if (win) win.opener = null;
     if (!win) return;
     const periodoLabel = PERIODOS.find(p => p.id === periodo)?.label || '';
     const dataGeracao = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });

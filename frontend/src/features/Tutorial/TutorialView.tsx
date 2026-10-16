@@ -281,7 +281,10 @@ const TutorialView: React.FC = () => {
   const current = visibleSections[currentIdx] ?? visibleSections[0];
 
   const exportPDF = () => {
-    const win = window.open('', '_blank', 'noopener');
+    const win = window.open('', '_blank');
+    // 'noopener' faria o navegador devolver null (janela em branco, nada era impresso); o vínculo
+    // com esta aba é cortado logo depois de abrir.
+    if (win) win.opener = null;
     if (!win) return;
 
     const allContent = visibleSections.map((s, si) => `

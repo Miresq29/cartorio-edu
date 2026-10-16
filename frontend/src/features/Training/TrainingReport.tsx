@@ -98,7 +98,10 @@ const TrainingReport: React.FC = () => {
 
   // ---- EXPORTAR PDF (via print) ----
   const exportPDF = () => {
-    const printWindow = window.open('', '_blank', 'noopener');
+    const printWindow = window.open('', '_blank');
+    // 'noopener' faria o navegador devolver null (janela em branco, nada era impresso); o vínculo
+    // com esta aba é cortado logo depois de abrir.
+    if (printWindow) printWindow.opener = null;
     if (!printWindow) return;
 
     const rows = filtered.map(p => {
@@ -176,7 +179,10 @@ const TrainingReport: React.FC = () => {
   const printCertificate = (p: Participant) => {
     setSelectedParticipant(p);
     const quiz = getQuiz(p.nomeColaborador, p.treinamento);
-    const printWindow = window.open('', '_blank', 'noopener');
+    const printWindow = window.open('', '_blank');
+    // 'noopener' faria o navegador devolver null (janela em branco, nada era impresso); o vínculo
+    // com esta aba é cortado logo depois de abrir.
+    if (printWindow) printWindow.opener = null;
     if (!printWindow) return;
 
     printWindow.document.write(`

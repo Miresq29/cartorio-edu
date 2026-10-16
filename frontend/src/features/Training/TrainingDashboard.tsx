@@ -79,7 +79,10 @@ const DASH_TABS = [
 // ─── Certificate Generator ──────────────────────────────────────────────────
 
 const printTrilhaCertificate = (userName: string, cargo: string, trilhaTitulo: string, nota?: number, empresa = false) => {
-  const win = window.open('', '_blank', 'noopener');
+  const win = window.open('', '_blank');
+    // 'noopener' faria o navegador devolver null (janela em branco, nada era impresso); o vínculo
+    // com esta aba é cortado logo depois de abrir.
+    if (win) win.opener = null;
   if (!win) return;
   win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
   <title>Certificado — ${escapeHtml(userName)}</title>

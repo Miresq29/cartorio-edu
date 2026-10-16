@@ -162,7 +162,10 @@ CTA: [chamada para ação aqui]`;
     const titulo = escapeHtml(parsed.titulo);
     const subtitulo = escapeHtml(parsed.subtitulo);
     const cta = escapeHtml(parsed.cta);
-    const win = window.open('', '_blank', 'noopener');
+    const win = window.open('', '_blank');
+    // 'noopener' faria o navegador devolver null (janela em branco, nada era impresso); o vínculo
+    // com esta aba é cortado logo depois de abrir.
+    if (win) win.opener = null;
     if (!win) return;
     win.document.write(`<!DOCTYPE html><html><head><title>Banner</title>
       <style>${cssVarsTema()}

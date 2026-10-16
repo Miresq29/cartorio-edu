@@ -498,7 +498,10 @@ const RelatoriosView: React.FC = () => {
     const cargaHorariaColab = trilhasDoColab.filter(p => p.concluida).reduce((a, p) => a + cargaHorariaTrilha(p.trilhaId), 0);
     const codigo = `MJ-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
 
-    const win = window.open('', '_blank', 'noopener');
+    const win = window.open('', '_blank');
+    // 'noopener' faria o navegador devolver null (janela em branco, nada era impresso); o vínculo
+    // com esta aba é cortado logo depois de abrir.
+    if (win) win.opener = null;
     if (!win) return;
 
     const linhasTrilhas = trilhasDoColab.length
@@ -614,7 +617,10 @@ td { background:#fdfbf5; }
       '365': 'Último ano', '99999': 'Todo o período',
     };
     const codigo = `MJ-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
-    const win = window.open('', '_blank', 'noopener');
+    const win = window.open('', '_blank');
+    // 'noopener' faria o navegador devolver null (janela em branco, nada era impresso); o vínculo
+    // com esta aba é cortado logo depois de abrir.
+    if (win) win.opener = null;
     if (!win) return;
 
     const linhasColab = porColab.length
