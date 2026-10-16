@@ -48,7 +48,8 @@ const KnowledgeBase: React.FC = () => {
   useEffect(() => {
     if (!user) return;
     let q: any;
-    if (user.role === 'SUPERADMIN') {
+    // SUPERADMIN só vê tudo no modo global; ao visualizar um cliente, vê o que aquele cliente recebe.
+    if (user.role === 'SUPERADMIN' && !state.activeTenantId) {
       q = query(collection(db, 'knowledgeBase'), orderBy('createdAt', 'desc'));
     } else {
       q = query(
@@ -62,7 +63,7 @@ const KnowledgeBase: React.FC = () => {
       setLoading(false);
     });
     return () => unsub();
-  }, [user, tenantId]);
+  }, [user, tenantId, state.activeTenantId]);
 
   const filteredDocs = useMemo(() => {
     if (!searchTerm.trim()) return docs;

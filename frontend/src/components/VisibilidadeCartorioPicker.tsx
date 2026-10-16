@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
 import { db } from '../services/firebase';
+import { useApp } from '../context/AppContext';
 
 interface Tenant {
   id: string;
@@ -25,17 +26,40 @@ function detectarModo(value: string[], ownTenantId: string): Modo {
 }
 
 const VisibilidadeCartorioPicker: React.FC<Props> = ({ isSuperAdmin, ownTenantId, value, onChange }) => {
+  const { state } = useApp();
+  // Modo de visualização ("Visualizando <cliente>"): a tela pode estar sendo apresentada ao
+  // cliente — nenhum nome de outro cliente aparece. Conteúdo novo fica só para o cliente
+  // visualizado; o que já tem distribuição maior não é alterado.
+  const emVisualizacao = isSuperAdmin && !!state.activeTenantId;
   const [tenants, setTenants] = useState<Tenant[]>([]);
 
   useEffect(() => {
-    if (!isSuperAdmin) return;
+    if (emVisualizacao && value.length === 0) onChange([ownTenantId]);
+  }, [emVisualizacao, value.length, ownTenantId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!isSuperAdmin || emVisualizacao) return;
     const q = query(collection(db, 'tenants'), orderBy('name'));
     return onSnapshot(q, snap => {
       setTenants(snap.docs.map(d => ({ id: d.id, name: (d.data() as any).name || d.id })));
     });
-  }, [isSuperAdmin]);
+  }, [isSuperAdmin, emVisualizacao]);
 
   if (!isSuperAdmin) return null;
+
+  if (emVisualizacao) {
+    const outros = value.filter(t => t !== ownTenantId).length;
+    return (
+      <div className="space-y-1">
+        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Visibilidade</label>
+        <p className="text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+          <i className="fa-solid fa-building mr-2 text-blue-500"></i>
+          {outros > 0 ? `Distribuído para ${value.length} clientes. A lista não é exibida no modo de visualização.` : 'Visível só para este cliente.'}
+          <span className="block text-[11px] text-slate-400 mt-0.5">Para escolher outros clientes, saia do modo de visualização.</span>
+        </p>
+      </div>
+    );
+  }
 
   const modo = detectarModo(value, ownTenantId);
 
@@ -60,20 +84,20 @@ const VisibilidadeCartorioPicker: React.FC<Props> = ({ isSuperAdmin, ownTenantId
           className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-bold uppercase transition-all ${
             modo === 'cartorio' ? 'bg-blue-50 border border-blue-300 text-blue-700' : 'bg-white border border-slate-200 text-slate-500'
           }`}>
-          <i className="fa-solid fa-building"></i>Este cartório
+          <i className="fa-solid fa-building"></i>Este cliente
         </button>
         <button type="button" onClick={() => setModo('especificos')}
           className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-bold uppercase transition-all ${
             modo === 'especificos' ? 'bg-emerald-50 border border-emerald-300 text-emerald-700' : 'bg-white border border-slate-200 text-slate-500'
           }`}>
-          <i className="fa-solid fa-list-check"></i>Cartórios específicos
+          <i className="fa-solid fa-list-check"></i>Clientes específicos
         </button>
       </div>
 
       {modo === 'especificos' && (
         <div className="space-y-2">
           <div className="flex flex-wrap gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl">
-            {tenants.length === 0 && <span className="text-xs text-slate-500">Nenhum cartório cadastrado.</span>}
+            {tenants.length === 0 && <span className="text-xs text-slate-500">Nenhum cliente cadastrado.</span>}
             {tenants.map(t => (
               <button key={t.id} type="button" onClick={() => toggleTenant(t.id)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all ${

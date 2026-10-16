@@ -515,7 +515,9 @@ const UsersView: React.FC = () => {
                         </div>
                       </div>
                     )}
-                    {isPlatformStaff && form.role !== 'equipe_mj' && form.role !== 'SUPERADMIN' && (
+                    {/* No modo de visualização de um cliente a lista de clientes não aparece (pode estar sendo
+                        apresentada): o cadastro fica no cliente visualizado. */}
+                    {isPlatformStaff && !state.activeTenantId && form.role !== 'equipe_mj' && form.role !== 'SUPERADMIN' && (
                       <div className="space-y-1 md:col-span-2">
                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
                           Cliente <span className="text-red-400">*</span>
