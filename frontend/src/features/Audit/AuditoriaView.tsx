@@ -13,6 +13,7 @@ import { useApp } from '../../context/AppContext';
 import { termos } from '../../utils/terminologia';
 import { useToast } from '../../context/ToastContext';
 import { useRecursoTenant } from '../../hooks/useRecursoTenant';
+import { alfa } from '../../utils/tema';
 
 const testarEnvioEmailFn = httpsCallable(functions, 'testarEnvioEmail');
 
@@ -241,7 +242,7 @@ const AuditoriaView: React.FC = () => {
             { label: 'Filtro Atual',      value: logsFiltrados.length,                                           icon: 'fa-filter',        color: '#7C3AED' },
           ].map((s, i) => (
             <div key={i} className="bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3" style={{ background: s.color + '15' }}>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3" style={{ background: alfa(s.color, '15') }}>
                 <i className={`fa-solid ${s.icon}`} style={{ color: s.color }}></i>
               </div>
               <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">{s.label}</p>

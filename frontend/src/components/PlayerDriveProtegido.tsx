@@ -58,9 +58,9 @@ const PlayerDriveProtegido: React.FC<Props> = ({ midiaId, titulo, altura, tipo }
         ...(tipo === 'video' && !telaCheia ? { aspectRatio: '16 / 9', width: '100%' } : { height: telaCheia ? '100%' : altura }) }}
       onContextMenu={e => e.preventDefault()}>
       {usarStream && (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', gap: 16, padding: '0 20px', background: '#0A1628' }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', gap: 16, padding: '0 20px', background: 'rgb(var(--c-navy))' }}>
           <div style={{ width: 52, height: 52, borderRadius: 14, background: 'rgba(201,168,76,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <i className="fa-solid fa-headphones" style={{ color: '#C9A84C', fontSize: 22 }}></i>
+            <i className="fa-solid fa-headphones" style={{ color: 'rgb(var(--c-gold))', fontSize: 22 }}></i>
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ color: '#fff', fontSize: 13, fontWeight: 800, marginBottom: 8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{titulo}</p>
@@ -83,7 +83,7 @@ const PlayerDriveProtegido: React.FC<Props> = ({ midiaId, titulo, altura, tipo }
         <div aria-hidden="true" title="Conteúdo protegido"
           style={{ position: 'absolute', top: 0, right: 0, width: 72, height: 72, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ width: 44, height: 44, borderRadius: 10, background: 'rgba(10,22,40,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <i className="fa-solid fa-lock" style={{ color: '#C9A84C', fontSize: 15 }}></i>
+            <i className="fa-solid fa-lock" style={{ color: 'rgb(var(--c-gold))', fontSize: 15 }}></i>
           </div>
         </div>
       )}
@@ -92,7 +92,7 @@ const PlayerDriveProtegido: React.FC<Props> = ({ midiaId, titulo, altura, tipo }
           aria-label={telaCheia ? 'Sair da tela cheia' : 'Assistir em tela cheia'} title={telaCheia ? 'Sair da tela cheia' : 'Tela cheia'}
           style={{ position: 'absolute', top: 14, left: 14, height: 40, padding: '0 14px', borderRadius: 10, border: 'none', cursor: 'pointer',
             background: 'rgba(10,22,40,0.92)', color: '#fff', fontSize: 12, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <i className={telaCheia ? 'fa-solid fa-compress' : 'fa-solid fa-expand'} style={{ color: '#C9A84C' }}></i>
+          <i className={telaCheia ? 'fa-solid fa-compress' : 'fa-solid fa-expand'} style={{ color: 'rgb(var(--c-gold))' }}></i>
           {telaCheia ? 'Sair da tela cheia' : 'Tela cheia'}
         </button>
       )}

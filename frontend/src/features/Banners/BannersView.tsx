@@ -12,6 +12,7 @@ import { GeminiService } from '../../services/geminiService';
 import VisibilidadeCartorioPicker from '../../components/VisibilidadeCartorioPicker';
 import { escapeHtml } from '../../utils/escapeHtml';
 import PlayerDriveProtegido from '../../components/PlayerDriveProtegido';
+import { cssVarsTema } from '../../utils/tema';
 
 // Infográficos são itens do Repositório (tipo "imagem", arquivo no Drive) — exibidos aqui, abertos
 // no visualizador protegido; a liberação por cliente continua a do Repositório.
@@ -164,13 +165,13 @@ CTA: [chamada para ação aqui]`;
     const win = window.open('', '_blank', 'noopener');
     if (!win) return;
     win.document.write(`<!DOCTYPE html><html><head><title>Banner</title>
-      <style>
-        body { margin: 0; font-family: Arial, sans-serif; background: linear-gradient(135deg,#1e3a5f 0%,#0a1628 100%); color: white; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+      <style>${cssVarsTema()}
+        body { margin: 0; font-family: Arial, sans-serif; background: linear-gradient(135deg,rgb(var(--c-navy-2)) 0%,rgb(var(--c-navy)) 100%); color: white; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
         .banner { text-align: center; padding: 60px 80px; max-width: 800px; }
-        .banner .eyebrow { color: #C9A84C; font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 18px; }
+        .banner .eyebrow { color: rgb(var(--c-gold)); font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 18px; }
         .banner h1 { font-size: 48px; font-weight: 900; margin: 0 0 20px; text-transform: uppercase; letter-spacing: -1px; color: #ffffff; }
         .banner p { font-size: 20px; color: #e2e8f0; margin-bottom: 30px; line-height: 1.6; }
-        .banner .cta { background: #C9A84C; color: #0A1628; padding: 16px 40px; border-radius: 12px; font-size: 18px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; display: inline-block; }
+        .banner .cta { background: rgb(var(--c-gold)); color: rgb(var(--c-navy)); padding: 16px 40px; border-radius: 12px; font-size: 18px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; display: inline-block; }
         @media print { body { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
       </style></head><body>
       <div class="banner">
@@ -330,7 +331,7 @@ CTA: [chamada para ação aqui]`;
               </button>
             </div>
 
-            <div className="relative overflow-hidden bg-gradient-to-br from-[#0A1628] via-[#132a4a] to-[#1e3a5f] rounded-[24px] p-12 text-center space-y-5 border border-gold/30 shadow-xl">
+            <div className="relative overflow-hidden bg-gradient-to-br from-[rgb(var(--c-navy))] via-[rgb(var(--c-navy-2))] to-[rgb(var(--c-navy-2))] rounded-[24px] p-12 text-center space-y-5 border border-gold/30 shadow-xl">
               {/* Glow decorativo */}
               <div className="absolute -top-24 -right-24 w-64 h-64 bg-gold/10 rounded-full blur-3xl pointer-events-none"></div>
               <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -416,8 +417,8 @@ CTA: [chamada para ação aqui]`;
       {infoAberto && (
         <div className="fixed inset-0 z-[1000] bg-black/80 flex items-center justify-center md:p-4" onClick={() => setInfoAberto(null)}>
           <div className="bg-white w-full h-full md:h-[94vh] md:max-w-[1100px] md:rounded-[24px] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center gap-3 px-5 py-3 bg-[#0A1628] text-white">
-              <i className="fa-solid fa-image text-[#C9A84C]"></i>
+            <div className="flex items-center gap-3 px-5 py-3 bg-[rgb(var(--c-navy))] text-white">
+              <i className="fa-solid fa-image text-[rgb(var(--c-gold))]"></i>
               <p className="flex-1 min-w-0 font-black text-sm truncate">{infoAberto.titulo}</p>
               <button onClick={() => setInfoAberto(null)} aria-label="Fechar infográfico" className="w-9 h-9 rounded-xl hover:bg-white/10">
                 <i className="fa-solid fa-xmark"></i>

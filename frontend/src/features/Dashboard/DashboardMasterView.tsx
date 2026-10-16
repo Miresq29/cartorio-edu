@@ -66,7 +66,7 @@ const DashboardMasterView: React.FC = () => {
         {/* Cabeçalho */}
         <header className="flex flex-col md:flex-row md:items-end md:justify-between gap-2">
           <div>
-            <p className="text-sm font-semibold text-[#B08D3A]">Integra-Academy · MJ Consultoria</p>
+            <p className="text-sm font-semibold text-[rgb(var(--c-gold-strong))]">Integra-Academy · MJ Consultoria</p>
             <h2 className="text-3xl md:text-4xl font-black text-navy tracking-tight mt-1">Painel Master</h2>
             <p className="text-base text-slate-500 mt-1">
               {primeiroNome ? `Olá, ${primeiroNome}. ` : ''}Acesse os clientes e as ferramentas de administração da plataforma.
@@ -117,7 +117,7 @@ const DashboardMasterView: React.FC = () => {
                 {ATALHOS.map(a => (
                   <button key={a.tab} type="button" onClick={() => setActiveTab(a.tab)}
                     className="w-full flex items-center gap-4 text-left px-4 py-3 rounded-2xl border border-transparent hover:border-slate-200 hover:bg-slate-50 transition-all group">
-                    <span className="w-10 h-10 rounded-xl bg-navy text-[#C9A84C] flex items-center justify-center flex-shrink-0">
+                    <span className="w-10 h-10 rounded-xl bg-navy text-[rgb(var(--c-gold))] flex items-center justify-center flex-shrink-0">
                       <i className={`fa-solid ${a.icon}`}></i>
                     </span>
                     <span className="flex-1 min-w-0">
@@ -136,7 +136,7 @@ const DashboardMasterView: React.FC = () => {
         <section className="bg-navy rounded-3xl p-8 md:p-12 shadow-sm relative overflow-hidden">
           <i className="fa-solid fa-graduation-cap absolute -right-6 -top-6 text-[180px] text-white/5 pointer-events-none"></i>
           <div className="relative max-w-3xl">
-            <p className="text-[#C9A84C] text-sm font-bold tracking-wide">Integra-Academy</p>
+            <p className="text-[rgb(var(--c-gold))] text-sm font-bold tracking-wide">Integra-Academy</p>
             <h3 className="text-white text-2xl md:text-4xl font-black tracking-tight mt-2 leading-tight">
               Capacitação e conformidade em um só lugar
             </h3>
@@ -157,7 +157,7 @@ const DashboardMasterView: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {DESTAQUES.map(d => (
               <div key={d.titulo} className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
-                <span className="w-12 h-12 rounded-2xl bg-[#F5EDD8] text-[#9a7a2c] flex items-center justify-center mb-4">
+                <span className="w-12 h-12 rounded-2xl bg-[rgb(var(--c-gold-bg))] text-[rgb(var(--c-gold-strong))] flex items-center justify-center mb-4">
                   <i className={`fa-solid ${d.icon} text-xl`}></i>
                 </span>
                 <p className="text-lg font-bold text-navy mb-2">{d.titulo}</p>

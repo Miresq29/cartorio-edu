@@ -12,6 +12,7 @@ import {
   collection, onSnapshot, query, orderBy, where,
   doc, updateDoc, deleteDoc, addDoc, serverTimestamp, writeBatch
 } from 'firebase/firestore';
+import { alfa } from '../../utils/tema';
 
 const createCollaboratorFn = httpsCallable(functions, 'createCollaborator');
 const resetTenantPasswordsFn = httpsCallable(functions, 'resetTenantPasswords');
@@ -402,7 +403,7 @@ const UsersView: React.FC = () => {
             return (
               <div key={r.id} className="bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3"
-                  style={{ background: r.color + '15' }}>
+                  style={{ background: alfa(r.color, '15') }}>
                   <i className="fa-solid fa-user" style={{ color: r.color }}></i>
                 </div>
                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">{r.label}</p>
@@ -825,7 +826,7 @@ const UsersView: React.FC = () => {
                   <div key={r.id} className="bg-white border border-slate-200 rounded-[14px] p-4">
                     <div className="flex items-center gap-2 mb-3">
                       <div className="w-8 h-8 rounded-xl flex items-center justify-center"
-                        style={{ background: r.color + '15' }}>
+                        style={{ background: alfa(r.color, '15') }}>
                         <i className="fa-solid fa-user text-sm" style={{ color: r.color }}></i>
                       </div>
                       <div>

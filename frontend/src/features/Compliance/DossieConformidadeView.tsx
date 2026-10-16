@@ -9,6 +9,7 @@ import {
 } from 'firebase/firestore';
 import { GeminiService } from '../../services/geminiService';
 import { labelNivel } from '../Assessment/scoring';
+import { cssVarsTema, logoTema } from '../../utils/tema';
 
 interface Historico {
   id: string;
@@ -184,30 +185,31 @@ Diagnóstico de Maturidade em Segurança da Informação (últimos 90 dias): ${l
       : '<tr><td colspan="3">Nenhum comunicado com aceite obrigatório no período.</td></tr>';
 
     win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Dossiê de Conformidade</title>
-<style>
+<style>${cssVarsTema()}
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family: Arial, sans-serif; color:#1e293b; background:white; padding:40px; font-size:12px; }
-.cover { text-align:center; padding:60px 0 40px; border-bottom:3px solid #c9a84c; margin-bottom:40px; }
+.cover { text-align:center; padding:60px 0 40px; border-bottom:3px solid rgb(var(--c-gold)); margin-bottom:40px; }
 .cover-logo { font-size:40px; font-weight:900; color:#0f172a; letter-spacing:-2px; }
-.cover-logo span { color:#c9a84c; }
+.cover-logo span { color:rgb(var(--c-gold)); }
 .cover-title { font-size:22px; font-weight:900; color:#1e293b; margin-top:16px; text-transform:uppercase; letter-spacing:2px; }
-.cover-sub { font-size:12px; color:#8a6e2f; margin-top:8px; text-transform:uppercase; letter-spacing:3px; }
-.cover-date { font-size:11px; color:#a8882f; margin-top:24px; }
+.cover-sub { font-size:12px; color:rgb(var(--c-gold-body)); margin-top:8px; text-transform:uppercase; letter-spacing:3px; }
+.cover-date { font-size:11px; color:rgb(var(--c-gold-soft)); margin-top:24px; }
 .section { margin-bottom:28px; page-break-inside:avoid; }
-.section-title { background:#0f172a; color:white; padding:10px 16px; border-radius:8px 8px 0 0; font-size:13px; font-weight:900; text-transform:uppercase; letter-spacing:1px; border-left:4px solid #c9a84c; }
-.section-body { background:#fdfbf5; border:1px solid #e8d9a0; border-top:none; border-radius:0 0 8px 8px; padding:16px; }
+.section-title { background:rgb(var(--c-navy)); color:white; padding:10px 16px; border-radius:8px 8px 0 0; font-size:13px; font-weight:900; text-transform:uppercase; letter-spacing:1px; border-left:4px solid rgb(var(--c-gold)); }
+.section-body { background:#fdfbf5; border:1px solid rgb(var(--c-gold-line)); border-top:none; border-radius:0 0 8px 8px; padding:16px; }
 .kpis { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
-.kpi { background:white; border:1px solid #e8d9a0; border-radius:8px; padding:12px; text-align:center; }
+.kpi { background:white; border:1px solid rgb(var(--c-gold-line)); border-radius:8px; padding:12px; text-align:center; }
 .kpi b { display:block; font-size:20px; color:#0f172a; }
-.kpi span { font-size:9px; color:#7a5c1e; text-transform:uppercase; letter-spacing:0.5px; }
+.kpi span { font-size:9px; color:rgb(var(--c-gold-strong)); text-transform:uppercase; letter-spacing:0.5px; }
 table { width:100%; border-collapse:collapse; font-size:11px; }
-th, td { text-align:left; padding:6px 8px; border-bottom:1px solid #e8d9a0; }
-th { color:#7a5c1e; text-transform:uppercase; font-size:9px; letter-spacing:1px; }
+th, td { text-align:left; padding:6px 8px; border-bottom:1px solid rgb(var(--c-gold-line)); }
+th { color:rgb(var(--c-gold-strong)); text-transform:uppercase; font-size:9px; letter-spacing:1px; }
 .resumo { font-size:12px; line-height:1.8; color:#334155; white-space:pre-wrap; }
-.footer { text-align:center; margin-top:50px; padding-top:16px; border-top:1px solid #e8d9a0; font-size:9px; color:#a8882f; }
+.footer { text-align:center; margin-top:50px; padding-top:16px; border-top:1px solid rgb(var(--c-gold-line)); font-size:9px; color:rgb(var(--c-gold-soft)); }
 @media print { body { padding:20px; } .section { page-break-inside:avoid; } }
 </style></head><body>
 <div class="cover">
+  ${logoTema() ? `<div style="text-align:center;margin-bottom:14px"><img src="${logoTema()}" alt="" style="max-height:60px;max-width:260px;object-fit:contain"></div>` : ''}
   <div class="cover-logo">MJ <span>Consultoria</span></div>
   <div class="cover-title">Dossiê de Conformidade</div>
   <div class="cover-sub">${escapeHtml(state.activeTenantName || tenantId)} — ${escapeHtml(periodoLabel)}</div>
@@ -226,7 +228,7 @@ th { color:#7a5c1e; text-transform:uppercase; font-size:9px; letter-spacing:1px;
       <div class="kpi"><b>${dados.taxaCliquePhishing}%</b><span>Cliques em phishing simulado</span></div>
       ${assessmentRecente ? `<div class="kpi"><b>${assessmentRecente.scoreGlobal}%</b><span>Maturidade em SI (${escapeHtml(labelNivel(assessmentRecente.nivel))})</span></div>` : ''}
     </div>
-    ${assessmentRecente ? `<p style="margin-top:12px;font-size:11px;color:#7a5c1e;">Diagnóstico de Maturidade: ${escapeHtml(labelNivel(assessmentRecente.nivel))} — ${assessmentRecente.scoreGlobal}% (referência: ${escapeHtml(assessmentRecente.periodo)}, últimos 90 dias)</p>` : ''}
+    ${assessmentRecente ? `<p style="margin-top:12px;font-size:11px;color:rgb(var(--c-gold-strong));">Diagnóstico de Maturidade: ${escapeHtml(labelNivel(assessmentRecente.nivel))} — ${assessmentRecente.scoreGlobal}% (referência: ${escapeHtml(assessmentRecente.periodo)}, últimos 90 dias)</p>` : ''}
   </div>
 </div>
 
@@ -310,7 +312,7 @@ ${resumoAtual ? `<div class="section">
           { label: 'Certificados emitidos', value: dados.totalCertificados, icon: 'fa-certificate', color: '#7C3AED' },
           { label: 'Certificados vencidos', value: dados.certsVencidos, icon: 'fa-triangle-exclamation', color: '#DC2626' },
           { label: 'Cliques em phishing', value: `${dados.taxaCliquePhishing}%`, icon: 'fa-shield-halved', color: '#DC2626' },
-          ...(assessmentRecente ? [{ label: `Maturidade em SI (${labelNivel(assessmentRecente.nivel)})`, value: `${assessmentRecente.scoreGlobal}%`, icon: 'fa-gauge-high', color: '#C9A84C' }] : []),
+          ...(assessmentRecente ? [{ label: `Maturidade em SI (${labelNivel(assessmentRecente.nivel)})`, value: `${assessmentRecente.scoreGlobal}%`, icon: 'fa-gauge-high', color: 'rgb(var(--c-gold))' }] : []),
         ].map((k, i) => (
           <div key={i} className="bg-white border border-slate-200 rounded-[16px] p-4 space-y-1.5">
             <i className={`fa-solid ${k.icon}`} style={{ color: k.color }}></i>

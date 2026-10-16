@@ -16,6 +16,7 @@ import { FormatoTreinamento, FORMATOS, FORMATO_LABEL } from '../../utils/formato
 import { ASSUNTOS_PADRAO, SEM_ASSUNTO } from '../../utils/assuntos';
 import { useSetoresTenant } from '../../hooks/useSetoresTenant';
 import { useItensLiberados, moduloLiberado } from '../../hooks/useItensLiberados';
+import { alfa } from '../../utils/tema';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -74,7 +75,7 @@ const TextoFormatado: React.FC<{ texto: string }> = ({ texto }) => {
         }
         return (
           <section key={bi}>
-            {titulo && <h4 style={{ fontSize: bi === 0 && !corpo.length ? 17 : 14, fontWeight: 900, color: '#0A1628', marginBottom: corpo.length ? 8 : 0 }}>{titulo}</h4>}
+            {titulo && <h4 style={{ fontSize: bi === 0 && !corpo.length ? 17 : 14, fontWeight: 900, color: 'rgb(var(--c-navy))', marginBottom: corpo.length ? 8 : 0 }}>{titulo}</h4>}
             {grupos.map((g, gi) => g.lista ? (
               <ul key={gi} style={{ margin: '6px 0', paddingLeft: 20, display: 'grid', gap: 6, listStyle: 'disc' }}>
                 {g.linhas.map((l, li) => <li key={li} style={{ fontSize: 14, color: '#334155', lineHeight: 1.7 }}>{l}</li>)}
@@ -137,8 +138,8 @@ interface TrilhaProgresso {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const PERFIS: { value: Perfil; label: string; color: string }[] = [
-  { value: 'colaborador', label: 'Colaborador', color: '#C9A84C' },
-  { value: 'gestor',      label: 'Gestor',      color: '#0A1628' },
+  { value: 'colaborador', label: 'Colaborador', color: 'rgb(var(--c-gold))' },
+  { value: 'gestor',      label: 'Gestor',      color: 'rgb(var(--c-navy))' },
   { value: 'admin',       label: 'Admin',       color: '#8A9BB0' },
 ];
 
@@ -239,14 +240,14 @@ const ModuloForm: React.FC<{
         onChange={e => onChange({ ...modulo, descricao: e.target.value })}
         placeholder="Descrição do módulo - o que o colaborador vai aprender"
         rows={2}
-        style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '10px 14px', color: '#0A1628', fontSize: 13, resize: 'vertical' }}
+        style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '10px 14px', color: 'rgb(var(--c-navy))', fontSize: 13, resize: 'vertical' }}
       />
       <textarea
         value={modulo.conteudo}
         onChange={e => onChange({ ...modulo, conteudo: e.target.value })}
         placeholder="Conteúdo do módulo (texto, links, ou referências de documentos da Base Legal)"
         rows={3}
-        style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '10px 14px', color: '#0A1628', fontSize: 13, resize: 'vertical' }}
+        style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '10px 14px', color: 'rgb(var(--c-navy))', fontSize: 13, resize: 'vertical' }}
       />
 
       <div style={{ borderTop: '1px dashed #e2e8f0', paddingTop: 12 }}>
@@ -265,10 +266,10 @@ const ModuloForm: React.FC<{
         {vincular && (
           <div style={{ marginTop: 10, display: 'grid', gap: 8 }}>
             {selecionado ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#F5EDD8', border: '1px solid #C9A84C40', borderRadius: 10, padding: '8px 12px' }}>
-                <i className="fa-solid fa-link" style={{ color: '#C9A84C' }}></i>
-                <span style={{ fontSize: 12, color: '#7a5c1e', fontWeight: 700, flex: 1 }}>{selecionado.titulo}</span>
-                <span style={{ fontSize: 9, fontWeight: 900, color: '#7a5c1e', textTransform: 'uppercase', letterSpacing: 1 }}>{selecionado.label}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgb(var(--c-gold-bg))', border: '1px solid rgb(var(--c-gold) / 0.25)', borderRadius: 10, padding: '8px 12px' }}>
+                <i className="fa-solid fa-link" style={{ color: 'rgb(var(--c-gold))' }}></i>
+                <span style={{ fontSize: 12, color: 'rgb(var(--c-gold-strong))', fontWeight: 700, flex: 1 }}>{selecionado.titulo}</span>
+                <span style={{ fontSize: 9, fontWeight: 900, color: 'rgb(var(--c-gold-strong))', textTransform: 'uppercase', letterSpacing: 1 }}>{selecionado.label}</span>
                 <button onClick={() => onChange({ ...modulo, conteudoRef: undefined })} style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer' }}>
                   <i className="fa-solid fa-xmark"></i>
                 </button>
@@ -279,7 +280,7 @@ const ModuloForm: React.FC<{
                   value={busca}
                   onChange={e => setBusca(e.target.value)}
                   placeholder="Buscar vídeo ou mídia por título..."
-                  style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '10px 14px', color: '#0A1628', fontSize: 13 }}
+                  style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '10px 14px', color: 'rgb(var(--c-navy))', fontSize: 13 }}
                 />
                 <div style={{ maxHeight: 160, overflow: 'auto', display: 'grid', gap: 6 }}>
                   {opcoesFiltradas.length === 0 && (
@@ -291,7 +292,7 @@ const ModuloForm: React.FC<{
                       onClick={() => onChange({ ...modulo, conteudoRef: { tipo: it.tipoConteudo, itemId: it.id } })}
                       style={{ textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '8px 12px', cursor: 'pointer' }}
                     >
-                      <span style={{ fontSize: 12, color: '#0A1628' }}>{it.titulo}</span>
+                      <span style={{ fontSize: 12, color: 'rgb(var(--c-navy))' }}>{it.titulo}</span>
                       <span style={{ fontSize: 9, fontWeight: 900, color: '#8A9BB0', textTransform: 'uppercase', letterSpacing: 1, flexShrink: 0 }}>{it.label}</span>
                     </button>
                   ))}
@@ -309,10 +310,10 @@ const ModuloForm: React.FC<{
         {extras.map(e => {
           const it = itensRepo.find(r => r.id === e.itemId);
           return (
-            <div key={e.itemId} style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#F5EDD8', border: '1px solid #C9A84C40', borderRadius: 10, padding: '8px 12px' }}>
-              <i className="fa-solid fa-link" style={{ color: '#C9A84C' }}></i>
-              <span style={{ fontSize: 12, color: '#7a5c1e', fontWeight: 700, flex: 1 }}>{it?.titulo || 'Item não disponível para este cliente'}</span>
-              <span style={{ fontSize: 9, fontWeight: 900, color: '#7a5c1e', textTransform: 'uppercase', letterSpacing: 1 }}>{TIPO_REPO_LABEL[it?.tipo || ''] || ''}</span>
+            <div key={e.itemId} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgb(var(--c-gold-bg))', border: '1px solid rgb(var(--c-gold) / 0.25)', borderRadius: 10, padding: '8px 12px' }}>
+              <i className="fa-solid fa-link" style={{ color: 'rgb(var(--c-gold))' }}></i>
+              <span style={{ fontSize: 12, color: 'rgb(var(--c-gold-strong))', fontWeight: 700, flex: 1 }}>{it?.titulo || 'Item não disponível para este cliente'}</span>
+              <span style={{ fontSize: 9, fontWeight: 900, color: 'rgb(var(--c-gold-strong))', textTransform: 'uppercase', letterSpacing: 1 }}>{TIPO_REPO_LABEL[it?.tipo || ''] || ''}</span>
               <button onClick={() => salvarExtras(extras.filter(x => x.itemId !== e.itemId))} style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer' }}>
                 <i className="fa-solid fa-xmark"></i>
               </button>
@@ -323,7 +324,7 @@ const ModuloForm: React.FC<{
           value={buscaExtra}
           onChange={e => setBuscaExtra(e.target.value)}
           placeholder="Buscar podcast, vídeo ou infográfico do Repositório para adicionar..."
-          style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '10px 14px', color: '#0A1628', fontSize: 13 }}
+          style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '10px 14px', color: 'rgb(var(--c-navy))', fontSize: 13 }}
         />
         {buscaExtra && (
           <div style={{ maxHeight: 160, overflow: 'auto', display: 'grid', gap: 6 }}>
@@ -331,7 +332,7 @@ const ModuloForm: React.FC<{
             {opcoesExtra.map(r => (
               <button key={r.id} onClick={() => { salvarExtras([...extras, { tipo: 'repositorio', itemId: r.id }]); setBuscaExtra(''); }}
                 style={{ textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '8px 12px', cursor: 'pointer' }}>
-                <span style={{ fontSize: 12, color: '#0A1628' }}>{r.titulo}</span>
+                <span style={{ fontSize: 12, color: 'rgb(var(--c-navy))' }}>{r.titulo}</span>
                 <span style={{ fontSize: 9, fontWeight: 900, color: '#8A9BB0', textTransform: 'uppercase', letterSpacing: 1, flexShrink: 0 }}>{TIPO_REPO_LABEL[r.tipo] || 'Repositório'}</span>
               </button>
             ))}
@@ -383,7 +384,7 @@ const TrilhaCard: React.FC<{
 
   return (
     <div style={{
-      background: '#ffffff', border: `1px solid ${trilha.ativa ? '#C9A84C40' : '#e2e8f0'}`,
+      background: '#ffffff', border: `1px solid ${trilha.ativa ? 'rgb(var(--c-gold) / 0.25)' : '#e2e8f0'}`,
       borderRadius: 24, padding: 24, position: 'relative', overflow: 'hidden'
     }}>
       {!trilha.ativa && (
@@ -394,9 +395,9 @@ const TrilhaCard: React.FC<{
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-            <p style={{ fontSize: 16, fontWeight: 900, color: '#0A1628' }}>{trilha.titulo}</p>
+            <p style={{ fontSize: 16, fontWeight: 900, color: 'rgb(var(--c-navy))' }}>{trilha.titulo}</p>
             {trilha.oficial && (
-              <span style={{ background: '#F5EDD8', color: '#7a5c1e', fontSize: 9, fontWeight: 900, padding: '2px 7px', borderRadius: 6, textTransform: 'uppercase' }}>
+              <span style={{ background: 'rgb(var(--c-gold-bg))', color: 'rgb(var(--c-gold-strong))', fontSize: 9, fontWeight: 900, padding: '2px 7px', borderRadius: 6, textTransform: 'uppercase' }}>
                 <i className="fa-solid fa-certificate" style={{ marginRight: 4 }}></i>Modelo MJ Consultoria
               </span>
             )}
@@ -405,7 +406,7 @@ const TrilhaCard: React.FC<{
           {tenantLabels && tenantLabels.length > 0 && (
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 8 }}>
               {tenantLabels.map(label => (
-                <span key={label} style={{ background: label === 'Todos os clientes' ? '#0A162810' : '#eef2ff', color: label === 'Todos os clientes' ? '#0A1628' : '#4338ca', fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                <span key={label} style={{ background: label === 'Todos os clientes' ? 'rgb(var(--c-navy) / 0.06)' : '#eef2ff', color: label === 'Todos os clientes' ? 'rgb(var(--c-navy))' : '#4338ca', fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                   <i className="fa-solid fa-building" style={{ marginRight: 4 }}></i>{label}
                 </span>
               ))}
@@ -414,10 +415,10 @@ const TrilhaCard: React.FC<{
         </div>
         {isGestor && (
           <div style={{ display: 'flex', gap: 6, flexShrink: 0, marginLeft: 12 }}>
-            <button onClick={onView} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', color: '#0A1628', padding: '6px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 13 }} title="Visualizar/assistir">
+            <button onClick={onView} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', color: 'rgb(var(--c-navy))', padding: '6px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 13 }} title="Visualizar/assistir">
               <i className="fa-solid fa-eye"></i>
             </button>
-            <button onClick={onEdit} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', color: '#C9A84C', padding: '6px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 13 }} title="Editar">
+            <button onClick={onEdit} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', color: 'rgb(var(--c-gold))', padding: '6px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 13 }} title="Editar">
               <i className="fa-solid fa-pen"></i>
             </button>
             <button onClick={onDelete} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', color: '#dc2626', padding: '6px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 13 }} title="Excluir">
@@ -430,8 +431,8 @@ const TrilhaCard: React.FC<{
       {/* Assunto · Setores · Perfis */}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
         {trilha.assunto && (
-          <span style={{ background: '#0A162810', color: '#0A1628', fontSize: 9, fontWeight: 900, padding: '3px 10px', borderRadius: 6, textTransform: 'uppercase', letterSpacing: 1 }}>
-            <i className="fa-solid fa-tag" style={{ marginRight: 4, color: '#C9A84C' }}></i>{trilha.assunto}
+          <span style={{ background: 'rgb(var(--c-navy) / 0.06)', color: 'rgb(var(--c-navy))', fontSize: 9, fontWeight: 900, padding: '3px 10px', borderRadius: 6, textTransform: 'uppercase', letterSpacing: 1 }}>
+            <i className="fa-solid fa-tag" style={{ marginRight: 4, color: 'rgb(var(--c-gold))' }}></i>{trilha.assunto}
           </span>
         )}
         {(trilha.setores || []).map(s => (
@@ -442,7 +443,7 @@ const TrilhaCard: React.FC<{
         {trilha.perfis.map(p => {
           const info = PERFIS.find(x => x.value === p);
           return (
-            <span key={p} style={{ background: info?.color + '20', color: info?.color, border: `1px solid ${info?.color}40`, fontSize: 9, fontWeight: 900, padding: '3px 10px', borderRadius: 6, textTransform: 'uppercase', letterSpacing: 1 }}>
+            <span key={p} style={{ background: alfa(info?.color, '20'), color: info?.color, border: `1px solid ${alfa(info?.color, '40')}`, fontSize: 9, fontWeight: 900, padding: '3px 10px', borderRadius: 6, textTransform: 'uppercase', letterSpacing: 1 }}>
               {info?.label}
             </span>
           );
@@ -457,7 +458,7 @@ const TrilhaCard: React.FC<{
         </span>
         {opcionais > 0 && (
           <span style={{ fontSize: 11, color: '#8A9BB0' }}>
-            <i className="fa-solid fa-circle" style={{ color: '#0A1628', marginRight: 4 }}></i>
+            <i className="fa-solid fa-circle" style={{ color: 'rgb(var(--c-navy))', marginRight: 4 }}></i>
             {opcionais} opcional{opcionais !== 1 ? 'is' : ''}
           </span>
         )}
@@ -468,17 +469,17 @@ const TrilhaCard: React.FC<{
         <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginTop: 10, marginBottom: progresso ? 0 : 4 }}>
           {trilha.instrutor && (
             <span style={{ fontSize: 10, color: '#8A9BB0' }}>
-              <i className="fa-solid fa-chalkboard-user" style={{ color: '#C9A84C', marginRight: 4 }}></i>{trilha.instrutor}
+              <i className="fa-solid fa-chalkboard-user" style={{ color: 'rgb(var(--c-gold))', marginRight: 4 }}></i>{trilha.instrutor}
             </span>
           )}
           {trilha.formato && (
             <span style={{ fontSize: 10, color: '#8A9BB0' }}>
-              <i className="fa-solid fa-signal" style={{ color: '#C9A84C', marginRight: 4 }}></i>{FORMATO_LABEL[trilha.formato]}
+              <i className="fa-solid fa-signal" style={{ color: 'rgb(var(--c-gold))', marginRight: 4 }}></i>{FORMATO_LABEL[trilha.formato]}
             </span>
           )}
           {!!trilha.cargaHoraria && (
             <span style={{ fontSize: 10, color: '#8A9BB0' }}>
-              <i className="fa-solid fa-clock" style={{ color: '#C9A84C', marginRight: 4 }}></i>{trilha.cargaHoraria}h
+              <i className="fa-solid fa-clock" style={{ color: 'rgb(var(--c-gold))', marginRight: 4 }}></i>{trilha.cargaHoraria}h
             </span>
           )}
         </div>
@@ -489,24 +490,24 @@ const TrilhaCard: React.FC<{
         <div style={{ marginTop: 16 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
             <span style={{ fontSize: 11, color: '#8A9BB0', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>Seu progresso</span>
-            <span style={{ fontSize: 11, fontWeight: 900, color: perc === 100 ? '#C9A84C' : '#0A1628' }}>{perc}%</span>
+            <span style={{ fontSize: 11, fontWeight: 900, color: perc === 100 ? 'rgb(var(--c-gold))' : 'rgb(var(--c-navy))' }}>{perc}%</span>
           </div>
           <div style={{ background: '#e2e8f0', borderRadius: 999, height: 6, overflow: 'hidden' }}>
-            <div style={{ height: '100%', borderRadius: 999, background: perc === 100 ? '#C9A84C' : '#0A1628', width: `${perc}%`, transition: 'width 0.5s' }}></div>
+            <div style={{ height: '100%', borderRadius: 999, background: perc === 100 ? 'rgb(var(--c-gold))' : 'rgb(var(--c-navy))', width: `${perc}%`, transition: 'width 0.5s' }}></div>
           </div>
           {progresso.concluida && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
-              <i className="fa-solid fa-trophy" style={{ color: '#C9A84C', fontSize: 14 }}></i>
-              <span style={{ fontSize: 11, fontWeight: 900, color: '#C9A84C' }}>Trilha concluída!</span>
+              <i className="fa-solid fa-trophy" style={{ color: 'rgb(var(--c-gold))', fontSize: 14 }}></i>
+              <span style={{ fontSize: 11, fontWeight: 900, color: 'rgb(var(--c-gold))' }}>Trilha concluída!</span>
             </div>
           )}
         </div>
       )}
 
       {onView && (
-        <button onClick={onView} style={{ marginTop: 16, width: '100%', background: '#0A1628', border: 'none', color: '#ffffff', padding: '10px', borderRadius: 12, cursor: 'pointer', fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 1 }}>
+        <button onClick={onView} style={{ marginTop: 16, width: '100%', background: 'rgb(var(--c-navy))', border: 'none', color: '#ffffff', padding: '10px', borderRadius: 12, cursor: 'pointer', fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 1 }}>
           {progresso?.concluida
-            ? <><i className="fa-solid fa-trophy" style={{ marginRight: 6, color: '#C9A84C' }}></i>Ver Trilha</>
+            ? <><i className="fa-solid fa-trophy" style={{ marginRight: 6, color: 'rgb(var(--c-gold))' }}></i>Ver Trilha</>
             : <><i className="fa-solid fa-play" style={{ marginRight: 6 }}></i>Continuar Trilha</>
           }
         </button>
@@ -666,12 +667,12 @@ const ModuloPlayer: React.FC<{
       <div className="bg-white w-full h-full md:h-[94vh] md:max-w-[1280px] md:rounded-[24px] overflow-hidden flex flex-col shadow-2xl">
 
         {/* Cabeçalho: trilha, andamento e fechar */}
-        <div className="flex items-center gap-4 px-5 md:px-6 py-3 border-b border-slate-200 bg-[#0A1628] text-white">
+        <div className="flex items-center gap-4 px-5 md:px-6 py-3 border-b border-slate-200 bg-[rgb(var(--c-navy))] text-white">
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#C9A84C] truncate">{trilha.titulo}</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[rgb(var(--c-gold))] truncate">{trilha.titulo}</p>
             <div className="flex items-center gap-3 mt-1.5">
               <div className="flex-1 max-w-[320px] h-1.5 rounded-full bg-white/15 overflow-hidden">
-                <div className="h-full rounded-full bg-[#C9A84C] transition-all" style={{ width: `${pctTrilha}%` }}></div>
+                <div className="h-full rounded-full bg-[rgb(var(--c-gold))] transition-all" style={{ width: `${pctTrilha}%` }}></div>
               </div>
               <span className="text-[11px] text-white/70 whitespace-nowrap">{totalConcluidos} de {trilha.modulos.length} módulos concluídos</span>
             </div>
@@ -690,8 +691,8 @@ const ModuloPlayer: React.FC<{
               const feito = concluido(m);
               return (
                 <button key={m.id} onClick={() => irModulo(i)} aria-current={atual ? 'step' : undefined}
-                  className={`w-full text-left flex items-start gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all ${atual ? 'bg-[#0A1628] text-white shadow' : 'hover:bg-white text-slate-700'}`}>
-                  <span className={`mt-0.5 w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black flex-shrink-0 ${feito ? 'bg-emerald-500 text-white' : atual ? 'bg-[#C9A84C] text-[#0A1628]' : 'bg-slate-200 text-slate-500'}`}>
+                  className={`w-full text-left flex items-start gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all ${atual ? 'bg-[rgb(var(--c-navy))] text-white shadow' : 'hover:bg-white text-slate-700'}`}>
+                  <span className={`mt-0.5 w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black flex-shrink-0 ${feito ? 'bg-emerald-500 text-white' : atual ? 'bg-[rgb(var(--c-gold))] text-[rgb(var(--c-navy))]' : 'bg-slate-200 text-slate-500'}`}>
                     {feito ? <i className="fa-solid fa-check text-[10px]"></i> : i + 1}
                   </span>
                   <span className="min-w-0">
@@ -710,12 +711,12 @@ const ModuloPlayer: React.FC<{
             <div className="max-w-[920px] mx-auto px-5 md:px-10 py-6">
               {/* Celular: escolha do módulo em lista suspensa */}
               <select value={moduloIdx} onChange={e => irModulo(Number(e.target.value))} aria-label="Módulo"
-                className="md:hidden w-full mb-4 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-bold text-[#0A1628] bg-white">
+                className="md:hidden w-full mb-4 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-bold text-[rgb(var(--c-navy))] bg-white">
                 {trilha.modulos.map((m, i) => <option key={m.id} value={i}>{i + 1}. {m.titulo}{concluido(m) ? ' ✓' : ''}</option>)}
               </select>
 
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#C9A84C] mb-1">Módulo {moduloIdx + 1} de {trilha.modulos.length}</p>
-              <h3 className="text-xl md:text-2xl font-black text-[#0A1628] leading-tight">{modulo.titulo}</h3>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[rgb(var(--c-gold))] mb-1">Módulo {moduloIdx + 1} de {trilha.modulos.length}</p>
+              <h3 className="text-xl md:text-2xl font-black text-[rgb(var(--c-navy))] leading-tight">{modulo.titulo}</h3>
               {modulo.descricao && modulo.descricao !== textoModulo && <p className="text-sm text-slate-500 mt-1.5">{modulo.descricao}</p>}
               <div className="h-5"></div>
 
@@ -734,9 +735,9 @@ const ModuloPlayer: React.FC<{
                     style={{
                       flex: '1 1 120px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px 14px', borderRadius: 14,
                       cursor: 'pointer', fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 1,
-                      border: `1px solid ${ativo ? '#0A1628' : '#e2e8f0'}`, background: ativo ? '#0A1628' : '#ffffff', color: ativo ? '#ffffff' : '#475569',
+                      border: `1px solid ${ativo ? 'rgb(var(--c-navy))' : '#e2e8f0'}`, background: ativo ? 'rgb(var(--c-navy))' : '#ffffff', color: ativo ? '#ffffff' : '#475569',
                     }}>
-                    <i className={`fa-solid ${FORMATO_INFO[f].icon}`} style={{ color: ativo ? '#C9A84C' : '#94a3b8' }}></i>{FORMATO_INFO[f].label}
+                    <i className={`fa-solid ${FORMATO_INFO[f].icon}`} style={{ color: ativo ? 'rgb(var(--c-gold))' : '#94a3b8' }}></i>{FORMATO_INFO[f].label}
                   </button>
                 );
               })}
@@ -777,10 +778,10 @@ const ModuloPlayer: React.FC<{
 
           {/* Status do módulo */}
           {progModulo.nota !== null && (
-            <div style={{ background: progModulo.aprovado ? '#F5EDD8' : '#fef2f2', border: `1px solid ${progModulo.aprovado ? '#C9A84C' : '#dc2626'}40`, borderRadius: 12, padding: 12, marginBottom: 16, display: 'flex', gap: 10, alignItems: 'center' }}>
-              <i className={`fa-solid ${progModulo.aprovado ? 'fa-circle-check' : 'fa-circle-xmark'}`} style={{ color: progModulo.aprovado ? '#C9A84C' : '#dc2626', fontSize: 18 }}></i>
+            <div style={{ background: progModulo.aprovado ? 'rgb(var(--c-gold-bg))' : '#fef2f2', border: `1px solid ${progModulo.aprovado ? 'rgb(var(--c-gold) / 0.25)' : '#dc262640'}`, borderRadius: 12, padding: 12, marginBottom: 16, display: 'flex', gap: 10, alignItems: 'center' }}>
+              <i className={`fa-solid ${progModulo.aprovado ? 'fa-circle-check' : 'fa-circle-xmark'}`} style={{ color: progModulo.aprovado ? 'rgb(var(--c-gold))' : '#dc2626', fontSize: 18 }}></i>
               <div>
-                <p style={{ fontSize: 12, fontWeight: 900, color: progModulo.aprovado ? '#7a5c1e' : '#dc2626' }}>
+                <p style={{ fontSize: 12, fontWeight: 900, color: progModulo.aprovado ? 'rgb(var(--c-gold-strong))' : '#dc2626' }}>
                   {progModulo.aprovado ? 'Aprovado' : 'Reprovado'} — Nota: {progModulo.nota}/10
                 </p>
                 <p style={{ fontSize: 11, color: '#8A9BB0' }}>Tentativas: {progModulo.tentativas} · Nota mínima: {modulo.notaMinima}</p>
@@ -799,20 +800,20 @@ const ModuloPlayer: React.FC<{
           {!visualizacao && !showQuiz && !quizEnviado && (
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               {!progModulo.assistido && (!modulo.conteudoRef || conteudoVisto) && (
-                <button onClick={marcarAssistido} style={{ flex: 1, minWidth: 160, background: '#0A1628', border: 'none', color: '#ffffff', padding: 14, borderRadius: 12, cursor: 'pointer', fontWeight: 900, fontSize: 12, textTransform: 'uppercase' }}>
+                <button onClick={marcarAssistido} style={{ flex: 1, minWidth: 160, background: 'rgb(var(--c-navy))', border: 'none', color: '#ffffff', padding: 14, borderRadius: 12, cursor: 'pointer', fontWeight: 900, fontSize: 12, textTransform: 'uppercase' }}>
                   <i className="fa-solid fa-check" style={{ marginRight: 8 }}></i>Marcar como Lido
                 </button>
               )}
               {modulo.temQuiz && (!progModulo.aprovado || progModulo.tentativas === 0) && (
-                <button onClick={async () => { setShowQuiz(true); await gerarQuiz(); }} style={{ flex: 1, minWidth: 160, background: '#C9A84C', border: 'none', color: '#0A1628', padding: 14, borderRadius: 12, cursor: 'pointer', fontWeight: 900, fontSize: 12, textTransform: 'uppercase' }}>
+                <button onClick={async () => { setShowQuiz(true); await gerarQuiz(); }} style={{ flex: 1, minWidth: 160, background: 'rgb(var(--c-gold))', border: 'none', color: 'rgb(var(--c-navy))', padding: 14, borderRadius: 12, cursor: 'pointer', fontWeight: 900, fontSize: 12, textTransform: 'uppercase' }}>
                   <i className="fa-solid fa-pen-to-square" style={{ marginRight: 8 }}></i>
                   {progModulo.tentativas > 0 ? 'Refazer Quiz' : 'Fazer Quiz'}
                 </button>
               )}
               {progModulo.assistido && (!modulo.temQuiz || progModulo.aprovado) && (
-                <div style={{ flex: 1, background: '#F5EDD8', border: '1px solid #C9A84C40', borderRadius: 12, padding: 14, textAlign: 'center' }}>
-                  <i className="fa-solid fa-circle-check" style={{ color: '#C9A84C', marginRight: 8 }}></i>
-                  <span style={{ color: '#7a5c1e', fontWeight: 900, fontSize: 12 }}>Módulo concluído</span>
+                <div style={{ flex: 1, background: 'rgb(var(--c-gold-bg))', border: '1px solid rgb(var(--c-gold) / 0.25)', borderRadius: 12, padding: 14, textAlign: 'center' }}>
+                  <i className="fa-solid fa-circle-check" style={{ color: 'rgb(var(--c-gold))', marginRight: 8 }}></i>
+                  <span style={{ color: 'rgb(var(--c-gold-strong))', fontWeight: 900, fontSize: 12 }}>Módulo concluído</span>
                 </div>
               )}
             </div>
@@ -821,19 +822,19 @@ const ModuloPlayer: React.FC<{
           {/* Quiz */}
           {showQuiz && !quizEnviado && (
             <div style={{ marginTop: 8 }}>
-              <p style={{ fontSize: 13, fontWeight: 900, color: '#0A1628', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 16 }}>
-                <i className="fa-solid fa-brain" style={{ marginRight: 8, color: '#C9A84C' }}></i>Quiz de Avaliação
+              <p style={{ fontSize: 13, fontWeight: 900, color: 'rgb(var(--c-navy))', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 16 }}>
+                <i className="fa-solid fa-brain" style={{ marginRight: 8, color: 'rgb(var(--c-gold))' }}></i>Quiz de Avaliação
               </p>
               {gerandoQuiz ? (
                 <div style={{ textAlign: 'center', padding: 40, color: '#8A9BB0' }}>
-                  <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: 24, marginBottom: 12, color: '#C9A84C' }}></i>
+                  <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: 24, marginBottom: 12, color: 'rgb(var(--c-gold))' }}></i>
                   <p style={{ fontSize: 13 }}>Gerando questões com IA...</p>
                 </div>
               ) : (
                 <>
                   {quizQuestoes.map((q, qi) => (
                     <div key={qi} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: 18, marginBottom: 12 }}>
-                      <p style={{ fontSize: 13, color: '#0A1628', marginBottom: 12, fontWeight: 700 }}>{qi + 1}. {q.pergunta}</p>
+                      <p style={{ fontSize: 13, color: 'rgb(var(--c-navy))', marginBottom: 12, fontWeight: 700 }}>{qi + 1}. {q.pergunta}</p>
                       <div style={{ display: 'grid', gap: 8 }}>
                         {q.opcoes.map((op, oi) => (
                           <button
@@ -841,12 +842,12 @@ const ModuloPlayer: React.FC<{
                             onClick={() => setRespostas(r => ({ ...r, [qi]: String(oi) }))}
                             style={{
                               textAlign: 'left', padding: '10px 14px', borderRadius: 10, cursor: 'pointer', fontSize: 12,
-                              border: `1px solid ${respostas[qi] === String(oi) ? '#C9A84C' : '#e2e8f0'}`,
-                              background: respostas[qi] === String(oi) ? '#0A1628' : '#f8fafc',
+                              border: `1px solid ${respostas[qi] === String(oi) ? 'rgb(var(--c-gold))' : '#e2e8f0'}`,
+                              background: respostas[qi] === String(oi) ? 'rgb(var(--c-navy))' : '#f8fafc',
                               color: respostas[qi] === String(oi) ? '#ffffff' : '#8A9BB0',
                             }}
                           >
-                            <span style={{ fontWeight: 900, marginRight: 8, color: respostas[qi] === String(oi) ? '#C9A84C' : '#0A1628' }}>{['A', 'B', 'C', 'D'][oi]}.</span>{op}
+                            <span style={{ fontWeight: 900, marginRight: 8, color: respostas[qi] === String(oi) ? 'rgb(var(--c-gold))' : 'rgb(var(--c-navy))' }}>{['A', 'B', 'C', 'D'][oi]}.</span>{op}
                           </button>
                         ))}
                       </div>
@@ -859,7 +860,7 @@ const ModuloPlayer: React.FC<{
                     <button
                       onClick={enviarQuiz}
                       disabled={Object.keys(respostas).length < quizQuestoes.length}
-                      style={{ flex: 1, background: Object.keys(respostas).length < quizQuestoes.length ? '#e2e8f0' : '#C9A84C', border: 'none', color: Object.keys(respostas).length < quizQuestoes.length ? '#8A9BB0' : '#0A1628', padding: 12, borderRadius: 12, cursor: Object.keys(respostas).length < quizQuestoes.length ? 'not-allowed' : 'pointer', fontWeight: 900, fontSize: 12, textTransform: 'uppercase' }}
+                      style={{ flex: 1, background: Object.keys(respostas).length < quizQuestoes.length ? '#e2e8f0' : 'rgb(var(--c-gold))', border: 'none', color: Object.keys(respostas).length < quizQuestoes.length ? '#8A9BB0' : 'rgb(var(--c-navy))', padding: 12, borderRadius: 12, cursor: Object.keys(respostas).length < quizQuestoes.length ? 'not-allowed' : 'pointer', fontWeight: 900, fontSize: 12, textTransform: 'uppercase' }}
                     >
                       Enviar Respostas
                     </button>
@@ -873,29 +874,29 @@ const ModuloPlayer: React.FC<{
           {quizEnviado && (() => {
             const p = progresso.modulos[modulo.id];
             return (
-              <div style={{ background: p?.aprovado ? '#F5EDD8' : '#fef2f2', border: `1px solid ${p?.aprovado ? '#C9A84C' : '#dc2626'}30`, borderRadius: 16, padding: 24, textAlign: 'center' }}>
+              <div style={{ background: p?.aprovado ? 'rgb(var(--c-gold-bg))' : '#fef2f2', border: `1px solid ${p?.aprovado ? 'rgb(var(--c-gold) / 0.19)' : '#dc262630'}`, borderRadius: 16, padding: 24, textAlign: 'center' }}>
                 <div style={{ fontSize: 36, marginBottom: 8 }}>
                   {p?.aprovado
-                    ? <i className="fa-solid fa-trophy" style={{ color: '#C9A84C' }}></i>
+                    ? <i className="fa-solid fa-trophy" style={{ color: 'rgb(var(--c-gold))' }}></i>
                     : <i className="fa-solid fa-book-open" style={{ color: '#dc2626' }}></i>
                   }
                 </div>
-                <p style={{ fontSize: 18, fontWeight: 900, color: p?.aprovado ? '#7a5c1e' : '#dc2626', marginBottom: 4 }}>
+                <p style={{ fontSize: 18, fontWeight: 900, color: p?.aprovado ? 'rgb(var(--c-gold-strong))' : '#dc2626', marginBottom: 4 }}>
                   {p?.aprovado ? 'Aprovado!' : 'Não aprovado'}
                 </p>
                 <p style={{ fontSize: 14, color: '#8A9BB0', marginBottom: 16 }}>
-                  Sua nota: <strong style={{ color: '#0A1628' }}>{p?.nota}/10</strong> · Mínima: {modulo.notaMinima}
+                  Sua nota: <strong style={{ color: 'rgb(var(--c-navy))' }}>{p?.nota}/10</strong> · Mínima: {modulo.notaMinima}
                 </p>
                 {!p?.aprovado && (
-                  <button onClick={() => { setShowQuiz(false); setQuizEnviado(false); setRespostas({}); setQuizQuestoes([]); }} style={{ background: '#0A1628', border: 'none', color: '#ffffff', padding: '10px 24px', borderRadius: 12, cursor: 'pointer', fontWeight: 900, fontSize: 12, textTransform: 'uppercase' }}>
+                  <button onClick={() => { setShowQuiz(false); setQuizEnviado(false); setRespostas({}); setQuizQuestoes([]); }} style={{ background: 'rgb(var(--c-navy))', border: 'none', color: '#ffffff', padding: '10px 24px', borderRadius: 12, cursor: 'pointer', fontWeight: 900, fontSize: 12, textTransform: 'uppercase' }}>
                     <i className="fa-solid fa-rotate-right" style={{ marginRight: 6 }}></i>Tentar Novamente
                   </button>
                 )}
                 {p?.aprovado && (
-                  <button onClick={() => { if (moduloIdx < trilha.modulos.length - 1) { setModuloIdx(moduloIdx + 1); setShowQuiz(false); setQuizEnviado(false); setRespostas({}); setQuizQuestoes([]); } else { onClose(); } }} style={{ background: '#0A1628', border: 'none', color: '#ffffff', padding: '10px 24px', borderRadius: 12, cursor: 'pointer', fontWeight: 900, fontSize: 12, textTransform: 'uppercase' }}>
+                  <button onClick={() => { if (moduloIdx < trilha.modulos.length - 1) { setModuloIdx(moduloIdx + 1); setShowQuiz(false); setQuizEnviado(false); setRespostas({}); setQuizQuestoes([]); } else { onClose(); } }} style={{ background: 'rgb(var(--c-navy))', border: 'none', color: '#ffffff', padding: '10px 24px', borderRadius: 12, cursor: 'pointer', fontWeight: 900, fontSize: 12, textTransform: 'uppercase' }}>
                     {moduloIdx < trilha.modulos.length - 1
-                      ? <><i className="fa-solid fa-arrow-right" style={{ marginRight: 6, color: '#C9A84C' }}></i>Próximo Módulo</>
-                      : <><i className="fa-solid fa-flag-checkered" style={{ marginRight: 6, color: '#C9A84C' }}></i>Concluir Trilha</>
+                      ? <><i className="fa-solid fa-arrow-right" style={{ marginRight: 6, color: 'rgb(var(--c-gold))' }}></i>Próximo Módulo</>
+                      : <><i className="fa-solid fa-flag-checkered" style={{ marginRight: 6, color: 'rgb(var(--c-gold))' }}></i>Concluir Trilha</>
                     }
                   </button>
                 )}
@@ -911,13 +912,13 @@ const ModuloPlayer: React.FC<{
                 </button>
                 {moduloIdx < trilha.modulos.length - 1 ? (
                   <button onClick={() => irModulo(moduloIdx + 1)}
-                    className="px-4 py-2.5 rounded-xl bg-[#0A1628] text-white text-xs font-black uppercase tracking-wider hover:opacity-90">
-                    Próximo<i className="fa-solid fa-arrow-right ml-2 text-[#C9A84C]"></i>
+                    className="px-4 py-2.5 rounded-xl bg-[rgb(var(--c-navy))] text-white text-xs font-black uppercase tracking-wider hover:opacity-90">
+                    Próximo<i className="fa-solid fa-arrow-right ml-2 text-[rgb(var(--c-gold))]"></i>
                   </button>
                 ) : (
                   <button onClick={onClose}
-                    className="px-4 py-2.5 rounded-xl bg-[#0A1628] text-white text-xs font-black uppercase tracking-wider hover:opacity-90">
-                    Fechar trilha<i className="fa-solid fa-flag-checkered ml-2 text-[#C9A84C]"></i>
+                    className="px-4 py-2.5 rounded-xl bg-[rgb(var(--c-navy))] text-white text-xs font-black uppercase tracking-wider hover:opacity-90">
+                    Fechar trilha<i className="fa-solid fa-flag-checkered ml-2 text-[rgb(var(--c-gold))]"></i>
                   </button>
                 )}
               </div>
@@ -1153,8 +1154,8 @@ const TrailsView: React.FC = () => {
 
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
-        <h2 style={{ fontSize: 28, fontWeight: 900, color: '#0A1628', fontStyle: 'italic', textTransform: 'uppercase', letterSpacing: -1 }}>
-          Trilhas de <span style={{ color: '#C9A84C' }}>Treinamento</span>
+        <h2 style={{ fontSize: 28, fontWeight: 900, color: 'rgb(var(--c-navy))', fontStyle: 'italic', textTransform: 'uppercase', letterSpacing: -1 }}>
+          Trilhas de <span style={{ color: 'rgb(var(--c-gold))' }}>Treinamento</span>
         </h2>
         <p style={{ fontSize: 11, color: '#8A9BB0', fontWeight: 900, textTransform: 'uppercase', letterSpacing: 3, marginTop: 4 }}>
           Capacitação por perfil de usuário · Integra-Academy
@@ -1164,22 +1165,22 @@ const TrailsView: React.FC = () => {
       {/* Tabs */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
         {!isGestor && (
-          <button onClick={() => setTab('minhas')} style={{ padding: '10px 20px', borderRadius: 12, border: 'none', cursor: 'pointer', fontWeight: 900, fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, background: tab === 'minhas' ? '#0A1628' : '#f1f5f9', color: tab === 'minhas' ? '#ffffff' : '#8A9BB0' }}>
+          <button onClick={() => setTab('minhas')} style={{ padding: '10px 20px', borderRadius: 12, border: 'none', cursor: 'pointer', fontWeight: 900, fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, background: tab === 'minhas' ? 'rgb(var(--c-navy))' : '#f1f5f9', color: tab === 'minhas' ? '#ffffff' : '#8A9BB0' }}>
             <i className="fa-solid fa-road" style={{ marginRight: 6 }}></i>Minhas Trilhas
           </button>
         )}
         {isGestor && <>
-          <button onClick={() => setTab('todas')} style={{ padding: '10px 20px', borderRadius: 12, border: 'none', cursor: 'pointer', fontWeight: 900, fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, background: tab === 'todas' ? '#0A1628' : '#f1f5f9', color: tab === 'todas' ? '#ffffff' : '#8A9BB0' }}>
+          <button onClick={() => setTab('todas')} style={{ padding: '10px 20px', borderRadius: 12, border: 'none', cursor: 'pointer', fontWeight: 900, fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, background: tab === 'todas' ? 'rgb(var(--c-navy))' : '#f1f5f9', color: tab === 'todas' ? '#ffffff' : '#8A9BB0' }}>
             <i className="fa-solid fa-list" style={{ marginRight: 6 }}></i>Todas as Trilhas
           </button>
           <button onClick={() => {
               if (!editando && !podeCriar) { showToast(`Criação de novas trilhas não habilitada para ${t.seu}.`, 'info'); return; }
               iniciarEditar();
             }}
-            style={{ padding: '10px 20px', borderRadius: 12, border: 'none', cursor: 'pointer', fontWeight: 900, fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, background: tab === 'criar' ? '#0A1628' : '#f1f5f9', color: !editando && !podeCriar ? '#c2c9d6' : tab === 'criar' ? '#ffffff' : '#8A9BB0' }}>
+            style={{ padding: '10px 20px', borderRadius: 12, border: 'none', cursor: 'pointer', fontWeight: 900, fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, background: tab === 'criar' ? 'rgb(var(--c-navy))' : '#f1f5f9', color: !editando && !podeCriar ? '#c2c9d6' : tab === 'criar' ? '#ffffff' : '#8A9BB0' }}>
             <i className={`fa-solid ${!editando && !podeCriar ? 'fa-lock' : 'fa-plus'}`} style={{ marginRight: 6 }}></i>{editando ? 'Editando Trilha' : 'Nova Trilha'}
           </button>
-          <button onClick={() => setTab('progresso')} style={{ padding: '10px 20px', borderRadius: 12, border: 'none', cursor: 'pointer', fontWeight: 900, fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, background: tab === 'progresso' ? '#0A1628' : '#f1f5f9', color: tab === 'progresso' ? '#ffffff' : '#8A9BB0' }}>
+          <button onClick={() => setTab('progresso')} style={{ padding: '10px 20px', borderRadius: 12, border: 'none', cursor: 'pointer', fontWeight: 900, fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, background: tab === 'progresso' ? 'rgb(var(--c-navy))' : '#f1f5f9', color: tab === 'progresso' ? '#ffffff' : '#8A9BB0' }}>
             <i className="fa-solid fa-chart-bar" style={{ marginRight: 6 }}></i>Progresso Geral
           </button>
         </>}
@@ -1187,12 +1188,12 @@ const TrailsView: React.FC = () => {
 
       {/* Treinamentos oficiais são de cartório (Provimentos CNJ): o atalho não aparece dentro de empresas */}
       {isSuperAdmin && (superAdminGlobal || tipoOrganizacao === 'cartorio') && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#F5EDD8', border: '1px solid #C9A84C40', borderRadius: 14, padding: '12px 16px', marginBottom: 24 }}>
-          <i className="fa-solid fa-wand-magic-sparkles" style={{ color: '#C9A84C' }}></i>
-          <span style={{ fontSize: 12, color: '#7a5c1e', flex: 1 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgb(var(--c-gold-bg))', border: '1px solid rgb(var(--c-gold) / 0.25)', borderRadius: 14, padding: '12px 16px', marginBottom: 24 }}>
+          <i className="fa-solid fa-wand-magic-sparkles" style={{ color: 'rgb(var(--c-gold))' }}></i>
+          <span style={{ fontSize: 12, color: 'rgb(var(--c-gold-strong))', flex: 1 }}>
             Provimento 213/2026, Compliance e Antissuborno, Provimento 149 e LGPD já têm vídeo pronto — crie a trilha oficial em 1 clique.
           </span>
-          <button onClick={() => setActiveTab('treinamentos-oficiais')} style={{ background: '#0A1628', border: 'none', color: '#ffffff', padding: '8px 16px', borderRadius: 10, cursor: 'pointer', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+          <button onClick={() => setActiveTab('treinamentos-oficiais')} style={{ background: 'rgb(var(--c-navy))', border: 'none', color: '#ffffff', padding: '8px 16px', borderRadius: 10, cursor: 'pointer', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
             Abrir Treinamentos Oficiais
           </button>
         </div>
@@ -1203,16 +1204,16 @@ const TrailsView: React.FC = () => {
         <div>
           {minhasTrilhas.length === 0 ? (
             <div style={{ textAlign: 'center', padding: 60, color: '#8A9BB0' }}>
-              <i className="fa-solid fa-road" style={{ fontSize: 40, marginBottom: 16, display: 'block', color: '#C9A84C' }}></i>
-              <p style={{ fontWeight: 900, fontSize: 16, marginBottom: 8, color: '#0A1628' }}>Nenhuma trilha disponível</p>
+              <i className="fa-solid fa-road" style={{ fontSize: 40, marginBottom: 16, display: 'block', color: 'rgb(var(--c-gold))' }}></i>
+              <p style={{ fontWeight: 900, fontSize: 16, marginBottom: 8, color: 'rgb(var(--c-navy))' }}>Nenhuma trilha disponível</p>
               <p style={{ fontSize: 13 }}>Seu gestor ainda não criou trilhas para o perfil {PERFIL_LABEL[user.role]}.</p>
             </div>
           ) : (
             <div style={{ display: 'grid', gap: 28 }}>
               {minhasPorAssunto.map(([assunto, lista]) => (
                 <div key={assunto}>
-                  <p style={{ fontSize: 12, fontWeight: 900, color: '#0A1628', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 12 }}>
-                    <i className="fa-solid fa-tag" style={{ color: '#C9A84C', marginRight: 8 }}></i>{assunto}
+                  <p style={{ fontSize: 12, fontWeight: 900, color: 'rgb(var(--c-navy))', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 12 }}>
+                    <i className="fa-solid fa-tag" style={{ color: 'rgb(var(--c-gold))', marginRight: 8 }}></i>{assunto}
                     <span style={{ color: '#8A9BB0', fontWeight: 700, marginLeft: 8 }}>({lista.length})</span>
                   </p>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
@@ -1238,7 +1239,7 @@ const TrailsView: React.FC = () => {
             <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
               <label style={{ fontSize: 10, fontWeight: 900, color: '#8A9BB0', textTransform: 'uppercase', letterSpacing: 1 }}>Cliente</label>
               <select value={filtroCartorio} onChange={e => setFiltroCartorio(e.target.value)}
-                style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '8px 12px', color: '#0A1628', fontSize: 12, fontWeight: 700 }}>
+                style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '8px 12px', color: 'rgb(var(--c-navy))', fontSize: 12, fontWeight: 700 }}>
                 <option value="todos">Todos os clientes ({trilhas.length})</option>
                 {Object.entries(tenantNomes).sort((a, b) => a[1].localeCompare(b[1])).map(([id, nome]) => (
                   <option key={id} value={id}>{nome}</option>
@@ -1250,7 +1251,7 @@ const TrailsView: React.FC = () => {
             <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
               <label style={{ fontSize: 10, fontWeight: 900, color: '#8A9BB0', textTransform: 'uppercase', letterSpacing: 1 }}>Assunto</label>
               <select value={filtroAssunto} onChange={e => setFiltroAssunto(e.target.value)} title="Filtrar por assunto"
-                style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '8px 12px', color: '#0A1628', fontSize: 12, fontWeight: 700 }}>
+                style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '8px 12px', color: 'rgb(var(--c-navy))', fontSize: 12, fontWeight: 700 }}>
                 <option value="">Todos os assuntos</option>
                 {assuntosEmUso.map(a => <option key={a} value={a}>{a}</option>)}
               </select>
@@ -1258,7 +1259,7 @@ const TrailsView: React.FC = () => {
                 <>
                   <label style={{ fontSize: 10, fontWeight: 900, color: '#8A9BB0', textTransform: 'uppercase', letterSpacing: 1, marginLeft: 8 }}>Setor</label>
                   <select value={filtroSetor} onChange={e => setFiltroSetor(e.target.value)} title="Filtrar por setor"
-                    style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '8px 12px', color: '#0A1628', fontSize: 12, fontWeight: 700 }}>
+                    style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '8px 12px', color: 'rgb(var(--c-navy))', fontSize: 12, fontWeight: 700 }}>
                     <option value="">Qualquer setor</option>
                     <option value="__todos__">Só trilhas para todos os setores</option>
                     {setoresTenant.map(s => <option key={s} value={s}>{s}</option>)}
@@ -1269,10 +1270,10 @@ const TrailsView: React.FC = () => {
           )}
           {trilhasFiltradas.length === 0 ? (
             <div style={{ textAlign: 'center', padding: 60, color: '#8A9BB0' }}>
-              <i className="fa-solid fa-folder-open" style={{ fontSize: 40, marginBottom: 16, display: 'block', color: '#C9A84C' }}></i>
-              <p style={{ fontWeight: 900, fontSize: 16, marginBottom: 8, color: '#0A1628' }}>Nenhuma trilha criada</p>
+              <i className="fa-solid fa-folder-open" style={{ fontSize: 40, marginBottom: 16, display: 'block', color: 'rgb(var(--c-gold))' }}></i>
+              <p style={{ fontWeight: 900, fontSize: 16, marginBottom: 8, color: 'rgb(var(--c-navy))' }}>Nenhuma trilha criada</p>
               {podeCriar ? (
-                <button onClick={() => iniciarEditar()} style={{ marginTop: 16, background: '#0A1628', border: 'none', color: '#ffffff', padding: '12px 24px', borderRadius: 12, cursor: 'pointer', fontWeight: 900, fontSize: 12, textTransform: 'uppercase' }}>
+                <button onClick={() => iniciarEditar()} style={{ marginTop: 16, background: 'rgb(var(--c-navy))', border: 'none', color: '#ffffff', padding: '12px 24px', borderRadius: 12, cursor: 'pointer', fontWeight: 900, fontSize: 12, textTransform: 'uppercase' }}>
                   <i className="fa-solid fa-plus" style={{ marginRight: 8 }}></i>Criar Primeira Trilha
                 </button>
               ) : (
@@ -1290,9 +1291,9 @@ const TrailsView: React.FC = () => {
                     <TrilhaCard trilha={t} isGestor={true} onEdit={() => iniciarEditar(t)} onDelete={() => deletarTrilha(t.id)} onView={() => abrirTrilha(t)} tenantLabels={superAdminGlobal ? rotulosCartorio(t) : undefined} />
                     <div style={{ marginTop: 16, padding: '12px 16px', background: '#f8fafc', borderRadius: 12, display: 'flex', justifyContent: 'space-between' }}>
                       <span style={{ fontSize: 11, color: '#8A9BB0' }}>
-                        <i className="fa-solid fa-users" style={{ marginRight: 6, color: '#0A1628' }}></i>{stats.total} participante{stats.total !== 1 ? 's' : ''}
+                        <i className="fa-solid fa-users" style={{ marginRight: 6, color: 'rgb(var(--c-navy))' }}></i>{stats.total} participante{stats.total !== 1 ? 's' : ''}
                       </span>
-                      <span style={{ fontSize: 11, color: '#C9A84C', fontWeight: 900 }}>
+                      <span style={{ fontSize: 11, color: 'rgb(var(--c-gold))', fontWeight: 900 }}>
                         {stats.concluidos} concluíd{stats.concluidos !== 1 ? 'os' : 'o'}
                       </span>
                     </div>
@@ -1308,7 +1309,7 @@ const TrailsView: React.FC = () => {
       {tab === 'criar' && isGestor && (
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
           <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 28, padding: 32 }}>
-            <h3 style={{ fontSize: 18, fontWeight: 900, color: '#0A1628', marginBottom: 24, textTransform: 'uppercase', letterSpacing: 1 }}>
+            <h3 style={{ fontSize: 18, fontWeight: 900, color: 'rgb(var(--c-navy))', marginBottom: 24, textTransform: 'uppercase', letterSpacing: 1 }}>
               {editando ? 'Editar Trilha' : 'Nova Trilha de Treinamento'}
             </h3>
 
@@ -1317,14 +1318,14 @@ const TrailsView: React.FC = () => {
                 <label style={{ fontSize: 10, fontWeight: 900, color: '#8A9BB0', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6 }}>Título da Trilha</label>
                 <input value={form.titulo} onChange={e => setForm(f => ({ ...f, titulo: e.target.value }))}
                   placeholder={tipoOrganizacao === 'empresa' ? 'Ex: Trilha do Atendente · Integração de Novos Colaboradores' : 'Ex: Trilha do Atendente · Onboarding Notarial'}
-                  style={{ width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 16px', color: '#0A1628', fontSize: 14 }} />
+                  style={{ width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 16px', color: 'rgb(var(--c-navy))', fontSize: 14 }} />
               </div>
               <div>
                 <label style={{ fontSize: 10, fontWeight: 900, color: '#8A9BB0', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6 }}>Descrição</label>
                 <textarea value={form.descricao} onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))}
                   placeholder="Descreva o objetivo e o público desta trilha"
                   rows={2}
-                  style={{ width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 16px', color: '#0A1628', fontSize: 14, resize: 'vertical' }} />
+                  style={{ width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 16px', color: 'rgb(var(--c-navy))', fontSize: 14, resize: 'vertical' }} />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
@@ -1332,14 +1333,14 @@ const TrailsView: React.FC = () => {
                   <label style={{ fontSize: 10, fontWeight: 900, color: '#8A9BB0', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6 }}>Instrutor</label>
                   <input value={form.instrutor} onChange={e => setForm(f => ({ ...f, instrutor: e.target.value }))}
                     placeholder="Nome do instrutor responsável"
-                    style={{ width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 16px', color: '#0A1628', fontSize: 14 }} />
+                    style={{ width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 16px', color: 'rgb(var(--c-navy))', fontSize: 14 }} />
                 </div>
                 <div>
                   <label style={{ fontSize: 10, fontWeight: 900, color: '#8A9BB0', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6 }}>Carga Horária (horas)</label>
                   <input type="number" min={0} step={0.5} value={form.cargaHoraria}
                     onChange={e => setForm(f => ({ ...f, cargaHoraria: e.target.value === '' ? '' : Number(e.target.value) }))}
                     placeholder="Ex: 2"
-                    style={{ width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 16px', color: '#0A1628', fontSize: 14 }} />
+                    style={{ width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 16px', color: 'rgb(var(--c-navy))', fontSize: 14 }} />
                 </div>
               </div>
 
@@ -1347,7 +1348,7 @@ const TrailsView: React.FC = () => {
                 <label style={{ fontSize: 10, fontWeight: 900, color: '#8A9BB0', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6 }}>Modalidade (exibida no certificado)</label>
                 <input value={form.modalidade} onChange={e => setForm(f => ({ ...f, modalidade: e.target.value }))}
                   placeholder="Ex: EAD assíncrona"
-                  style={{ width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 16px', color: '#0A1628', fontSize: 14 }} />
+                  style={{ width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 16px', color: 'rgb(var(--c-navy))', fontSize: 14 }} />
               </div>
 
               <div>
@@ -1355,7 +1356,7 @@ const TrailsView: React.FC = () => {
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   {FORMATOS.map(f => (
                     <button key={f.value} onClick={() => setForm(prev => ({ ...prev, formato: prev.formato === f.value ? '' : f.value }))}
-                      style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 10, border: `1px solid ${form.formato === f.value ? '#C9A84C' : '#e2e8f0'}`, background: form.formato === f.value ? '#F5EDD8' : '#f8fafc', color: form.formato === f.value ? '#7a5c1e' : '#8A9BB0', cursor: 'pointer', fontSize: 11, fontWeight: 900, textTransform: 'uppercase' }}>
+                      style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 10, border: `1px solid ${form.formato === f.value ? 'rgb(var(--c-gold))' : '#e2e8f0'}`, background: form.formato === f.value ? 'rgb(var(--c-gold-bg))' : '#f8fafc', color: form.formato === f.value ? 'rgb(var(--c-gold-strong))' : '#8A9BB0', cursor: 'pointer', fontSize: 11, fontWeight: 900, textTransform: 'uppercase' }}>
                       <i className={`fa-solid ${f.icon}`}></i>{f.label}
                     </button>
                   ))}
@@ -1371,7 +1372,7 @@ const TrailsView: React.FC = () => {
                     else { setAssuntoOutro(false); setForm(f => ({ ...f, assunto: e.target.value })); }
                   }}
                   title="Assunto da trilha"
-                  style={{ width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 16px', color: '#0A1628', fontSize: 14 }}>
+                  style={{ width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 16px', color: 'rgb(var(--c-navy))', fontSize: 14 }}>
                   <option value="">Selecione o assunto...</option>
                   {ASSUNTOS_PADRAO.map(a => <option key={a} value={a}>{a}</option>)}
                   <option value="__outro__">Outro (digitar)...</option>
@@ -1379,7 +1380,7 @@ const TrailsView: React.FC = () => {
                 {assuntoOutro && (
                   <input value={form.assunto} onChange={e => setForm(f => ({ ...f, assunto: e.target.value }))} maxLength={60}
                     placeholder="Digite o assunto"
-                    style={{ width: '100%', marginTop: 8, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 16px', color: '#0A1628', fontSize: 14 }} />
+                    style={{ width: '100%', marginTop: 8, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 16px', color: 'rgb(var(--c-navy))', fontSize: 14 }} />
                 )}
               </div>
 
@@ -1413,8 +1414,8 @@ const TrailsView: React.FC = () => {
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   {PERFIS.map(p => (
                     <button key={p.value} onClick={() => togglePerfil(p.value)}
-                      style={{ padding: '8px 16px', borderRadius: 10, border: `1px solid ${form.perfis.includes(p.value) ? '#C9A84C' : '#e2e8f0'}`, background: form.perfis.includes(p.value) ? '#F5EDD8' : '#f8fafc', color: form.perfis.includes(p.value) ? '#7a5c1e' : '#8A9BB0', cursor: 'pointer', fontSize: 11, fontWeight: 900, textTransform: 'uppercase' }}>
-                      {form.perfis.includes(p.value) && <i className="fa-solid fa-check" style={{ marginRight: 6, color: '#C9A84C' }}></i>}{p.label}
+                      style={{ padding: '8px 16px', borderRadius: 10, border: `1px solid ${form.perfis.includes(p.value) ? 'rgb(var(--c-gold))' : '#e2e8f0'}`, background: form.perfis.includes(p.value) ? 'rgb(var(--c-gold-bg))' : '#f8fafc', color: form.perfis.includes(p.value) ? 'rgb(var(--c-gold-strong))' : '#8A9BB0', cursor: 'pointer', fontSize: 11, fontWeight: 900, textTransform: 'uppercase' }}>
+                      {form.perfis.includes(p.value) && <i className="fa-solid fa-check" style={{ marginRight: 6, color: 'rgb(var(--c-gold))' }}></i>}{p.label}
                     </button>
                   ))}
                 </div>
@@ -1428,11 +1429,11 @@ const TrailsView: React.FC = () => {
               </div>
 
               {!editando && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#F5EDD8', border: '1px solid #C9A84C40', borderRadius: 10, padding: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgb(var(--c-gold-bg))', border: '1px solid rgb(var(--c-gold) / 0.25)', borderRadius: 10, padding: 10 }}>
                   <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer', color: '#8A9BB0', fontSize: 13 }}>
                     <input type="checkbox" checked={form.notificarEmail} onChange={e => setForm(f => ({ ...f, notificarEmail: e.target.checked }))} style={{ marginTop: 2 }} />
                     <span>
-                      <i className="fa-solid fa-envelope" style={{ color: '#C9A84C', marginRight: 6 }}></i>
+                      <i className="fa-solid fa-envelope" style={{ color: 'rgb(var(--c-gold))', marginRight: 6 }}></i>
                       Notificar por e-mail ao publicar
                       <span style={{ display: 'block', fontSize: 11, color: '#8A9BB0', marginTop: 2 }}>
                         Por padrão a trilha não dispara e-mail — marque só se os colaboradores do perfil precisam ser avisados imediatamente.
@@ -1465,10 +1466,10 @@ const TrailsView: React.FC = () => {
             <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: 24 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                 <div>
-                  <p style={{ fontSize: 13, fontWeight: 900, color: '#0A1628', textTransform: 'uppercase', letterSpacing: 1 }}>Módulos</p>
+                  <p style={{ fontSize: 13, fontWeight: 900, color: 'rgb(var(--c-navy))', textTransform: 'uppercase', letterSpacing: 1 }}>Módulos</p>
                   <p style={{ fontSize: 10, color: '#8A9BB0', marginTop: 2 }}>★ obrigatório = conta para conclusão · ◇ Opcional = complementar</p>
                 </div>
-                <button onClick={addModulo} style={{ background: '#0A1628', border: 'none', color: '#ffffff', padding: '8px 16px', borderRadius: 10, cursor: 'pointer', fontSize: 11, fontWeight: 900, textTransform: 'uppercase' }}>
+                <button onClick={addModulo} style={{ background: 'rgb(var(--c-navy))', border: 'none', color: '#ffffff', padding: '8px 16px', borderRadius: 10, cursor: 'pointer', fontSize: 11, fontWeight: 900, textTransform: 'uppercase' }}>
                   <i className="fa-solid fa-plus" style={{ marginRight: 6 }}></i>Módulo
                 </button>
               </div>
@@ -1494,7 +1495,7 @@ const TrailsView: React.FC = () => {
                 Cancelar
               </button>
               <button onClick={salvarTrilha} disabled={saving || !form.titulo || form.modulos.length === 0 || form.perfis.length === 0}
-                style={{ padding: '12px 32px', borderRadius: 12, border: 'none', background: saving || !form.titulo || form.modulos.length === 0 || form.perfis.length === 0 ? '#e2e8f0' : '#0A1628', color: saving || !form.titulo || form.modulos.length === 0 || form.perfis.length === 0 ? '#8A9BB0' : '#ffffff', cursor: saving || !form.titulo || form.modulos.length === 0 || form.perfis.length === 0 ? 'not-allowed' : 'pointer', fontWeight: 900, fontSize: 12, textTransform: 'uppercase' }}>
+                style={{ padding: '12px 32px', borderRadius: 12, border: 'none', background: saving || !form.titulo || form.modulos.length === 0 || form.perfis.length === 0 ? '#e2e8f0' : 'rgb(var(--c-navy))', color: saving || !form.titulo || form.modulos.length === 0 || form.perfis.length === 0 ? '#8A9BB0' : '#ffffff', cursor: saving || !form.titulo || form.modulos.length === 0 || form.perfis.length === 0 ? 'not-allowed' : 'pointer', fontWeight: 900, fontSize: 12, textTransform: 'uppercase' }}>
                 <i className="fa-solid fa-floppy-disk" style={{ marginRight: 8 }}></i>
                 {saving ? 'Salvando...' : editando ? 'Salvar Alterações' : 'Criar Trilha'}
               </button>
@@ -1518,11 +1519,11 @@ const TrailsView: React.FC = () => {
                   <div key={t.id} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 24, padding: 24 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                       <div>
-                        <p style={{ fontSize: 15, fontWeight: 900, color: '#0A1628' }}>{t.titulo}</p>
+                        <p style={{ fontSize: 15, fontWeight: 900, color: 'rgb(var(--c-navy))' }}>{t.titulo}</p>
                         <p style={{ fontSize: 11, color: '#8A9BB0', marginTop: 2 }}>{t.modulos.length} módulos · {t.perfis.map(p => PERFIL_LABEL[p]).join(', ')}</p>
                       </div>
                       <div style={{ textAlign: 'right' }}>
-                        <p style={{ fontSize: 22, fontWeight: 900, color: '#C9A84C' }}>{progs.filter(p => p.concluida).length}</p>
+                        <p style={{ fontSize: 22, fontWeight: 900, color: 'rgb(var(--c-gold))' }}>{progs.filter(p => p.concluida).length}</p>
                         <p style={{ fontSize: 10, color: '#8A9BB0', textTransform: 'uppercase' }}>de {progs.length} concluídos</p>
                       </div>
                     </div>
@@ -1530,19 +1531,19 @@ const TrailsView: React.FC = () => {
                       <div style={{ display: 'grid', gap: 8 }}>
                         {progs.map(p => (
                           <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', background: '#f8fafc', borderRadius: 12 }}>
-                            <div style={{ width: 32, height: 32, borderRadius: 10, background: '#0A1628', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 900, color: '#C9A84C', flexShrink: 0 }}>
+                            <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgb(var(--c-navy))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 900, color: 'rgb(var(--c-gold))', flexShrink: 0 }}>
                               {p.userName?.substring(0, 2).toUpperCase() || '??'}
                             </div>
                             <div style={{ flex: 1, minWidth: 0 }}>
-                              <p style={{ fontSize: 12, fontWeight: 700, color: '#0A1628', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.userName}</p>
+                              <p style={{ fontSize: 12, fontWeight: 700, color: 'rgb(var(--c-navy))', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.userName}</p>
                               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                                 <div style={{ flex: 1, background: '#e2e8f0', borderRadius: 999, height: 4, overflow: 'hidden' }}>
-                                  <div style={{ height: '100%', borderRadius: 999, background: p.concluida ? '#C9A84C' : '#0A1628', width: `${p.percentualObrigatorios}%` }}></div>
+                                  <div style={{ height: '100%', borderRadius: 999, background: p.concluida ? 'rgb(var(--c-gold))' : 'rgb(var(--c-navy))', width: `${p.percentualObrigatorios}%` }}></div>
                                 </div>
-                                <span style={{ fontSize: 10, fontWeight: 900, color: p.concluida ? '#C9A84C' : '#8A9BB0', flexShrink: 0 }}>{p.percentualObrigatorios}%</span>
+                                <span style={{ fontSize: 10, fontWeight: 900, color: p.concluida ? 'rgb(var(--c-gold))' : '#8A9BB0', flexShrink: 0 }}>{p.percentualObrigatorios}%</span>
                               </div>
                             </div>
-                            {p.concluida && <i className="fa-solid fa-trophy" style={{ color: '#C9A84C', fontSize: 16 }}></i>}
+                            {p.concluida && <i className="fa-solid fa-trophy" style={{ color: 'rgb(var(--c-gold))', fontSize: 16 }}></i>}
                           </div>
                         ))}
                       </div>

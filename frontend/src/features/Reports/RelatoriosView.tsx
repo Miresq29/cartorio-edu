@@ -14,6 +14,7 @@ import { useApp } from '../../context/AppContext';
 import { FormatoTreinamento, FORMATO_LABEL } from '../../utils/formatoTreinamento';
 import RelatorioErrosPanel from './RelatorioErrosPanel';
 import { useItensLiberados, moduloLiberado } from '../../hooks/useItensLiberados';
+import { alfa, cssVarsTema, logoTema } from '../../utils/tema';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -124,7 +125,7 @@ const StatCard: React.FC<{
   <div className="bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
     <div className="flex items-start justify-between mb-3">
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center`}
-        style={{ background: color + '15' }}>
+        style={{ background: alfa(color, '15') }}>
         <i className={`fa-solid ${icon} text-base`} style={{ color }}></i>
       </div>
       {trend && (
@@ -520,37 +521,38 @@ const RelatoriosView: React.FC = () => {
       : '<tr><td colspan="4">Nenhum certificado emitido.</td></tr>';
 
     win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Ficha de Capacitação</title>
-<style>
+<style>${cssVarsTema()}
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Dancing+Script:wght@700&display=swap');
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family: Arial, sans-serif; color:#1e293b; background:white; padding:40px; font-size:12px; }
-.cover { text-align:center; padding:34px 24px; margin-bottom:32px; border:3px double #c9a84c; position:relative; }
-.corner { position:absolute; width:22px; height:22px; border:2px solid #c9a84c; }
+.cover { text-align:center; padding:34px 24px; margin-bottom:32px; border:3px double rgb(var(--c-gold)); position:relative; }
+.corner { position:absolute; width:22px; height:22px; border:2px solid rgb(var(--c-gold)); }
 .corner.tl { top:8px; left:8px; border-right:none; border-bottom:none; }
 .corner.tr { top:8px; right:8px; border-left:none; border-bottom:none; }
 .corner.bl { bottom:8px; left:8px; border-right:none; border-top:none; }
 .corner.br { bottom:8px; right:8px; border-left:none; border-top:none; }
 .cover-logo { font-family:'Playfair Display', serif; font-size:34px; font-weight:900; color:#0f172a; letter-spacing:-2px; }
-.cover-logo span { color:#c9a84c; }
+.cover-logo span { color:rgb(var(--c-gold)); }
 .cover-title { font-size:18px; font-weight:900; color:#1e293b; margin-top:12px; text-transform:uppercase; letter-spacing:2px; }
-.cover-sub { font-size:12px; color:#8a6e2f; margin-top:6px; text-transform:uppercase; letter-spacing:2px; }
+.cover-sub { font-size:12px; color:rgb(var(--c-gold-body)); margin-top:6px; text-transform:uppercase; letter-spacing:2px; }
 .info { display:flex; gap:24px; justify-content:center; flex-wrap:wrap; margin-top:16px; font-size:11px; color:#475569; }
 .section { margin-bottom:24px; page-break-inside:avoid; }
-.section-title { background:#0f172a; color:white; padding:8px 14px; border-radius:8px 8px 0 0; font-size:12px; font-weight:900; text-transform:uppercase; letter-spacing:1px; border-left:4px solid #c9a84c; }
+.section-title { background:rgb(var(--c-navy)); color:white; padding:8px 14px; border-radius:8px 8px 0 0; font-size:12px; font-weight:900; text-transform:uppercase; letter-spacing:1px; border-left:4px solid rgb(var(--c-gold)); }
 table { width:100%; border-collapse:collapse; font-size:11px; }
-th, td { text-align:left; padding:6px 8px; border-bottom:1px solid #e8d9a0; }
-th { background:#fdfbf5; color:#7a5c1e; text-transform:uppercase; font-size:9px; letter-spacing:1px; }
+th, td { text-align:left; padding:6px 8px; border-bottom:1px solid rgb(var(--c-gold-line)); }
+th { background:#fdfbf5; color:rgb(var(--c-gold-strong)); text-transform:uppercase; font-size:9px; letter-spacing:1px; }
 td { background:#fdfbf5; }
 .assinatura { display:flex; justify-content:center; margin-top:40px; page-break-inside:avoid; }
 .assinatura-bloco { text-align:center; }
-.assinatura-nome { font-family:'Dancing Script', cursive; font-size:30px; color:#1e3a5f; line-height:1; margin-bottom:-2px; }
+.assinatura-nome { font-family:'Dancing Script', cursive; font-size:30px; color:rgb(var(--c-navy-2)); line-height:1; margin-bottom:-2px; }
 .assinatura-linha { border-top:1px solid #bbb; padding-top:6px; font-size:10px; color:#888; min-width:260px; }
-.footer { text-align:center; margin-top:24px; padding-top:16px; border-top:1px solid #e8d9a0; font-size:9px; color:#a8882f; }
+.footer { text-align:center; margin-top:24px; padding-top:16px; border-top:1px solid rgb(var(--c-gold-line)); font-size:9px; color:rgb(var(--c-gold-soft)); }
 .verificacao { text-align:center; margin-top:6px; font-size:9px; color:#bbb; letter-spacing:1px; text-transform:uppercase; }
 @media print { body { padding:20px; } .section, .assinatura { page-break-inside:avoid; } }
 </style></head><body>
 <div class="cover">
   <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+  ${logoTema() ? `<div style="text-align:center;margin-bottom:14px"><img src="${logoTema()}" alt="" style="max-height:60px;max-width:260px;object-fit:contain"></div>` : ''}
   <div class="cover-logo">MJ <span>Consultoria</span></div>
   <div class="cover-title">Ficha de Capacitação</div>
   <div class="cover-sub">Evidência individual de treinamento</div>
@@ -637,43 +639,44 @@ td { background:#fdfbf5; }
       : '<tr><td colspan="7">Nenhum registro no período.</td></tr>';
 
     win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório de Treinamento</title>
-<style>
+<style>${cssVarsTema()}
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Dancing+Script:wght@700&display=swap');
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family: Arial, sans-serif; color:#1e293b; background:white; padding:40px; font-size:12px; }
-.cover { text-align:center; padding:34px 24px; margin-bottom:32px; border:3px double #c9a84c; position:relative; }
-.corner { position:absolute; width:22px; height:22px; border:2px solid #c9a84c; }
+.cover { text-align:center; padding:34px 24px; margin-bottom:32px; border:3px double rgb(var(--c-gold)); position:relative; }
+.corner { position:absolute; width:22px; height:22px; border:2px solid rgb(var(--c-gold)); }
 .corner.tl { top:8px; left:8px; border-right:none; border-bottom:none; }
 .corner.tr { top:8px; right:8px; border-left:none; border-bottom:none; }
 .corner.bl { bottom:8px; left:8px; border-right:none; border-top:none; }
 .corner.br { bottom:8px; right:8px; border-left:none; border-top:none; }
 .cover-logo { font-family:'Playfair Display', serif; font-size:34px; font-weight:900; color:#0f172a; letter-spacing:-2px; }
-.cover-logo span { color:#c9a84c; }
+.cover-logo span { color:rgb(var(--c-gold)); }
 .cover-title { font-size:18px; font-weight:900; color:#1e293b; margin-top:12px; text-transform:uppercase; letter-spacing:2px; }
-.cover-sub { font-size:12px; color:#8a6e2f; margin-top:6px; text-transform:uppercase; letter-spacing:2px; }
+.cover-sub { font-size:12px; color:rgb(var(--c-gold-body)); margin-top:6px; text-transform:uppercase; letter-spacing:2px; }
 .info { display:flex; gap:24px; justify-content:center; flex-wrap:wrap; margin-top:16px; font-size:11px; color:#475569; }
 .section { margin-bottom:24px; }
-.section-title { background:#0f172a; color:white; padding:8px 14px; border-radius:8px 8px 0 0; font-size:12px; font-weight:900; text-transform:uppercase; letter-spacing:1px; border-left:4px solid #c9a84c; }
+.section-title { background:rgb(var(--c-navy)); color:white; padding:8px 14px; border-radius:8px 8px 0 0; font-size:12px; font-weight:900; text-transform:uppercase; letter-spacing:1px; border-left:4px solid rgb(var(--c-gold)); }
 table { width:100%; border-collapse:collapse; font-size:10.5px; }
-th, td { text-align:left; padding:6px 8px; border-bottom:1px solid #e8d9a0; }
-th { background:#fdfbf5; color:#7a5c1e; text-transform:uppercase; font-size:9px; letter-spacing:1px; }
+th, td { text-align:left; padding:6px 8px; border-bottom:1px solid rgb(var(--c-gold-line)); }
+th { background:#fdfbf5; color:rgb(var(--c-gold-strong)); text-transform:uppercase; font-size:9px; letter-spacing:1px; }
 td { background:#fdfbf5; }
 thead { display:table-header-group; }
 tr { page-break-inside:avoid; }
 .kpis { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:28px; }
-.kpi { border:1px solid #e8d9a0; border-radius:8px; padding:12px; text-align:center; }
+.kpi { border:1px solid rgb(var(--c-gold-line)); border-radius:8px; padding:12px; text-align:center; }
 .kpi .v { font-size:22px; font-weight:900; color:#0f172a; }
-.kpi .l { font-size:8.5px; color:#7a5c1e; text-transform:uppercase; letter-spacing:1px; margin-top:4px; }
+.kpi .l { font-size:8.5px; color:rgb(var(--c-gold-strong)); text-transform:uppercase; letter-spacing:1px; margin-top:4px; }
 .assinatura { display:flex; justify-content:center; margin-top:40px; page-break-inside:avoid; }
 .assinatura-bloco { text-align:center; }
-.assinatura-nome { font-family:'Dancing Script', cursive; font-size:30px; color:#1e3a5f; line-height:1; margin-bottom:-2px; }
+.assinatura-nome { font-family:'Dancing Script', cursive; font-size:30px; color:rgb(var(--c-navy-2)); line-height:1; margin-bottom:-2px; }
 .assinatura-linha { border-top:1px solid #bbb; padding-top:6px; font-size:10px; color:#888; min-width:260px; }
-.footer { text-align:center; margin-top:24px; padding-top:16px; border-top:1px solid #e8d9a0; font-size:9px; color:#a8882f; }
+.footer { text-align:center; margin-top:24px; padding-top:16px; border-top:1px solid rgb(var(--c-gold-line)); font-size:9px; color:rgb(var(--c-gold-soft)); }
 .verificacao { text-align:center; margin-top:6px; font-size:9px; color:#bbb; letter-spacing:1px; text-transform:uppercase; }
 @media print { body { padding:20px; } .assinatura { page-break-inside:avoid; } }
 </style></head><body>
 <div class="cover">
   <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+  ${logoTema() ? `<div style="text-align:center;margin-bottom:14px"><img src="${logoTema()}" alt="" style="max-height:60px;max-width:260px;object-fit:contain"></div>` : ''}
   <div class="cover-logo">MJ <span>Consultoria</span></div>
   <div class="cover-title">Relatório de Treinamento e Conformidade</div>
   <div class="cover-sub">${escapeHtml(tenantName || tenantId)}</div>
@@ -1083,7 +1086,7 @@ tr { page-break-inside:avoid; }
                           </td>
                           <td className="p-3">
                             <button onClick={() => gerarFichaColaborador(c.id, c.name)}
-                              className="flex items-center gap-1.5 text-[9px] bg-white border border-slate-200 hover:border-gold text-slate-600 hover:text-[#8a6e2f] px-3 py-1.5 rounded-lg font-black uppercase tracking-widest transition-all whitespace-nowrap">
+                              className="flex items-center gap-1.5 text-[9px] bg-white border border-slate-200 hover:border-gold text-slate-600 hover:text-[rgb(var(--c-gold-body))] px-3 py-1.5 rounded-lg font-black uppercase tracking-widest transition-all whitespace-nowrap">
                               <i className="fa-solid fa-file-pdf"></i>Gerar
                             </button>
                           </td>
@@ -1290,7 +1293,7 @@ tr { page-break-inside:avoid; }
                             <td className="p-3 text-slate-500">{c.cargo || '–'}</td>
                             <td className="p-3 text-slate-700 font-bold">{c.media !== null ? `${c.media}%` : '–'}</td>
                             <td className="p-3">
-                              <span className="text-[10px] font-black px-2 py-0.5 rounded-lg" style={{ background: cor + '15', color: cor }}>
+                              <span className="text-[10px] font-black px-2 py-0.5 rounded-lg" style={{ background: alfa(cor, '15'), color: cor }}>
                                 {c.nivel}
                               </span>
                             </td>

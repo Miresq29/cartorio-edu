@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { cssVarsTema, logoTema } from '../../utils/tema';
 
 interface Section {
   id: string;
@@ -310,37 +311,38 @@ const TutorialView: React.FC = () => {
 <head>
 <meta charset="UTF-8">
 <title>Manual do Usuário — MJ Consultoria</title>
-<style>
+<style>${cssVarsTema()}
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family: Arial, sans-serif; color:#1e293b; background:white; padding:40px; font-size:12px; }
-.cover { text-align:center; padding:60px 0 40px; border-bottom:3px solid #c9a84c; margin-bottom:40px; }
+.cover { text-align:center; padding:60px 0 40px; border-bottom:3px solid rgb(var(--c-gold)); margin-bottom:40px; }
 .cover-logo { font-size:44px; font-weight:900; color:#0f172a; letter-spacing:-2px; }
-.cover-logo span { color:#c9a84c; }
+.cover-logo span { color:rgb(var(--c-gold)); }
 .cover-title { font-size:26px; font-weight:900; color:#1e293b; margin-top:16px; text-transform:uppercase; letter-spacing:2px; }
-.cover-sub { font-size:12px; color:#8a6e2f; margin-top:8px; text-transform:uppercase; letter-spacing:3px; }
-.cover-date { font-size:11px; color:#a8882f; margin-top:24px; }
-.toc { margin-bottom:40px; padding:24px; background:#fdfbf5; border-radius:12px; border:1px solid #e8d9a0; }
-.toc-title { font-size:13px; font-weight:900; color:#7a5c1e; text-transform:uppercase; letter-spacing:2px; margin-bottom:16px; }
+.cover-sub { font-size:12px; color:rgb(var(--c-gold-body)); margin-top:8px; text-transform:uppercase; letter-spacing:3px; }
+.cover-date { font-size:11px; color:rgb(var(--c-gold-soft)); margin-top:24px; }
+.toc { margin-bottom:40px; padding:24px; background:#fdfbf5; border-radius:12px; border:1px solid rgb(var(--c-gold-line)); }
+.toc-title { font-size:13px; font-weight:900; color:rgb(var(--c-gold-strong)); text-transform:uppercase; letter-spacing:2px; margin-bottom:16px; }
 .toc-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
-.toc-item { font-size:11px; color:#7a5c1e; padding:3px 0; }
-.toc-item b { color:#c9a84c; margin-right:6px; }
+.toc-item { font-size:11px; color:rgb(var(--c-gold-strong)); padding:3px 0; }
+.toc-item b { color:rgb(var(--c-gold)); margin-right:6px; }
 .section { margin-bottom:32px; page-break-inside:avoid; }
-.section-header { background:#0f172a; color:white; padding:14px 20px; border-radius:10px 10px 0 0; display:flex; align-items:center; gap:16px; border-left:4px solid #c9a84c; }
-.section-shot { display:block; width:100%; border:1px solid #e8d9a0; border-top:none; }
-.section-num { font-size:22px; font-weight:900; color:#c9a84c; }
+.section-header { background:rgb(var(--c-navy)); color:white; padding:14px 20px; border-radius:10px 10px 0 0; display:flex; align-items:center; gap:16px; border-left:4px solid rgb(var(--c-gold)); }
+.section-shot { display:block; width:100%; border:1px solid rgb(var(--c-gold-line)); border-top:none; }
+.section-num { font-size:22px; font-weight:900; color:rgb(var(--c-gold)); }
 .section-title { font-size:16px; font-weight:900; text-transform:uppercase; letter-spacing:1px; }
-.section-subtitle { font-size:10px; color:#c9a84c; margin-top:2px; text-transform:uppercase; letter-spacing:1px; }
-.step { display:flex; gap:14px; padding:14px 20px; background:#fdfbf5; border:1px solid #e8d9a0; border-top:none; }
+.section-subtitle { font-size:10px; color:rgb(var(--c-gold)); margin-top:2px; text-transform:uppercase; letter-spacing:1px; }
+.step { display:flex; gap:14px; padding:14px 20px; background:#fdfbf5; border:1px solid rgb(var(--c-gold-line)); border-top:none; }
 .step:last-child { border-radius:0 0 10px 10px; }
-.step-number { min-width:26px; height:26px; background:#c9a84c; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:900; flex-shrink:0; margin-top:2px; }
-.step-title { font-size:12px; font-weight:700; color:#7a5c1e; margin-bottom:5px; }
+.step-number { min-width:26px; height:26px; background:rgb(var(--c-gold)); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:900; flex-shrink:0; margin-top:2px; }
+.step-title { font-size:12px; font-weight:700; color:rgb(var(--c-gold-strong)); margin-bottom:5px; }
 .step-desc { font-size:11px; color:#4a3a1a; line-height:1.7; }
-.footer { text-align:center; margin-top:60px; padding-top:20px; border-top:1px solid #e8d9a0; font-size:10px; color:#a8882f; }
+.footer { text-align:center; margin-top:60px; padding-top:20px; border-top:1px solid rgb(var(--c-gold-line)); font-size:10px; color:rgb(var(--c-gold-soft)); }
 @media print { body { padding:20px; } .section { page-break-inside:avoid; } }
 </style>
 </head>
 <body>
 <div class="cover">
+  ${logoTema() ? `<div style="text-align:center;margin-bottom:14px"><img src="${logoTema()}" alt="" style="max-height:60px;max-width:260px;object-fit:contain"></div>` : ''}
   <div class="cover-logo">MJ <span>Consultoria</span></div>
   <div class="cover-title">Manual do Usuário</div>
   <div class="cover-sub">Integra-Academy · Capacitação para empresas e cartórios</div>
@@ -373,7 +375,7 @@ ${allContent}
           <h2 className="text-3xl font-black text-navy italic uppercase tracking-tighter">
             Tutorial da <span className="text-gold">Plataforma</span>
           </h2>
-          <p className="text-[#8a6e2f] text-xs font-black uppercase tracking-widest mt-1">
+          <p className="text-[rgb(var(--c-gold-body))] text-xs font-black uppercase tracking-widest mt-1">
             MJ Consultoria — Guia Completo do Usuário
           </p>
         </div>
@@ -388,7 +390,7 @@ ${allContent}
       {/* Info */}
       <div className="bg-gold/8 border border-gold/25 rounded-2xl p-5 flex items-start gap-3">
         <i className="fa-solid fa-circle-info text-gold text-lg mt-0.5 flex-shrink-0"></i>
-        <p className="text-sm text-[#7a5c1e] leading-relaxed">
+        <p className="text-sm text-[rgb(var(--c-gold-strong))] leading-relaxed">
           Bem-vindo à Integra-Academy, a plataforma de capacitação da MJ Consultoria para empresas de qualquer segmento
           e para cartórios. Selecione um módulo para ver as instruções detalhadas,
           ou clique em <strong className="text-gold">Baixar PDF</strong> para salvar o manual completo.
@@ -460,8 +462,8 @@ ${allContent}
                   <span className="text-xs font-black text-navy">{i + 1}</span>
                 </div>
                 <div>
-                  <p className="text-sm font-black text-[#7a5c1e] mb-1.5">{step.title}</p>
-                  <p className="text-sm text-[#8a6e2f] leading-relaxed">{step.desc}</p>
+                  <p className="text-sm font-black text-[rgb(var(--c-gold-strong))] mb-1.5">{step.title}</p>
+                  <p className="text-sm text-[rgb(var(--c-gold-body))] leading-relaxed">{step.desc}</p>
                 </div>
               </div>
             ))}
@@ -472,7 +474,7 @@ ${allContent}
             {currentIdx > 0 ? (
               <button
                 onClick={() => setActiveSection(visibleSections[currentIdx - 1].id)}
-                className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gold/30 hover:border-gold/60 text-[#7a5c1e] rounded-xl text-xs font-black uppercase transition-all"
+                className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gold/30 hover:border-gold/60 text-[rgb(var(--c-gold-strong))] rounded-xl text-xs font-black uppercase transition-all"
               >
                 <i className="fa-solid fa-arrow-left"></i> Anterior
               </button>

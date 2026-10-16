@@ -10,10 +10,11 @@ import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
 import { ProgressoTrilhaDoc, trilhaConcluida, modulosConcluidos, progressoDaTrilha, trilhasDoAluno } from '../../utils/progressoTrilha';
 import { useItensLiberados } from '../../hooks/useItensLiberados';
+import { alfa } from '../../utils/tema';
 
-const GOLD   = '#C9A84C';
-const NAVY   = '#0D1B3E';
-const NAVY2  = '#1A2A52';
+const GOLD   = 'rgb(var(--c-gold))';
+const NAVY   = 'rgb(var(--c-navy))';
+const NAVY2  = 'rgb(var(--c-navy-2))';
 const GREEN  = '#059669';
 const RED    = '#DC2626';
 const AMBER  = '#D97706';
@@ -60,7 +61,7 @@ function calcPendencias(exames:ExameResultado[]):Pendencia[] {
 const Tip:React.FC<any> = ({active,payload,label}) => {
   if(!active||!payload?.length) return null;
   return (
-    <div style={{background:'#fff',border:'1px solid #E8D5A3',borderRadius:10,padding:'8px 12px',fontSize:11}}>
+    <div style={{background:'#fff',border:'1px solid rgb(var(--c-gold-line))',borderRadius:10,padding:'8px 12px',fontSize:11}}>
       {label && <p style={{fontWeight:900,color:NAVY,marginBottom:4}}>{label}</p>}
       {payload.map((p:any,i:number)=>(
         <p key={i} style={{color:p.color,fontWeight:700}}>{p.name}: {p.value}</p>
@@ -70,9 +71,9 @@ const Tip:React.FC<any> = ({active,payload,label}) => {
 };
 
 const KPI:React.FC<{label:string;value:string|number;sub?:string;icon:string;color:string;trend?:number}> = ({label,value,sub,icon,color,trend}) => (
-  <div style={{background:'#fff',border:'1px solid #E8D5A3',borderRadius:14,padding:20,boxShadow:'0 1px 4px rgba(0,0,0,0.06)'}}>
+  <div style={{background:'#fff',border:'1px solid rgb(var(--c-gold-line))',borderRadius:14,padding:20,boxShadow:'0 1px 4px rgba(0,0,0,0.06)'}}>
     <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:12}}>
-      <div style={{width:36,height:36,borderRadius:10,background:color+'20',display:'flex',alignItems:'center',justifyContent:'center'}}>
+      <div style={{width:36,height:36,borderRadius:10,background:alfa(color,'20'),display:'flex',alignItems:'center',justifyContent:'center'}}>
         <i className={'fa-solid '+icon} style={{color,fontSize:14}}></i>
       </div>
       {trend!==undefined&&(
@@ -150,7 +151,7 @@ const ColabDashboard:React.FC<{trilhas:Trilha[];progresso:TrilhaProg[];quizResul
     }));
   },[myRes]);
 
-  const card = {background:'#fff',border:'1px solid #E8D5A3',borderRadius:14,padding:20,boxShadow:'0 1px 4px rgba(0,0,0,0.06)'};
+  const card = {background:'#fff',border:'1px solid rgb(var(--c-gold-line))',borderRadius:14,padding:20,boxShadow:'0 1px 4px rgba(0,0,0,0.06)'};
 
   return (
     <div style={{display:'flex',flexDirection:'column',gap:20}}>
@@ -183,7 +184,7 @@ const ColabDashboard:React.FC<{trilhas:Trilha[];progresso:TrilhaProg[];quizResul
           <span style={{fontSize:12,fontWeight:900,color:NAVY}}>Progresso Geral</span>
           <span style={{fontSize:12,fontWeight:900,color:GOLD}}>{gPct}%</span>
         </div>
-        <div style={{width:'100%',background:'#F5EDD8',borderRadius:99,height:8}}>
+        <div style={{width:'100%',background:'rgb(var(--c-gold-bg))',borderRadius:99,height:8}}>
           <div style={{width:`${gPct}%`,background:GOLD,height:8,borderRadius:99,transition:'width 0.7s'}}></div>
         </div>
         <p style={{fontSize:10,color:'#8A9BB0',marginTop:6}}>Aprovacao minima: <strong style={{color:NAVY}}>70%</strong> · Taxonomia de Bloom Medio</p>
@@ -198,17 +199,17 @@ const ColabDashboard:React.FC<{trilhas:Trilha[];progresso:TrilhaProg[];quizResul
                 {ctEvolucao==='area'?(
                   <AreaChart data={evolucao} margin={{top:5,right:10,left:-20,bottom:0}}>
                     <defs><linearGradient id="gA" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor={GOLD} stopOpacity={0.2}/><stop offset="95%" stopColor={GOLD} stopOpacity={0}/></linearGradient></defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#F5EDD8"/><XAxis dataKey="mes" tick={{fontSize:10,fill:'#8A9BB0'}}/><YAxis domain={[0,100]} tick={{fontSize:10,fill:'#8A9BB0'}}/><Tooltip content={<Tip/>}/>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--c-gold-bg))"/><XAxis dataKey="mes" tick={{fontSize:10,fill:'#8A9BB0'}}/><YAxis domain={[0,100]} tick={{fontSize:10,fill:'#8A9BB0'}}/><Tooltip content={<Tip/>}/>
                     <Area type="monotone" dataKey="Media (%)" stroke={GOLD} strokeWidth={2} fill="url(#gA)" dot={{r:4,fill:GOLD}}/>
                   </AreaChart>
                 ):ctEvolucao==='line'?(
                   <LineChart data={evolucao} margin={{top:5,right:10,left:-20,bottom:0}}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#F5EDD8"/><XAxis dataKey="mes" tick={{fontSize:10,fill:'#8A9BB0'}}/><YAxis domain={[0,100]} tick={{fontSize:10,fill:'#8A9BB0'}}/><Tooltip content={<Tip/>}/>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--c-gold-bg))"/><XAxis dataKey="mes" tick={{fontSize:10,fill:'#8A9BB0'}}/><YAxis domain={[0,100]} tick={{fontSize:10,fill:'#8A9BB0'}}/><Tooltip content={<Tip/>}/>
                     <Line type="monotone" dataKey="Media (%)" stroke={GOLD} strokeWidth={2} dot={{r:4,fill:GOLD}}/>
                   </LineChart>
                 ):(
                   <BarChart data={evolucao} margin={{top:5,right:10,left:-20,bottom:0}}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#F5EDD8"/><XAxis dataKey="mes" tick={{fontSize:10,fill:'#8A9BB0'}}/><YAxis domain={[0,100]} tick={{fontSize:10,fill:'#8A9BB0'}}/><Tooltip content={<Tip/>}/>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--c-gold-bg))"/><XAxis dataKey="mes" tick={{fontSize:10,fill:'#8A9BB0'}}/><YAxis domain={[0,100]} tick={{fontSize:10,fill:'#8A9BB0'}}/><Tooltip content={<Tip/>}/>
                     <Bar dataKey="Media (%)" fill={GOLD} radius={[4,4,0,0]}/>
                   </BarChart>
                 )}
@@ -241,12 +242,12 @@ const ColabDashboard:React.FC<{trilhas:Trilha[];progresso:TrilhaProg[];quizResul
             : <ResponsiveContainer width="100%" height={180}>
                 {ctTrilha==='bar'?(
                   <BarChart data={porTrilha} margin={{top:5,right:10,left:-20,bottom:30}}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#F5EDD8"/><XAxis dataKey="name" tick={{fontSize:10,fill:'#8A9BB0'}} angle={-20} textAnchor="end"/><YAxis domain={[0,100]} tick={{fontSize:10,fill:'#8A9BB0'}}/><Tooltip content={<Tip/>}/><Legend wrapperStyle={{fontSize:11}}/>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--c-gold-bg))"/><XAxis dataKey="name" tick={{fontSize:10,fill:'#8A9BB0'}} angle={-20} textAnchor="end"/><YAxis domain={[0,100]} tick={{fontSize:10,fill:'#8A9BB0'}}/><Tooltip content={<Tip/>}/><Legend wrapperStyle={{fontSize:11}}/>
                     <Bar dataKey="Conclusao (%)" fill={GOLD} radius={[4,4,0,0]}/><Bar dataKey="Media" fill={GREEN} radius={[4,4,0,0]}/>
                   </BarChart>
                 ):(
                   <RadarChart data={radarData}>
-                    <PolarGrid stroke="#F5EDD8"/><PolarAngleAxis dataKey="subject" tick={{fontSize:9,fill:'#8A9BB0'}}/>
+                    <PolarGrid stroke="rgb(var(--c-gold-bg))"/><PolarAngleAxis dataKey="subject" tick={{fontSize:9,fill:'#8A9BB0'}}/>
                     <Radar name="Score" dataKey="score" stroke={GOLD} fill={GOLD} fillOpacity={0.2} strokeWidth={2}/><Tooltip content={<Tip/>}/>
                   </RadarChart>
                 )}
@@ -258,7 +259,7 @@ const ColabDashboard:React.FC<{trilhas:Trilha[];progresso:TrilhaProg[];quizResul
           {myRes.length===0
             ? <div style={{textAlign:'center',padding:'32px 0',color:'#8A9BB0',fontSize:13}}>Nenhum teste ainda</div>
             : myRes.slice(0,5).map((r,i)=>(
-                <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 0',borderBottom:'1px solid #F5EDD8'}}>
+                <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 0',borderBottom:'1px solid rgb(var(--c-gold-bg))'}}>
                   <i className={'fa-solid '+(r.aprovado?'fa-circle-check':'fa-circle-xmark')} style={{color:r.aprovado?GREEN:RED,fontSize:14,flexShrink:0}}></i>
                   <div style={{flex:1,minWidth:0}}>
                     <p style={{fontSize:11,fontWeight:700,color:NAVY,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.trailTitle||'Teste'}</p>
@@ -315,7 +316,7 @@ const AdminDashboard:React.FC<{trilhas:Trilha[];progresso:TrilhaProg[];quizResul
     {faixa:'85-100', value:quizResults.filter(r=>r.nota>=85).length,           color:GOLD},
   ],[quizResults]);
 
-  const card = {background:'#fff',border:'1px solid #E8D5A3',borderRadius:14,padding:20,boxShadow:'0 1px 4px rgba(0,0,0,0.06)'};
+  const card = {background:'#fff',border:'1px solid rgb(var(--c-gold-line))',borderRadius:14,padding:20,boxShadow:'0 1px 4px rgba(0,0,0,0.06)'};
 
   return (
     <div style={{display:'flex',flexDirection:'column',gap:20}}>
@@ -353,12 +354,12 @@ const AdminDashboard:React.FC<{trilhas:Trilha[];progresso:TrilhaProg[];quizResul
             : <ResponsiveContainer width="100%" height={180}>
                 {ctMensal==='line'?(
                   <LineChart data={testesPorMes} margin={{top:5,right:10,left:-20,bottom:0}}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#F5EDD8"/><XAxis dataKey="mes" tick={{fontSize:10,fill:'#8A9BB0'}}/><YAxis tick={{fontSize:10,fill:'#8A9BB0'}}/><Tooltip content={<Tip/>}/><Legend wrapperStyle={{fontSize:11}}/>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--c-gold-bg))"/><XAxis dataKey="mes" tick={{fontSize:10,fill:'#8A9BB0'}}/><YAxis tick={{fontSize:10,fill:'#8A9BB0'}}/><Tooltip content={<Tip/>}/><Legend wrapperStyle={{fontSize:11}}/>
                     <Line type="monotone" dataKey="Testes" stroke={GOLD} strokeWidth={2} dot={{r:3}}/><Line type="monotone" dataKey="Aprovados" stroke={GREEN} strokeWidth={2} dot={{r:3}}/>
                   </LineChart>
                 ):ctMensal==='bar'?(
                   <BarChart data={testesPorMes} margin={{top:5,right:10,left:-20,bottom:0}}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#F5EDD8"/><XAxis dataKey="mes" tick={{fontSize:10,fill:'#8A9BB0'}}/><YAxis tick={{fontSize:10,fill:'#8A9BB0'}}/><Tooltip content={<Tip/>}/><Legend wrapperStyle={{fontSize:11}}/>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--c-gold-bg))"/><XAxis dataKey="mes" tick={{fontSize:10,fill:'#8A9BB0'}}/><YAxis tick={{fontSize:10,fill:'#8A9BB0'}}/><Tooltip content={<Tip/>}/><Legend wrapperStyle={{fontSize:11}}/>
                     <Bar dataKey="Testes" fill={GOLD} radius={[4,4,0,0]}/><Bar dataKey="Aprovados" fill={GREEN} radius={[4,4,0,0]}/>
                   </BarChart>
                 ):(
@@ -366,7 +367,7 @@ const AdminDashboard:React.FC<{trilhas:Trilha[];progresso:TrilhaProg[];quizResul
                     <defs>
                       <linearGradient id="gT" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor={GOLD} stopOpacity={0.2}/><stop offset="95%" stopColor={GOLD} stopOpacity={0}/></linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#F5EDD8"/><XAxis dataKey="mes" tick={{fontSize:10,fill:'#8A9BB0'}}/><YAxis tick={{fontSize:10,fill:'#8A9BB0'}}/><Tooltip content={<Tip/>}/><Legend wrapperStyle={{fontSize:11}}/>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--c-gold-bg))"/><XAxis dataKey="mes" tick={{fontSize:10,fill:'#8A9BB0'}}/><YAxis tick={{fontSize:10,fill:'#8A9BB0'}}/><Tooltip content={<Tip/>}/><Legend wrapperStyle={{fontSize:11}}/>
                     <Area type="monotone" dataKey="Testes" stroke={GOLD} fill="url(#gT)" strokeWidth={2}/><Area type="monotone" dataKey="Aprovados" stroke={GREEN} fill="none" strokeWidth={2}/>
                   </AreaChart>
                 )}
@@ -399,7 +400,7 @@ const AdminDashboard:React.FC<{trilhas:Trilha[];progresso:TrilhaProg[];quizResul
             : <ResponsiveContainer width="100%" height={180}>
                 {ctTrilhas==='bar'?(
                   <BarChart data={trilhasPerf} margin={{top:5,right:10,left:-20,bottom:35}}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#F5EDD8"/><XAxis dataKey="name" tick={{fontSize:10,fill:'#8A9BB0'}} angle={-20} textAnchor="end"/><YAxis domain={[0,100]} tick={{fontSize:10,fill:'#8A9BB0'}}/><Tooltip content={<Tip/>}/>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--c-gold-bg))"/><XAxis dataKey="name" tick={{fontSize:10,fill:'#8A9BB0'}} angle={-20} textAnchor="end"/><YAxis domain={[0,100]} tick={{fontSize:10,fill:'#8A9BB0'}}/><Tooltip content={<Tip/>}/>
                     <Bar dataKey="Taxa (%)" radius={[4,4,0,0]}>{trilhasPerf.map((_,i)=><Cell key={i} fill={COLORS[i%COLORS.length]}/>)}</Bar>
                   </BarChart>
                 ):(
@@ -433,7 +434,7 @@ const AdminDashboard:React.FC<{trilhas:Trilha[];progresso:TrilhaProg[];quizResul
           <CardHeader title="Ranking de Desempenho" charts={['bar']} active={ctTop} onChange={setCtTop}/>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={topColab} layout="vertical" margin={{top:0,right:20,left:10,bottom:0}}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F5EDD8" horizontal={false}/><XAxis type="number" domain={[0,100]} tick={{fontSize:10,fill:'#8A9BB0'}}/><YAxis type="category" dataKey="name" tick={{fontSize:11,fill:'#5A6E8A'}} width={70}/><Tooltip content={<Tip/>}/>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--c-gold-bg))" horizontal={false}/><XAxis type="number" domain={[0,100]} tick={{fontSize:10,fill:'#8A9BB0'}}/><YAxis type="category" dataKey="name" tick={{fontSize:11,fill:'#5A6E8A'}} width={70}/><Tooltip content={<Tip/>}/>
               <Bar dataKey="media" name="Media (%)" radius={[0,4,4,0]}>{topColab.map((e,i)=><Cell key={i} fill={e.media>=70?GREEN:e.media>=50?AMBER:RED}/>)}</Bar>
             </BarChart>
           </ResponsiveContainer>

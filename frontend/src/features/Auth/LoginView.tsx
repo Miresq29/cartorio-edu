@@ -11,6 +11,7 @@ import { auth, functions } from '../../services/firebase';
 // Firebase saía em inglês e caía no spam). O e-mail do Firebase fica só como reserva.
 const solicitarRedefinicaoSenhaFn = httpsCallable<{ email: string }, { ok: boolean }>(functions, 'solicitarRedefinicaoSenha');
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import { useMarca } from '../../components/MarcaCliente';
 
 const LoginView: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -20,6 +21,7 @@ const LoginView: React.FC = () => {
   const [resetLoading, setResetLoading] = useState(false);
 
   const { login } = useApp();
+  const marca = useMarca();
   const { showToast } = useToast();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -94,12 +96,23 @@ const LoginView: React.FC = () => {
         <div className="bg-bg-surface border border-border rounded-3xl p-10 shadow-card-hover">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-blue/15 mb-4">
-              <i className="fa-solid fa-graduation-cap text-2xl text-brand-blue"></i>
-            </div>
-            <h1 className="text-3xl font-black text-text-primary italic uppercase tracking-tighter">
-              MJ <span className="text-brand-blue">Consultoria</span>
-            </h1>
+            {marca.ativa ? (
+              // Marca própria do cliente (última vista neste navegador)
+              <>
+                {marca.logo
+                  ? <div className="inline-flex bg-white rounded-2xl px-5 py-3 mb-4"><img src={marca.logo} alt={marca.nome} className="max-h-16 max-w-[240px] object-contain" /></div>
+                  : <h1 className="text-3xl font-black text-text-primary tracking-tight">{marca.nome}</h1>}
+              </>
+            ) : (
+              <>
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-400/15 mb-4">
+                  <i className="fa-solid fa-graduation-cap text-2xl text-blue-400"></i>
+                </div>
+                <h1 className="text-3xl font-black text-text-primary italic uppercase tracking-tighter">
+                  MJ <span className="text-blue-400">Consultoria</span>
+                </h1>
+              </>
+            )}
             <p className="text-text-muted text-[10px] font-bold uppercase tracking-[0.25em] mt-2">
               Plataforma de Treinamento Corporativo
             </p>
@@ -147,7 +160,7 @@ const LoginView: React.FC = () => {
                 type="button"
                 onClick={handleResetPassword}
                 disabled={resetLoading}
-                className="text-[11px] text-brand-blue hover:text-blue-300 font-bold uppercase tracking-widest transition-colors disabled:opacity-50"
+                className="text-[11px] text-blue-400 hover:text-blue-300 font-bold uppercase tracking-widest transition-colors disabled:opacity-50"
               >
                 {resetLoading ? "Enviando..." : "Esqueceu a senha?"}
               </button>
@@ -165,7 +178,7 @@ const LoginView: React.FC = () => {
         </div>
 
         <p className="text-center mt-6 text-text-disabled text-[10px] uppercase tracking-widest">
-          © {new Date().getFullYear()} MJ Consultoria — Todos os direitos reservados
+          © {new Date().getFullYear()} {marca.ativa ? 'Integra-Academy · MJ Consultoria' : 'MJ Consultoria'} — Todos os direitos reservados
         </p>
       </div>
     </div>

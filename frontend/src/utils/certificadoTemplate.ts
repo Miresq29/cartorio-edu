@@ -6,6 +6,8 @@
 // ExamesView.tsx chamam esta mesma função, pra nunca mais existirem dois certificados com
 // aparência diferente pro mesmo tipo de conquista.
 
+import { cssVarsTema, logoTema } from './tema';
+
 export interface ItemConteudo {
   tema: string;
   cargaHoraria: number;
@@ -112,32 +114,32 @@ export function certificadoTemplate(d: CertificadoTemplateDados): string {
 <head>
 <meta charset="utf-8">
 <title>Certificado — ${esc(d.nome)}</title>
-<style>
+<style>${cssVarsTema()}
   @page { size: A4 landscape; margin: 0; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: "Segoe UI", Arial, sans-serif; color: #1a1a1a; }
   .pagina { width: 297mm; height: 210mm; position: relative; background: #fff; overflow: hidden; page-break-after: always; }
   .pagina:last-child { page-break-after: auto; }
-  .faixa-topo { position: absolute; top: 0; left: 0; right: 0; height: 16mm; background: linear-gradient(135deg, #0A1628 0%, #0f2240 70%); border-bottom: 1.5mm solid #C9A84C; display: flex; align-items: center; padding: 0 16mm; gap: 10px; }
+  .faixa-topo { position: absolute; top: 0; left: 0; right: 0; height: 16mm; background: linear-gradient(135deg, rgb(var(--c-navy)) 0%, rgb(var(--c-bg-overlay)) 70%); border-bottom: 1.5mm solid rgb(var(--c-gold)); display: flex; align-items: center; padding: 0 16mm; gap: 10px; }
   .faixa-topo .marca { color: #fff; font-weight: 900; letter-spacing: 2px; font-size: 13pt; text-transform: uppercase; }
-  .faixa-topo .sub { color: #C9A84C; font-size: 7.5pt; letter-spacing: 1px; text-transform: uppercase; margin-left: 10px; }
-  .faixa-base { position: absolute; bottom: 0; left: 0; right: 0; height: 11mm; background: #0A1628; display: flex; align-items: center; justify-content: space-between; padding: 0 16mm; color: rgba(255,255,255,0.75); font-size: 8pt; }
+  .faixa-topo .sub { color: rgb(var(--c-gold)); font-size: 7.5pt; letter-spacing: 1px; text-transform: uppercase; margin-left: 10px; }
+  .faixa-base { position: absolute; bottom: 0; left: 0; right: 0; height: 11mm; background: rgb(var(--c-navy)); display: flex; align-items: center; justify-content: space-between; padding: 0 16mm; color: rgba(255,255,255,0.75); font-size: 8pt; }
   .conteudo { position: absolute; top: 20mm; left: 16mm; right: 16mm; bottom: 15mm; display: flex; flex-direction: column; align-items: center; }
-  .titulo-cert { font-size: 15pt; font-weight: 900; color: #0A1628; letter-spacing: 1px; text-transform: uppercase; margin-top: 2mm; }
+  .titulo-cert { font-size: 15pt; font-weight: 900; color: rgb(var(--c-navy)); letter-spacing: 1px; text-transform: uppercase; margin-top: 2mm; }
   .certificamos { font-size: 11pt; color: #555; margin-top: 6mm; }
-  .nome { font-size: 27pt; font-weight: 900; color: #0A1628; border-bottom: 1.5px solid #C9A84C; padding: 2mm 10mm 3mm; margin-top: 2mm; text-align: center; }
+  .nome { font-size: 27pt; font-weight: 900; color: rgb(var(--c-navy)); border-bottom: 1.5px solid rgb(var(--c-gold)); padding: 2mm 10mm 3mm; margin-top: 2mm; text-align: center; }
   .linha-cargo { font-size: 11pt; color: #444; margin-top: 3mm; }
   .paragrafo { font-size: 10.5pt; color: #333; text-align: center; max-width: 220mm; line-height: 1.6; margin-top: 5mm; }
-  .faixa-5col { display: flex; width: 100%; margin-top: 6mm; border: 1px solid #C9A84C; border-radius: 3px; overflow: hidden; }
-  .faixa-5col .col { flex: 1; text-align: center; padding: 3mm 2mm; border-left: 1px solid #e8d9a0; }
+  .faixa-5col { display: flex; width: 100%; margin-top: 6mm; border: 1px solid rgb(var(--c-gold)); border-radius: 3px; overflow: hidden; }
+  .faixa-5col .col { flex: 1; text-align: center; padding: 3mm 2mm; border-left: 1px solid rgb(var(--c-gold-line)); }
   .faixa-5col .col:first-child { border-left: none; }
-  .faixa-5col .label { font-size: 6.5pt; color: #8a6e2f; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
-  .faixa-5col .valor { font-size: 9.5pt; color: #0A1628; font-weight: 800; margin-top: 1mm; }
+  .faixa-5col .label { font-size: 6.5pt; color: rgb(var(--c-gold-body)); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
+  .faixa-5col .valor { font-size: 9.5pt; color: rgb(var(--c-navy)); font-weight: 800; margin-top: 1mm; }
   .rodape-interno { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: auto; }
   .rodape-interno .bloco { text-align: center; flex: 1; }
   .rodape-interno .bloco .linha { width: 55mm; border-top: 1px solid #999; margin: 1mm auto 0; padding-top: 1mm; font-size: 7pt; color: #888; }
   .qr-bloco img { width: 20mm; height: 20mm; }
-  .qr-bloco .valide { font-size: 7pt; color: #8a6e2f; font-weight: 700; letter-spacing: 0.5px; margin-top: 1mm; }
+  .qr-bloco .valide { font-size: 7pt; color: rgb(var(--c-gold-body)); font-weight: 700; letter-spacing: 0.5px; margin-top: 1mm; }
   .qr-bloco .url { font-size: 6.5pt; color: #aaa; }
   .assinatura-img { height: 11mm; display: block; margin: 0 auto 1mm; }
   .assinatura-nome { font-size: 9.5pt; color: #333; }
@@ -147,20 +149,21 @@ export function certificadoTemplate(d: CertificadoTemplateDados): string {
 
   /* Verso */
   .verso-header { display: flex; align-items: center; gap: 10px; }
-  .verso-header .marca { color: #0A1628; font-weight: 900; font-size: 11pt; text-transform: uppercase; }
+  .verso-header .marca { color: rgb(var(--c-navy)); font-weight: 900; font-size: 11pt; text-transform: uppercase; }
   .verso-header .meta { font-size: 8pt; color: #888; margin-left: auto; }
-  .verso-titulo { font-size: 12pt; font-weight: 900; color: #0A1628; text-transform: uppercase; margin-top: 6mm; letter-spacing: 1px; }
+  .verso-titulo { font-size: 12pt; font-weight: 900; color: rgb(var(--c-navy)); text-transform: uppercase; margin-top: 6mm; letter-spacing: 1px; }
   .verso-curso { font-size: 13pt; font-weight: 800; color: #0f2240; margin-top: 2mm; }
   .verso-sub { font-size: 8.5pt; color: #777; margin-top: 1mm; }
   table.conteudo-tabela { width: 100%; border-collapse: collapse; margin-top: 4mm; font-size: 8.5pt; }
-  table.conteudo-tabela th { background: #0A1628; color: #fff; text-align: left; padding: 2mm 3mm; font-size: 7.5pt; text-transform: uppercase; letter-spacing: 0.5px; }
+  table.conteudo-tabela th { background: rgb(var(--c-navy)); color: #fff; text-align: left; padding: 2mm 3mm; font-size: 7.5pt; text-transform: uppercase; letter-spacing: 0.5px; }
   table.conteudo-tabela td { padding: 1.8mm 3mm; border-bottom: 1px solid #eee; }
   table.conteudo-tabela td.num { text-align: right; white-space: nowrap; }
-  table.conteudo-tabela tr.total td { font-weight: 800; border-top: 1.5px solid #C9A84C; border-bottom: none; }
+  table.conteudo-tabela tr.total td { font-weight: 800; border-top: 1.5px solid rgb(var(--c-gold)); border-bottom: none; }
   .verso-3col { display: flex; gap: 6mm; margin-top: 6mm; }
   .verso-3col .col { flex: 1; border: 1px solid #e5e5e5; border-radius: 3px; padding: 3mm; }
-  .verso-3col .col h4 { font-size: 7.5pt; color: #8a6e2f; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2mm; }
+  .verso-3col .col h4 { font-size: 7.5pt; color: rgb(var(--c-gold-body)); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2mm; }
   .verso-3col .col p { font-size: 8.5pt; color: #333; line-height: 1.5; margin-bottom: 1mm; }
+  .logo-cliente { margin-left: auto; height: 11mm; max-width: 45mm; object-fit: contain; background: #fff; padding: 1mm 2mm; border-radius: 2px; }
   @media print { body { background: white; } }
 </style>
 </head>
@@ -170,7 +173,8 @@ export function certificadoTemplate(d: CertificadoTemplateDados): string {
 <div class="pagina">
   <div class="faixa-topo">
     <span class="marca">⚖ Integra-Academy</span>
-    <span class="sub">MJ Consultoria · Plataforma de Conformidade Notarial</span>
+    <span class="sub">MJ Consultoria · Plataforma de Treinamento e Conformidade</span>
+    ${logoTema() ? `<img class="logo-cliente" src="${logoTema()}" alt="">` : ''}
   </div>
   <div class="faixa-base">
     <span>Emitido por ${esc(d.emissoraRazaoSocial)} · CNPJ ${esc(d.emissoraCnpj)}</span>

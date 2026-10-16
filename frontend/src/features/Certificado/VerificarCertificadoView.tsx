@@ -49,10 +49,10 @@ const VerificarCertificadoView: React.FC = () => {
   React.useEffect(() => { if (paramsCodigo) verificar(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0A1628', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: 'Arial, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: 'rgb(var(--c-navy))', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: 'Arial, sans-serif' }}>
       <div style={{ width: '100%', maxWidth: 520 }}>
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: 4, color: '#C9A84C', textTransform: 'uppercase' }}>Integra-Academy</div>
+          <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: 4, color: 'rgb(var(--c-gold))', textTransform: 'uppercase' }}>Integra-Academy</div>
           <h1 style={{ fontSize: 24, fontWeight: 900, color: '#ffffff', marginTop: 6, textTransform: 'uppercase', letterSpacing: -0.5 }}>
             Verificação de Certificado
           </h1>
@@ -64,10 +64,10 @@ const VerificarCertificadoView: React.FC = () => {
             value={codigo}
             onChange={e => setCodigo(e.target.value.toUpperCase())}
             placeholder="MJ-XXXX-XXXX-XXXX"
-            style={{ width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '14px 16px', fontSize: 16, fontWeight: 700, color: '#0A1628', textAlign: 'center', letterSpacing: 2, fontFamily: 'monospace' }}
+            style={{ width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '14px 16px', fontSize: 16, fontWeight: 700, color: 'rgb(var(--c-navy))', textAlign: 'center', letterSpacing: 2, fontFamily: 'monospace' }}
           />
           <button type="submit" disabled={loading || !codigo.trim()}
-            style={{ background: '#0A1628', color: '#ffffff', border: 'none', borderRadius: 12, padding: '14px', fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 1, cursor: 'pointer', opacity: loading || !codigo.trim() ? 0.6 : 1 }}>
+            style={{ background: 'rgb(var(--c-navy))', color: '#ffffff', border: 'none', borderRadius: 12, padding: '14px', fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 1, cursor: 'pointer', opacity: loading || !codigo.trim() ? 0.6 : 1 }}>
             {loading ? 'Verificando...' : 'Verificar'}
           </button>
         </form>

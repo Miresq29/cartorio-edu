@@ -29,7 +29,7 @@ const IndicadorInput: React.FC<Props> = ({ indicador, value, onChange }) => {
         <input
           type="range" min={0} max={100} step={5} value={num}
           onChange={e => onChange(Number(e.target.value))}
-          className="w-full accent-[#C9A84C]"
+          className="w-full accent-[rgb(var(--c-gold))]"
         />
       </div>
     );

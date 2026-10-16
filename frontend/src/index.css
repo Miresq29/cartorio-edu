@@ -4,26 +4,57 @@
 
 /* Design tokens */
 :root {
+  /* Tema (canais R G B) — padrão MJ; com "Marca própria" o cliente sobrescreve (utils/tema.ts) */
+  --c-navy: 10 22 40;
+  --c-navy-2: 30 58 95;
+  --c-on-navy: 255 255 255;
+  --c-gold: 201 168 76;
+  --c-on-gold: 10 22 40;
+  --c-gold-bg: 245 237 216;
+  --c-gold-line: 232 213 163;
+  --c-gold-strong: 122 92 30;
+  --c-gold-body: 138 110 47;
+  --c-gold-soft: 168 136 47;
+  --c-bg-base: 15 23 42;
+  --c-bg-surface: 30 41 59;
+  --c-bg-elevated: 38 51 72;
+  --c-bg-overlay: 13 27 62;
+  --c-text-primary: 226 232 240;
+  --c-text-secondary: 201 168 76;
+  --c-text-muted: 168 136 47;
+  --c-text-disabled: 107 81 32;
+  --c-blue-50: 239 246 255;
+  --c-blue-100: 219 234 254;
+  --c-blue-200: 191 219 254;
+  --c-blue-300: 147 197 253;
+  --c-blue-400: 96 165 250;
+  --c-blue-500: 59 130 246;
+  --c-blue-600: 37 99 235;
+  --c-blue-700: 29 78 216;
+  --c-blue-800: 30 64 175;
+  --c-blue-900: 30 58 138;
+  --c-blue-950: 23 37 84;
+
   /* Backgrounds */
-  --bg-base:     #0f172a;
-  --bg-surface:  #1e293b;
-  --bg-elevated: #263348;
-  --bg-overlay:  #0d1b3e;
+  --bg-base:     rgb(var(--c-bg-base));
+  --bg-surface:  rgb(var(--c-bg-surface));
+  --bg-elevated: rgb(var(--c-bg-elevated));
+  --bg-overlay:  rgb(var(--c-bg-overlay));
 
   /* Gold text hierarchy */
-  --text-primary:   #e2e8f0;   /* near-white — on dark bg */
-  --text-secondary: #c9a84c;   /* bright gold — sidebar labels */
-  --text-muted:     #a8882f;   /* dim gold — captions, sidebar desc */
-  --text-disabled:  #6b5120;   /* deep muted gold */
+  --text-primary:   rgb(var(--c-text-primary));   /* near-white — on dark bg */
+  --text-secondary: rgb(var(--c-text-secondary));   /* bright gold — sidebar labels */
+  --text-muted:     rgb(var(--c-text-muted));   /* dim gold — captions, sidebar desc */
+  --text-disabled:  rgb(var(--c-text-disabled));   /* deep muted gold */
 
   /* Content-area gold (dark enough for white backgrounds) */
-  --gold-strong: #7a5c1e;      /* ~5.8:1 on white — titles, labels */
-  --gold-body:   #8a6e2f;      /* ~4.5:1 on white — body secondary */
-  --gold-soft:   #a8882f;      /* ~3.5:1 on white — captions */
+  --gold-strong: rgb(var(--c-gold-strong));      /* ~5.8:1 on white — titles, labels */
+  --gold-body:   rgb(var(--c-gold-body));      /* ~4.5:1 on white — body secondary */
+  --gold-soft:   rgb(var(--c-gold-soft));      /* ~3.5:1 on white — captions */
 
   /* Brand */
-  --brand-blue: #3b82f6;
-  --brand-gold: #c9a84c;
+  --brand-blue: rgb(var(--c-blue-500));
+  --brand-gold: rgb(var(--c-gold));
 
   /* Semantic */
   --color-success: #10b981;
@@ -31,8 +62,8 @@
   --color-danger:  #ef4444;
 
   /* Borders */
-  --border:        rgba(201, 168, 76, 0.15);  /* gold-tinted border */
-  --border-strong: rgba(201, 168, 76, 0.30);
+  --border:        rgb(var(--c-gold) / 0.15);  /* gold-tinted border */
+  --border-strong: rgb(var(--c-gold) / 0.30);
 }
 
 /* ── Global reset ── */
@@ -83,7 +114,7 @@ main input[type="password"],
 main textarea {
   background-color: #ffffff;
   color: #1e293b;
-  border-color: rgba(201, 168, 76, 0.25);
+  border-color: rgb(var(--c-gold) / 0.25);
 }
 
 /* Date inputs: always light + native picker uses light theme */
@@ -91,15 +122,15 @@ main input[type="date"],
 input[type="date"] {
   background-color: #ffffff !important;
   color: #1e293b !important;
-  border-color: rgba(201, 168, 76, 0.35) !important;
+  border-color: rgb(var(--c-gold) / 0.35) !important;
   color-scheme: light;
 }
 
 main input[type="date"]:focus,
 input[type="date"]:focus {
-  border-color: #c9a84c !important;
+  border-color: rgb(var(--c-gold)) !important;
   outline: none;
-  box-shadow: 0 0 0 2px rgba(201, 168, 76, 0.2) !important;
+  box-shadow: 0 0 0 2px rgb(var(--c-gold) / 0.2) !important;
 }
 
 /* Subtle placeholder gold */
@@ -113,16 +144,16 @@ main textarea::placeholder {
 ::-webkit-scrollbar        { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track  { background: transparent; }
 ::-webkit-scrollbar-thumb  {
-  background: rgba(201, 168, 76, 0.25);
+  background: rgb(var(--c-gold) / 0.25);
   border-radius: 99px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(201, 168, 76, 0.45);
+  background: rgb(var(--c-gold) / 0.45);
 }
 
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: rgba(201, 168, 76, 0.25) transparent;
+  scrollbar-color: rgb(var(--c-gold) / 0.25) transparent;
 }
 
 /* ── Focus ring ── */
@@ -139,7 +170,7 @@ a, button {
 
 /* ── Selection ── */
 ::selection {
-  background: rgba(201, 168, 76, 0.30);
+  background: rgb(var(--c-gold) / 0.30);
   color: #1a0f00;
 }
 
@@ -170,7 +201,7 @@ a, button {
     background: rgba(30, 41, 59, 0.75);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(201, 168, 76, 0.15);
+    border: 1px solid rgb(var(--c-gold) / 0.15);
   }
 
   .surface {

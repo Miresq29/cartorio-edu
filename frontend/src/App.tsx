@@ -5,6 +5,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import Sidebar from './components/Sidebar';
 import AccessWindowGate from './components/AccessWindowGate';
 import Acessibilidade from './components/Acessibilidade';
+import { MarcaProvider } from './components/MarcaCliente';
 
 const VerificarCertificadoView = lazy(() => import('./features/Certificado/VerificarCertificadoView'));
 
@@ -151,7 +152,7 @@ const App: React.FC = () => {
   if (window.location.pathname.startsWith('/verificar')) {
     return (
       <ErrorBoundary>
-        <Suspense fallback={<div style={{ background: '#0A1628', minHeight: '100vh' }} />}>
+        <Suspense fallback={<div style={{ background: 'rgb(var(--c-navy))', minHeight: '100vh' }} />}>
           <VerificarCertificadoView />
         </Suspense>
       </ErrorBoundary>
@@ -162,7 +163,9 @@ const App: React.FC = () => {
     <ErrorBoundary>
       <ToastProvider>
         <AppProvider>
-          <MainLayout />
+          <MarcaProvider>
+            <MainLayout />
+          </MarcaProvider>
         </AppProvider>
       </ToastProvider>
     </ErrorBoundary>

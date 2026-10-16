@@ -5,6 +5,7 @@
 import { Assessment, PrioridadeGap } from './types';
 import { DIMENSOES } from './constants';
 import { labelNivel, situacaoScore } from './scoring';
+import { cssVarsTema, logoTema } from '../../utils/tema';
 
 interface Opts {
   tenantName: string;
@@ -13,7 +14,7 @@ interface Opts {
 
 // Paleta de cores semânticas do PDF.
 const CORES = {
-  navy: '#0F2340',
+  navy: 'rgb(var(--c-navy))', // cor principal do tema (marca própria do cliente)
   verde: '#1A7A5E', verdeBg: '#E8F5F1',
   vermelho: '#A32D2D', vermelhoBg: '#FCEBEB',
   ambar: '#BA7517', ambarBg: '#FAEEDA',
@@ -112,12 +113,12 @@ export function gerarPDFAssessment(assessment: Assessment, opts: Opts) {
     : '<tr><td colspan="5">Nenhum gap identificado neste diagnóstico.</td></tr>';
 
   win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Diagnóstico de Maturidade</title>
-<style>
+<style>${cssVarsTema()}
 * { margin:0; padding:0; box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
 body { font-family: Arial, sans-serif; color:#1e293b; background:white; padding:40px; font-size:12px; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
 .cover { text-align:center; padding:60px 0 40px; border-bottom:3px solid ${CORES.navy}; margin-bottom:40px; }
 .cover-logo { font-size:40px; font-weight:900; color:${CORES.navy}; letter-spacing:-2px; }
-.cover-logo span { color:#c9a84c; }
+.cover-logo span { color:rgb(var(--c-gold)); }
 .cover-title { font-size:22px; font-weight:900; color:#1e293b; margin-top:16px; text-transform:uppercase; letter-spacing:2px; }
 .cover-sub { font-size:12px; color:#64748b; margin-top:8px; text-transform:uppercase; letter-spacing:3px; }
 .cover-score { font-size:34px; font-weight:900; margin-top:20px; color:${sitGlobal.cor}; }
@@ -125,14 +126,14 @@ body { font-family: Arial, sans-serif; color:#1e293b; background:white; padding:
 .cover-nivel { font-size:14px; font-weight:900; color:${CORES.navy}; margin-top:8px; }
 .cover-date { font-size:11px; color:#94a3b8; margin-top:20px; }
 .section { margin-bottom:28px; page-break-inside:avoid; }
-.section-title { background:${CORES.navy}; color:white; padding:10px 16px; border-radius:8px 8px 0 0; font-size:13px; font-weight:900; text-transform:uppercase; letter-spacing:1px; border-left:4px solid #c9a84c; }
+.section-title { background:${CORES.navy}; color:white; padding:10px 16px; border-radius:8px 8px 0 0; font-size:13px; font-weight:900; text-transform:uppercase; letter-spacing:1px; border-left:4px solid rgb(var(--c-gold)); }
 .section-body { background:#f8fafc; border:1px solid #e2e8f0; border-top:none; border-radius:0 0 8px 8px; padding:16px; }
 table { width:100%; border-collapse:collapse; font-size:11px; }
 th, td { text-align:left; padding:6px 8px; border-bottom:1px solid #e2e8f0; vertical-align:top; }
 th { color:#64748b; text-transform:uppercase; font-size:9px; letter-spacing:1px; }
 .badge { padding:2px 8px; border-radius:6px; font-size:9px; font-weight:900; text-transform:uppercase; }
 .resumo-cabecalho { font-size:15px; font-weight:900; color:${CORES.navy}; margin-bottom:10px; }
-.resumo-rotulo { font-size:9px; font-weight:900; color:#c9a84c; text-transform:uppercase; letter-spacing:1px; margin-bottom:3px; }
+.resumo-rotulo { font-size:9px; font-weight:900; color:rgb(var(--c-gold)); text-transform:uppercase; letter-spacing:1px; margin-bottom:3px; }
 .resumo-texto { font-size:11.5px; line-height:1.7; color:#334155; white-space:pre-wrap; margin-bottom:14px; }
 .resumo-vazio { font-size:12px; color:#94a3b8; font-style:italic; }
 .mini-grafico { display:flex; align-items:flex-end; gap:10px; height:120px; margin:16px 0; padding:0 4px; }
@@ -150,6 +151,7 @@ th { color:#64748b; text-transform:uppercase; font-size:9px; letter-spacing:1px;
 </style></head><body>
 
 <div class="cover">
+  ${logoTema() ? `<div style="text-align:center;margin-bottom:14px"><img src="${logoTema()}" alt="" style="max-height:60px;max-width:260px;object-fit:contain"></div>` : ''}
   <div class="cover-logo">MJ <span>Consultoria</span></div>
   <div class="cover-title">Diagnóstico de Maturidade em Segurança da Informação</div>
   <div class="cover-sub">${escapeHtml(opts.tenantName)} — ${escapeHtml(assessment.periodo)}</div>

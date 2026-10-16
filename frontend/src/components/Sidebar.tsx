@@ -6,10 +6,12 @@ import { AuthService } from '../services/authService';
 import { db } from '../services/firebase';
 import { doc, onSnapshot, Timestamp } from 'firebase/firestore';
 import { termos } from '../utils/terminologia';
+import { useMarca } from './MarcaCliente';
 
 const Sidebar: React.FC = () => {
   const { state, tenantId, tipoOrganizacao, setActiveTab, setActiveTenant, logout: appLogout } = useApp();
   const t = termos(tipoOrganizacao);
+  const marca = useMarca();
   const { showToast } = useToast();
   // No modo global (fora de qualquer cartório) o SUPERADMIN sempre enxerga os recursos
   // pagos destravados. Ao "entrar" num cartório específico (activeTenantId), deve ver
@@ -67,7 +69,7 @@ const Sidebar: React.FC = () => {
         // (preview) — os controles de criar/excluir cartorio, demonstracao e habilitar recursos
         // continuam exclusivos do SUPERADMIN de verdade (a propria tela esconde esses controles).
         { tab: 'admin',     icon: 'fa-server',        label: 'Gestao de Empresas', desc: 'Criar e gerenciar tenants',         roles: ['SUPERADMIN'], color: 'text-blue-400' },
-        { tab: 'treinamentos-oficiais', icon: 'fa-wand-magic-sparkles', label: 'Treinamentos Oficiais', desc: 'Publicar conteudo pronto para todos os clientes', roles: ['SUPERADMIN'], color: 'text-[#C9A84C]' },
+        { tab: 'treinamentos-oficiais', icon: 'fa-wand-magic-sparkles', label: 'Treinamentos Oficiais', desc: 'Publicar conteudo pronto para todos os clientes', roles: ['SUPERADMIN'], color: 'text-[rgb(var(--c-gold))]' },
         { tab: 'reports-master', icon: 'fa-chart-column', label: 'Relatorio por Empresa', desc: 'Numeros reais de cada cliente, sem precisar acessar um por um', roles: ['SUPERADMIN'], color: 'text-blue-400' },
         { tab: 'audit',     icon: 'fa-layer-group',   label: 'Atividades Master',  desc: 'Log global de todas as acoes',      roles: ['SUPERADMIN'], color: 'text-emerald-400' },
       ]
@@ -82,8 +84,8 @@ const Sidebar: React.FC = () => {
         { tab: 'security', icon: 'fa-lock',              label: 'Seguranca',     desc: 'Senhas, bloqueios e politicas',       roles: ['SUPERADMIN', 'gestor'], locked: !superAdminGlobal && !recursos.segurancaHabilitado },
         { tab: 'analytics', icon: 'fa-chart-pie',        label: 'IA Analitica',  desc: 'Analise de auditoria e base legal',   roles: ['SUPERADMIN', 'gestor'], locked: !superAdminGlobal && !recursos.iaAnaliticaHabilitado },
         { tab: 'phishing',  icon: 'fa-shield-halved',     label: 'Simulacao Phishing', desc: 'Recurso opcional: teste de conscientizacao por e-mail', roles: ['SUPERADMIN', 'gestor', 'admin'], color: 'text-red-400', locked: !superAdminGlobal && !recursos.phishingHabilitado },
-        { tab: 'dossie',    icon: 'fa-file-shield',       label: 'Dossie de Conformidade', desc: tipoOrganizacao === 'empresa' ? 'Evidencias consolidadas para auditorias e LGPD' : 'Evidencias consolidadas para inspecao CNJ e LGPD', roles: ['SUPERADMIN', 'gestor', 'admin'], color: 'text-[#C9A84C]', locked: !superAdminGlobal && !recursos.dossieHabilitado },
-        { tab: 'maturidade', icon: 'fa-gauge-high',       label: 'Diagnostico de Maturidade', desc: '40 indicadores, plano de acao e evolucao no tempo', roles: ['SUPERADMIN', 'gestor', 'admin'], color: 'text-[#C9A84C]', locked: !superAdminGlobal && !recursos.maturidadeHabilitado },
+        { tab: 'dossie',    icon: 'fa-file-shield',       label: 'Dossie de Conformidade', desc: tipoOrganizacao === 'empresa' ? 'Evidencias consolidadas para auditorias e LGPD' : 'Evidencias consolidadas para inspecao CNJ e LGPD', roles: ['SUPERADMIN', 'gestor', 'admin'], color: 'text-[rgb(var(--c-gold))]', locked: !superAdminGlobal && !recursos.dossieHabilitado },
+        { tab: 'maturidade', icon: 'fa-gauge-high',       label: 'Diagnostico de Maturidade', desc: '40 indicadores, plano de acao e evolucao no tempo', roles: ['SUPERADMIN', 'gestor', 'admin'], color: 'text-[rgb(var(--c-gold))]', locked: !superAdminGlobal && !recursos.maturidadeHabilitado },
         { tab: 'training',  icon: 'fa-graduation-cap',    label: 'Treinamento AI', desc: 'Roteiros, quizzes e certificados com IA', roles: ['SUPERADMIN', 'equipe_mj', 'gestor', 'admin'], color: 'text-emerald-400' },
         { tab: 'campanhas', icon: 'fa-rocket',            label: 'Campanhas',     desc: 'Campanhas motivacionais com IA',      roles: ['SUPERADMIN', 'gestor', 'admin'], color: 'text-pink-400' },
       ]
@@ -117,7 +119,7 @@ const Sidebar: React.FC = () => {
     {
       label: 'PLATAFORMA', icon: 'fa-gear',
       items: [
-        { tab: 'backup',   icon: 'fa-database',      label: 'Backup',       desc: `Exportar dados ${t.doArtigo}`,        color: 'text-[#c9a84c]', roles: ['SUPERADMIN','gestor','admin'], locked: !superAdminGlobal && !recursos.backupHabilitado },
+        { tab: 'backup',   icon: 'fa-database',      label: 'Backup',       desc: `Exportar dados ${t.doArtigo}`,        color: 'text-[rgb(var(--c-gold))]', roles: ['SUPERADMIN','gestor','admin'], locked: !superAdminGlobal && !recursos.backupHabilitado },
         { tab: 'support',  icon: 'fa-headset',       label: 'Suporte',      desc: 'Contatar a MJ Consultoria'          },
         { tab: 'tutorial', icon: 'fa-book-open',     label: 'Tutorial',     desc: 'Guia completo de uso da plataforma' },
         { tab: 'terms',    icon: 'fa-file-contract', label: 'Termos de Uso', desc: 'Politicas e conformidade'          },
@@ -155,14 +157,31 @@ const Sidebar: React.FC = () => {
         onClick={() => setExpanded(prev => !prev)}
         title={expanded ? 'Recolher menu' : 'Expandir menu'}
       >
-        <div className="w-10 h-10 flex-shrink-0 bg-brand-blue rounded-xl flex items-center justify-center shadow-glow-blue group-hover:brightness-110 transition-all">
-          <i className={`fa-solid text-white transition-all duration-300 ${expanded ? 'fa-chevron-left text-sm' : 'fa-graduation-cap text-lg'}`}></i>
-        </div>
+        {marca.ativa && marca.logo && !expanded ? (
+          // Marca própria: logo do cliente num quadro claro (logos costumam ser feitos para fundo branco)
+          <div className="w-10 h-10 flex-shrink-0 bg-white rounded-xl flex items-center justify-center p-1 group-hover:brightness-95 transition-all">
+            <img src={marca.logo} alt={marca.nome} className="max-w-full max-h-full object-contain" />
+          </div>
+        ) : (
+          <div className="w-10 h-10 flex-shrink-0 bg-brand-blue rounded-xl flex items-center justify-center shadow-glow-blue group-hover:brightness-110 transition-all">
+            <i className={`fa-solid text-white transition-all duration-300 ${expanded ? 'fa-chevron-left text-sm' : 'fa-graduation-cap text-lg'}`}></i>
+          </div>
+        )}
         {expanded && (
-          <div className="overflow-hidden">
-            <h1 className="text-text-primary font-bold text-xl leading-tight whitespace-nowrap">
-              MJ <span className="text-brand-gold">Consultoria</span>
-            </h1>
+          <div className="overflow-hidden min-w-0">
+            {marca.ativa ? (
+              marca.logo ? (
+                <div className="bg-white rounded-lg px-2 py-1 inline-flex max-w-[170px] mb-1">
+                  <img src={marca.logo} alt={marca.nome} className="max-h-9 max-w-full object-contain" />
+                </div>
+              ) : (
+                <h1 className="text-text-primary font-bold text-lg leading-tight truncate">{marca.nome}</h1>
+              )
+            ) : (
+              <h1 className="text-text-primary font-bold text-xl leading-tight whitespace-nowrap">
+                MJ <span className="text-brand-gold">Consultoria</span>
+              </h1>
+            )}
             <span className="text-[10px] bg-brand-gold/15 text-brand-gold px-2 py-0.5 rounded font-black tracking-widest uppercase">
               Treinamento
             </span>
@@ -243,7 +262,7 @@ const Sidebar: React.FC = () => {
                   onClick={() => { setExpanded(true); setOpenSections(prev => ({ ...prev, [sIdx]: true })); }}
                   className={`w-full flex items-center justify-center p-2 rounded-xl transition-all ${
                     hasActiveItem
-                      ? 'bg-brand-blue/15 text-brand-blue'
+                      ? 'bg-brand-blue/15 text-blue-400'
                       : 'hover:bg-bg-surface text-text-muted hover:text-text-secondary'
                   }`}
                 >
@@ -251,7 +270,7 @@ const Sidebar: React.FC = () => {
                     hasActiveItem ? 'bg-brand-blue/20' : 'bg-bg-surface'
                   }`}>
                     <i className={`fa-solid ${section.icon} text-sm ${
-                      hasActiveItem ? 'text-brand-blue' : 'text-text-muted'
+                      hasActiveItem ? 'text-blue-400' : 'text-text-muted'
                     }`}></i>
                   </div>
                   {hasActiveItem && (
@@ -274,10 +293,10 @@ const Sidebar: React.FC = () => {
               >
                 <div className="flex items-center gap-2">
                   <i className={`fa-solid ${section.icon} text-[10px] ${
-                    hasActiveItem ? 'text-brand-blue' : 'text-text-muted'
+                    hasActiveItem ? 'text-blue-400' : 'text-text-muted'
                   }`}></i>
                   <span className={`text-xs font-black tracking-[0.12em] uppercase ${
-                    hasActiveItem && !isOpen ? 'text-brand-blue' : 'text-text-muted group-hover:text-text-secondary'
+                    hasActiveItem && !isOpen ? 'text-blue-400' : 'text-text-muted group-hover:text-text-secondary'
                   }`}>
                     {section.label}
                   </span>
@@ -311,7 +330,7 @@ const Sidebar: React.FC = () => {
                           isActive && !item.locked ? 'bg-white/15' : 'bg-bg-surface group-hover:bg-bg-elevated'
                         }`}>
                           <i className={`fa-solid ${item.locked ? 'fa-lock' : item.icon} text-[10px] ${
-                            item.locked ? 'text-text-muted' : isActive ? 'text-white' : item.color ?? 'text-text-muted group-hover:text-brand-blue'
+                            item.locked ? 'text-text-muted' : isActive ? 'text-white' : item.color ?? 'text-text-muted group-hover:text-blue-400'
                           }`}></i>
                         </div>
                         <div className="text-left min-w-0">
@@ -333,6 +352,9 @@ const Sidebar: React.FC = () => {
 
       {/* Footer: user info */}
       <div className="p-2 mt-auto border-t border-border">
+        {marca.ativa && expanded && (
+          <p className="text-[10px] text-text-muted text-center mb-2">Integra-Academy · MJ Consultoria</p>
+        )}
         {expanded ? (
           <div className="bg-bg-surface p-3 rounded-2xl border border-border flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-bg-elevated flex items-center justify-center text-xs font-black text-text-secondary border border-border-strong flex-shrink-0">
@@ -340,7 +362,7 @@ const Sidebar: React.FC = () => {
             </div>
             <div className="flex-1 overflow-hidden">
               <p className="text-sm font-semibold text-text-primary truncate">{state.user?.name || 'Usuario'}</p>
-              <p className="text-[9px] text-brand-blue font-black uppercase tracking-widest truncate">
+              <p className="text-[9px] text-blue-400 font-black uppercase tracking-widest truncate">
                 {state.user?.role === 'SUPERADMIN' ? 'SUPER ADMIN' : state.user?.role === 'equipe_mj' ? 'EQUIPE MJ' : state.user?.role || 'Acesso'}
               </p>
             </div>

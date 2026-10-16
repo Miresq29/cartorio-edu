@@ -7,6 +7,7 @@ import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
 import { ProgressoTrilhaDoc, trilhaConcluida, modulosConcluidos, progressoDaTrilha, trilhasDoAluno } from '../../utils/progressoTrilha';
 import { useItensLiberados } from '../../hooks/useItensLiberados';
+import { alfa } from '../../utils/tema';
 
 interface Trilha { id: string; titulo: string; descricao: string; icone: string; cor: string; modulos: any[]; tenantId: string; ativa?: boolean; perfis?: string[]; setores?: string[]; }
 interface TrilhaProgresso extends ProgressoTrilhaDoc { id: string; userId: string; userName: string; tenantId: string; }
@@ -192,7 +193,7 @@ const MeuProgressoView: React.FC = () => {
             { label: 'Certificados', value: myCerts.length,             sub: 'emitidos',                icon: 'fa-certificate',  color: '#7C3AED' },
           ].map((k, i) => (
             <div key={i} className="bg-white border border-slate-200 rounded-[14px] p-5 shadow-sm">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3" style={{ background: k.color + '15' }}>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3" style={{ background: alfa(k.color, '15') }}>
                 <i className={'fa-solid ' + k.icon} style={{ color: k.color }}></i>
               </div>
               <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">{k.label}</p>
@@ -261,7 +262,7 @@ const MeuProgressoView: React.FC = () => {
                       <div key={t.id} className="border border-slate-200 rounded-[14px] p-5 hover:border-gold/50 transition-all">
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: cor + '20', color: cor }}>
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: alfa(cor, '20'), color: cor }}>
                               {t.icone || '📚'}
                             </div>
                             <div>

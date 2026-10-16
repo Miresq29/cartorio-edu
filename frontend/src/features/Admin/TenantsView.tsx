@@ -8,6 +8,8 @@ import {
   collection, onSnapshot, query, where, orderBy, doc, updateDoc, Timestamp
 } from 'firebase/firestore';
 import ConfigCertificadoPanel from './ConfigCertificadoPanel';
+import EditorMarca from './EditorMarca';
+import { MarcaCliente } from '../../utils/tema';
 
 const createTenantFn = httpsCallable(functions, 'createTenant');
 const createCollaboratorFn = httpsCallable(functions, 'createCollaborator');
@@ -35,6 +37,9 @@ interface Tenant {
   criarConteudoHabilitado?: boolean;
   youtubeHabilitado?: boolean;
   acessibilidadeHabilitada?: boolean;
+  // Marca própria (cores + logo do cliente em toda a plataforma) — ver EditorMarca.tsx
+  marcaHabilitada?: boolean;
+  marca?: MarcaCliente;
   demoExpiraEm?: Timestamp | null;
   demoAvisoEnviado?: boolean;
   horarioAcessoHabilitado?: boolean;
@@ -67,6 +72,8 @@ const RECURSOS: { campo: keyof Tenant; label: string; icon: string; padraoLigado
   // Recurso adicional para clientes que trabalham com inclusão: VLibras + barra de acessibilidade
   // (components/Acessibilidade.tsx) para os colaboradores do cliente.
   { campo: 'acessibilidadeHabilitada', label: 'Acessibilidade', icon: 'fa-universal-access', padraoLigado: false },
+  // Marca própria: cores e logo do cliente em toda a plataforma (configurados em "Editar marca").
+  { campo: 'marcaHabilitada', label: 'Marca própria', icon: 'fa-palette', padraoLigado: false },
 ];
 
 function recursoHabilitado(t: Tenant, r: typeof RECURSOS[number]): boolean {
@@ -124,6 +131,7 @@ const TenantsView: React.FC = () => {
   // demonstracao, ligar/desligar recurso, curadoria) continuam exclusivos do SUPERADMIN real.
   const isSuperAdmin = state.user?.role === 'SUPERADMIN';
   const { showToast } = useToast();
+  const [editandoMarca, setEditandoMarca] = useState<Tenant | null>(null);
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
   const [tipoOrganizacao, setTipoOrganizacao] = useState<'cartorio' | 'empresa'>('cartorio');
@@ -252,6 +260,7 @@ const TenantsView: React.FC = () => {
 
   return (
     <div className="p-12 min-h-full bg-slate-50 animate-in fade-in space-y-12">
+      {editandoMarca && <EditorMarca tenant={editandoMarca} onClose={() => setEditandoMarca(null)} />}
       <header>
         <h2 className="text-4xl font-black text-navy italic uppercase tracking-tighter">
           Gestão <span className="text-blue-500">Organizacional</span>
@@ -412,6 +421,11 @@ const TenantsView: React.FC = () => {
                       </button>
                     );
                   })}
+                  <button type="button" onClick={() => setEditandoMarca(t)}
+                    className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all"
+                    title="Cores e logo do cliente">
+                    <i className="fa-solid fa-palette text-[9px]"></i>Editar marca
+                  </button>
                 </div>
                 )}
 
