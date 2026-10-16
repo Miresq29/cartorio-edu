@@ -648,7 +648,7 @@ const FormMidia: React.FC<{
 // ─── Main View ────────────────────────────────────────────────────────────────
 
 const RepositorioView: React.FC = () => {
-  const { state, tenantId, tipoOrganizacao } = useApp();
+  const { state, tenantId, tipoOrganizacao, setActiveTab } = useApp();
   const t = termos(tipoOrganizacao);
   const { showToast } = useToast();
   const user = state.user!;
@@ -793,7 +793,9 @@ const RepositorioView: React.FC = () => {
 
   // Filtros
   const filtradas = midias.filter(m => {
-    const matchTipo = !filtroTipo || m.tipo === filtroTipo;
+    // Infográficos são exibidos em "Banners e Infográficos"; aqui só aparecem quando quem gerencia
+    // filtra por eles (para editar/remover o cadastro).
+    const matchTipo = filtroTipo ? m.tipo === filtroTipo : m.tipo !== 'imagem';
     const matchCat = !filtroCategoria || m.categoria === filtroCategoria;
     const matchBusca = !busca ||
       m.titulo.toLowerCase().includes(busca.toLowerCase()) ||
@@ -853,10 +855,12 @@ const RepositorioView: React.FC = () => {
           { label: 'YouTube',        value: totalVideos, icon: 'fa-brands fa-youtube',   color: 'red'    },
           { label: 'Áudios',         value: totalAudios, icon: 'fa-solid fa-headphones', color: 'violet' },
           { label: 'Vídeos',         value: totalPDFs,   icon: 'fa-solid fa-circle-play', color: 'teal'  },
-          { label: 'Infográficos',   value: totalInfograficos, icon: 'fa-solid fa-image', color: 'amber' },
+          { label: 'Infográficos → Banners', value: totalInfograficos, icon: 'fa-solid fa-image', color: 'amber', ir: 'banners' as const },
           { label: 'Vistos por mim', value: totalVistos, icon: 'fa-solid fa-circle-check',color: 'emerald'},
-        ].map((s, i) => (
-          <div key={i} className="bg-white border border-slate-200 rounded-[20px] p-5 space-y-2">
+        ].map((s: any, i) => (
+          <div key={i} onClick={s.ir ? () => setActiveTab(s.ir) : undefined} role={s.ir ? 'button' : undefined}
+            title={s.ir ? 'Os infográficos ficam em Banners e Infográficos' : undefined}
+            className={"bg-white border border-slate-200 rounded-[20px] p-5 space-y-2" + (s.ir ? ' cursor-pointer hover:border-amber-400' : '')}>
             <i className={`${s.icon} text-${s.color}-500`}></i>
             <p className="text-2xl font-black text-navy">{s.value}</p>
             <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">{s.label}</p>
@@ -888,7 +892,7 @@ const RepositorioView: React.FC = () => {
             className={`px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
               !filtroTipo ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200'
             }`}>Todos</button>
-          {(Object.entries(TIPO_CONFIG) as [MidiaTipo, typeof TIPO_CONFIG[MidiaTipo]][]).map(([key, cfg]) => (
+          {(Object.entries(TIPO_CONFIG) as [MidiaTipo, typeof TIPO_CONFIG[MidiaTipo]][]).filter(([key]) => key !== 'imagem' || podeGerenciarLink).map(([key, cfg]) => (
             <button key={key} onClick={() => setFiltroTipo(filtroTipo === key ? '' : key)}
               className={`px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 ${
                 filtroTipo === key

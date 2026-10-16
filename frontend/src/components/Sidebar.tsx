@@ -97,7 +97,7 @@ const Sidebar: React.FC = () => {
         { tab: 'videos',       icon: 'fa-video',         label: 'Videos',         desc: 'Videos de treinamento (YouTube)',   color: 'text-rose-400',  roles: ['SUPERADMIN', 'equipe_mj', 'curador', 'gestor', 'admin'] },
         { tab: 'knowledge',    icon: 'fa-scale-balanced', label: 'Base Legal',    desc: 'Documentos normativos indexados',   color: 'text-amber-400', roles: ['SUPERADMIN', 'equipe_mj', 'curador', 'gestor', 'admin'] },
         { tab: 'comunicados',  icon: 'fa-bullhorn',      label: 'Comunicados',   desc: 'Mural de avisos da empresa',         color: 'text-amber-400', roles: ['SUPERADMIN', 'equipe_mj', 'curador', 'gestor', 'admin'] },
-        { tab: 'banners',      icon: 'fa-images',        label: 'Banners',       desc: 'Banners e materiais de divulgacao',  color: 'text-pink-400',  roles: ['SUPERADMIN', 'gestor', 'admin'] },
+        { tab: 'banners',      icon: 'fa-images',        label: 'Banners e Infograficos', desc: 'Infograficos dos treinamentos e materiais de divulgacao', color: 'text-pink-400',  roles: ['SUPERADMIN', 'equipe_mj', 'gestor', 'admin'] },
       ]
     },
     {
@@ -106,6 +106,8 @@ const Sidebar: React.FC = () => {
       label: 'CAPACITACAO', icon: 'fa-graduation-cap',
       items: [
         { tab: 'trails',        icon: 'fa-road',           label: 'Trilhas',         desc: 'Trilhas de aprendizagem por perfil',        color: 'text-teal-400'  },
+        // Colaborador consulta os infográficos aqui (a mesma tela Banners e Infográficos, só leitura).
+        { tab: 'banners',       icon: 'fa-image',          label: 'Infograficos',    desc: 'Infograficos dos treinamentos',            color: 'text-amber-400', roles: ['colaborador'] },
         { tab: 'exames',        icon: 'fa-file-pen',       label: 'Exames',          desc: 'Avaliacoes com IA e Bloom',               color: 'text-sky-400'    },
         { tab: 'metas',         icon: 'fa-trophy',         label: 'Metas & Premiacao', desc: 'Rankings e desempate Bloom Alto',        color: 'text-amber-400'  },
         { tab: 'meu-progresso', icon: 'fa-chart-line',     label: 'Meu Progresso',   desc: 'Trilhas, quizzes e certificados pessoais', color: 'text-teal-400'  },
@@ -137,7 +139,7 @@ const Sidebar: React.FC = () => {
       { tab: 'videos' as AppTab,      icon: 'fa-video',          label: 'Videos',       desc: 'Videos de treinamento (YouTube)'   },
       { tab: 'knowledge' as AppTab,   icon: 'fa-scale-balanced', label: 'Base Legal',   desc: 'Documentos normativos indexados'   },
       { tab: 'comunicados' as AppTab, icon: 'fa-bullhorn',       label: 'Comunicados',  desc: 'Mural de avisos'                   },
-      { tab: 'banners' as AppTab,     icon: 'fa-images',         label: 'Banners',      desc: 'Banners e materiais de divulgacao' },
+      { tab: 'banners' as AppTab,     icon: 'fa-images',         label: 'Banners e Infograficos', desc: 'Infograficos e materiais de divulgacao' },
     ]
   }] : sections;
 

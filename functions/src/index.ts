@@ -1214,7 +1214,11 @@ export const ouvirAudio = onRequest({ memory: "256MiB", timeoutSeconds: 120, max
       // 403/404 = a pasta ainda não foi compartilhada com a conta da plataforma (o player volta
       // para o preview do Drive); 416 = trecho além do fim do arquivo.
       const motivo = (await r.text().catch(() => "")).slice(0, 300).replace(/\s+/g, " ");
-      console.warn("ouvirAudio: Drive respondeu", r.status, "midia", dados.midiaId, motivo);
+      // O que a conta da plataforma pode fazer com o arquivo (ajuda a ver se a pasta foi
+      // compartilhada como Editor ou só como Leitor).
+      const cap = await fetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(dados.driveId)}?fields=capabilities(canEdit,canDownload),copyRequiresWriterPermission&supportsAllDrives=true`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }).then((x) => x.text()).catch(() => "");
+      console.warn("ouvirAudio: Drive respondeu", r.status, "midia", dados.midiaId, motivo, "| capacidades:", cap.replace(/\s+/g, " "));
       res.status(r.status === 416 ? 416 : 502).end();
       return;
     }

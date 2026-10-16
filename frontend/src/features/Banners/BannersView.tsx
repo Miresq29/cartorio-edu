@@ -11,6 +11,11 @@ import {
 import { GeminiService } from '../../services/geminiService';
 import VisibilidadeCartorioPicker from '../../components/VisibilidadeCartorioPicker';
 import { escapeHtml } from '../../utils/escapeHtml';
+import PlayerDriveProtegido from '../../components/PlayerDriveProtegido';
+
+// Infográficos são itens do Repositório (tipo "imagem", arquivo no Drive) — exibidos aqui, abertos
+// no visualizador protegido; a liberação por cliente continua a do Repositório.
+interface Infografico { id: string; titulo: string; descricao?: string; categoria?: string; trilhaTitulo?: string }
 
 interface Material {
   id: string;
@@ -23,6 +28,7 @@ interface Material {
 }
 
 const TIPO_CONFIG = {
+  infografico:  { label: 'Infográficos', icon: 'fa-image',               color: 'amber'   },
   banner:       { label: 'Banner IA',    icon: 'fa-wand-magic-sparkles', color: 'pink'    },
   imagem:       { label: 'Imagem',       icon: 'fa-file-image',          color: 'blue'    },
   pdf:          { label: 'PDF',          icon: 'fa-file-pdf',            color: 'red'     },
@@ -44,6 +50,8 @@ const BannersView: React.FC = () => {
   const [tenantIdsForm, setTenantIdsForm] = useState<string[]>(podeDistribuir ? [] : [tenantId]);
 
   const [materiais, setMateriais] = useState<Material[]>([]);
+  const [infograficos, setInfograficos] = useState<Infografico[]>([]);
+  const [infoAberto, setInfoAberto] = useState<Infografico | null>(null);
   const [filtroTipo, setFiltroTipo] = useState('');
 
   /* ── formulário link ──────────────────────────────── */
@@ -62,6 +70,15 @@ const BannersView: React.FC = () => {
     return onSnapshot(q, s =>
       setMateriais(s.docs.map(d => ({ id: d.id, ...d.data() } as Material)))
     );
+  }, [tenantId]);
+
+  useEffect(() => {
+    // Sem filtro de tipo na consulta (evita índice composto); o Repositório é pequeno.
+    const q = query(collection(db, 'repositorio'), where('tenantIds', 'array-contains-any', [tenantId || 'GLOBAL', 'GLOBAL']));
+    return onSnapshot(q, s => setInfograficos(s.docs
+      .filter(d => d.data().tipo === 'imagem' && d.data().ativo !== false)
+      .map(d => ({ id: d.id, titulo: d.data().titulo || '', descricao: d.data().descricao, categoria: d.data().categoria, trilhaTitulo: d.data().trilhaTitulo }))
+      .sort((a, b) => a.titulo.localeCompare(b.titulo, 'pt-BR', { numeric: true }))), () => setInfograficos([]));
   }, [tenantId]);
 
   /* ── salva link externo ──────────────────────────── */
@@ -194,31 +211,29 @@ CTA: [chamada para ação aqui]`;
   });
 
   const filtrados = materiais.filter(m => !filtroTipo || m.tipo === filtroTipo);
-
-  if (!podeCriar) {
-    return (
-      <div className="p-8 min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-sm text-amber-800 space-y-2 max-w-md">
-          <p className="font-black uppercase text-xs tracking-widest"><i className="fa-solid fa-lock mr-2"></i>Criação de conteúdo não habilitada</p>
-          <p>Este módulo não está habilitado para {t.seu}. Fale com a MJ Consultoria para liberar o acesso.</p>
-        </div>
-      </div>
-    );
-  }
+  const mostrarInfograficos = !filtroTipo || filtroTipo === 'infografico';
+  // A trava de criação vale só para criar materiais; consultar (inclusive infográficos) sempre pode.
+  const podeCriarMaterial = isGestor && podeCriar;
 
   /* ══════════════════ RENDER ══════════════════════════ */
   return (
     <div className="p-8 space-y-6 bg-slate-50 min-h-screen animate-in fade-in">
       <header>
         <h2 className="text-3xl font-black text-navy italic uppercase tracking-tighter">
-          Banners e <span className="text-pink-500">Materiais</span>
+          Banners e <span className="text-pink-500">Infográficos</span>
         </h2>
         <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">
-          Crie, gerencie e compartilhe materiais de treinamento
+          Infográficos dos treinamentos e materiais de divulgação
         </p>
       </header>
 
-      {isGestor && podeDistribuir && (
+      {!podeCriar && isGestor && (
+        <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5">
+          <i className="fa-solid fa-lock mr-2"></i>A criação de novos materiais não está habilitada para {t.seu}. Os infográficos e materiais liberados continuam disponíveis abaixo.
+        </p>
+      )}
+
+      {podeCriarMaterial && podeDistribuir && (
         <VisibilidadeCartorioPicker
           isSuperAdmin={podeDistribuir}
           ownTenantId={tenantId}
@@ -227,7 +242,7 @@ CTA: [chamada para ação aqui]`;
         />
       )}
 
-      {isGestor && (
+      {podeCriarMaterial && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
           {/* ── Link externo ────────────────────────────── */}
@@ -362,7 +377,7 @@ CTA: [chamada para ação aqui]`;
           className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
             !filtroTipo ? 'bg-pink-600 text-navy' : 'bg-slate-50 text-slate-500 hover:bg-slate-200'
           }`}>
-          Todos ({materiais.length})
+          Todos ({materiais.length + infograficos.length})
         </button>
         {Object.entries(TIPO_CONFIG).map(([id, cfg]) => (
           <button type="button" key={id} onClick={() => setFiltroTipo(filtroTipo === id ? '' : id)}
@@ -374,8 +389,49 @@ CTA: [chamada para ação aqui]`;
         ))}
       </div>
 
-      {/* ── Galeria ────────────────────────────────────── */}
-      {filtrados.length === 0 ? (
+      {/* ── Infográficos (do Repositório) ──────────────── */}
+      {mostrarInfograficos && infograficos.length > 0 && (
+        <section className="space-y-3">
+          <h3 className="text-navy font-black uppercase text-sm flex items-center gap-2">
+            <i className="fa-solid fa-image text-amber-500"></i>Infográficos <span className="text-slate-400 font-bold">({infograficos.length})</span>
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {infograficos.map(i => (
+              <button type="button" key={i.id} onClick={() => setInfoAberto(i)}
+                className="text-left bg-white border border-slate-200 rounded-[20px] p-5 hover:border-amber-400 hover:shadow-md transition-all flex items-start gap-3">
+                <div className="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
+                  <i className="fa-solid fa-image text-amber-500"></i>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-black text-navy leading-snug">{i.titulo.replace(/\s*\(Infogr[aá]fico\)\s*$/i, '')}</p>
+                  {(i.trilhaTitulo || i.categoria) && <p className="text-[10px] text-slate-500 mt-1 truncate">{i.trilhaTitulo || i.categoria}</p>}
+                  <p className="text-[10px] font-black uppercase tracking-widest text-amber-600 mt-2"><i className="fa-solid fa-eye mr-1"></i>Visualizar</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {infoAberto && (
+        <div className="fixed inset-0 z-[1000] bg-black/80 flex items-center justify-center md:p-4" onClick={() => setInfoAberto(null)}>
+          <div className="bg-white w-full h-full md:h-[94vh] md:max-w-[1100px] md:rounded-[24px] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-3 px-5 py-3 bg-[#0A1628] text-white">
+              <i className="fa-solid fa-image text-[#C9A84C]"></i>
+              <p className="flex-1 min-w-0 font-black text-sm truncate">{infoAberto.titulo}</p>
+              <button onClick={() => setInfoAberto(null)} aria-label="Fechar infográfico" className="w-9 h-9 rounded-xl hover:bg-white/10">
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+            <div className="flex-1 min-h-0 p-3 md:p-4">
+              <PlayerDriveProtegido midiaId={infoAberto.id} titulo={infoAberto.titulo} altura="100%" tipo="imagem" />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Galeria de materiais ───────────────────────── */}
+      {filtroTipo === 'infografico' ? null : filtrados.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 opacity-30">
           <i className="fa-solid fa-images text-5xl text-slate-600 mb-4"></i>
           <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Nenhum material encontrado</p>
