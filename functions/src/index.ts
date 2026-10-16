@@ -334,11 +334,11 @@ function emailAcesso(nome: string, email: string, senha: string, novo: boolean):
   return { assunto, html };
 }
 
-async function enviarEmailAcesso(alvo: FirebaseFirestore.DocumentData, senha: string, novo: boolean): Promise<boolean> {
+async function enviarEmailAcesso(alvo: FirebaseFirestore.DocumentData, senha: string, novo: boolean, copiaOculta?: string): Promise<boolean> {
   const email = String(alvo.email || "");
   if (!email) return false;
   const { assunto, html } = emailAcesso(String(alvo.name || ""), email, senha, novo);
-  const result = await sendEmail(GMAIL_USER, GMAIL_APP_PASSWORD.value(), email, assunto, html);
+  const result = await sendEmail(GMAIL_USER, GMAIL_APP_PASSWORD.value(), email, assunto, html, copiaOculta);
   await logEmailEvidencia({
     tenantId: String(alvo.tenantId || ""), destinatarioEmail: email, destinatarioNome: String(alvo.name || email),
     tipoNotificacao: novo ? "acesso_criado" : "senha_redefinida", assunto, ok: result.ok, erro: result.error, messageId: result.id,
@@ -361,8 +361,10 @@ export const redefinirSenhaColaborador = onCall({ secrets: [GMAIL_APP_PASSWORD] 
 
   // O colaborador PRECISA receber a senha por e-mail: só aplica a nova senha depois que o envio
   // deu certo. Se o e-mail falhar, nada muda (a senha antiga continua valendo) e a gestão é avisada.
+  // Cópia oculta para a caixa da MJ (conferência/suporte): só a equipe da plataforma pode pedir.
+  const copiaMJ = request.data?.copiaParaMJ === true && ["SUPERADMIN", "equipe_mj"].includes(caller.role);
   const senha = gerarSenhaTemporaria();
-  const emailEnviado = await enviarEmailAcesso(alvo, senha, false);
+  const emailEnviado = await enviarEmailAcesso(alvo, senha, false, copiaMJ ? GMAIL_USER : undefined);
   if (!emailEnviado) {
     throw new HttpsError("unavailable", "Não foi possível enviar o e-mail com o novo acesso, então a senha NÃO foi alterada. Tente novamente em alguns minutos.");
   }
@@ -380,7 +382,7 @@ export const redefinirSenhaColaborador = onCall({ secrets: [GMAIL_APP_PASSWORD] 
 
   await db.collection("auditLogs").add({
     tipo: "SENHA_REDEFINIDA",
-    descricao: `Senha redefinida pela gestão para ${alvo.name || alvo.email} (acesso enviado por e-mail)`,
+    descricao: `Senha redefinida pela gestão para ${alvo.name || alvo.email} (acesso enviado por e-mail${copiaMJ ? ", com cópia oculta para a MJ" : ""})`,
     usuario: String(alvo.email || ""), usuarioId: uid, autorId: caller.uid,
     tenantId: String(alvo.tenantId || ""), severity: "WARNING",
     createdAt: admin.firestore.FieldValue.serverTimestamp(),

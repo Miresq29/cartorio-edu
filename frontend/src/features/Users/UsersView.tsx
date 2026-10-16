@@ -16,7 +16,7 @@ import { alfa } from '../../utils/tema';
 
 const createCollaboratorFn = httpsCallable(functions, 'createCollaborator');
 const resetTenantPasswordsFn = httpsCallable(functions, 'resetTenantPasswords');
-const redefinirSenhaFn = httpsCallable<{ uid: string }, { emailEnviado: boolean; email: string }>(functions, 'redefinirSenhaColaborador');
+const redefinirSenhaFn = httpsCallable<{ uid: string; copiaParaMJ?: boolean },{ emailEnviado: boolean; email: string }>(functions, 'redefinirSenhaColaborador');
 const definirAcessoFn = httpsCallable<{ uid: string; ativo: boolean }, { ok: boolean; ativo: boolean }>(functions, 'definirAcessoColaborador');
 
 // Suspensão antiga gravava só "ativo"; o login e as regras olham "active". Vale o mais restritivo.
@@ -143,6 +143,7 @@ const UsersView: React.FC = () => {
   // Redefinição individual: alvo → confirmação; resultado → senha temporária + status do e-mail.
   const [senhaAlvo, setSenhaAlvo] = useState<UserData | null>(null);
   const [redefinindo, setRedefinindo] = useState(false);
+  const [copiaMJ, setCopiaMJ] = useState(false);
   const [acessoGerado, setAcessoGerado] = useState<{ titulo: string; nome: string; email: string; senha: string; emailEnviado: boolean; pediuEmail: boolean } | null>(null);
   const [enviarAcessoNovo, setEnviarAcessoNovo] = useState(true);
   const [alterandoAcesso, setAlterandoAcesso] = useState<string | null>(null);
@@ -280,7 +281,7 @@ const UsersView: React.FC = () => {
     if (!senhaAlvo) return;
     setRedefinindo(true);
     try {
-      const { data } = await redefinirSenhaFn({ uid: senhaAlvo.id });
+      const { data } = await redefinirSenhaFn({ uid: senhaAlvo.id, copiaParaMJ: isPlatformStaff && copiaMJ });
       setAcessoGerado({
         titulo: 'Senha redefinida', nome: senhaAlvo.name, email: data.email || senhaAlvo.email,
         senha: '', emailEnviado: data.emailEnviado, pediuEmail: true,
@@ -406,6 +407,12 @@ const UsersView: React.FC = () => {
               <p className="text-sm bg-blue-50 border border-blue-100 text-blue-800 rounded-xl px-4 py-3">
                 <i className="fa-solid fa-envelope mr-2"></i>A nova senha é enviada <b>somente para o e-mail do colaborador</b>. Se o e-mail não puder ser enviado, a senha não é alterada.
               </p>
+              {isPlatformStaff && (
+                <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                  <input type="checkbox" checked={copiaMJ} onChange={e => setCopiaMJ(e.target.checked)} className="accent-indigo-600" />
+                  Enviar cópia oculta para a caixa da MJ (conferência)
+                </label>
+              )}
               <div className="flex gap-3">
                 <button onClick={() => setSenhaAlvo(null)} disabled={redefinindo}
                   className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50 transition-all">
@@ -855,7 +862,7 @@ const UsersView: React.FC = () => {
                                   <i className="fa-solid fa-pen text-[10px]"></i>
                                 </button>
                                 {podeGerenciarAcesso(u) && estaAtivo(u) && (
-                                  <button onClick={() => setSenhaAlvo(u)}
+                                  <button onClick={() => { setCopiaMJ(false); setSenhaAlvo(u); }}
                                     className="w-7 h-7 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 flex items-center justify-center transition-all"
                                     title="Redefinir senha e enviar acesso" aria-label={`Redefinir senha de ${u.name}`}>
                                     <i className="fa-solid fa-key text-[10px]"></i>

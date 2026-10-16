@@ -30,12 +30,13 @@ function getTransporter(user: string, appPassword: string): nodemailer.Transport
   return transporter;
 }
 
-export async function sendEmail(user: string, appPassword: string, to: string, subject: string, html: string): Promise<{ ok: boolean; id?: string; error?: string }> {
+export async function sendEmail(user: string, appPassword: string, to: string, subject: string, html: string, bcc?: string): Promise<{ ok: boolean; id?: string; error?: string }> {
   try {
     const transporter = getTransporter(user, appPassword);
     const info = await transporter.sendMail({
       from: `"MJ Consultoria" <${user}>`,
       to,
+      ...(bcc ? { bcc } : {}),
       subject,
       html,
     });
