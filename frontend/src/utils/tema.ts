@@ -62,9 +62,12 @@ function comContraste(cor: RGB, fundo: RGB, minimo: number): RGB {
 export function calcularTema(marca: MarcaCliente): Record<string, string> {
   // Principal: precisa aguentar texto branco (menu, cabeçalhos, botões) — escurece se for clara.
   const primaria = comContraste(hexParaRgb(marca.corPrimaria || '') || hexParaRgb(CORES_PADRAO.corPrimaria)!, BRANCO, 4.5);
-  // Destaque: usado como fundo de botões com texto na cor principal e como realce sobre o menu.
+  // Destaque: aparece sobretudo nas telas claras (títulos, selos, ícones, abas ativas) — precisa
+  // ser no mínimo tão visível sobre o branco quanto o dourado padrão (~2,2:1); um amarelo claro
+  // é escurecido. Sobre o menu, o texto usa c-text-secondary (ajustado à parte, ≥ 4,5:1), e sobre
+  // botões de destaque o texto usa c-on-gold.
   const destaqueBase = hexParaRgb(marca.corDestaque || '') || hexParaRgb(CORES_PADRAO.corDestaque)!;
-  const destaque = comContraste(destaqueBase, primaria, 4.5);
+  const destaque = comContraste(destaqueBase, BRANCO, 2.2);
   const fundoMenu = primaria;
   return {
     'c-navy': canais(primaria),
