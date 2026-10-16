@@ -78,7 +78,7 @@ const DashboardMasterView: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           {/* Combobox em vez de listar os clientes na tela — não expõe nome de empresa nenhuma
               sem necessidade (ex.: durante uma demonstração). */}
-          <section className="lg:col-span-3 bg-white border border-slate-200 rounded-3xl p-7 shadow-sm">
+          <section className={(isSuperAdmin ? 'lg:col-span-3' : 'lg:col-span-5') + ' bg-white border border-slate-200 rounded-3xl p-7 shadow-sm'}>
             <div className="flex items-center gap-3 mb-2">
               <span className="w-11 h-11 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
                 <i className="fa-solid fa-arrow-right-to-bracket text-lg"></i>
@@ -92,7 +92,7 @@ const DashboardMasterView: React.FC = () => {
                 id="cliente-master"
                 value={clienteSelecionado}
                 onChange={e => setClienteSelecionado(e.target.value)}
-                className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-base text-navy font-semibold outline-none focus:border-blue-500 focus:bg-white transition-colors"
+                className="flex-1 min-w-0 w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-base text-navy font-semibold outline-none focus:border-blue-500 focus:bg-white transition-colors"
               >
                 <option value="">{loading ? 'Carregando clientes...' : 'Selecione um cliente...'}</option>
                 {tenantsOrdenados.map(t => (
@@ -103,7 +103,7 @@ const DashboardMasterView: React.FC = () => {
                 type="button"
                 onClick={acessarCliente}
                 disabled={!clienteSelecionado}
-                className="bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold px-8 py-4 rounded-2xl text-base shadow-sm transition-all flex items-center justify-center gap-2"
+                className="bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold px-8 py-4 rounded-2xl text-base shadow-sm transition-all flex items-center justify-center gap-2 flex-shrink-0"
               >
                 Acessar<i className="fa-solid fa-arrow-right"></i>
               </button>
