@@ -30,9 +30,11 @@ const SECTIONS: Section[] = [
     roles: ['SUPERADMIN'],
     steps: [
       { title: 'Ativar um novo cliente', desc: 'No formulário "Ativar Novo Cliente", escolha se é um cartório ou uma empresa, informe o nome e um ID do sistema (sem espaços, ex: empresa-bh-01). Esse ID vira o tenantId de todos os colaboradores daquele cliente e não pode ser alterado depois.' },
-      { title: 'Habilitar ou desligar módulos por cliente', desc: 'Em cada cliente listado em "Instâncias Ativas", clique nos chips de módulo (Auditoria, Segurança, IA Analítica, Phishing, Dossiê, Diagnóstico, Backup) para ligar/desligar. Quando desligado, o item aparece travado (cadeado) no menu daquele cliente.' },
+      { title: 'Habilitar ou desligar módulos por cliente', desc: 'Em cada cliente listado em "Instâncias Ativas", clique nos chips de módulo (Auditoria, Segurança, IA Analítica, Phishing, Dossiê, Diagnóstico, Backup, Acessibilidade) para ligar/desligar. Quando desligado, o item aparece travado (cadeado) no menu daquele cliente.' },
       { title: 'Ativar um período de demonstração', desc: 'Clique em "Ativar Demonstração", defina a quantidade de dias e confirme. Durante a demonstração só a Capacitação (Trilhas/Exames/Treinamentos) fica liberada — os demais módulos ficam travados até você "Encerrar Demonstração" (vira cliente pleno) ou o prazo expirar, quando o cliente é suspenso automaticamente e um e-mail é enviado ao gestor sugerindo a compra.' },
       { title: 'Acessar um cliente para conferir o que ele vê', desc: 'Clique em "Acessar" ao lado do cliente. Você entra no ambiente exatamente como aquele cliente enxerga — inclusive módulos travados — para validar a configuração. Use "Sair do cliente" no menu lateral para voltar ao modo global.' },
+      { title: 'Modo de visualização (apresentações)', desc: 'Dentro de um cliente, a equipe MJ vê trilhas, vídeos, áudios e infográficos exatamente como o colaborador vê, sem gravar nada: leitura, quiz e progresso não entram nos relatórios nem nos rankings do cliente. Nesse modo nenhum nome de outro cliente aparece na tela — o conteúdo criado ali fica só para o cliente visualizado; para distribuir a outros clientes, saia do modo de visualização.' },
+      { title: 'Painel Master', desc: 'A tela inicial do Super Admin reúne o acesso a qualquer cliente (lista de seleção, sem expor nomes na tela), atalhos para Gestão de Empresas, Treinamentos Oficiais, Relatório por Empresa e Atividades Master e uma apresentação da plataforma que pode ser mostrada a prospects.' },
       { title: 'Publicar treinamentos oficiais prontos', desc: 'Em "Treinamentos Oficiais" (menu Sistema Master), vincule um vídeo já cadastrado a cada tema pronto (Provimento 213/2026, Compliance, Provimento 149, LGPD) e clique em "Criar Trilha Oficial" — a trilha é publicada automaticamente para todos os clientes, com quiz gerado por IA.' },
       { title: 'Montar a equipe interna da MJ Consultoria', desc: 'Em "Equipe de Curadoria de Conteúdo" (nesta mesma tela), cadastre pessoas que só vão inserir/distribuir conteúdo (perfil Curador). Para alguém que vai te ajudar de forma mais ampla — colaboradores, relatórios, auditoria de qualquer cliente —, cadastre em "Colaboradores" escolhendo o perfil "Equipe MJ" (não pede cliente).' },
     ]
@@ -128,12 +130,13 @@ const SECTIONS: Section[] = [
     id: 'trails', icon: 'fa-road', title: 'Trilhas', subtitle: 'Trilhas de aprendizagem por perfil', image: '/tutorial/trails.png',
     steps: [
       { title: 'O que são Trilhas?', desc: 'Trilhas são sequências de conteúdos organizados por assunto e por perfil (ex.: atendimento, administrativo, financeiro, liderança) — servem para empresas de qualquer segmento e também para cartórios. Cada trilha guia o colaborador do básico ao avançado.' },
-      { title: 'Navegando em uma trilha', desc: 'Selecione uma trilha para ver os módulos disponíveis. Complete os módulos em sequência para liberar o próximo nível.' },
+      { title: 'Navegando em uma trilha', desc: 'Clique em "Iniciar" ou "Continuar trilha". A trilha abre em tela de curso: lista de módulos na lateral (com o que já foi concluído), barra de andamento no topo e botões Anterior/Próximo no fim de cada módulo. No celular, os módulos aparecem numa lista de seleção.' },
+      { title: 'Escolha como estudar: ler, ouvir, assistir ou infográfico', desc: 'Cada módulo mostra os formatos disponíveis para o tema — Ler (texto organizado em seções e listas), Ouvir (podcast), Assistir (vídeo) e Infográfico. O colaborador escolhe o que prefere, e a escolha vale para os próximos módulos. Vídeos e infográficos têm o botão "Tela cheia".' },
       { title: 'Progresso', desc: 'O progresso de cada trilha é salvo automaticamente. Acompanhe o avanço em "Meu Progresso" no menu CAPACITAÇÃO.' },
       { title: 'Trilhas modelo MJ Consultoria', desc: 'SUPERADMIN pode marcar uma trilha como "modelo oficial MJ Consultoria" (badge dourado) e distribuí-la para todos os clientes ou para uma lista específica.' },
       { title: 'Conteúdo liberado pela MJ Consultoria', desc: 'A equipe MJ Consultoria define, cliente a cliente, quais trilhas e materiais ficam disponíveis. Só aparece para a sua organização o que já foi liberado para ela — conteúdos exclusivos de outros clientes nunca são exibidos.' },
       { title: 'Assunto e setores', desc: 'Cada trilha tem um assunto (ex.: Segurança da Informação, LGPD e Privacidade, Ética e Conduta, Integração de Novos Colaboradores) — em "Minhas Trilhas" elas aparecem agrupadas por assunto. Opcionalmente, marque setores: a trilha passa a aparecer só para colaboradores desses setores.' },
-      { title: 'Vídeo, podcast e material de apoio', desc: 'Um módulo pode trazer vídeo ou podcast e, logo abaixo, um material de apoio (como um infográfico do mesmo tema). Ao final de cada módulo há uma avaliação de 7 questões geradas a partir do conteúdo.' },
+      { title: 'Montando os formatos de um módulo', desc: 'Ao criar ou editar a trilha, vincule a mídia principal do módulo e, em "Outros formatos do mesmo tema", adicione o podcast, o vídeo ou o infográfico correspondente do Repositório. Ao final de cada módulo há uma avaliação de 7 questões geradas a partir do conteúdo.' },
       { title: 'Instrutor, forma e carga horária', desc: 'Ao criar ou editar uma trilha, preencha o instrutor responsável, a forma de treinamento (EAD, presencial ou híbrida) e a carga horária em horas — esses dados alimentam o Resumo de Treinamentos e a carga horária por colaborador em Relatórios.' },
       { title: 'Fonte de conteúdo para Exames', desc: 'O texto dos módulos de cada trilha também é usado como fonte de conteúdo na tela de Exames — não é preciso duplicar o material lá.' },
       { title: 'Visibilidade', desc: 'Toda trilha pode ser publicada para "este cliente", "todos os clientes" ou uma lista de "clientes específicos" escolhida pelo SUPERADMIN.' },
@@ -148,11 +151,11 @@ const SECTIONS: Section[] = [
     ]
   },
   {
-    id: 'repositorio', icon: 'fa-photo-film', title: 'Repositório', subtitle: 'Vídeos, podcasts e infográficos de capacitação', image: '/tutorial/repositorio.png',
+    id: 'repositorio', icon: 'fa-photo-film', title: 'Repositório', subtitle: 'Vídeos e podcasts de capacitação', image: '/tutorial/repositorio.png',
     steps: [
-      { title: 'Tipos de conteúdo', desc: 'O repositório centraliza os materiais de capacitação da sua organização: vídeos, podcasts (áudios) e infográficos, organizados por categoria (Onboarding, Normativo, Técnico, Operacional, Comportamental).' },
-      { title: 'Reprodução protegida', desc: 'Os materiais abrem no player da própria plataforma, sem expor o link do arquivo e sem botão de download.' },
-      { title: 'Buscando conteúdo', desc: 'Use a busca e os filtros por tipo (vídeo, áudio, infográfico) e por categoria para localizar materiais.' },
+      { title: 'Tipos de conteúdo', desc: 'O repositório centraliza os vídeos e podcasts (áudios) de capacitação da sua organização, organizados por categoria (Onboarding, Normativo, Técnico, Operacional, Comportamental). Os infográficos ficam em "Banners e Infográficos" — o cartão de contagem leva direto para lá.' },
+      { title: 'Reprodução protegida', desc: 'Os materiais abrem no player da própria plataforma, sem expor o link do arquivo e sem botão de download. Os áudios tocam pelo servidor da plataforma, só para quem está logado e tem o conteúdo liberado.' },
+      { title: 'Buscando conteúdo', desc: 'Use a busca e os filtros por tipo (vídeo, áudio) e por categoria para localizar materiais.' },
       { title: 'Conclusão conta para a prova', desc: 'Um conteúdo só conta como visto quando fica aberto pelo tempo de duração cadastrado — é isso que libera a avaliação correspondente.' },
     ]
   },
@@ -173,9 +176,11 @@ const SECTIONS: Section[] = [
     ]
   },
   {
-    id: 'banners', icon: 'fa-images', title: 'Banners', subtitle: 'Materiais visuais de divulgação interna',
+    id: 'banners', icon: 'fa-images', title: 'Banners e Infográficos', subtitle: 'Infográficos dos treinamentos e materiais de divulgação', image: '/tutorial/banners.png',
     steps: [
-      { title: 'Publicando um banner', desc: 'Envie uma imagem ou link de campanha visual para divulgação interna (campanhas de segurança, datas comemorativas, avisos visuais).' },
+      { title: 'Infográficos', desc: 'Todos os infográficos liberados para a sua organização aparecem no topo da tela. Clique em "Visualizar" para abrir em tamanho grande, com o botão "Tela cheia". Os colaboradores acessam a mesma lista pelo item "Infográficos", na seção Capacitação, apenas para consulta.' },
+      { title: 'Publicando um material', desc: 'A gestão adiciona imagens, PDFs, apresentações ou links de divulgação interna (campanhas de segurança, datas comemorativas, avisos visuais), ou gera o texto de um banner com IA e imprime em PDF.' },
+      { title: 'Divulgando um infográfico novo', desc: 'Para chamar a atenção da equipe para um infográfico, publique um Comunicado com o link — se precisar de evidência, marque o aceite formal de leitura.' },
       { title: 'Visibilidade', desc: 'Assim como outros conteúdos, banners podem ser publicados para este cliente, todos os clientes ou uma lista de clientes específicos.' },
     ]
   },
@@ -212,18 +217,21 @@ const SECTIONS: Section[] = [
     ]
   },
   {
-    id: 'campanhas', icon: 'fa-rocket', title: 'Campanhas', subtitle: 'Campanhas motivacionais com IA',
+    id: 'campanhas', icon: 'fa-rocket', title: 'Campanhas', subtitle: 'Posts de comunicação com IA, publicação e histórico', image: '/tutorial/campanhas.png',
     steps: [
-      { title: 'Gerando uma campanha', desc: 'Descreva o objetivo (ex: incentivar a conclusão de uma trilha) e a IA gera sugestões de posts motivacionais para divulgação interna.' },
+      { title: 'Gerando uma campanha', desc: 'Escolha o tema (há sugestões prontas conforme o tipo da organização), os canais — LinkedIn, Instagram, WhatsApp, e-mail —, o tom e, se quiser, um contexto adicional. A IA gera um texto adequado para cada canal.' },
+      { title: 'Publicando', desc: 'O botão "Publicar" abre o WhatsApp, o LinkedIn ou o e-mail já com o texto pronto (no Instagram, o texto é copiado para você colar). Revise antes de enviar.' },
+      { title: 'Marcando como publicado', desc: 'Depois de publicar, clique em "Marcar como publicado": a data e quem publicou ficam registrados, e o histórico mostra cada campanha como Rascunho ou Publicada (ex.: 1/2 canais).' },
       { title: 'Uso recomendado', desc: 'Combine campanhas com Metas & Premiação para reforçar o engajamento da equipe em períodos de baixa adesão aos treinamentos.' },
     ]
   },
   {
-    id: 'progresso', icon: 'fa-chart-line', title: 'Meu Progresso', subtitle: 'Trilhas, exames e certificados pessoais',
+    id: 'progresso', icon: 'fa-chart-line', title: 'Meu Progresso', subtitle: 'Trilhas, conquistas e certificados pessoais', image: '/tutorial/progresso.png',
     steps: [
       { title: 'Visão pessoal', desc: 'Esta tela mostra exclusivamente o progresso do colaborador logado — trilhas iniciadas, exames realizados, certificados emitidos e pontuação acumulada.' },
       { title: 'Trilhas em andamento', desc: 'Veja o percentual de conclusão de cada trilha que você iniciou. Clique para retomar de onde parou.' },
-      { title: 'Histórico de notas', desc: 'Acompanhe a evolução das suas notas ao longo do tempo. O gráfico mostra a tendência de desempenho por módulo.' },
+      { title: 'Histórico de notas', desc: 'Acompanhe a evolução das suas notas ao longo do tempo na aba Histórico.' },
+      { title: 'Conquistas (badges)', desc: 'A aba Badges mostra as conquistas de bronze a platina — primeiro módulo concluído, aprovações, notas altas, trilhas completas e certificados. Só contam as trilhas liberadas para a sua organização.' },
     ]
   },
   {
@@ -240,6 +248,15 @@ const SECTIONS: Section[] = [
     steps: [
       { title: 'O que é exportado', desc: 'Gera uma exportação dos dados do seu cliente — colaboradores, trilhas, resultados de exames, certificados e comunicados — em formato para arquivamento externo.' },
       { title: 'Quando usar', desc: 'Recomendado antes de auditorias externas, migrações ou como cópia de segurança periódica independente do Firebase.' },
+    ]
+  },
+  {
+    id: 'acessibilidade', icon: 'fa-universal-access', title: 'Acessibilidade', subtitle: 'Libras (VLibras), tamanho do texto e alto contraste', image: '/tutorial/acessibilidade.png',
+    steps: [
+      { title: 'Recurso por organização', desc: 'A acessibilidade é habilitada pela MJ Consultoria para as organizações que contratam o recurso. Quando habilitada, aparecem o botão de acessibilidade (canto inferior direito) e o botão azul do VLibras (lateral direita da tela).' },
+      { title: 'Libras com o VLibras', desc: 'O VLibras, ferramenta gratuita do Governo Federal, traduz o texto da tela para Libras com um avatar. Clique no botão azul e depois no texto que deseja traduzir.' },
+      { title: 'Tamanho do texto, contraste e foco', desc: 'No botão de acessibilidade é possível aumentar o texto até 150%, ligar o alto contraste e destacar links e o foco do teclado. As preferências ficam salvas no navegador de cada pessoa.' },
+      { title: 'Na tela de entrada', desc: 'Os recursos aparecem também no login quando o navegador já foi usado por alguém da organização, ou quando o link de acesso termina com ?acessibilidade — esse link pode ser divulgado para a equipe.' },
     ]
   },
   {
