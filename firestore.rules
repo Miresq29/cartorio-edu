@@ -344,6 +344,14 @@ service cloud.firestore {
     match /metasDesempateGabarito/{docId} {
       allow read, write: if false;
     }
+    // Gabarito dos quizzes de treinamento — so criarQuizTreinamento/submeterQuizTreinamento.
+    match /treinamentosQuizzesGabarito/{docId} {
+      allow read, write: if false;
+    }
+    // Banco de questoes reutilizavel (com gabarito) — so gerarExame/gerarQuizModulo.
+    match /bancoQuestoes/{docId} {
+      allow read, write: if false;
+    }
 
     match /{document=**} { allow read, write: if false; }
   }

@@ -507,6 +507,8 @@ interface QuestaoExameServidor {
   correta: string;
   bloom: string;
   justificativa: string;
+  // Id da questão no bancoQuestoes (ausente no desempate, que não usa banco).
+  bid?: string;
 }
 
 // Mesma montagem de título/conteúdo que ExamesView.tsx fazia no cliente — o fonteTitulo
@@ -585,33 +587,40 @@ function embaralharAlternativas(q: QuestaoExameServidor): QuestaoExameServidor {
   };
 }
 
-function validarQuestoes(bruto: unknown, blooms = ["compreensao", "aplicacao", "analise"], bloomPadrao = "aplicacao"): QuestaoExameServidor[] {
+// Normaliza uma questão vinda da IA; null se o formato for inválido.
+function normalizarQuestao(q: any, i: number, blooms = ["compreensao", "aplicacao", "analise"], bloomPadrao = "aplicacao"): QuestaoExameServidor | null {
+  // A IA às vezes escreve "A)", "Alternativa B" ou só o texto — normaliza pra uma letra A-D.
+  const letraDe = (v: unknown) => (String(v ?? "").toUpperCase().match(/\b([A-D])\b/) || [])[1] || "";
+  const alternativas = Array.isArray(q?.alternativas)
+    ? q.alternativas.slice(0, 4).map((a: any, j: number) => ({
+      letra: letraDe(a?.letra) || "ABCD"[j],
+      texto: String(typeof a === "string" ? a : (a?.texto ?? "")),
+    }))
+    : [];
+  const correta = letraDe(q?.correta)
+    || (alternativas.find((a: { texto: string }) => a.texto && a.texto === String(q?.correta ?? ""))?.letra ?? "");
+  if (!q?.enunciado || alternativas.length !== 4 || !alternativas.some((a: { letra: string }) => a.letra === correta)) {
+    console.warn("questão da IA em formato inválido:", JSON.stringify(q).slice(0, 800));
+    return null;
+  }
+  return {
+    id: i + 1,
+    enunciado: String(q.enunciado),
+    alternativas,
+    correta,
+    bloom: blooms.includes(q.bloom) ? q.bloom : bloomPadrao,
+    justificativa: String(q.justificativa || ""),
+  };
+}
+
+function validarQuestoes(bruto: unknown, blooms?: string[], bloomPadrao?: string): QuestaoExameServidor[] {
   if (!Array.isArray(bruto) || bruto.length < EXAME_NUM_QUESTOES) {
     throw new HttpsError("internal", "A IA não gerou questões suficientes. Tente novamente.");
   }
-  // A IA às vezes escreve "A)", "Alternativa B" ou só o texto — normaliza pra uma letra A-D.
-  const letraDe = (v: unknown) => (String(v ?? "").toUpperCase().match(/\b([A-D])\b/) || [])[1] || "";
   return bruto.slice(0, EXAME_NUM_QUESTOES).map((q: any, i: number) => {
-    const alternativas = Array.isArray(q?.alternativas)
-      ? q.alternativas.slice(0, 4).map((a: any, j: number) => ({
-        letra: letraDe(a?.letra) || "ABCD"[j],
-        texto: String(typeof a === "string" ? a : (a?.texto ?? "")),
-      }))
-      : [];
-    const correta = letraDe(q?.correta)
-      || (alternativas.find((a: { texto: string }) => a.texto && a.texto === String(q?.correta ?? ""))?.letra ?? "");
-    if (!q?.enunciado || alternativas.length !== 4 || !alternativas.some((a: { letra: string }) => a.letra === correta)) {
-      console.warn("questão da IA em formato inválido:", JSON.stringify(q).slice(0, 800));
-      throw new HttpsError("internal", "A IA gerou uma questão em formato inválido. Tente novamente.");
-    }
-    return embaralharAlternativas({
-      id: i + 1,
-      enunciado: String(q.enunciado),
-      alternativas,
-      correta,
-      bloom: blooms.includes(q.bloom) ? q.bloom : bloomPadrao,
-      justificativa: String(q.justificativa || ""),
-    });
+    const questao = normalizarQuestao(q, i, blooms, bloomPadrao);
+    if (!questao) throw new HttpsError("internal", "A IA gerou uma questão em formato inválido. Tente novamente.");
+    return embaralharAlternativas(questao);
   });
 }
 
@@ -625,8 +634,8 @@ async function gerarQuestoesIA(prompt: string, blooms?: string[], bloomPadrao?: 
   }
 }
 
-async function gerarJsonIA(prompt: string): Promise<unknown> {
-  const texto = await chamarGemini(prompt, 1500 * EXAME_NUM_QUESTOES + 3000, true);
+async function gerarJsonIA(prompt: string, numQuestoes = EXAME_NUM_QUESTOES): Promise<unknown> {
+  const texto = await chamarGemini(prompt, 1500 * numQuestoes + 3000, true);
   try {
     const parsed = JSON.parse(texto);
     return Array.isArray(parsed) ? parsed : parsed?.questoes;
@@ -640,6 +649,101 @@ Na justificativa, NÃO cite letras de alternativas (a ordem será embaralhada) �
 
 Retorne APENAS array JSON sem markdown:
 [{"id":1,"enunciado":"...","alternativas":[{"letra":"A","texto":"..."},{"letra":"B","texto":"..."},{"letra":"C","texto":"..."},{"letra":"D","texto":"..."}],"correta":"A","bloom":"...","justificativa":"..."}]`;
+
+// ── Banco de questões reutilizável ───────────────────────────────────────────
+// Antes cada tentativa de prova/quiz de módulo pedia 7 questões novas à IA — a turma inteira
+// fazendo o mesmo treinamento (mais as refações) estourava a cota do Gemini. Agora a IA gera
+// UMA vez um banco de BANCO_TAMANHO questões por conteúdo (bancoQuestoes/, sem acesso pelo
+// cliente) e cada tentativa sorteia 7 dele, priorizando as que a pessoa ainda não viu, com ordem
+// das questões e das alternativas embaralhada. O banco só é refeito quando o texto do conteúdo
+// muda (hash). A sessão continua guardando as 7 sorteadas com gabarito — a correção não muda.
+const BANCO_TAMANHO = 21;
+// Muda isto quando o prompt do banco mudar, pra forçar a regeração.
+const BANCO_VERSAO_PROMPT = "v1";
+const BANCO_TRAVA_MS = 150_000;
+
+function embaralhar<T>(lista: T[]): T[] {
+  const r = [...lista];
+  for (let i = r.length - 1; i > 0; i--) {
+    const j = randomInt(i + 1);
+    [r[i], r[j]] = [r[j], r[i]];
+  }
+  return r;
+}
+
+// Devolve o banco do conteúdo, gerando pela IA só se não existir ou se o conteúdo mudou.
+// A trava evita que vários colaboradores abrindo a prova ao mesmo tempo disparem várias gerações.
+async function obterBanco(
+  chave: string, conteudoBase: string, montarPrompt: (n: number) => string,
+): Promise<QuestaoExameServidor[]> {
+  const ref = db.collection("bancoQuestoes").doc(chave);
+  const hash = createHash("sha256").update(BANCO_VERSAO_PROMPT + "\u0000" + conteudoBase).digest("hex");
+  const atual = await db.runTransaction(async (tx) => {
+    const d = (await tx.get(ref)).data();
+    if (d?.hash === hash && (d.questoes?.length || 0) >= EXAME_NUM_QUESTOES) return d.questoes as QuestaoExameServidor[];
+    if (d?.gerandoHash === hash && (d.gerandoDesde?.toMillis?.() || 0) > Date.now() - BANCO_TRAVA_MS) {
+      throw new HttpsError("unavailable", "As questões deste conteúdo estão sendo preparadas. Tente novamente em 1 minuto.");
+    }
+    tx.set(ref, { gerandoHash: hash, gerandoDesde: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+    return null;
+  });
+  if (atual) return atual;
+
+  try {
+    const prompt = montarPrompt(BANCO_TAMANHO);
+    let validas: QuestaoExameServidor[] = [];
+    for (let tentativa = 0; tentativa < 2 && validas.length < EXAME_NUM_QUESTOES; tentativa++) {
+      try {
+        const bruto = await gerarJsonIA(prompt, BANCO_TAMANHO);
+        // Aqui uma questão malformada é só descartada (no banco sobram outras), e repetidas saem.
+        const vistos = new Set<string>();
+        validas = (Array.isArray(bruto) ? bruto : [])
+          .map((q, i) => normalizarQuestao(q, i))
+          .filter((q): q is QuestaoExameServidor => {
+            const k = q?.enunciado.trim().toLowerCase().replace(/\s+/g, " ");
+            if (!q || !k || vistos.has(k)) return false;
+            vistos.add(k);
+            return true;
+          });
+      } catch (e) {
+        if (!(e instanceof HttpsError) || e.code !== "internal") throw e;
+      }
+    }
+    if (validas.length < EXAME_NUM_QUESTOES) {
+      throw new HttpsError("internal", "A IA não gerou questões suficientes. Tente novamente.");
+    }
+    // bid leva o hash: depois que o conteúdo muda, as questões antigas não contam como "já vistas".
+    const questoes = validas.slice(0, BANCO_TAMANHO).map((q, i) => ({ ...q, id: i + 1, bid: `${hash.slice(0, 8)}-${i + 1}` }));
+    await ref.set({ chave, hash, questoes, geradoEm: admin.firestore.FieldValue.serverTimestamp() });
+    return questoes;
+  } catch (e) {
+    await ref.update({ gerandoHash: admin.firestore.FieldValue.delete(), gerandoDesde: admin.firestore.FieldValue.delete() }).catch(() => {});
+    throw e;
+  }
+}
+
+// bids que a pessoa já recebeu em sessões anteriores do mesmo conteúdo.
+async function questoesJaVistas(query: FirebaseFirestore.Query): Promise<Set<string>> {
+  const snap = await query.select("questoes").get();
+  return new Set(snap.docs.flatMap((d) => ((d.data().questoes || []) as QuestaoExameServidor[]).map((q) => q.bid || "")).filter(Boolean));
+}
+
+// Sorteia EXAME_NUM_QUESTOES do banco: primeiro as não vistas, respeitando a mistura de Bloom
+// quando informada; completa com as já vistas se o banco não tiver novas suficientes.
+function sortearDoBanco(banco: QuestaoExameServidor[], vistas: Set<string>, mistura?: Record<string, number>): QuestaoExameServidor[] {
+  const ordem = [...embaralhar(banco.filter((q) => !vistas.has(q.bid || ""))), ...embaralhar(banco.filter((q) => vistas.has(q.bid || "")))];
+  const escolhidas: QuestaoExameServidor[] = [];
+  for (const [bloom, n] of Object.entries(mistura || {})) {
+    escolhidas.push(...ordem.filter((q) => q.bloom === bloom).slice(0, n));
+  }
+  for (const q of ordem) {
+    if (escolhidas.length >= EXAME_NUM_QUESTOES) break;
+    if (!escolhidas.includes(q)) escolhidas.push(q);
+  }
+  return embaralhar(escolhidas.slice(0, EXAME_NUM_QUESTOES)).map((q, i) => embaralharAlternativas({ ...q, id: i + 1 }));
+}
+
+const MISTURA_BLOOM_EXAME = { compreensao: 2, aplicacao: 3, analise: 2 };
 
 export const gerarExame = onCall({ secrets: [GEMINI_API_KEY], timeoutSeconds: 120 }, async (request) => {
   if (!request.auth) {
@@ -681,26 +785,26 @@ export const gerarExame = onCall({ secrets: [GEMINI_API_KEY], timeoutSeconds: 12
       : "Você ainda não assistiu esse treinamento por completo. Assista o conteúdo antes de fazer a prova.");
   }
 
-  const prompt = `Especialista em avaliação educacional corporativa.
+  const texto = conteudo.substring(0, EXAME_MAX_CARACTERES);
+  // Mesma proporção 2/3/2 de antes, escalada pro tamanho do banco (21 → 6/9/6).
+  const banco = await obterBanco(`exame_${tipo}_${fonteId}`, `${titulo}\n${texto}`, (n) => `Especialista em avaliação educacional corporativa.
 
 TEMA: "${titulo}"
 CONTEÚDO:
-${conteudo.substring(0, EXAME_MAX_CARACTERES)}
+${texto}
 
 As questões devem cobrir o conteúdo de forma distribuída (se houver vários módulos/seções, não concentre tudo no primeiro).
+Elas formam um banco do qual serão sorteadas provas — não repita a mesma pergunta com outras palavras.
 
-Gere EXATAMENTE ${EXAME_NUM_QUESTOES} questões de múltipla escolha (Taxonomia de Bloom nível médio):
-- 2 COMPREENSÃO (bloom: "compreensao")
-- 3 APLICAÇÃO (bloom: "aplicacao")
-- 2 ANÁLISE (bloom: "analise")
+Gere EXATAMENTE ${n} questões de múltipla escolha (Taxonomia de Bloom nível médio):
+- ${Math.round(n * 2 / 7)} COMPREENSÃO (bloom: "compreensao")
+- ${n - 2 * Math.round(n * 2 / 7)} APLICAÇÃO (bloom: "aplicacao")
+- ${Math.round(n * 2 / 7)} ANÁLISE (bloom: "analise")
 
-Regras: 4 alternativas (A-D), 1 correta, distractores plausíveis, justificativa breve.
-Na justificativa, NÃO cite letras de alternativas (a ordem será embaralhada) — explique pelo conteúdo.
-
-Retorne APENAS array JSON sem markdown:
-[{"id":1,"enunciado":"...","alternativas":[{"letra":"A","texto":"..."},{"letra":"B","texto":"..."},{"letra":"C","texto":"..."},{"letra":"D","texto":"..."}],"correta":"A","bloom":"compreensao","justificativa":"..."}]`;
-
-  const questoes = await gerarQuestoesIA(prompt);
+${FORMATO_QUESTOES_JSON}`);
+  const vistas = await questoesJaVistas(db.collection("examesSessoes")
+    .where("userId", "==", caller.uid).where("fonteId", "==", fonteId));
+  const questoes = sortearDoBanco(banco, vistas, MISTURA_BLOOM_EXAME);
 
   const sessaoRef = db.collection("examesSessoes").doc();
   await sessaoRef.set({
@@ -943,15 +1047,19 @@ export const gerarQuizModulo = onCall({ secrets: [GEMINI_API_KEY], timeoutSecond
   const { trilha, trilhaId, modulo } = await carregarProgressoModulo(caller, progressoId, String(request.data?.moduloId || ""));
   if (!modulo.temQuiz) throw new HttpsError("failed-precondition", "Este módulo não tem quiz.");
 
-  const prompt = `Você é um gerador de quiz para treinamento corporativo.
+  const texto = String(modulo.conteudo || modulo.descricao || "").substring(0, 4000);
+  const banco = await obterBanco(`modulo_${trilhaId}_${modulo.id}`, `${modulo.titulo || ""}\n${texto}`, (n) => `Você é um gerador de quiz para treinamento corporativo.
 
 Módulo: ${modulo.titulo || ""}
 Conteúdo:
-${String(modulo.conteudo || modulo.descricao || "").substring(0, 4000)}
+${texto}
 
-Gere EXATAMENTE ${EXAME_NUM_QUESTOES} questões de múltipla escolha sobre este conteúdo (bloom: "compreensao", "aplicacao" ou "analise").
-${FORMATO_QUESTOES_JSON}`;
-  const questoes = await gerarQuestoesIA(prompt);
+Gere EXATAMENTE ${n} questões de múltipla escolha sobre este conteúdo (bloom: "compreensao", "aplicacao" ou "analise").
+Elas formam um banco do qual serão sorteados quizzes — não repita a mesma pergunta com outras palavras.
+${FORMATO_QUESTOES_JSON}`);
+  const vistas = await questoesJaVistas(db.collection("quizSessoes")
+    .where("userId", "==", caller.uid).where("trilhaId", "==", trilhaId).where("moduloId", "==", modulo.id));
+  const questoes = sortearDoBanco(banco, vistas);
 
   const sessaoRef = db.collection("quizSessoes").doc();
   await sessaoRef.set({
@@ -1180,8 +1288,53 @@ export const relatorioErros = onCall({ timeoutSeconds: 120, memory: "512MiB" }, 
   };
 });
 
-// Quiz de Treinamentos: o quiz (questões + gabarito) é criado pela gestão em treinamentosQuizzes;
-// a correção e o registro do resultado passam a ser feitos aqui.
+// Quiz de Treinamentos: criado pela gestão. O doc treinamentosQuizzes (lido por todo colaborador
+// do cliente) leva só enunciados/opções; correta e explicação ficam em treinamentosQuizzesGabarito/
+// {mesmo id}, sem acesso pelo cliente — antes o gabarito era legível no navegador.
+// Quizzes antigos ainda com gabarito no doc: scripts/separar-gabarito-quizzes.mjs.
+export const criarQuizTreinamento = onCall(async (request) => {
+  if (!request.auth) throw new HttpsError("unauthenticated", "Login necessário.");
+  const caller = await getCallerProfile(request.auth.uid);
+  await enforceRateLimit(caller.uid, "criarQuizTreinamento", 10, 60_000);
+
+  // Mesma regra de canWriteContentArray (firestore.rules): equipe da plataforma escolhe os
+  // clientes; gestor/admin só cria para o próprio.
+  const staff = PLATFORM_STAFF_ROLES.includes(caller.role) || caller.role === "curador";
+  if (!staff && !GESTOR_ROLES.includes(caller.role)) throw new HttpsError("permission-denied", "Só a gestão cria questionários.");
+  const tenantIds = ((request.data?.tenantIds || []) as unknown[]).map(String).filter(Boolean);
+  if (!staff && (tenantIds.length !== 1 || tenantIds[0] !== caller.tenantId)) {
+    throw new HttpsError("permission-denied", "Questionário só pode ser criado para o seu cliente.");
+  }
+
+  const treinamento = String(request.data?.treinamento || "").trim();
+  const titulo = String(request.data?.titulo || "").trim();
+  const bruto = (Array.isArray(request.data?.questoes) ? request.data.questoes : []) as any[];
+  const questoes = bruto.slice(0, 50).map((q) => ({
+    texto: String(q?.texto || "").trim(),
+    opcoes: (Array.isArray(q?.opcoes) ? q.opcoes : []).slice(0, 6).map((o: unknown) => String(o ?? "")),
+    correta: Number(q?.correta),
+    explicacao: String(q?.explicacao || ""),
+  }));
+  if (!treinamento || !titulo || !questoes.length
+    || questoes.some((q) => !q.texto || q.opcoes.length < 2 || !Number.isInteger(q.correta) || q.correta < 0 || q.correta >= q.opcoes.length)) {
+    throw new HttpsError("invalid-argument", "Preencha o treinamento, o título e todas as questões com a resposta correta.");
+  }
+
+  const ref = db.collection("treinamentosQuizzes").doc();
+  await db.batch()
+    .set(ref, {
+      treinamento, titulo, geradoPorIA: request.data?.geradoPorIA === true, tenantIds,
+      questoes: questoes.map((q, i) => ({ id: `q${i + 1}`, texto: q.texto, opcoes: q.opcoes })),
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    })
+    .set(db.collection("treinamentosQuizzesGabarito").doc(ref.id), {
+      questoes: questoes.map((q) => ({ correta: q.correta, explicacao: q.explicacao })), tenantIds,
+    })
+    .commit();
+  return { id: ref.id };
+});
+
+// A correção e o registro do resultado são feitos aqui.
 export const submeterQuizTreinamento = onCall(async (request) => {
   if (!request.auth) throw new HttpsError("unauthenticated", "Login necessário.");
   const caller = await getCallerProfile(request.auth.uid);
@@ -1194,7 +1347,9 @@ export const submeterQuizTreinamento = onCall(async (request) => {
     throw new HttpsError("not-found", "Questionário não encontrado.");
   }
   const quiz = quizSnap.data()!;
-  const questoes = (quiz.questoes || []) as { correta: number }[];
+  const gabSnap = await db.collection("treinamentosQuizzesGabarito").doc(quizId).get();
+  // Quiz antigo, ainda não migrado, tem o gabarito no próprio doc.
+  const questoes = ((gabSnap.exists ? gabSnap.data()!.questoes : quiz.questoes) || []) as { correta: number; explicacao?: string }[];
   if (!questoes.length || respostas.length < questoes.length) {
     throw new HttpsError("invalid-argument", "Responda todas as questões antes de enviar.");
   }
@@ -1210,7 +1365,9 @@ export const submeterQuizTreinamento = onCall(async (request) => {
   }
 
   const resps = questoes.map((_, i) => Number(respostas[i]));
-  const corretas = resps.filter((r, i) => r === Number(questoes[i].correta)).length;
+  // Acerto por questão: o painel de dificuldade usa isto (não lê mais o gabarito).
+  const acertos = resps.map((r, i) => r === Number(questoes[i].correta));
+  const corretas = acertos.filter(Boolean).length;
   const nota = Math.round((corretas / questoes.length) * 100);
   const aprovado = nota >= QUIZ_TREINAMENTO_NOTA_APROVACAO;
 
@@ -1219,7 +1376,7 @@ export const submeterQuizTreinamento = onCall(async (request) => {
     quizId, quizTitulo: quiz.titulo || "", treinamento: quiz.treinamento || "",
     colaborador: (user.name as string) || "", userId: caller.uid,
     trailTitle: quiz.treinamento || "", cargo: caller.role, nota, total: questoes.length,
-    aprovado, respostas: resps, tenantId: caller.tenantId,
+    aprovado, respostas: resps, acertos, tenantId: caller.tenantId,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
   };
   const ref = await db.collection("treinamentosQuizResults").add(resultado);
@@ -1232,7 +1389,10 @@ export const submeterQuizTreinamento = onCall(async (request) => {
       nota, tenantId: caller.tenantId, createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
   }
-  return { id: ref.id, nota, aprovado, total: questoes.length, corretas };
+  return {
+    id: ref.id, nota, aprovado, total: questoes.length, corretas,
+    gabarito: questoes.map((q) => ({ correta: Number(q.correta), explicacao: String(q.explicacao || "") })),
+  };
 });
 
 // Desempate de Metas: a gestão cria (questões geradas aqui), os participantes respondem e a

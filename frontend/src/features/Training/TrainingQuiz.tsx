@@ -3,17 +3,28 @@ import { db, functions } from '../../services/firebase';
 import { httpsCallable } from 'firebase/functions';
 import {
   collection, onSnapshot, query, orderBy, where,
-  addDoc, deleteDoc, doc, serverTimestamp
+  deleteDoc, doc
 } from 'firebase/firestore';
 import { useApp } from '../../context/AppContext';
 import { GeminiService } from '../../services/geminiService';
 import { QUESTOES_POR_AVALIACAO } from '../../utils/embaralharQuestoes';
 import VisibilidadeCartorioPicker from '../../components/VisibilidadeCartorioPicker';
 
+// O doc do quiz só traz enunciado/opções; o gabarito fica no servidor e volta na correção.
 interface Question {
   id: string;
   texto: string;
   opcoes: string[];
+}
+
+interface QuestaoForm {
+  texto: string;
+  opcoes: string[];
+  correta: number;
+  explicacao: string;
+}
+
+interface ItemGabarito {
   correta: number;
   explicacao: string;
 }
@@ -53,8 +64,13 @@ const DIAS_BLOQUEIO = 3;  // espelha QUIZ_TREINAMENTO_DIAS_BLOQUEIO (functions),
 
 const submeterQuizTreinamentoFn = httpsCallable<
   { quizId: string; respostas: number[] },
-  { id: string; nota: number; aprovado: boolean; total: number; corretas: number }
+  { id: string; nota: number; aprovado: boolean; total: number; corretas: number; gabarito: ItemGabarito[] }
 >(functions, 'submeterQuizTreinamento');
+
+const criarQuizTreinamentoFn = httpsCallable<
+  { treinamento: string; titulo: string; questoes: QuestaoForm[]; geradoPorIA: boolean; tenantIds: string[] },
+  { id: string }
+>(functions, 'criarQuizTreinamento');
 
 const calcLiberadoEm = (results: QuizResult[], quizId: string, colaborador: string): Date | null => {
   const falhas = results
@@ -92,6 +108,7 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
   const [respostas, setRespostas] = useState<number[]>([]);
   const [respondente, setRespondente] = useState({ nome: '', cargo: '' });
   const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
+  const [gabarito, setGabarito] = useState<ItemGabarito[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generateError, setGenerateError] = useState('');
   const [identStarted, setIdentStarted] = useState(false);
@@ -99,7 +116,7 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
 
   // Form manual
   const [form, setForm] = useState({ treinamento: '', titulo: '' });
-  const [questoes, setQuestoes] = useState<Omit<Question, 'id'>[]>([
+  const [questoes, setQuestoes] = useState<QuestaoForm[]>([
     { texto: '', opcoes: ['', '', '', ''], correta: 0, explicacao: '' }
   ]);
 
@@ -162,21 +179,17 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
 
     try {
       const questoesExame = await GeminiService.generateExam(titulo, conteudo, QUESTOES_POR_AVALIACAO);
-      const questoesComId = questoesExame.map((q: any, i: number) => ({
-        id: `q${i + 1}`,
-        texto: q.enunciado,
-        opcoes: q.alternativas.map((a: any) => a.texto),
-        correta: ['A', 'B', 'C', 'D'].indexOf(q.correta),
-        explicacao: q.justificativa,
-      }));
-
-      await addDoc(collection(db, 'treinamentosQuizzes'), {
+      await criarQuizTreinamentoFn({
         treinamento: titulo,
         titulo: `Avaliacao: ${titulo}`,
-        questoes: questoesComId,
+        questoes: questoesExame.map((q: any) => ({
+          texto: q.enunciado,
+          opcoes: q.alternativas.map((a: any) => a.texto),
+          correta: ['A', 'B', 'C', 'D'].indexOf(q.correta),
+          explicacao: q.justificativa,
+        })),
         geradoPorIA: true,
         tenantIds: isSuperAdmin ? tenantIdsForm : [tenantId],
-        createdAt: serverTimestamp(),
       });
 
       setAiForm({ treinamento: '' });
@@ -192,10 +205,12 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
   // ---- CRIAR QUIZ MANUAL ----
   const handleCreateQuiz = async () => {
     if (!form.treinamento || !form.titulo) return;
-    const questoesComId = questoes.map((q, i) => ({ ...q, id: `q${i + 1}` }));
-    await addDoc(collection(db, 'treinamentosQuizzes'), {
-      ...form, questoes: questoesComId, geradoPorIA: false, tenantIds: isSuperAdmin ? tenantIdsForm : [tenantId], createdAt: serverTimestamp(),
-    });
+    try {
+      await criarQuizTreinamentoFn({ ...form, questoes, geradoPorIA: false, tenantIds: isSuperAdmin ? tenantIdsForm : [tenantId] });
+    } catch (e: any) {
+      alert(e?.message || 'Não foi possível salvar o questionário.');
+      return;
+    }
     setForm({ treinamento: '', titulo: '' });
     setQuestoes([{ texto: '', opcoes: ['', '', '', ''], correta: 0, explicacao: '' }]);
     setMode('list');
@@ -246,6 +261,7 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
     if (!selectedQuiz) return;
     try {
       const { data } = await submeterQuizTreinamentoFn({ quizId: selectedQuiz.id, respostas: resps });
+      setGabarito(data.gabarito || []);
       setQuizResult({
         id: data.id, quizId: selectedQuiz.id, quizTitulo: selectedQuiz.titulo,
         treinamento: selectedQuiz.treinamento, trailTitle: selectedQuiz.treinamento,
@@ -266,7 +282,7 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
 
   // ---- TELA DE RESULTADO COM EXPLICAÇÕES ----
   if (mode === 'result' && quizResult && selectedQuiz) {
-    const corretas = quizResult.respostas.filter((r, i) => r === selectedQuiz.questoes[i].correta).length;
+    const corretas = quizResult.respostas.filter((r, i) => r === gabarito[i]?.correta).length;
     return (
       <div className="space-y-6">
         {/* Placar */}
@@ -284,7 +300,8 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
         <div className="space-y-3">
           <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest">Gabarito Comentado</h4>
           {selectedQuiz.questoes.map((q, i) => {
-            const acertou = quizResult.respostas[i] === q.correta;
+            const g = gabarito[i];
+            const acertou = quizResult.respostas[i] === g?.correta;
             return (
               <div key={i} className={`p-5 rounded-2xl border space-y-3 ${acertou ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-red-500/5 border-red-500/20'}`}>
                 <div className="flex items-start gap-3">
@@ -297,7 +314,7 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
                 <div className="ml-9 space-y-1">
                   {q.opcoes.map((opcao, oi) => {
                     const isSua = quizResult.respostas[i] === oi;
-                    const isCorreta = q.correta === oi;
+                    const isCorreta = g?.correta === oi;
                     return (
                       <div key={oi} className={`px-3 py-2 rounded-lg text-xs flex items-center gap-2 ${
                         isCorreta ? 'bg-emerald-500/20 text-emerald-300 font-bold' :
@@ -314,14 +331,14 @@ const TrainingQuiz: React.FC<Props> = ({ checklists, knowledgeDocs = [] }) => {
                 </div>
 
                 {/* Explicação sempre visível, destacada quando errou */}
-                {q.explicacao && (
+                {g?.explicacao && (
                   <div className={`ml-9 p-3 rounded-xl text-xs leading-relaxed ${
                     acertou
                       ? 'bg-slate-200/50 text-slate-500 border border-slate-200'
                       : 'bg-amber-500/10 text-amber-300 border border-amber-500/20'
                   }`}>
                     <i className={`fa-solid fa-circle-info mr-2 ${acertou ? 'text-slate-500' : 'text-amber-400'}`}></i>
-                    {q.explicacao}
+                    {g.explicacao}
                   </div>
                 )}
               </div>

@@ -18,6 +18,7 @@ interface QuizResult {
   total: number;
   aprovado: boolean;
   respostas: number[];
+  acertos?: boolean[];
   createdAt?: any;
 }
 
@@ -25,7 +26,7 @@ interface Quiz {
   id: string;
   titulo: string;
   treinamento: string;
-  questoes: { id: string; texto: string; opcoes: string[]; correta: number }[];
+  questoes: { id: string; texto: string; opcoes: string[] }[];
 }
 
 interface TrilhaProgresso {
@@ -222,7 +223,8 @@ const TrainingDashboard: React.FC = () => {
       quiz.questoes?.forEach((q, idx) => {
         const tentativas = resultadosDoQuiz.filter(r => r.respostas && r.respostas[idx] !== undefined).length;
         if (tentativas === 0) return;
-        const erros = resultadosDoQuiz.filter(r => r.respostas && r.respostas[idx] !== q.correta).length;
+        // acertos[] vem da correção no servidor (o gabarito não fica mais no doc do quiz).
+        const erros = resultadosDoQuiz.filter(r => r.acertos && r.acertos[idx] === false).length;
         const taxaErro = Math.round((erros / tentativas) * 100);
         metrics.push({
           quizId: quiz.id,
