@@ -6,8 +6,10 @@
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { readFileSync } from 'fs';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
 
-const key = JSON.parse(readFileSync('./key-cartorio-edu.json', 'utf8'));
+const key = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'key-cartorio-edu.json'), 'utf8'));
 initializeApp({ credential: cert(key) });
 const db = getFirestore();
 const APLICAR = process.argv.includes('--aplicar');
