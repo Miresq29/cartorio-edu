@@ -11,6 +11,8 @@ admin.initializeApp();
 export { notificarComunicado, notificarTrilha, verificarExpiracoes, testarEnvioEmail, notificarReforco, verificarReexamesPendentes, solicitarRedefinicaoSenha } from "./email";
 export { notificarSimulacaoPhishing, phishClick } from "./phishing";
 export { verificarDemoExpirada } from "./demo";
+export { avisarAlertaPlataforma, verificarCreditoGemini } from "./creditoGemini";
+import { GEMINI_API_KEY, GEMINI_MODEL, motivoIaParada, registrarIaParada } from "./creditoGemini";
 
 const db = admin.firestore();
 
@@ -419,8 +421,7 @@ export const definirAcessoColaborador = onCall(async (request) => {
 // a chave em VITE_GEMINI_API_KEY — qualquer um que inspecionasse o bundle JS publicado
 // extraía a chave e usava a cota (e a fatura) da MJ Consultoria. Agora a chave fica só
 // aqui, como secret do Cloud Functions, e o cliente chama esta function autenticada.
-const GEMINI_API_KEY = defineSecret("GEMINI_API_KEY");
-const GEMINI_MODEL = "gemini-flash-latest";
+// Chave/modelo e o alerta de crédito esgotado ficam em creditoGemini.ts.
 
 export const geminiGenerate = onCall({ secrets: [GEMINI_API_KEY] }, async (request) => {
   if (!request.auth) {
@@ -461,6 +462,11 @@ async function chamarGemini(prompt: string, maxOutputTokens: number, jsonMode: b
   if (!response.ok) {
     const err: any = await response.json().catch(() => ({}));
     const msg = err?.error?.message || response.statusText;
+    const parada = motivoIaParada(response.status, err);
+    if (parada) {
+      await registrarIaParada(parada, `chamada à IA (${GEMINI_MODEL})`).catch((e) => console.error("[credito-gemini] alerta não gravado:", e));
+      throw new HttpsError("resource-exhausted", "A IA está temporariamente indisponível (limite de gasto da conta). A equipe MJ já foi avisada — tente novamente mais tarde.");
+    }
     if (response.status === 429) {
       throw new HttpsError("resource-exhausted", "Cota da API Gemini esgotada. Aguarde ou verifique ai.google.dev.");
     }
