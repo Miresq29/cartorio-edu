@@ -26,8 +26,16 @@ function aplicarPrefs(p: Prefs | null) {
 
 // O loader atual do VLibras (vlibras-plugin.js) se monta sozinho ao carregar: cria o botão em
 // #vlibras-access-wrapper e, no clique, baixa o app do avatar (#vlibras-app-root).
+// Ele também REABRE sozinho se da última vez ficou aberto (localStorage '@vlibras-widget' com
+// "isOpen":true) — abria por cima de infográfico/vídeo sem a pessoa pedir, e quando o player do
+// gov.br falha fica um painel "Não foi possível carregar o player" cobrindo o conteúdo (visto em
+// 20/10/2026). Começa sempre fechado; abre só pelo botão azul.
 function carregarVLibras() {
   if (document.getElementById('vlibras-script')) return;
+  try {
+    const salvo = localStorage.getItem('@vlibras-widget');
+    if (salvo?.includes('"isOpen":true')) localStorage.setItem('@vlibras-widget', salvo.replace(/"isOpen":true/g, '"isOpen":false'));
+  } catch { /* sem armazenamento: o loader também não reabre */ }
   (window as any).VLibrasWidget = { path: VLIBRAS_APP };
   const s = document.createElement('script');
   s.id = 'vlibras-script';
