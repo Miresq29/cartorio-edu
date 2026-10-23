@@ -8,6 +8,7 @@ import { useToast } from '../../context/ToastContext';
 import { db, functions } from '../../services/firebase';
 import { httpsCallable } from 'firebase/functions';
 import { useSetoresTenant } from '../../hooks/useSetoresTenant';
+import { useLimitesTreinamento } from '../../hooks/useLimitesTreinamento';
 import {
   collection, onSnapshot, query, orderBy, where,
   doc, updateDoc, deleteDoc, addDoc, serverTimestamp, writeBatch
@@ -178,6 +179,24 @@ const UsersView: React.FC = () => {
     try { await salvarSetores([...setoresFoco, nome]); setNovoSetor(''); }
     catch { showToast('Não foi possível salvar o setor.', 'error'); }
   };
+  // Limite de treinamentos por colaborador (dia/semana/mês) do cliente em foco.
+  const { limites, salvarLimites } = useLimitesTreinamento(tenantEmFoco || undefined);
+  const [showLimites, setShowLimites] = useState(false);
+  const [formLimites, setFormLimites] = useState({ dia: '', semana: '', mes: '' });
+  useEffect(() => {
+    setFormLimites({ dia: limites.dia ? String(limites.dia) : '', semana: limites.semana ? String(limites.semana) : '', mes: limites.mes ? String(limites.mes) : '' });
+  }, [limites.dia, limites.semana, limites.mes]);
+  const temLimite = !!(limites.dia || limites.semana || limites.mes);
+  const gravarLimites = async () => {
+    const num = (v: string) => (v.trim() ? Number(v) : null);
+    const novos = { dia: num(formLimites.dia), semana: num(formLimites.semana), mes: num(formLimites.mes) };
+    if (Object.values(novos).some(v => v !== null && (!Number.isInteger(v) || v < 1 || v > 100))) {
+      showToast('Use números inteiros de 1 a 100, ou deixe vazio para não limitar.', 'error'); return;
+    }
+    try { await salvarLimites(novos); showToast('Limites salvos.', 'success'); }
+    catch { showToast('Não foi possível salvar os limites.', 'error'); }
+  };
+
   const removerSetor = async (nome: string) => {
     const emUso = users.filter(u => u.tenantId === tenantEmFoco && u.setor === nome).length;
     if (!confirm(emUso ? `${emUso} colaborador(es) estão no setor "${nome}". Remover da lista mesmo assim? (o cadastro deles não muda)` : `Remover o setor "${nome}"?`)) return;
@@ -703,6 +722,12 @@ const UsersView: React.FC = () => {
                     <i className="fa-solid fa-sitemap text-xs text-gold"></i>Setores ({setoresFoco.length})
                   </button>
                 )}
+                {isGestor && tenantEmFoco && (
+                  <button onClick={() => setShowLimites(v => !v)}
+                    className="flex items-center gap-2 bg-white border border-slate-200 hover:border-gold text-slate-600 px-4 py-2.5 rounded-xl text-sm font-bold transition-all">
+                    <i className="fa-solid fa-gauge-high text-xs text-gold"></i>Limite de treinamentos{temLimite ? ' (ativo)' : ''}
+                  </button>
+                )}
                 {verTodasEmpresas && (
                   <select value={filtroCartorio} onChange={e => setFiltroCartorio(e.target.value)}
                     title="Filtrar por cliente"
@@ -741,6 +766,34 @@ const UsersView: React.FC = () => {
                     <button onClick={adicionarSetor} disabled={!novoSetor.trim()}
                       className="bg-gold hover:bg-[#A8863C] disabled:opacity-50 text-navy px-4 py-2 rounded-xl text-xs font-bold transition-all">
                       Adicionar
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Limite de treinamentos por colaborador */}
+              {showLimites && isGestor && tenantEmFoco && (
+                <div className="bg-white border border-slate-200 rounded-[14px] p-4 space-y-3">
+                  <div>
+                    <p className="text-xs font-black text-navy uppercase tracking-widest">Limite de treinamentos por colaborador</p>
+                    <p className="text-[11px] text-slate-500">
+                      Conta cada trilha concluída e cada prova aprovada (refazer uma prova já aprovada não conta). Ao atingir o limite,
+                      o colaborador só começa um treinamento novo no dia, semana ou mês seguinte; o que ele já concluiu continua liberado
+                      para revisão. Deixe vazio para não limitar. Vale para todos os colaboradores deste cliente (a gestão não é limitada).
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-end gap-3">
+                    {([['dia', 'Por dia'], ['semana', 'Por semana (seg. a dom.)'], ['mes', 'Por mês']] as const).map(([k, rotulo]) => (
+                      <label key={k} className="space-y-1">
+                        <span className="block text-[10px] font-black text-slate-500 uppercase tracking-widest">{rotulo}</span>
+                        <input type="number" min={1} max={100} value={formLimites[k]} placeholder="Sem limite"
+                          onChange={e => setFormLimites(f => ({ ...f, [k]: e.target.value }))}
+                          className="w-36 bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none focus:border-gold" />
+                      </label>
+                    ))}
+                    <button onClick={gravarLimites}
+                      className="bg-gold hover:bg-[#A8863C] text-navy px-4 py-2 rounded-xl text-xs font-bold transition-all">
+                      Salvar limites
                     </button>
                   </div>
                 </div>

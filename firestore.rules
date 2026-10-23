@@ -20,6 +20,11 @@ service cloud.firestore {
     // exclusivos de SUPERADMIN sobre a colecao tenants/cartorios (criar/excluir cartorio,
     // ativar demonstracao, habilitar/desabilitar recursos por cartorio).
     function isEquipeMJ() { return isActive() && getUserData().get('role', '') == 'equipe_mj'; }
+    function limiteValido(v) { return v == null || (v is int && v >= 1 && v <= 100); }
+    function limitesTreinamentoValidos(l) {
+      return l is map && l.keys().hasOnly(['dia', 'semana', 'mes'])
+        && limiteValido(l.get('dia', null)) && limiteValido(l.get('semana', null)) && limiteValido(l.get('mes', null));
+    }
 
     // Tenant isolation helpers
     function myTenant() { return getUserData().get('tenantId', ''); }
@@ -318,10 +323,13 @@ service cloud.firestore {
       allow get: if isSuperAdmin() || isEquipeMJ() || isCurador() || (isActive() && docId == myTenant());
       allow list: if isSuperAdmin() || isEquipeMJ();
       allow write: if isSuperAdmin();
-      // Gestão do próprio cliente (e Equipe MJ) mantém só a lista de setores do cliente.
+      // Gestão do próprio cliente (e Equipe MJ) mantém só a lista de setores do cliente e o limite
+      // de treinamentos por colaborador (dia/semana/mês; ausente ou null = sem limite).
       allow update: if (isEquipeMJ() || (isGestor() && docId == myTenant()))
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['setores'])
-        && request.resource.data.setores is list && request.resource.data.setores.size() <= 100;
+        && ((request.resource.data.diff(resource.data).affectedKeys().hasOnly(['setores'])
+            && request.resource.data.setores is list && request.resource.data.setores.size() <= 100)
+          || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['limitesTreinamento'])
+            && limitesTreinamentoValidos(request.resource.data.limitesTreinamento)));
     }
 
     // Config global da plataforma (ex: assinatura/instrutor do certificado) — primeira vez que

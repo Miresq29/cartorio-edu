@@ -790,6 +790,10 @@ export const gerarExame = onCall({ secrets: [GEMINI_API_KEY], timeoutSeconds: 12
       ? "Você ainda não leu esse conteúdo por completo. Leia o conteúdo antes de fazer a prova."
       : "Você ainda não assistiu esse treinamento por completo. Assista o conteúdo antes de fazer a prova.");
   }
+  // Refazer prova já aprovada não conta como treinamento novo.
+  const jaAprovado = !(await db.collection("examesResultados").where("userId", "==", caller.uid)
+    .where("fonteId", "==", fonteId).where("aprovado", "==", true).limit(1).get()).empty;
+  if (!jaAprovado) await verificarLimiteTreinamentos(caller);
 
   const texto = conteudo.substring(0, EXAME_MAX_CARACTERES);
   // Mesma proporção 2/3/2 de antes, escalada pro tamanho do banco (21 → 6/9/6).
@@ -992,6 +996,69 @@ async function modulosLiberados(caller: CallerProfile, modulos: ModuloTrilha[]):
   return filtrados.length ? filtrados : modulos;
 }
 
+// ── Limite de treinamentos por período ───────────────────────────────────────
+// Cada cliente pode limitar quantos treinamentos o colaborador conclui por dia, semana e mês
+// (tenants/{id}.limitesTreinamento, editado pela gestão em Colaboradores). Conta como um
+// treinamento cada trilha concluída e a primeira aprovação em cada prova. Atingido o limite, o
+// colaborador não começa prova nova nem avança em trilha ainda não concluída até o período virar;
+// refazer prova já aprovada e rever trilha concluída continuam liberados.
+const FUSO_BRASILIA_MS = -3 * 3600_000; // America/Sao_Paulo, sem horário de verão desde 2019
+const DIA_MS = 86_400_000;
+
+interface LimitesTreinamento { dia?: number | null; semana?: number | null; mes?: number | null }
+
+// Início e fim do dia, da semana (segunda a domingo) e do mês corrente no horário de Brasília.
+function periodosAtuais(agora = Date.now()) {
+  const local = new Date(agora + FUSO_BRASILIA_MS);
+  const [a, m, d] = [local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate()];
+  const dia = Date.UTC(a, m, d) - FUSO_BRASILIA_MS;
+  const semana = dia - ((local.getUTCDay() + 6) % 7) * DIA_MS;
+  return {
+    dia: { inicio: dia, fim: dia + DIA_MS },
+    semana: { inicio: semana, fim: semana + 7 * DIA_MS },
+    mes: { inicio: Date.UTC(a, m, 1) - FUSO_BRASILIA_MS, fim: Date.UTC(a, m + 1, 1) - FUSO_BRASILIA_MS },
+  };
+}
+
+// Momento de cada treinamento concluído: trilha concluída (concluidaEm) e 1ª aprovação por prova.
+async function conclusoesDoColaborador(uid: string): Promise<number[]> {
+  const [progs, exames] = await Promise.all([
+    db.collection("trilhasProgresso").where("userId", "==", uid).get(),
+    db.collection("examesResultados").where("userId", "==", uid).get(),
+  ]);
+  const marcos = progs.docs.map((d) => d.data().concluidaEm?.toMillis?.() as number | undefined).filter((m): m is number => !!m);
+  const primeiraAprovacao = new Map<string, number>();
+  for (const d of exames.docs) {
+    const x = d.data();
+    if (x.aprovado !== true) continue;
+    const quando = x.createdAt?.toMillis?.() || 0;
+    const fonte = String(x.fonteId || x.fonteTitulo || d.id);
+    if (!primeiraAprovacao.has(fonte) || quando < primeiraAprovacao.get(fonte)!) primeiraAprovacao.set(fonte, quando);
+  }
+  return [...marcos, ...primeiraAprovacao.values()];
+}
+
+async function verificarLimiteTreinamentos(caller: CallerProfile): Promise<void> {
+  if (caller.role !== "colaborador" || !caller.tenantId) return;
+  const limites = ((await db.collection("tenants").doc(caller.tenantId).get()).data()?.limitesTreinamento || {}) as LimitesTreinamento;
+  const regras = ([
+    ["dia", "hoje", "por dia"], ["semana", "nesta semana", "por semana"], ["mes", "neste mês", "por mês"],
+  ] as const).filter(([k]) => Number(limites[k]) > 0);
+  if (!regras.length) return;
+  const periodos = periodosAtuais();
+  const marcos = await conclusoesDoColaborador(caller.uid);
+  for (const [k, quando, unidade] of regras) {
+    const limite = Number(limites[k]);
+    const feitos = marcos.filter((m) => m >= periodos[k].inicio && m < periodos[k].fim).length;
+    if (feitos >= limite) {
+      const libera = new Date(periodos[k].fim).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
+      throw new HttpsError("failed-precondition",
+        `Você já concluiu ${feitos} treinamento${feitos !== 1 ? "s" : ""} ${quando}. O limite definido pelo seu cliente é de ${limite} ${unidade}. ` +
+        `Você poderá começar um novo a partir de ${libera}. Treinamentos já concluídos continuam disponíveis para revisão.`);
+    }
+  }
+}
+
 // Carrega progresso do próprio usuário + trilha + módulo, validando dono e visibilidade.
 async function carregarProgressoModulo(caller: CallerProfile, progressoId: string, moduloId: string) {
   const progRef = db.collection("trilhasProgresso").doc(progressoId);
@@ -1023,7 +1090,12 @@ async function salvarProgresso(
 ) {
   const percentualObrigatorios = calcularPercentual(modulos, novosModulos);
   const concluida = percentualObrigatorios === 100;
-  await progRef.update({ modulos: novosModulos, percentualObrigatorios, concluida, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+  // concluidaEm (só na transição) conta para o limite de treinamentos por período e para o
+  // relatório de participação — trilhas concluídas antes deste campo existir não têm a data.
+  await progRef.update({
+    modulos: novosModulos, percentualObrigatorios, concluida, updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    ...(concluida && !prog.concluida ? { concluidaEm: admin.firestore.FieldValue.serverTimestamp() } : {}),
+  });
   if (concluida && !prog.concluida) {
     await db.collection("auditLogs").add({
       tipo: "trilha_concluida", descricao: "Trilha concluida: " + (prog.trilhaTitulo || ""),
@@ -1040,6 +1112,7 @@ export const marcarModuloAssistido = onCall(async (request) => {
   await enforceRateLimit(caller.uid, "marcarModuloAssistido", 60, 60_000);
   const { progRef, prog, modulos, modulo } = await carregarProgressoModulo(
     caller, String(request.data?.progressoId || ""), String(request.data?.moduloId || ""));
+  if (!prog.concluida) await verificarLimiteTreinamentos(caller);
   const atuais = (prog.modulos || {}) as Record<string, ModuloProgressoServidor>;
   const atual = atuais[modulo.id] || { assistido: false, aprovado: false, nota: null, tentativas: 0 };
   return { progresso: await salvarProgresso(caller, progRef, prog, modulos, { ...atuais, [modulo.id]: { ...atual, assistido: true } }) };
@@ -1050,8 +1123,9 @@ export const gerarQuizModulo = onCall({ secrets: [GEMINI_API_KEY], timeoutSecond
   const caller = await getCallerProfile(request.auth.uid);
   await enforceRateLimit(caller.uid, "gerarQuizModulo", 10, 60_000);
   const progressoId = String(request.data?.progressoId || "");
-  const { trilha, trilhaId, modulo } = await carregarProgressoModulo(caller, progressoId, String(request.data?.moduloId || ""));
+  const { prog, trilha, trilhaId, modulo } = await carregarProgressoModulo(caller, progressoId, String(request.data?.moduloId || ""));
   if (!modulo.temQuiz) throw new HttpsError("failed-precondition", "Este módulo não tem quiz.");
+  if (!prog.concluida) await verificarLimiteTreinamentos(caller);
 
   const texto = String(modulo.conteudo || modulo.descricao || "").substring(0, 4000);
   const banco = await obterBanco(`modulo_${trilhaId}_${modulo.id}`, `${modulo.titulo || ""}\n${texto}`, (n) => `Você é um gerador de quiz para treinamento corporativo.
@@ -1144,7 +1218,17 @@ export const submeterQuizModulo = onCall(async (request) => {
 const SEM_ASSUNTO = "Sem assunto definido";
 const SEM_SETOR = "Sem setor";
 
-interface LinhaErro { assunto: string; setor: string; fonte: string; enunciado: string; bloom: string; acertou: boolean; userId: string; correta: string; justificativa: string }
+interface LinhaErro {
+  assunto: string; setor: string; fonte: string; enunciado: string; bloom: string; acertou: boolean; userId: string; correta: string; justificativa: string;
+  // Prova/quiz de origem (para escolher uma prova no relatório) e identidade da questão: o bid do
+  // banco quando existe, senão o enunciado normalizado — a mesma questão sorteada em várias provas soma.
+  fonteChave?: string; chaveQuestao?: string;
+  // Texto da alternativa escolhida e das alternativas oferecidas (qual distrator mais engana).
+  escolhida?: string; alternativas?: string[];
+}
+
+const normalizarEnunciado = (t: string) => t.trim().toLowerCase().replace(/\s+/g, " ");
+const textoDaLetra = (q: QuestaoExameServidor, letra: string) => q.alternativas?.find((a) => a.letra === letra)?.texto || "";
 
 function agregarErros<K extends string>(linhas: LinhaErro[], chave: (l: LinhaErro) => string, nome: K) {
   const mapa = new Map<string, { questoes: number; erros: number; pessoas: Set<string> }>();
@@ -1228,7 +1312,9 @@ export const relatorioErros = onCall({ timeoutSeconds: 120, memory: "512MiB" }, 
       if (!q) continue;
       linhas.push({ assunto, setor: setorDe.get(r.userId) || SEM_SETOR, fonte: `Exame: ${s.fonteTitulo || r.fonteTitulo || ""}`,
         enunciado: q.enunciado, bloom: q.bloom || "", acertou: resp.escolhida === q.correta, userId: r.userId,
-        correta: textoCorreta(q), justificativa: q.justificativa || "" });
+        correta: textoCorreta(q), justificativa: q.justificativa || "",
+        fonteChave: `exame_${s.fonteId || r.fonteId || ""}`, chaveQuestao: q.bid || normalizarEnunciado(q.enunciado),
+        escolhida: textoDaLetra(q, resp.escolhida), alternativas: (q.alternativas || []).map((a) => a.texto) });
     }
   }
   if (examesLegados.length) {
@@ -1243,7 +1329,8 @@ export const relatorioErros = onCall({ timeoutSeconds: 120, memory: "512MiB" }, 
       for (const resp of r.respostas as { escolhida?: string; correta?: string }[]) {
         if (!resp?.correta) continue;
         linhas.push({ assunto, setor: setorDe.get(r.userId) || SEM_SETOR, fonte: `Exame: ${r.fonteTitulo || ""}`,
-          enunciado: "", bloom: "", acertou: resp.escolhida === resp.correta, userId: r.userId, correta: "", justificativa: "" });
+          enunciado: "", bloom: "", acertou: resp.escolhida === resp.correta, userId: r.userId, correta: "", justificativa: "",
+          fonteChave: `exame_${fonteId || r.fonteTitulo || ""}` });
       }
     }
   }
@@ -1256,26 +1343,93 @@ export const relatorioErros = onCall({ timeoutSeconds: 120, memory: "512MiB" }, 
       if (!resp) return;
       linhas.push({ assunto, setor: setorDe.get(r.userId) || SEM_SETOR, fonte: `${s.trilhaTitulo || ""} › ${s.moduloTitulo || ""}`,
         enunciado: q.enunciado, bloom: q.bloom || "", acertou: resp.escolhida === q.correta, userId: r.userId,
-        correta: textoCorreta(q), justificativa: q.justificativa || "" });
+        correta: textoCorreta(q), justificativa: q.justificativa || "",
+        fonteChave: `modulo_${s.trilhaId || ""}_${s.moduloId || ""}`, chaveQuestao: q.bid || normalizarEnunciado(q.enunciado),
+        escolhida: textoDaLetra(q, resp.escolhida), alternativas: (q.alternativas || []).map((a) => a.texto) });
     });
+  }
+
+  // Questionários criados pela gestão (Treinamentos): enunciado/opções no doc do quiz, gabarito
+  // em treinamentosQuizzesGabarito (ou no próprio doc, nos quizzes ainda não migrados).
+  const quizzesGestao = quizSnap.docs.map((d) => d.data()).filter((r) => r.quizId && Array.isArray(r.respostas));
+  if (quizzesGestao.length) {
+    const ids = quizzesGestao.map((r) => String(r.quizId));
+    const [quizDocs, gabaritos] = await Promise.all([lerDocs("treinamentosQuizzes", ids), lerDocs("treinamentosQuizzesGabarito", ids)]);
+    for (const r of quizzesGestao) {
+      const quiz = quizDocs.get(String(r.quizId));
+      if (!quiz) continue;
+      const qs = (quiz.questoes || []) as { texto?: string; opcoes?: string[]; correta?: number; explicacao?: string }[];
+      const gab = ((gabaritos.get(String(r.quizId))?.questoes || qs) as { correta?: number; explicacao?: string }[]);
+      const assunto = assuntoTrilhaTitulo.get(String(quiz.treinamento || "")) || SEM_ASSUNTO;
+      qs.forEach((q, i) => {
+        const escolhida = Number((r.respostas as unknown[])[i]);
+        const correta = Number(gab[i]?.correta);
+        if (!q?.texto || !Number.isInteger(escolhida) || !Number.isInteger(correta)) return;
+        const opcoes = (q.opcoes || []).map(String);
+        linhas.push({ assunto, setor: setorDe.get(r.userId) || SEM_SETOR, fonte: `Questionário: ${quiz.titulo || ""}`,
+          enunciado: q.texto, bloom: "", acertou: escolhida === correta, userId: r.userId,
+          correta: opcoes[correta] || "", justificativa: String(gab[i]?.explicacao || ""),
+          fonteChave: `quiz_${r.quizId}`, chaveQuestao: `quiz_${r.quizId}_${i}`, escolhida: opcoes[escolhida] || "", alternativas: opcoes });
+      });
+    }
   }
 
   const matriz = agregarErros(linhas, (l) => `${l.assunto}\u0000${l.setor}`, "chave")
     .map(({ chave, ...resto }) => { const [assunto, setor] = String(chave).split("\u0000"); return { assunto, setor, ...resto }; });
 
-  // Enunciados idênticos (mesma questão reaparecendo) somam; os demais aparecem individualmente.
-  const porPergunta = new Map<string, { enunciado: string; assunto: string; fonte: string; bloom: string; correta: string; justificativa: string; vezes: number; erros: number; setores: Set<string> }>();
+  // A mesma questão (bid do banco, ou enunciado idêntico) soma entre provas; para cada uma conta
+  // quantas vezes cada alternativa foi escolhida, o que mostra qual resposta errada mais engana.
+  const porPergunta = new Map<string, {
+    enunciado: string; assunto: string; fonte: string; fonteChave: string; bloom: string; correta: string; justificativa: string;
+    vezes: number; erros: number; setores: Set<string>; pessoas: Set<string>; escolhas: Map<string, number>;
+  }>();
   for (const l of linhas) {
     if (!l.enunciado) continue;
-    const k = l.enunciado.trim().toLowerCase().replace(/\s+/g, " ");
-    const p = porPergunta.get(k) || { enunciado: l.enunciado, assunto: l.assunto, fonte: l.fonte, bloom: l.bloom, correta: l.correta, justificativa: l.justificativa, vezes: 0, erros: 0, setores: new Set<string>() };
-    p.vezes++; if (!l.acertou) { p.erros++; p.setores.add(l.setor); }
+    const k = l.chaveQuestao || normalizarEnunciado(l.enunciado);
+    const p = porPergunta.get(k) || {
+      enunciado: l.enunciado, assunto: l.assunto, fonte: l.fonte, fonteChave: l.fonteChave || "", bloom: l.bloom, correta: l.correta,
+      justificativa: l.justificativa, vezes: 0, erros: 0, setores: new Set<string>(), pessoas: new Set<string>(), escolhas: new Map<string, number>(),
+    };
+    p.vezes++; p.pessoas.add(l.userId);
+    if (!l.acertou) { p.erros++; p.setores.add(l.setor); }
+    for (const alt of l.alternativas || []) if (!p.escolhas.has(alt)) p.escolhas.set(alt, 0);
+    if (l.escolhida) p.escolhas.set(l.escolhida, (p.escolhas.get(l.escolhida) || 0) + 1);
     porPergunta.set(k, p);
   }
+  const formatarPergunta = (p: NonNullable<ReturnType<typeof porPergunta.get>>) => {
+    const alternativas = [...p.escolhas.entries()]
+      .map(([texto, vezes]) => ({ texto, vezes, correta: texto === p.correta }))
+      .sort((a, b) => Number(b.correta) - Number(a.correta) || b.vezes - a.vezes);
+    const enganaMais = alternativas.filter((a) => !a.correta && a.vezes > 0).sort((a, b) => b.vezes - a.vezes)[0];
+    const { escolhas: _e, pessoas, setores, ...resto } = p;
+    return {
+      ...resto, setores: [...setores], pessoas: pessoas.size, taxaErro: Math.round((p.erros / p.vezes) * 100),
+      alternativas, respostaErradaMaisEscolhida: enganaMais ? enganaMais.texto : "",
+    };
+  };
   const perguntasMaisErradas = [...porPergunta.values()].filter((p) => p.erros > 0)
     .sort((a, b) => b.erros - a.erros || (b.erros / b.vezes) - (a.erros / a.vezes))
     .slice(0, 40)
-    .map((p) => ({ ...p, setores: [...p.setores], taxaErro: Math.round((p.erros / p.vezes) * 100) }));
+    .map(formatarPergunta);
+
+  // Lista das provas/quizzes com respostas no período, para escolher uma no relatório.
+  const fontesMapa = new Map<string, { fonteChave: string; fonte: string; assunto: string; questoes: number; erros: number; pessoas: Set<string>; comEnunciado: number }>();
+  for (const l of linhas) {
+    if (!l.fonteChave) continue;
+    const f = fontesMapa.get(l.fonteChave) || { fonteChave: l.fonteChave, fonte: l.fonte, assunto: l.assunto, questoes: 0, erros: 0, pessoas: new Set<string>(), comEnunciado: 0 };
+    f.questoes++; if (!l.acertou) f.erros++; f.pessoas.add(l.userId); if (l.enunciado) f.comEnunciado++;
+    fontesMapa.set(l.fonteChave, f);
+  }
+  const fontes = [...fontesMapa.values()]
+    .map((f) => ({ ...f, pessoas: f.pessoas.size, taxaErro: Math.round((f.erros / f.questoes) * 100) }))
+    .sort((a, b) => a.fonte.localeCompare(b.fonte, "pt-BR"));
+
+  // Todas as perguntas da prova pedida, da mais errada para a menos errada.
+  const fonteChavePedida = String(request.data?.fonteChave || "");
+  const perguntasDaFonte = fonteChavePedida
+    ? [...porPergunta.values()].filter((p) => p.fonteChave === fonteChavePedida)
+      .map(formatarPergunta).sort((a, b) => b.taxaErro - a.taxaErro || b.erros - a.erros)
+    : undefined;
 
   // Reforço recomendado: combinação assunto × setor com amostra mínima e erro alto.
   const recomendacoes = matriz.filter((m) => m.questoes >= 7 && m.taxaErro >= 30).slice(0, 15);
@@ -1291,7 +1445,139 @@ export const relatorioErros = onCall({ timeoutSeconds: 120, memory: "512MiB" }, 
     matriz,
     perguntasMaisErradas,
     recomendacoes,
+    fontes,
+    ...(perguntasDaFonte ? { fonteChave: fonteChavePedida, perguntasDaFonte } : {}),
   };
+});
+
+// ── Relatório "Quem fez e quem não fez" ──────────────────────────────────────
+// Para cada colaborador do cliente: situação em cada trilha (não iniciou / em andamento / concluiu)
+// e em cada prova (não fez / reprovado / aprovado, melhor nota, tentativas, datas), mais os
+// certificados. Tudo cruzado por ID (nunca por nome) e no servidor, para a gestão ter um único
+// número confiável. Exames sem sessaoId são histórico (corrigidos no navegador, antes de 11/10/2026).
+interface SituacaoProva { tentativas: number; melhorNota: number; ultimaNota: number; aprovado: boolean; aprovadoEm: number | null; ultimaEm: number | null; historico: boolean; bloqueadoAte: number | null }
+
+export const relatorioParticipacao = onCall({ timeoutSeconds: 120, memory: "512MiB" }, async (request) => {
+  if (!request.auth) throw new HttpsError("unauthenticated", "Login necessário.");
+  const caller = await getCallerProfile(request.auth.uid);
+  if (!GESTOR_ROLES.includes(caller.role)) throw new HttpsError("permission-denied", "Relatório disponível só para a gestão.");
+  await enforceRateLimit(caller.uid, "relatorioParticipacao", 10, 60_000);
+  const pedido = String(request.data?.tenantId || "").trim();
+  const tenantId = PLATFORM_STAFF_ROLES.includes(caller.role) && pedido ? pedido : caller.tenantId;
+  if (!tenantId) throw new HttpsError("invalid-argument", "Selecione um cliente.");
+  const visiveis = [tenantId, "GLOBAL"];
+
+  const [usersSnap, trilhasSnap, repoSnap, treinSnap, kbSnap, quizzesSnap, progSnap, exSnap, quizResSnap, certSnap] = await Promise.all([
+    db.collection("users").where("tenantId", "==", tenantId).get(),
+    db.collection("trilhas").where("tenantIds", "array-contains-any", visiveis).get(),
+    db.collection("repositorio").where("tenantIds", "array-contains-any", visiveis).get(),
+    db.collection("treinamentos").where("tenantIds", "array-contains-any", visiveis).get(),
+    db.collection("knowledgeBase").where("tenantIds", "array-contains-any", visiveis).get(),
+    db.collection("treinamentosQuizzes").where("tenantIds", "array-contains-any", visiveis).get(),
+    db.collection("trilhasProgresso").where("tenantId", "==", tenantId).get(),
+    db.collection("examesResultados").where("tenantId", "==", tenantId).get(),
+    db.collection("treinamentosQuizResults").where("tenantId", "==", tenantId).get(),
+    db.collection("certificados").where("tenantId", "==", tenantId).get(),
+  ]);
+  const ms = (t: unknown) => (t as { toMillis?: () => number } | undefined)?.toMillis?.() ?? null;
+
+  const colaboradores = usersSnap.docs
+    .filter((d) => !["SUPERADMIN", "equipe_mj", "curador"].includes(String(d.data().role || "")))
+    .map((d) => { const u = d.data(); return { id: d.id, nome: String(u.name || ""), email: String(u.email || ""), setor: String(u.setor || ""), cargo: String(u.cargo || ""), perfil: String(u.role || ""), ativo: u.active !== false }; })
+    .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+
+  // Itens do Repositório liberados a este cliente — trilha cujos vídeos não foram liberados não aparece para ele.
+  const repoLiberado = new Map(repoSnap.docs.filter((d) => d.data().ativo !== false).map((d) => [d.id, d.data()]));
+  const comProgresso = new Set(progSnap.docs.map((d) => String(d.data().trilhaId || "")));
+  const trilhas = trilhasSnap.docs
+    .filter((d) => {
+      if (d.data().ativa === false && !comProgresso.has(d.id)) return false;
+      const refs = ((d.data().modulos || []) as ModuloTrilha[]).filter((m) => m.conteudoRef?.tipo === "repositorio");
+      return comProgresso.has(d.id) || !refs.length || refs.some((m) => repoLiberado.has(String(m.conteudoRef?.itemId || "")));
+    })
+    .map((d) => {
+      const t = d.data();
+      return {
+        id: d.id, titulo: String(t.titulo || "Sem título"), assunto: String(t.assunto || ""), ativa: t.ativa !== false,
+        setores: (t.setores || []) as string[], perfis: (t.perfis || []) as string[],
+        obrigatorios: ((t.modulos || []) as { tipo?: string }[]).filter((m) => m.tipo !== "opcional").length,
+      };
+    })
+    .sort((a, b) => a.titulo.localeCompare(b.titulo, "pt-BR"));
+
+  // Provas: as mesmas fontes da tela de Exames (com texto suficiente) + questionários da gestão.
+  const provas: { chave: string; tipo: string; titulo: string; removida?: boolean }[] = [];
+  const addFonte = (tipo: TipoFonteExame, d: FirebaseFirestore.QueryDocumentSnapshot) => {
+    if (tipo !== "trilha" && d.data().ativo === false) return;
+    const { titulo, conteudo } = montarFonteExame(tipo, d.data());
+    if (conteudo.length >= 10) provas.push({ chave: d.id, tipo, titulo });
+  };
+  trilhasSnap.docs.filter((d) => trilhas.some((t) => t.id === d.id)).forEach((d) => addFonte("trilha", d));
+  repoSnap.docs.forEach((d) => addFonte("video", d));
+  treinSnap.docs.forEach((d) => addFonte("treinamento", d));
+  kbSnap.docs.forEach((d) => addFonte("knowledgeBase", d));
+  quizzesSnap.docs.forEach((d) => provas.push({ chave: `quiz_${d.id}`, tipo: "questionario", titulo: String(d.data().titulo || "Questionário") }));
+  const chavePorTitulo = new Map(provas.map((p) => [normalizarEnunciado(p.titulo), p.chave]));
+
+  // Progresso nas trilhas: se houver mais de um registro da mesma pessoa na mesma trilha, vale o mais adiantado.
+  const progresso: Record<string, Record<string, { percentual: number; concluida: boolean; concluidaEm: number | null; iniciadaEm: number | null; quizzesAprovados: number }>> = {};
+  for (const d of progSnap.docs) {
+    const p = d.data();
+    const uid = String(p.userId || ""), tid = String(p.trilhaId || "");
+    if (!uid || !tid) continue;
+    const percentual = Number(p.percentualObrigatorios) || 0;
+    const concluida = p.concluida === true || percentual === 100;
+    const atual = progresso[uid]?.[tid];
+    if (atual && (atual.percentual > percentual || (atual.concluida && !concluida))) continue;
+    (progresso[uid] ||= {})[tid] = {
+      percentual, concluida, concluidaEm: ms(p.concluidaEm), iniciadaEm: ms(p.createdAt) ?? ms(p.iniciadoEm),
+      quizzesAprovados: Object.values((p.modulos || {}) as Record<string, { aprovado?: boolean }>).filter((m) => m?.aprovado).length,
+    };
+  }
+
+  // Provas: por pessoa e por prova — tentativas, melhor nota, aprovação e bloqueio após reprovação.
+  const exames: Record<string, Record<string, SituacaoProva>> = {};
+  const registrar = (uid: string, chave: string, nota: number, aprovado: boolean, quando: number | null, historico: boolean, bloqueio: number | null) => {
+    const s = ((exames[uid] ||= {})[chave] ||= { tentativas: 0, melhorNota: 0, ultimaNota: 0, aprovado: false, aprovadoEm: null, ultimaEm: null, historico: false, bloqueadoAte: null });
+    s.tentativas++;
+    s.melhorNota = Math.max(s.melhorNota, nota);
+    if ((quando ?? 0) >= (s.ultimaEm ?? 0)) { s.ultimaEm = quando; s.ultimaNota = nota; }
+    if (aprovado) { s.aprovado = true; if (quando && (!s.aprovadoEm || quando < s.aprovadoEm)) s.aprovadoEm = quando; }
+    if (historico) s.historico = true;
+    if (!aprovado && bloqueio && bloqueio > Date.now()) s.bloqueadoAte = Math.max(s.bloqueadoAte || 0, bloqueio);
+  };
+  for (const d of exSnap.docs) {
+    const r = d.data();
+    const uid = String(r.userId || "");
+    if (!uid) continue;
+    let chave = String(r.fonteId || "") || chavePorTitulo.get(normalizarEnunciado(String(r.fonteTitulo || ""))) || "";
+    if (!chave) chave = `titulo_${normalizarEnunciado(String(r.fonteTitulo || "sem título"))}`;
+    if (!provas.some((p) => p.chave === chave)) provas.push({ chave, tipo: "removida", titulo: String(r.fonteTitulo || "Prova removida"), removida: true });
+    registrar(uid, chave, Number(r.score) || 0, r.aprovado === true, ms(r.createdAt), !r.sessaoId, ms(r.proximaTentativa));
+  }
+  for (const d of quizResSnap.docs) {
+    const r = d.data();
+    if (!r.quizId || !r.userId) continue; // quizzes de módulo entram no progresso da trilha
+    const chave = `quiz_${r.quizId}`;
+    if (!provas.some((p) => p.chave === chave)) provas.push({ chave, tipo: "removida", titulo: String(r.quizTitulo || "Questionário removido"), removida: true });
+    registrar(String(r.userId), chave, Number(r.nota) || 0, r.aprovado === true, ms(r.createdAt), false, null);
+  }
+
+  // Certificados: um por pessoa + curso (o mesmo curso em formatos diferentes, ou trilha + prova, conta uma vez).
+  const certificados: Record<string, { curso: string; cursoChave: string; codigo: string; tipo: string; emitidoEm: number | null; versao: number; quantidade: number }[]> = {};
+  for (const d of certSnap.docs) {
+    const c = d.data();
+    const uid = String(c.colaboradorId || "");
+    if (!uid) continue;
+    const cursoChave = normalizarEnunciado(String(c.trilhaTitulo || "")) + (c.moduloTitulo ? " › " + normalizarEnunciado(String(c.moduloTitulo)) : "");
+    const lista = (certificados[uid] ||= []);
+    const existente = lista.find((x) => x.cursoChave === cursoChave);
+    if (existente) { existente.quantidade++; continue; }
+    lista.push({ curso: String(c.trilhaTitulo || ""), cursoChave, codigo: String(c.codigoVerificacao || d.id), tipo: String(c.tipo || ""), emitidoEm: ms(c.emitidoEm), versao: Number(c.versaoModelo) || 1, quantidade: 1 });
+  }
+
+  provas.sort((a, b) => Number(!!a.removida) - Number(!!b.removida) || a.titulo.localeCompare(b.titulo, "pt-BR"));
+  return { tenantId, geradoEm: Date.now(), colaboradores, trilhas, provas, progresso, exames, certificados };
 });
 
 // Quiz de Treinamentos: criado pela gestão. O doc treinamentosQuizzes (lido por todo colaborador

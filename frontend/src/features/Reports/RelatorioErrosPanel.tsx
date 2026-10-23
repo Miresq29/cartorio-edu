@@ -6,7 +6,16 @@ import { httpsCallable } from 'firebase/functions';
 import { functions } from '../../services/firebase';
 
 interface Agregado { questoes: number; erros: number; pessoas: number; taxaErro: number }
+interface PerguntaDetalhada {
+  enunciado: string; assunto: string; fonte: string; bloom: string; correta: string; justificativa: string;
+  vezes: number; erros: number; taxaErro: number; pessoas: number; setores: string[];
+  alternativas: { texto: string; vezes: number; correta: boolean }[]; respostaErradaMaisEscolhida: string;
+}
+interface FonteResumo extends Agregado { fonteChave: string; fonte: string; assunto: string; comEnunciado: number }
 interface Resultado {
+  fontes?: FonteResumo[];
+  fonteChave?: string;
+  perguntasDaFonte?: PerguntaDetalhada[];
   dias: number;
   totais: { questoes: number; erros: number; avaliacoes: number; pessoas: number; comEnunciado?: number };
   porAssunto: (Agregado & { assunto: string })[];
@@ -18,7 +27,112 @@ interface Resultado {
   recomendacoes: (Agregado & { assunto: string; setor: string })[];
 }
 
-const relatorioErrosFn = httpsCallable<{ tenantId?: string; dias?: number }, Resultado>(functions, 'relatorioErros');
+const relatorioErrosFn = httpsCallable<{ tenantId?: string; dias?: number; fonteChave?: string }, Resultado>(functions, 'relatorioErros');
+
+// Todas as perguntas de uma prova, da mais errada para a menos errada, com quantas vezes cada
+// alternativa foi escolhida (a errada mais escolhida mostra o equívoco mais comum da equipe).
+const PerguntasDaProva: React.FC<{ tenantId: string; dias: number; fontes: FonteResumo[] }> = ({ tenantId, dias, fontes }) => {
+  const [fonteChave, setFonteChave] = useState('');
+  const [perguntas, setPerguntas] = useState<PerguntaDetalhada[] | null>(null);
+  const [carregando, setCarregando] = useState(false);
+  const [erro, setErro] = useState('');
+
+  useEffect(() => {
+    setPerguntas(null); setErro('');
+    if (!fonteChave) return;
+    let ativo = true;
+    setCarregando(true);
+    relatorioErrosFn({ tenantId, dias: Math.min(730, dias), fonteChave })
+      .then(r => { if (ativo) setPerguntas(r.data.perguntasDaFonte || []); })
+      .catch(e => { if (ativo) setErro(e?.message || 'Não foi possível carregar as perguntas.'); })
+      .finally(() => { if (ativo) setCarregando(false); });
+    return () => { ativo = false; };
+  }, [tenantId, dias, fonteChave]);
+
+  const fonte = fontes.find(f => f.fonteChave === fonteChave);
+
+  const exportar = () => {
+    if (!perguntas || !fonte) return;
+    const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const linhas = [
+      [esc('Prova'), esc(fonte.fonte)].join(';'),
+      '',
+      ['Pergunta', 'Vezes respondida', 'Erros', 'Taxa de erro (%)', 'Pessoas', 'Resposta correta', 'Resposta errada mais escolhida', 'Distribuição das respostas', 'Por quê'].map(esc).join(';'),
+      ...perguntas.map(p => [p.enunciado, p.vezes, p.erros, p.taxaErro, p.pessoas, p.correta, p.respostaErradaMaisEscolhida,
+        p.alternativas.map(a => `${a.correta ? '✔ ' : ''}${a.texto}: ${a.vezes}`).join(' | '), p.justificativa].map(esc).join(';')),
+    ];
+    const blob = new Blob(['﻿' + linhas.join('\n')], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `perguntas_${fonte.fonte.toLowerCase().replace(/[^a-z0-9]+/g, '_').slice(0, 40)}_${new Date().toISOString().slice(0, 10)}.csv`; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="bg-white border border-slate-200 rounded-[14px] overflow-hidden">
+      <div className="px-4 py-3 border-b border-slate-100 flex flex-wrap items-center gap-3">
+        <p className="text-xs font-black text-navy uppercase tracking-widest">Perguntas de uma prova</p>
+        <select value={fonteChave} onChange={e => setFonteChave(e.target.value)} title="Escolha a prova"
+          className="flex-1 min-w-[240px] bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 outline-none focus:border-gold">
+          <option value="">Escolha a prova ou quiz…</option>
+          {fontes.map(f => (
+            <option key={f.fonteChave} value={f.fonteChave}>
+              {f.fonte} — {f.taxaErro}% de erro, {f.pessoas} pessoa{f.pessoas !== 1 ? 's' : ''}{f.comEnunciado === 0 ? ' (só histórico, sem texto das perguntas)' : ''}
+            </option>
+          ))}
+        </select>
+        {perguntas && perguntas.length > 0 && (
+          <button onClick={exportar} className="flex items-center gap-2 bg-white border border-slate-200 hover:border-gold text-slate-600 px-3 py-2 rounded-xl text-xs font-bold">
+            <i className="fa-solid fa-file-excel text-gold"></i>Exportar
+          </button>
+        )}
+      </div>
+      {!fonteChave ? (
+        <p className="p-6 text-center text-sm text-slate-400">Escolha uma prova para ver todas as perguntas, da mais errada para a menos errada, e qual resposta errada a equipe mais escolheu.</p>
+      ) : carregando ? (
+        <p className="p-6 text-center text-sm text-slate-500">Carregando perguntas…</p>
+      ) : erro ? (
+        <p className="p-6 text-center text-sm text-red-600">{erro}</p>
+      ) : !perguntas || perguntas.length === 0 ? (
+        <p className="p-6 text-center text-sm text-slate-400">
+          Nenhuma pergunta com texto registrado para esta prova no período. Provas feitas antes da correção pelo servidor guardaram só acerto/erro.
+        </p>
+      ) : (
+        <ul className="divide-y divide-slate-100">
+          {perguntas.map((p, i) => (
+            <li key={i} className="p-4 space-y-2">
+              <div className="flex items-start justify-between gap-4">
+                <p className="text-sm text-navy font-bold"><span className="text-slate-400 mr-1">{i + 1}.</span>{p.enunciado}</p>
+                <span className="text-xs font-black whitespace-nowrap" style={{ color: corTaxa(p.taxaErro) }}>
+                  {p.taxaErro}% de erro · {p.erros}/{p.vezes}
+                </span>
+              </div>
+              <div className="space-y-1">
+                {p.alternativas.map((a, j) => {
+                  const pct = p.vezes ? Math.round((a.vezes / p.vezes) * 100) : 0;
+                  const engana = !a.correta && a.texto === p.respostaErradaMaisEscolhida;
+                  return (
+                    <div key={j} className="flex items-center gap-3 text-xs">
+                      <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden shrink-0">
+                        <div className="h-full rounded-full" style={{ width: `${pct}%`, background: a.correta ? '#059669' : engana ? '#DC2626' : '#94A3B8' }} />
+                      </div>
+                      <span className="w-16 shrink-0 text-slate-500">{a.vezes} ({pct}%)</span>
+                      <span className={a.correta ? 'text-emerald-700 font-bold' : engana ? 'text-red-700 font-bold' : 'text-slate-600'}>
+                        {a.correta && <i className="fa-solid fa-check mr-1"></i>}{engana && <i className="fa-solid fa-triangle-exclamation mr-1"></i>}{a.texto}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+              {p.justificativa && <p className="text-[11px] text-slate-500"><strong>Por quê:</strong> {p.justificativa}</p>}
+              {p.setores.length > 0 && <p className="text-[11px] text-slate-400">Setores com erro: {p.setores.join(', ')}</p>}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
 
 const BLOOM_LABEL: Record<string, string> = { compreensao: 'Compreensão', aplicacao: 'Aplicação', analise: 'Análise' };
 
@@ -196,6 +310,8 @@ const RelatorioErrosPanel: React.FC<{ tenantId: string; dias: number }> = ({ ten
             <Tabela titulo="Por nível da questão" colunas={['Nível', 'Erro', 'Questões']}
               linhas={dados.porBloom.map(b => [BLOOM_LABEL[b.bloom] || b.bloom, <Barra taxa={b.taxaErro} />, `${b.erros}/${b.questoes}`])} />
           </div>
+
+          <PerguntasDaProva tenantId={tenantId} dias={dias} fontes={dados.fontes || []} />
 
           <div className="bg-white border border-slate-200 rounded-[14px] overflow-hidden">
             <p className="px-4 py-3 text-xs font-black text-navy uppercase tracking-widest border-b border-slate-100">

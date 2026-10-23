@@ -13,6 +13,7 @@ import { db } from '../../services/firebase';
 import { useApp } from '../../context/AppContext';
 import { FormatoTreinamento, FORMATO_LABEL } from '../../utils/formatoTreinamento';
 import RelatorioErrosPanel from './RelatorioErrosPanel';
+import ParticipacaoPanel from './ParticipacaoPanel';
 import { useItensLiberados, moduloLiberado } from '../../hooks/useItensLiberados';
 import { alfa, cssVarsTema, logoTema } from '../../utils/tema';
 
@@ -66,11 +67,21 @@ interface Certificado {
   colaboradorId?: string;
   colaboradorNome: string;
   trilhaTitulo: string;
+  moduloTitulo?: string;
   notaFinal: number;
   emitidoEm: any;
   validoAte?: string;
   tenantId: string;
 }
+
+// Um certificado por pessoa + curso: o mesmo curso em dois formatos (áudio e vídeo, títulos que só
+// diferem por espaço) ou trilha + prova do mesmo curso geram dois documentos, mas contam uma vez.
+const chaveCertificado = (c: Certificado) =>
+  `${c.colaboradorId || c.colaboradorNome}|${(c.trilhaTitulo || '').trim().toLowerCase().replace(/\s+/g, ' ')}|${(c.moduloTitulo || '').trim().toLowerCase()}`;
+const certificadosUnicos = (lista: Certificado[]) => {
+  const vistos = new Set<string>();
+  return lista.filter(c => { const k = chaveCertificado(c); if (vistos.has(k)) return false; vistos.add(k); return true; });
+};
 
 interface CatalogoTreinamento {
   id: string;
@@ -83,7 +94,7 @@ interface CatalogoTreinamento {
   createdAt?: any;
 }
 
-type Tab = 'visao_geral' | 'iso' | 'colaboradores' | 'trilhas' | 'trilhas_evidencias' | 'treinamentos' | 'risco' | 'evidencias' | 'erros';
+type Tab = 'visao_geral' | 'participacao' | 'iso' | 'colaboradores' | 'trilhas' | 'trilhas_evidencias' | 'treinamentos' | 'risco' | 'evidencias' | 'erros';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -269,7 +280,7 @@ const RelatoriosView: React.FC = () => {
   const mediaGeral = totalTestes
     ? Math.round(filteredAvaliacoes.reduce((a, r) => a + r.nota, 0) / totalTestes)
     : 0;
-  const totalCerts = certificados.length;
+  const totalCerts = certificadosUnicos(certificados).length;
 
   // Gráfico 1: Aprovação por trilha
   const porTrilha = useMemo(() => {
@@ -339,7 +350,7 @@ const RelatoriosView: React.FC = () => {
         const media = totalAvaliacoes ? Math.round(notas.reduce((a, n) => a + n, 0) / totalAvaliacoes) : 0;
         const prog = progresso.filter(p => p.userId === u.id && p.concluida);
         const cargaHoraria = prog.reduce((a, p) => a + cargaHorariaTrilha(p.trilhaId), 0);
-        const certs = certificados.filter(c => c.colaboradorId === u.id || c.colaboradorNome === u.name).length;
+        const certs = certificadosUnicos(certificados.filter(c => c.colaboradorId === u.id || c.colaboradorNome === u.name)).length;
         return {
           id: u.id, name: u.name, cargo: u.cargo || '',
           testes: totalAvaliacoes, aprovados: aprov,
@@ -785,13 +796,14 @@ tr { page-break-inside:avoid; }
 
   const ABAS: { id: Tab; label: string; icon: string }[] = [
     { id: 'visao_geral',   label: 'Visão Geral',    icon: 'fa-chart-pie'    },
+    { id: 'participacao',  label: 'Quem Fez / Não Fez', icon: 'fa-list-check' },
     { id: 'iso',           label: 'Indicadores ISO', icon: 'fa-award'       },
     { id: 'colaboradores', label: 'Colaboradores',  icon: 'fa-users'        },
     { id: 'trilhas',       label: 'Por Trilha',     icon: 'fa-road'         },
     { id: 'trilhas_evidencias', label: 'Progresso das Trilhas', icon: 'fa-clipboard-list' },
     { id: 'treinamentos',  label: 'Resumo de Treinamentos', icon: 'fa-chalkboard-user' },
     { id: 'risco',         label: 'Risco',          icon: 'fa-shield-halved' },
-    { id: 'erros',         label: 'Erros por Assunto/Setor', icon: 'fa-bullseye' },
+    { id: 'erros',         label: 'Erros e Perguntas', icon: 'fa-bullseye' },
     { id: 'evidencias',    label: 'Testes e Exames', icon: 'fa-file-lines'   },
   ];
 
@@ -826,7 +838,7 @@ tr { page-break-inside:avoid; }
           <StatCard label="Total de Testes"   value={totalTestes}      icon="fa-clipboard-check"  color="#4F46E5" sub={`${coberturaISO.avaliados} de ${coberturaISO.totalColab} colaboradores avaliados`} />
           <StatCard label="Taxa de Aprovação" value={`${taxaAprovacao}%`} icon="fa-circle-check"  color="#059669" sub={`${totalAprovados} de ${totalTestes} avaliações — só quem fez prova`} />
           <StatCard label="Média Geral"       value={`${mediaGeral}%`} icon="fa-chart-bar"        color="#D97706" sub="só entre quem já foi avaliado" />
-          <StatCard label="Certificados"      value={totalCerts}       icon="fa-certificate"      color="#7C3AED" sub="emitidos no total" />
+          <StatCard label="Certificados"      value={totalCerts}       icon="fa-certificate"      color="#7C3AED" sub="um por pessoa e curso" />
           <StatCard label="Risco Alto"        value={riscoAltoCount}   icon="fa-shield-halved"    color="#DC2626" sub="colaboradores em atenção" />
         </div>
 
@@ -1320,6 +1332,9 @@ tr { page-break-inside:avoid; }
                 </div>
               </div>
             )}
+
+            {/* ── QUEM FEZ / NÃO FEZ ────────────────────────────────────────────── */}
+            {tab === 'participacao' && <ParticipacaoPanel tenantId={tenantId} />}
 
             {/* ── ERROS POR ASSUNTO / SETOR ─────────────────────────────────────── */}
             {tab === 'erros' && (
